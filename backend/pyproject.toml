@@ -1,0 +1,124 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rnexus-backend"
+version = "0.1.0"
+description = "RNexus Backend API"
+authors = [{name = "RNexus Team"}]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "Django>=5.2.5",
+    "channels>=4.3.1",
+    "daphne>=4.2.1",
+    "django-cors-headers>=4.7.0",
+    "django-filter>=25.1",
+    "djangorestframework>=3.16.1",
+    "graphene>=3.4.3",
+    "graphene-django>=3.2.3",
+    "pillow>=11.3.0",
+    "psycopg2-binary>=2.9.10",
+    "PyJWT>=2.10.1",
+    "python-dotenv>=1.1.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black>=25.1.0",
+    "isort>=6.0.1",
+    "mypy>=1.17.1",
+    "pre-commit>=4.3.0",
+    "django-debug-toolbar>=6.0.0",
+    "django-extensions>=4.1",
+    "pytest>=8.4.1",
+    "pytest-django>=4.11.1",
+    "pytest-cov>=6.2.1",
+    "factory-boy>=3.3.3",
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py313']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_django = "django"
+known_third_party = ["channels", "graphene", "psycopg2", "PyJWT"]
+sections = ["FUTURE", "STDLIB", "DJANGO", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+
+[tool.mypy]
+python_version = "3.13"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+    "django.*",
+    "channels.*",
+    "graphene.*",
+    "psycopg2.*",
+    "PyJWT.*",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "core.settings"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+addopts = "--strict-markers --strict-config"
+testpaths = ["tests", "api/tests"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+
+[tool.coverage.run]
+source = ["api", "core"]
+omit = [
+    "*/tests/*",
+    "*/migrations/*",
+    "*/venv/*",
+    "*/__pycache__/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]

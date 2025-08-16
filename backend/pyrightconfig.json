@@ -1,0 +1,20 @@
+{
+    "venvPath": ".",
+    "venv": "venv",
+    "extraPaths": [
+        "./venv/lib/python3.13/site-packages"
+    ],
+    "executionEnvironments": [
+        {
+            "root": ".",
+            "pythonVersion": "3.13",
+            "pythonPlatform": "Darwin",
+            "extraPaths": [
+                "./venv/lib/python3.13/site-packages"
+            ]
+        }
+    ]
+}
+
+
+
