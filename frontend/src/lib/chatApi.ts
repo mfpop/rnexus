@@ -22,7 +22,7 @@ export class ChatApiService {
       if (data.success) {
         return data.chats.map((chat: any) => {
           let lastMessage: Message | null = null;
-          
+
           if (chat.last_message) {
             const msg = chat.last_message;
             lastMessage = {
@@ -40,7 +40,7 @@ export class ChatApiService {
               editedAt: undefined
             } as Message;
           }
-          
+
           return {
             id: chat.id,
             name: chat.name,
@@ -335,7 +335,7 @@ export class ChatApiService {
     try {
       // Get recent messages and mark them as read
       const { messages } = await this.getMessages(chatId, 1, 100);
-      const unreadMessages = messages.filter(msg => 
+      const unreadMessages = messages.filter(msg =>
         msg.senderId !== 1 && // Assuming current user ID is 1
         msg.status !== 'read'
       );

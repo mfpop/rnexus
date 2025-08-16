@@ -9,7 +9,7 @@ import NewsLeftCardSimple from "./NewsLeftCardSimple";
 const NewsLeftCardWrapper: React.FC = () => {
   // This will throw an error if NewsProvider is not available
   const context = useNewsContext();
-  
+
   // If we get here, the NewsProvider is available
   return <NewsLeftCardSimple />;
 };

@@ -10,7 +10,7 @@ import { Message } from './MessageTypes';
 
 const ChatRightCard: React.FC = () => {
   const { selectedContact } = useChatContext();
-  
+
   // State management
   const [messages, setMessages] = useState<Message[]>([]);
   const [message, setMessage] = useState('');
@@ -21,13 +21,13 @@ const ChatRightCard: React.FC = () => {
   const [selectedMessages, setSelectedMessages] = useState<Set<number>>(new Set());
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [messageOptionsOpen, setMessageOptionsOpen] = useState<number | null>(null);
-  
+
   // Refs
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  
+
   // Voice recording state
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
@@ -43,14 +43,14 @@ const ChatRightCard: React.FC = () => {
   // Load messages from database
   const loadMessages = async () => {
     if (!selectedContact) return;
-    
+
     try {
       const result = await ChatApiService.getMessages(selectedContact.id.toString());
       setMessages(result.messages);
-      
+
       // Mark messages as read
       await ChatApiService.markMessagesAsRead(selectedContact.id.toString());
-      
+
       // Scroll to bottom after messages load
       setTimeout(() => {
         scrollToBottom();
@@ -88,7 +88,7 @@ const ChatRightCard: React.FC = () => {
 
       // Add message to local state
       setMessages(prev => [...prev, newMessage]);
-      
+
       // Scroll to bottom
       setTimeout(() => {
         scrollToBottom();
@@ -103,11 +103,11 @@ const ChatRightCard: React.FC = () => {
   // Handle typing indicator
   const handleTyping = useCallback(() => {
     setIsTyping(true);
-    
+
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
-    
+
     typingTimeoutRef.current = setTimeout(() => {
       setIsTyping(false);
     }, 2000);
@@ -160,12 +160,12 @@ const ChatRightCard: React.FC = () => {
 
   const handleBulkDelete = useCallback(async () => {
     if (selectedMessages.size === 0) return;
-    
+
     try {
       for (const messageId of selectedMessages) {
         await ChatApiService.deleteMessage(messageId);
       }
-      
+
       setMessages(prev => prev.filter(msg => !selectedMessages.has(msg.id)));
       exitSelectionMode();
     } catch (error) {
@@ -204,7 +204,7 @@ const ChatRightCard: React.FC = () => {
   const startVoiceRecording = useCallback(async () => {
     setIsRecording(true);
     setRecordingTime(0);
-    
+
     recordingIntervalRef.current = setInterval(() => {
       setRecordingTime(prev => prev + 1);
     }, 1000);
@@ -274,7 +274,7 @@ const ChatRightCard: React.FC = () => {
           </div>
           <h2 className="text-2xl font-semibold text-gray-800 mb-3">Welcome to Nexus Chat</h2>
           <p className="text-gray-600 leading-relaxed">
-            Select a contact from the left sidebar to start chatting. 
+            Select a contact from the left sidebar to start chatting.
             Your conversations will be automatically saved and synchronized across all your devices.
           </p>
         </div>
@@ -298,7 +298,7 @@ const ChatRightCard: React.FC = () => {
             </button>
             <span className="font-medium">{selectedMessages.size} selected</span>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <button
               onClick={handleBulkForward}

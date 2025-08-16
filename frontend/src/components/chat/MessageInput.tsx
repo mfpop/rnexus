@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { 
-  Smile, 
-  Paperclip, 
-  Camera, 
-  Mic, 
+import {
+  Smile,
+  Paperclip,
+  Camera,
+  Mic,
   Send,
   X
 } from 'lucide-react';
@@ -114,7 +114,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
     const randomEmojis = emojiArray
       .sort(() => 0.5 - Math.random())
       .slice(0, 3); // Add 3 random emojis from the category
-    
+
     randomEmojis.forEach(emoji => addEmoji(emoji));
   };
 
@@ -186,7 +186,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
                 title="Add emoji">
                 <Smile className="h-5 w-5 text-gray-500 hover:text-[#25d366]" />
               </button>
-              
+
               {/* Emoji Dropdown */}
               {emojiDropdownOpen && (
                 <div
@@ -195,7 +195,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
                   <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
                     Quick Emojis
                   </div>
-                  
+
                   {/* Popular Emojis Grid */}
                   <div className="grid grid-cols-10 gap-1 mb-3">
                     {popularEmojis.map((emoji, index) => (
@@ -211,7 +211,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
                   </div>
 
                   <div className="border-t border-gray-200 my-2"></div>
-                  
+
                   {/* Emoji Categories */}
                   <div className="grid grid-cols-2 gap-2">
                     {emojiCategories.map((category, index) => (
@@ -243,7 +243,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
                 title="Attach file or media">
                 <Paperclip className="h-5 w-5 text-gray-500 hover:text-[#25d366]" />
               </button>
-              
+
               {/* Attachment Dropdown */}
               {attachmentDropdownOpen && (
                 <div
@@ -319,12 +319,12 @@ const MessageInput: React.FC<MessageInputProps> = ({
           <div className="flex items-center gap-3 bg-red-50 px-4 py-2 rounded-full">
             {/* Recording indicator */}
             <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-            
+
             {/* Recording time display */}
             <div className="text-sm text-red-600 font-medium">
               {formatRecordingTime(recordingTime)}
             </div>
-            
+
             {/* Stop recording button */}
             <button
               type="button"

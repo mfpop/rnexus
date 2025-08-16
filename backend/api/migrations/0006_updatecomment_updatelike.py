@@ -8,40 +8,86 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0005_remove_chat_api_chat_user1_i_4e486a_idx_and_more'),
+        ("api", "0005_remove_chat_api_chat_user1_i_4e486a_idx_and_more"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='UpdateComment',
+            name="UpdateComment",
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False)),
-                ('content', models.TextField()),
-                ('is_active', models.BooleanField(default=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='update_comments', to=settings.AUTH_USER_MODEL)),
-                ('parent_comment', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='replies', to='api.updatecomment')),
-                ('update', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='comments', to='api.update')),
+                ("id", models.AutoField(primary_key=True, serialize=False)),
+                ("content", models.TextField()),
+                ("is_active", models.BooleanField(default=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "author",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="update_comments",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "parent_comment",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="replies",
+                        to="api.updatecomment",
+                    ),
+                ),
+                (
+                    "update",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="comments",
+                        to="api.update",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['created_at'],
-                'indexes': [models.Index(fields=['update', 'created_at'], name='api_updatec_update__2a1278_idx'), models.Index(fields=['parent_comment', 'created_at'], name='api_updatec_parent__ec20d9_idx')],
+                "ordering": ["created_at"],
+                "indexes": [
+                    models.Index(
+                        fields=["update", "created_at"],
+                        name="api_updatec_update__2a1278_idx",
+                    ),
+                    models.Index(
+                        fields=["parent_comment", "created_at"],
+                        name="api_updatec_parent__ec20d9_idx",
+                    ),
+                ],
             },
         ),
         migrations.CreateModel(
-            name='UpdateLike',
+            name="UpdateLike",
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False)),
-                ('is_like', models.BooleanField(default=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('update', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='likes', to='api.update')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='update_likes', to=settings.AUTH_USER_MODEL)),
+                ("id", models.AutoField(primary_key=True, serialize=False)),
+                ("is_like", models.BooleanField(default=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "update",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="likes",
+                        to="api.update",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="update_likes",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-created_at'],
-                'unique_together': {('update', 'user')},
+                "ordering": ["-created_at"],
+                "unique_together": {("update", "user")},
             },
         ),
     ]

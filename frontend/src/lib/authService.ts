@@ -44,11 +44,11 @@ export class AuthService {
       }
 
       const data: LoginResponse = await response.json();
-      
+
       if (data.success) {
         // Store remember me preference
         localStorage.setItem(this.REMEMBER_ME_KEY, rememberMe.toString());
-        
+
         if (rememberMe) {
           // Persistent storage - use localStorage
           localStorage.setItem(this.TOKEN_KEY, data.token);
@@ -58,7 +58,7 @@ export class AuthService {
           sessionStorage.setItem(this.TOKEN_KEY, data.token);
           sessionStorage.setItem(this.USER_KEY, JSON.stringify(data.user));
         }
-        
+
         return data;
       } else {
         throw new Error(data.error || 'Login failed');
@@ -98,7 +98,7 @@ export class AuthService {
   static getToken(): string | null {
     // Check if remember me is enabled
     const rememberMe = localStorage.getItem(this.REMEMBER_ME_KEY) === 'true';
-    
+
     if (rememberMe) {
       return localStorage.getItem(this.TOKEN_KEY);
     } else {
@@ -109,7 +109,7 @@ export class AuthService {
   // Get stored user data
   static getUser(): User | null {
     const rememberMe = localStorage.getItem(this.REMEMBER_ME_KEY) === 'true';
-    
+
     if (rememberMe) {
       const userStr = localStorage.getItem(this.USER_KEY);
       return userStr ? JSON.parse(userStr) : null;
@@ -168,4 +168,3 @@ export class AuthService {
 }
 
 export default AuthService;
-

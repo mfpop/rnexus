@@ -33,10 +33,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const checkAuthStatus = async () => {
       try {
         const hasToken = AuthService.isAuthenticated();
-        
+
         if (hasToken) {
           const isValid = await AuthService.validateToken();
-          
+
           if (isValid) {
             const userData = AuthService.getUser();
             setIsAuthenticated(true);

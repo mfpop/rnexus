@@ -469,7 +469,7 @@ export default function StableLayout() {
       handleNewsPageButton(buttonNumber);
       return;
     }
-    
+
     // Default navigation mapping for other pages
     const navigationMap: { [key: number]: string } = {
       1: "/",

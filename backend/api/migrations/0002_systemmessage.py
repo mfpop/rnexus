@@ -6,24 +6,44 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0001_initial'),
+        ("api", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='SystemMessage',
+            name="SystemMessage",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('recipient_id', models.CharField(max_length=100)),
-                ('title', models.CharField(blank=True, max_length=255, null=True)),
-                ('message', models.TextField()),
-                ('message_type', models.CharField(choices=[('info', 'Info'), ('warning', 'Warning'), ('error', 'Error'), ('success', 'Success')], default='info', max_length=10)),
-                ('link', models.URLField(blank=True, null=True)),
-                ('is_read', models.BooleanField(default=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("recipient_id", models.CharField(max_length=100)),
+                ("title", models.CharField(blank=True, max_length=255, null=True)),
+                ("message", models.TextField()),
+                (
+                    "message_type",
+                    models.CharField(
+                        choices=[
+                            ("info", "Info"),
+                            ("warning", "Warning"),
+                            ("error", "Error"),
+                            ("success", "Success"),
+                        ],
+                        default="info",
+                        max_length=10,
+                    ),
+                ),
+                ("link", models.URLField(blank=True, null=True)),
+                ("is_read", models.BooleanField(default=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
             options={
-                'ordering': ['-created_at'],
+                "ordering": ["-created_at"],
             },
         ),
     ]

@@ -1,19 +1,33 @@
 import graphene
 from graphene_django.types import DjangoObjectType
+
 from api.models import Item, Message, SystemMessage
+
 
 class ItemType(DjangoObjectType):
     class Meta:
         model = Item
 
+
 class MessageType(DjangoObjectType):
     class Meta:
         model = Message
 
+
 class SystemMessageType(DjangoObjectType):
     class Meta:
         model = SystemMessage
-        fields = ('id', 'recipient_id', 'title', 'message', 'message_type', 'link', 'is_read', 'created_at')
+        fields = (
+            "id",
+            "recipient_id",
+            "title",
+            "message",
+            "message_type",
+            "link",
+            "is_read",
+            "created_at",
+        )
+
 
 class Query(graphene.ObjectType):
     all_items = graphene.List(ItemType)
@@ -28,14 +42,17 @@ class Query(graphene.ObjectType):
         return Item.objects.all()
 
     def resolve_messages(self, info, chat_id, chat_type, **kwargs):
-        return Message.objects.filter(chat_id=chat_id, chat_type=chat_type).order_by('timestamp')
+        return Message.objects.filter(chat_id=chat_id, chat_type=chat_type).order_by(
+            "timestamp"
+        )
 
     def resolve_system_messages(self, info, is_read=None, **kwargs):
         # For now, return all system messages since we don't have user authentication
         messages = SystemMessage.objects.all()
         if is_read is not None:
             messages = messages.filter(is_read=is_read)
-        return messages.order_by('-created_at')
+        return messages.order_by("-created_at")
+
 
 class CreateItem(graphene.Mutation):
     class Arguments:
@@ -53,6 +70,7 @@ class CreateItem(graphene.Mutation):
         result.ok = True
         result.item = item
         return result
+
 
 class CreateMessage(graphene.Mutation):
     class Arguments:
@@ -78,6 +96,7 @@ class CreateMessage(graphene.Mutation):
         result.message = message
         return result
 
+
 class MarkSystemMessageAsRead(graphene.Mutation):
     class Arguments:
         message_id = graphene.ID(required=True)
@@ -98,9 +117,11 @@ class MarkSystemMessageAsRead(graphene.Mutation):
         except SystemMessage.DoesNotExist:
             raise Exception("System message not found.")
 
+
 class Mutation(graphene.ObjectType):
     create_item = CreateItem.Field()
     create_message = CreateMessage.Field()
     mark_system_message_as_read = MarkSystemMessageAsRead.Field()
+
 
 schema = graphene.Schema(query=Query, mutation=Mutation)

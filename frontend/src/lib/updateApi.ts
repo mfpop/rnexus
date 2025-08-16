@@ -26,11 +26,11 @@ export class TagApiService {
       const params = new URLSearchParams({
         active_only: activeOnly.toString(),
       });
-      
+
       if (category) {
         params.append('category', category);
       }
-      
+
       if (searchQuery) {
         params.append('q', searchQuery);
       }
@@ -168,7 +168,7 @@ export class UpdateApiService {
         page: page.toString(),
         page_size: pageSize.toString(),
       });
-      
+
       if (searchQuery) {
         params.append('q', searchQuery);
       }
@@ -391,7 +391,7 @@ export class UpdateApiService {
         q: query,
         type,
       });
-      
+
       if (tags) {
         params.append('tags', tags);
       }
@@ -490,7 +490,7 @@ export class UpdateApiService {
   } = {}): Promise<{ updates: any[]; pagination: any }> {
     try {
       const queryParams = new URLSearchParams();
-      
+
       if (params.type && params.type !== 'all') queryParams.append('type', params.type);
       if (params.status && params.status !== 'all') queryParams.append('status', params.status);
       if (params.searchQuery) queryParams.append('q', params.searchQuery);

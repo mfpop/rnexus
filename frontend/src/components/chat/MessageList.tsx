@@ -1,11 +1,11 @@
 import React from 'react';
-import { 
-  Mic, 
-  MoreVertical, 
+import {
+  Mic,
+  MoreVertical,
   Forward,
-  Copy, 
-  Trash2, 
-  Check, 
+  Copy,
+  Trash2,
+  Check,
   CheckCheck,
   Clock,
   Reply as ReplyIcon,
@@ -40,10 +40,10 @@ interface MessageListProps {
   setMessageOptionsOpen: (messageId: number | null) => void;
 }
 
-const MessageList: React.FC<MessageListProps> = ({ 
-  messages, 
-  messagesEndRef, 
-  scrollToBottom, 
+const MessageList: React.FC<MessageListProps> = ({
+  messages,
+  messagesEndRef,
+  scrollToBottom,
   formatTime,
   onReply,
   onForward,
@@ -215,7 +215,7 @@ const MessageList: React.FC<MessageListProps> = ({
           <div
             key={msg.id}
             className={`flex ${msg.senderId === 1 ? 'justify-end' : 'justify-start'} group`}>
-            
+
             {/* Selection Checkbox */}
             {isSelectionMode && (
               <div className="flex items-center mr-2">
@@ -246,9 +246,9 @@ const MessageList: React.FC<MessageListProps> = ({
                     ? 'bg-[#25d366] text-white'
                     : 'bg-white text-gray-800 border border-gray-200'
                 }`}>
-                
+
                 {renderMessageContent(msg)}
-                
+
                 {/* Message Footer */}
                 <div className={`flex items-center justify-between mt-2 ${
                   msg.senderId === 1 ? 'text-white' : 'text-gray-500'
@@ -257,7 +257,7 @@ const MessageList: React.FC<MessageListProps> = ({
                     {msg.senderId === 1 && getMessageStatusIcon(msg.status)}
                     <span className="text-xs opacity-80">{formatTime(msg.timestamp)}</span>
                   </div>
-                  
+
                   {/* Message Actions */}
                   {!isSelectionMode && (
                     <DropdownMenu open={messageOptionsOpen === msg.id} onOpenChange={(open) => setMessageOptionsOpen(open ? msg.id : null)}>
@@ -266,7 +266,7 @@ const MessageList: React.FC<MessageListProps> = ({
                           <MoreVertical className="w-4 h-4" />
                         </button>
                       </DropdownMenuTrigger>
-                      
+
                       <DropdownMenuContent className="w-48 bg-white border border-gray-200 shadow-lg rounded-lg py-1" align="end">
                         <DropdownMenuItem
                           onClick={() => onReply(msg)}
@@ -275,7 +275,7 @@ const MessageList: React.FC<MessageListProps> = ({
                           <ReplyIcon className="w-4 h-4" />
                           Reply
                         </DropdownMenuItem>
-                        
+
                         <DropdownMenuItem
                           onClick={() => onForward(msg)}
                           className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer flex items-center gap-2"
@@ -283,7 +283,7 @@ const MessageList: React.FC<MessageListProps> = ({
                           <Forward className="w-4 h-4" />
                           Forward
                         </DropdownMenuItem>
-                        
+
                         <DropdownMenuItem
                           onClick={() => onCopy(msg.content)}
                           className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer flex items-center gap-2"
@@ -291,9 +291,9 @@ const MessageList: React.FC<MessageListProps> = ({
                           <Copy className="w-4 h-4" />
                           Copy
                         </DropdownMenuItem>
-                        
+
                         <DropdownMenuSeparator />
-                        
+
                         <DropdownMenuItem
                           onClick={() => onDelete(msg.id)}
                           className="px-3 py-2 text-sm text-red-600 hover:bg-red-50 cursor-pointer flex items-center gap-2"

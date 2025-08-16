@@ -55,25 +55,25 @@ sleep 2
 if [ -d "backend" ]; then
     echo "Starting backend server with Daphne (WebSocket support)..."
     cd backend
-    
+
     # Check if virtual environment exists
     if [ ! -d "venv" ]; then
         echo "Error: Virtual environment not found. Please run: python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt"
         exit 1
     fi
-    
+
     # Activate virtual environment and start server
     source venv/bin/activate
-    
+
     # Check if required packages are installed
     if ! python3 -c "import django, channels, daphne" 2>/dev/null; then
         echo "Error: Required packages not installed. Please run: source venv/bin/activate && pip install -r requirements.txt"
         exit 1
     fi
-    
+
     # Start Daphne ASGI server instead of Django runserver
     echo "Starting Daphne ASGI server on port 8000..."
-    
+
     # Check if port 8000 is already in use
     if lsof -Pi :8000 -sTCP:LISTEN -t >/dev/null 2>&1; then
         echo "⚠️  Port 8000 is already in use. Checking if Daphne is running..."
@@ -91,10 +91,10 @@ if [ -d "backend" ]; then
         BACKEND_PID=$!
         echo "Backend server (Daphne) started with PID: $BACKEND_PID"
     fi
-    
+
     # Wait a moment for Daphne to start
     sleep 3
-    
+
     # Test if Daphne is responding
     echo "Testing backend server..."
     if curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/admin/ | grep -q "302\|200"; then
@@ -102,7 +102,7 @@ if [ -d "backend" ]; then
     else
         echo "⚠️  Backend server may not be fully ready yet"
     fi
-    
+
 else
     echo "Warning: backend directory not found, skipping backend server"
 fi

@@ -32,7 +32,7 @@ const HelpRightCard: React.FC = () => {
   const { selectedSection } = useHelpContext();
   const renderHelpContent = (section: string) => {
     console.log('renderHelpContent called with section:', section);
-    
+
     const helpContent: Record<string, React.JSX.Element> = {
       // Getting Started main section (fallback)
       "getting-started": (

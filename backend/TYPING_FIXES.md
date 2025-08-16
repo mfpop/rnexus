@@ -95,7 +95,7 @@ def chat_messages_view(request: HttpRequest, chat_id: str) -> JsonResponse:
     try:
         chat = Chat.objects.get(id=chat_id, is_active=True)
         user = cast(DjangoUser, request.user)  # Cast to proper type
-        
+
         # Check if user is participant
         if chat.chat_type == 'user':
             if user not in [chat.user1, chat.user2]:
@@ -103,7 +103,7 @@ def chat_messages_view(request: HttpRequest, chat_id: str) -> JsonResponse:
         else:
             if str(user.id) not in chat.members:  # type: ignore
                 return JsonResponse({'error': 'Access denied'}, status=403)
-        
+
         # ... rest of function
 ```
 

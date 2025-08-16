@@ -9,98 +9,190 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0003_chat_message_caption_message_contact_email_and_more'),
+        ("api", "0003_chat_message_caption_message_contact_email_and_more"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Update',
+            name="Update",
             fields=[
-                ('id', models.CharField(max_length=255, primary_key=True, serialize=False)),
-                ('type', models.CharField(choices=[('news', 'News'), ('communication', 'Communication'), ('alert', 'Alert')], default='news', max_length=20)),
-                ('title', models.CharField(max_length=255)),
-                ('summary', models.TextField()),
-                ('body', models.TextField()),
-                ('timestamp', models.DateTimeField(default=django.utils.timezone.now)),
-                ('status', models.CharField(choices=[('new', 'New'), ('read', 'Read'), ('urgent', 'Urgent')], default='new', max_length=20)),
-                ('tags', models.JSONField(default=list)),
-                ('author', models.CharField(max_length=255)),
-                ('icon', models.CharField(default='📰', max_length=10)),
-                ('is_active', models.BooleanField(default=True)),
-                ('priority', models.IntegerField(default=0)),
-                ('expires_at', models.DateTimeField(blank=True, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='created_updates', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.CharField(max_length=255, primary_key=True, serialize=False),
+                ),
+                (
+                    "type",
+                    models.CharField(
+                        choices=[
+                            ("news", "News"),
+                            ("communication", "Communication"),
+                            ("alert", "Alert"),
+                        ],
+                        default="news",
+                        max_length=20,
+                    ),
+                ),
+                ("title", models.CharField(max_length=255)),
+                ("summary", models.TextField()),
+                ("body", models.TextField()),
+                ("timestamp", models.DateTimeField(default=django.utils.timezone.now)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("new", "New"),
+                            ("read", "Read"),
+                            ("urgent", "Urgent"),
+                        ],
+                        default="new",
+                        max_length=20,
+                    ),
+                ),
+                ("tags", models.JSONField(default=list)),
+                ("author", models.CharField(max_length=255)),
+                ("icon", models.CharField(default="📰", max_length=10)),
+                ("is_active", models.BooleanField(default=True)),
+                ("priority", models.IntegerField(default=0)),
+                ("expires_at", models.DateTimeField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="created_updates",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-priority', '-timestamp'],
+                "ordering": ["-priority", "-timestamp"],
             },
         ),
         migrations.CreateModel(
-            name='UpdateAttachment',
+            name="UpdateAttachment",
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False)),
-                ('type', models.CharField(choices=[('pdf', 'PDF'), ('doc', 'DOC'), ('docx', 'DOCX'), ('txt', 'TXT'), ('image', 'Image'), ('audio', 'Audio'), ('video', 'Video')], max_length=20)),
-                ('url', models.URLField()),
-                ('label', models.CharField(max_length=255)),
-                ('file_size', models.IntegerField(blank=True, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('update', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='attachments', to='api.update')),
+                ("id", models.AutoField(primary_key=True, serialize=False)),
+                (
+                    "type",
+                    models.CharField(
+                        choices=[
+                            ("pdf", "PDF"),
+                            ("doc", "DOC"),
+                            ("docx", "DOCX"),
+                            ("txt", "TXT"),
+                            ("image", "Image"),
+                            ("audio", "Audio"),
+                            ("video", "Video"),
+                        ],
+                        max_length=20,
+                    ),
+                ),
+                ("url", models.URLField()),
+                ("label", models.CharField(max_length=255)),
+                ("file_size", models.IntegerField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "update",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="attachments",
+                        to="api.update",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['created_at'],
+                "ordering": ["created_at"],
             },
         ),
         migrations.CreateModel(
-            name='UpdateMedia',
+            name="UpdateMedia",
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False)),
-                ('type', models.CharField(choices=[('image', 'Image'), ('video', 'Video'), ('audio', 'Audio')], max_length=20)),
-                ('url', models.URLField()),
-                ('label', models.CharField(max_length=255)),
-                ('thumbnail_url', models.URLField(blank=True)),
-                ('duration', models.IntegerField(blank=True, null=True)),
-                ('file_size', models.IntegerField(blank=True, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('update', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='media', to='api.update')),
+                ("id", models.AutoField(primary_key=True, serialize=False)),
+                (
+                    "type",
+                    models.CharField(
+                        choices=[
+                            ("image", "Image"),
+                            ("video", "Video"),
+                            ("audio", "Audio"),
+                        ],
+                        max_length=20,
+                    ),
+                ),
+                ("url", models.URLField()),
+                ("label", models.CharField(max_length=255)),
+                ("thumbnail_url", models.URLField(blank=True)),
+                ("duration", models.IntegerField(blank=True, null=True)),
+                ("file_size", models.IntegerField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "update",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="media",
+                        to="api.update",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['created_at'],
+                "ordering": ["created_at"],
             },
         ),
         migrations.CreateModel(
-            name='UpdateRelation',
+            name="UpdateRelation",
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False)),
-                ('relation_type', models.CharField(default='related', max_length=50)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('source_update', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='source_relations', to='api.update')),
-                ('target_update', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='target_relations', to='api.update')),
+                ("id", models.AutoField(primary_key=True, serialize=False)),
+                ("relation_type", models.CharField(default="related", max_length=50)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "source_update",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="source_relations",
+                        to="api.update",
+                    ),
+                ),
+                (
+                    "target_update",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="target_relations",
+                        to="api.update",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['created_at'],
+                "ordering": ["created_at"],
             },
         ),
         migrations.AddIndex(
-            model_name='update',
-            index=models.Index(fields=['type', 'status'], name='api_update_type_8df8ca_idx'),
+            model_name="update",
+            index=models.Index(
+                fields=["type", "status"], name="api_update_type_8df8ca_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='update',
-            index=models.Index(fields=['status', 'timestamp'], name='api_update_status_6be231_idx'),
+            model_name="update",
+            index=models.Index(
+                fields=["status", "timestamp"], name="api_update_status_6be231_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='update',
-            index=models.Index(fields=['created_by', 'timestamp'], name='api_update_created_0bddee_idx'),
+            model_name="update",
+            index=models.Index(
+                fields=["created_by", "timestamp"], name="api_update_created_0bddee_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='update',
-            index=models.Index(fields=['is_active', 'timestamp'], name='api_update_is_acti_dd5b3e_idx'),
+            model_name="update",
+            index=models.Index(
+                fields=["is_active", "timestamp"], name="api_update_is_acti_dd5b3e_idx"
+            ),
         ),
         migrations.AlterUniqueTogether(
-            name='updaterelation',
-            unique_together={('source_update', 'target_update', 'relation_type')},
+            name="updaterelation",
+            unique_together={("source_update", "target_update", "relation_type")},
         ),
     ]

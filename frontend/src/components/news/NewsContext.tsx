@@ -107,9 +107,9 @@ export const NewsProvider: React.FC<NewsProviderProps> = ({ children }) => {
       const response = await UpdateApiService.toggleLike(updateId, isLike);
       if (response.success) {
         // Update the local state to reflect the new like counts
-        setUpdates(prevUpdates => 
-          prevUpdates.map(update => 
-            update.id === updateId 
+        setUpdates(prevUpdates =>
+          prevUpdates.map(update =>
+            update.id === updateId
               ? {
                   ...update,
                   likes_count: response.likes_count,
@@ -119,7 +119,7 @@ export const NewsProvider: React.FC<NewsProviderProps> = ({ children }) => {
               : update
           )
         );
-        
+
         // Update selected update if it's the one being liked
         if (selectedUpdate?.id === updateId) {
           setSelectedUpdate(prev => prev ? {
@@ -268,8 +268,8 @@ export const NewsProvider: React.FC<NewsProviderProps> = ({ children }) => {
       <div className="flex items-center justify-center p-8">
         <div className="text-center">
           <div className="text-gray-500 mb-4">Please log in to view news</div>
-          <button 
-            onClick={() => window.location.href = '/login'} 
+          <button
+            onClick={() => window.location.href = '/login'}
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
             Go to Login

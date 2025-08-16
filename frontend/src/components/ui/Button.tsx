@@ -46,9 +46,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     // Check if custom background or text colors are provided
     const hasCustomColors = className && (
-      className.includes('bg-') || 
-      className.includes('text-') || 
-      className.includes('hover:bg-') || 
+      className.includes('bg-') ||
+      className.includes('text-') ||
+      className.includes('hover:bg-') ||
       className.includes('hover:text-')
     );
 

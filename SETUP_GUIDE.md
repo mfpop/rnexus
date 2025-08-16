@@ -4,7 +4,7 @@
 
 ### Prerequisites
 - **Node.js**: 18.0.0 or higher
-- **npm**: 9.0.0 or higher  
+- **npm**: 9.0.0 or higher
 - **Python**: 3.13.0 or higher (for backend)
 - **Git**: Latest version
 
@@ -81,7 +81,7 @@ Project monitoring, task management, and collaboration tools with real-time comm
 {
   "dependencies": {
     "react": "^19.1.1",
-    "react-dom": "^19.1.1", 
+    "react-dom": "^19.1.1",
     "react-router-dom": "^7.8.0",
     "lucide-react": "^0.539.0",
     "tailwindcss": "^4.1.11",
@@ -256,7 +256,7 @@ const FeatureContext = createContext<FeatureContextType | undefined>(undefined)
 
 export const FeatureProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [selectedItem, setSelectedItem] = useState<FeatureItem | null>(null)
-  
+
   return (
     <FeatureContext.Provider value={{ selectedItem, setSelectedItem }}>
       {children}
@@ -281,7 +281,7 @@ import { useFeatureContext } from './FeatureContext'
 
 const FeatureLeftCard: React.FC = () => {
   const { selectedItem, setSelectedItem } = useFeatureContext()
-  
+
   // Sample data and component logic
   return (
     <div className="space-y-4 p-4">
@@ -301,11 +301,11 @@ import { useFeatureContext } from './FeatureContext'
 
 const FeatureRightCard: React.FC = () => {
   const { selectedItem } = useFeatureContext()
-  
+
   if (!selectedItem) {
     return <div>Select an item to view details</div>
   }
-  
+
   return (
     <div className="space-y-6 p-4">
       {/* Detail view content */}

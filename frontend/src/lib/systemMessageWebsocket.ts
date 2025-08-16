@@ -55,7 +55,7 @@ const useSystemMessageWebSocket = (
 
     // Check if user is authenticated using AuthService
     const isAuthenticated = AuthService.isAuthenticated();
-    
+
     // Get the actual JWT token if user is authenticated
     const token = isAuthenticated ? AuthService.getToken() : null;
     const finalWsUrl = token ? `${wsUrl}?token=${token}` : wsUrl;

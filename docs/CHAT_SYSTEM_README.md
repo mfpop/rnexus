@@ -135,8 +135,8 @@ DATABASES = {
 ```typescript
 // Send a text message
 const message = await ChatApiService.sendMessage(
-  chatId, 
-  "Hello World!", 
+  chatId,
+  "Hello World!",
   'text'
 );
 
@@ -156,7 +156,7 @@ const handleFileUpload = (file: File) => {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('chatId', chatId);
-  
+
   ChatApiService.uploadMedia(formData);
 };
 ```
@@ -244,8 +244,8 @@ import { FixedSizeList as List } from 'react-window';
 const LazyImage = ({ src, alt }) => {
   const [loaded, setLoaded] = useState(false);
   return (
-    <img 
-      src={loaded ? src : placeholder} 
+    <img
+      src={loaded ? src : placeholder}
       onLoad={() => setLoaded(true)}
       alt={alt}
     />
@@ -401,10 +401,10 @@ Authorization: Bearer <your-jwt-token>
 
 **🌟 Star this repository if it helped you!**
 
-**Last Updated**: August 16, 2025  
-**Version**: 2.0.0  
-**Status**: ✅ Production Ready  
-**License**: MIT  
+**Last Updated**: August 16, 2025
+**Version**: 2.0.0
+**Status**: ✅ Production Ready
+**License**: MIT
 **Maintainer**: Development Team
 
 ---

@@ -16,10 +16,10 @@ interface DropdownMenuContextType {
 
 const DropdownMenuContext = React.createContext<DropdownMenuContextType | undefined>(undefined)
 
-const DropdownMenu: React.FC<{ children: React.ReactNode; open?: boolean; onOpenChange?: (open: boolean) => void }> = ({ 
-  children, 
-  open: controlledOpen, 
-  onOpenChange 
+const DropdownMenu: React.FC<{ children: React.ReactNode; open?: boolean; onOpenChange?: (open: boolean) => void }> = ({
+  children,
+  open: controlledOpen,
+  onOpenChange
 }) => {
   const [internalOpen, setInternalOpen] = useState(false)
   const triggerRef = useRef<HTMLElement | null>(null)
@@ -39,14 +39,14 @@ const DropdownMenuTrigger = React.forwardRef<
 >(({ children, onClick, asChild = false, ...props }, ref) => {
   const context = React.useContext(DropdownMenuContext)
   const triggerRef = useRef<HTMLButtonElement>(null)
-  
+
   // Update the context with our trigger ref
   useEffect(() => {
     if (context && triggerRef.current) {
       context.triggerRef.current = triggerRef.current
     }
   }, [context, triggerRef.current])
-  
+
   if (asChild) {
     const child = children as React.ReactElement<any>
     return React.cloneElement(child, {
@@ -75,7 +75,7 @@ const DropdownMenuTrigger = React.forwardRef<
       ...props
     })
   }
-  
+
   return (
     <button
       ref={(node) => {
@@ -106,8 +106,8 @@ const DropdownMenuGroup: React.FC<{ children: React.ReactNode }> = ({ children }
 
 const DropdownMenuSub = DropdownMenu
 
-const DropdownMenuRadioGroup: React.FC<{ children: React.ReactNode; value?: string; onValueChange?: (value: string) => void }> = ({ 
-  children 
+const DropdownMenuRadioGroup: React.FC<{ children: React.ReactNode; value?: string; onValueChange?: (value: string) => void }> = ({
+  children
 }) => (
   <div role="radiogroup">{children}</div>
 )
@@ -201,29 +201,29 @@ const DropdownMenuContent = React.forwardRef<
     }
     return undefined
   }, [context?.open, updatePosition])
-  
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       // Don't close if clicking on the trigger itself
       if (context?.triggerRef.current && context.triggerRef.current.contains(event.target as Node)) {
         return
       }
-      
+
       // Don't close if clicking inside the dropdown content
       if (contentRef.current && contentRef.current.contains(event.target as Node)) {
         return
       }
-      
+
       // Only close if clicking outside both trigger and content
       context?.setOpen(false)
     }
-    
+
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         context?.setOpen(false)
       }
     }
-    
+
     if (context?.open) {
       // Add a small delay to prevent immediate closing
       const timer = setTimeout(() => {
@@ -233,7 +233,7 @@ const DropdownMenuContent = React.forwardRef<
         window.addEventListener('resize', updatePosition)
         window.addEventListener('scroll', updatePosition, true)
       }, 100)
-      
+
       return () => {
         clearTimeout(timer)
         document.removeEventListener('mousedown', handleClickOutside)
@@ -242,12 +242,12 @@ const DropdownMenuContent = React.forwardRef<
         window.removeEventListener('scroll', updatePosition, true)
       }
     }
-    
+
     return undefined
   }, [context?.open, updatePosition])
-  
+
   if (!context?.open) return null
-  
+
   return (
     <div
       ref={(node) => {
@@ -280,7 +280,7 @@ const DropdownMenuItem = React.forwardRef<
   }
 >(({ className, inset, children, onClick, ...props }, ref) => {
   const context = React.useContext(DropdownMenuContext)
-  
+
   return (
     <div
       ref={ref}

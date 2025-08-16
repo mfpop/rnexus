@@ -8,49 +8,71 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0004_update_updateattachment_updatemedia_updaterelation_and_more'),
+        ("api", "0004_update_updateattachment_updatemedia_updaterelation_and_more"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.RemoveIndex(
-            model_name='chat',
-            name='api_chat_user1_i_4e486a_idx',
+            model_name="chat",
+            name="api_chat_user1_i_4e486a_idx",
         ),
         migrations.RemoveField(
-            model_name='chat',
-            name='chat_id',
+            model_name="chat",
+            name="chat_id",
         ),
         migrations.RemoveField(
-            model_name='chat',
-            name='user1_id',
+            model_name="chat",
+            name="user1_id",
         ),
         migrations.RemoveField(
-            model_name='chat',
-            name='user2_id',
+            model_name="chat",
+            name="user2_id",
         ),
         migrations.AddField(
-            model_name='chat',
-            name='user1',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='chats_as_user1', to=settings.AUTH_USER_MODEL),
+            model_name="chat",
+            name="user1",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="chats_as_user1",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='chat',
-            name='user2',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='chats_as_user2', to=settings.AUTH_USER_MODEL),
+            model_name="chat",
+            name="user2",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="chats_as_user2",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AlterField(
-            model_name='chat',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='created_chats', to=settings.AUTH_USER_MODEL),
+            model_name="chat",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="created_chats",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AlterField(
-            model_name='chat',
-            name='id',
-            field=models.CharField(db_index=True, max_length=100, primary_key=True, serialize=False),
+            model_name="chat",
+            name="id",
+            field=models.CharField(
+                db_index=True, max_length=100, primary_key=True, serialize=False
+            ),
         ),
         migrations.AddIndex(
-            model_name='chat',
-            index=models.Index(fields=['user1', 'user2'], name='api_chat_user1_i_4e486a_idx'),
+            model_name="chat",
+            index=models.Index(
+                fields=["user1", "user2"], name="api_chat_user1_i_4e486a_idx"
+            ),
         ),
     ]

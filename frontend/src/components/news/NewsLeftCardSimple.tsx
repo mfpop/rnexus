@@ -8,18 +8,18 @@ import { useAuth } from "../../contexts/AuthContext";
  * This is the left card content that appears in StableLayout for the news page
  */
 const NewsLeftCardSimple: React.FC = () => {
-  const { 
-    selectedUpdate, 
-    setSelectedUpdate, 
-    updates, 
-    loading, 
-    error, 
-    refreshUpdates, 
+  const {
+    selectedUpdate,
+    setSelectedUpdate,
+    updates,
+    loading,
+    error,
+    refreshUpdates,
     filterUpdates,
     deleteUpdate
   } = useNewsContext();
   const { isAuthenticated } = useAuth();
-  
+
   const [searchQuery, setSearchQuery] = useState("");
   const [activeType, setActiveType] = useState<string>("all");
   const [activeStatus, setActiveStatus] = useState<string>("all");
@@ -240,9 +240,9 @@ const NewsLeftCardSimple: React.FC = () => {
               </div>
               <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform ${statusDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
-            
+
             {statusDropdownOpen && (
-              <div 
+              <div
                 className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg transform transition-all duration-200 ease-in-out origin-top"
                 role="listbox"
                 aria-label="Status options"
@@ -300,7 +300,7 @@ const NewsLeftCardSimple: React.FC = () => {
           </div>
         ) : updates.length === 0 ? (
           <div className="p-4 text-center text-gray-500">
-            {searchQuery || activeType !== 'all' || activeStatus !== 'all' 
+            {searchQuery || activeType !== 'all' || activeStatus !== 'all'
               ? 'No updates found matching your filters.'
               : 'No updates available.'
             }
@@ -388,13 +388,13 @@ const NewsLeftCardSimple: React.FC = () => {
                   <ThumbsDown className="h-3 w-3" />
                   <span>{update.dislikes_count || 0}</span>
                 </div>
-                
+
                 {/* Comments */}
                 <div className="flex items-center gap-1">
                   <MessageCircle className="h-3 w-3" />
                   <span>{update.comments_count || 0}</span>
                 </div>
-                
+
                 {/* Attachments */}
                 {update.content?.attachments?.length > 0 && (
                   <div className="flex items-center gap-1">
@@ -402,7 +402,7 @@ const NewsLeftCardSimple: React.FC = () => {
                     <span>{update.content.attachments.length}</span>
                   </div>
                 )}
-                
+
                 {/* Media */}
                 {update.content?.media?.length > 0 && (
                   <div className="flex items-center gap-1">

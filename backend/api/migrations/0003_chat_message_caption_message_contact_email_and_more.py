@@ -7,145 +7,209 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0002_systemmessage'),
+        ("api", "0002_systemmessage"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Chat',
+            name="Chat",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('chat_id', models.CharField(db_index=True, max_length=100, unique=True)),
-                ('chat_type', models.CharField(choices=[('user', 'User'), ('group', 'Group')], max_length=10)),
-                ('name', models.CharField(blank=True, max_length=255)),
-                ('description', models.TextField(blank=True)),
-                ('user1_id', models.CharField(blank=True, max_length=100)),
-                ('user2_id', models.CharField(blank=True, max_length=100)),
-                ('members', models.JSONField(blank=True, default=list)),
-                ('last_activity', models.DateTimeField(auto_now=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('created_by', models.CharField(blank=True, max_length=100)),
-                ('avatar_url', models.URLField(blank=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "chat_id",
+                    models.CharField(db_index=True, max_length=100, unique=True),
+                ),
+                (
+                    "chat_type",
+                    models.CharField(
+                        choices=[("user", "User"), ("group", "Group")], max_length=10
+                    ),
+                ),
+                ("name", models.CharField(blank=True, max_length=255)),
+                ("description", models.TextField(blank=True)),
+                ("user1_id", models.CharField(blank=True, max_length=100)),
+                ("user2_id", models.CharField(blank=True, max_length=100)),
+                ("members", models.JSONField(blank=True, default=list)),
+                ("last_activity", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=True)),
+                ("created_by", models.CharField(blank=True, max_length=100)),
+                ("avatar_url", models.URLField(blank=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'ordering': ['-last_activity'],
+                "ordering": ["-last_activity"],
             },
         ),
         migrations.AddField(
-            model_name='message',
-            name='caption',
+            model_name="message",
+            name="caption",
             field=models.TextField(blank=True),
         ),
         migrations.AddField(
-            model_name='message',
-            name='contact_email',
+            model_name="message",
+            name="contact_email",
             field=models.EmailField(blank=True, max_length=254),
         ),
         migrations.AddField(
-            model_name='message',
-            name='contact_name',
+            model_name="message",
+            name="contact_name",
             field=models.CharField(blank=True, max_length=100),
         ),
         migrations.AddField(
-            model_name='message',
-            name='contact_phone',
+            model_name="message",
+            name="contact_phone",
             field=models.CharField(blank=True, max_length=20),
         ),
         migrations.AddField(
-            model_name='message',
-            name='duration',
+            model_name="message",
+            name="duration",
             field=models.IntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='message',
-            name='edited',
+            model_name="message",
+            name="edited",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='message',
-            name='edited_at',
+            model_name="message",
+            name="edited_at",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='message',
-            name='forwarded',
+            model_name="message",
+            name="forwarded",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='message',
-            name='forwarded_from',
+            model_name="message",
+            name="forwarded_from",
             field=models.CharField(blank=True, max_length=100),
         ),
         migrations.AddField(
-            model_name='message',
-            name='latitude',
-            field=models.DecimalField(blank=True, decimal_places=6, max_digits=9, null=True),
+            model_name="message",
+            name="latitude",
+            field=models.DecimalField(
+                blank=True, decimal_places=6, max_digits=9, null=True
+            ),
         ),
         migrations.AddField(
-            model_name='message',
-            name='location_name',
+            model_name="message",
+            name="location_name",
             field=models.CharField(blank=True, max_length=255),
         ),
         migrations.AddField(
-            model_name='message',
-            name='longitude',
-            field=models.DecimalField(blank=True, decimal_places=6, max_digits=9, null=True),
+            model_name="message",
+            name="longitude",
+            field=models.DecimalField(
+                blank=True, decimal_places=6, max_digits=9, null=True
+            ),
         ),
         migrations.AddField(
-            model_name='message',
-            name='reply_to',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='replies', to='api.message'),
+            model_name="message",
+            name="reply_to",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="replies",
+                to="api.message",
+            ),
         ),
         migrations.AddField(
-            model_name='message',
-            name='status',
-            field=models.CharField(choices=[('sending', 'Sending'), ('sent', 'Sent'), ('delivered', 'Delivered'), ('read', 'Read')], default='sent', max_length=10),
+            model_name="message",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("sending", "Sending"),
+                    ("sent", "Sent"),
+                    ("delivered", "Delivered"),
+                    ("read", "Read"),
+                ],
+                default="sent",
+                max_length=10,
+            ),
         ),
         migrations.AddField(
-            model_name='message',
-            name='thumbnail_url',
+            model_name="message",
+            name="thumbnail_url",
             field=models.URLField(blank=True),
         ),
         migrations.AddField(
-            model_name='message',
-            name='updated_at',
+            model_name="message",
+            name="updated_at",
             field=models.DateTimeField(auto_now=True),
         ),
         migrations.AddField(
-            model_name='message',
-            name='waveform',
+            model_name="message",
+            name="waveform",
             field=models.JSONField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='message',
-            name='message_type',
-            field=models.CharField(choices=[('text', 'Text'), ('image', 'Image'), ('audio', 'Audio'), ('video', 'Video'), ('document', 'Document'), ('location', 'Location'), ('contact', 'Contact')], default='text', max_length=10),
+            model_name="message",
+            name="message_type",
+            field=models.CharField(
+                choices=[
+                    ("text", "Text"),
+                    ("image", "Image"),
+                    ("audio", "Audio"),
+                    ("video", "Video"),
+                    ("document", "Document"),
+                    ("location", "Location"),
+                    ("contact", "Contact"),
+                ],
+                default="text",
+                max_length=10,
+            ),
         ),
         migrations.AddIndex(
-            model_name='message',
-            index=models.Index(fields=['chat_id', 'timestamp'], name='api_message_chat_id_25a4f5_idx'),
+            model_name="message",
+            index=models.Index(
+                fields=["chat_id", "timestamp"], name="api_message_chat_id_25a4f5_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='message',
-            index=models.Index(fields=['sender_id', 'timestamp'], name='api_message_sender__22bb99_idx'),
+            model_name="message",
+            index=models.Index(
+                fields=["sender_id", "timestamp"], name="api_message_sender__22bb99_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='message',
-            index=models.Index(fields=['status', 'timestamp'], name='api_message_status_f3c365_idx'),
+            model_name="message",
+            index=models.Index(
+                fields=["status", "timestamp"], name="api_message_status_f3c365_idx"
+            ),
         ),
         migrations.AddField(
-            model_name='chat',
-            name='last_message',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='chat_last_message', to='api.message'),
+            model_name="chat",
+            name="last_message",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="chat_last_message",
+                to="api.message",
+            ),
         ),
         migrations.AddIndex(
-            model_name='chat',
-            index=models.Index(fields=['chat_type', 'last_activity'], name='api_chat_chat_ty_bafd53_idx'),
+            model_name="chat",
+            index=models.Index(
+                fields=["chat_type", "last_activity"],
+                name="api_chat_chat_ty_bafd53_idx",
+            ),
         ),
         migrations.AddIndex(
-            model_name='chat',
-            index=models.Index(fields=['user1_id', 'user2_id'], name='api_chat_user1_i_4e486a_idx'),
+            model_name="chat",
+            index=models.Index(
+                fields=["user1_id", "user2_id"], name="api_chat_user1_i_4e486a_idx"
+            ),
         ),
     ]

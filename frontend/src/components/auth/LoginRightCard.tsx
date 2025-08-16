@@ -77,13 +77,13 @@ const LoginRightCard: React.FC = () => {
     try {
       // Use the AuthContext to login with rememberMe option
       await login(formData.username, formData.password, rememberMe);
-      
+
       // Login successful, redirect to home page
       navigate("/");
     } catch (error) {
       console.error("Login error:", error);
-      setErrors({ 
-        submit: error instanceof Error ? error.message : "Login failed. Please check your credentials." 
+      setErrors({
+        submit: error instanceof Error ? error.message : "Login failed. Please check your credentials."
       });
     } finally {
       setIsLoading(false);

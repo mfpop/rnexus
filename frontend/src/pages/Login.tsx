@@ -32,7 +32,7 @@ const Login: React.FC = () => {
     try {
       // Use the AuthService to login
       await AuthService.login(formData);
-      
+
       // Login successful, navigate to home
       navigate("/");
     } catch (error) {

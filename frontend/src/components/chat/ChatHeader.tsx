@@ -10,12 +10,12 @@ interface ChatHeaderProps {
   isSelectionMode: boolean;
 }
 
-const ChatHeader: React.FC<ChatHeaderProps> = ({ 
-  messages, 
-  formatTime, 
-  onClearChat, 
+const ChatHeader: React.FC<ChatHeaderProps> = ({
+  messages,
+  formatTime,
+  onClearChat,
   onEnterSelectionMode,
-  isSelectionMode 
+  isSelectionMode
 }) => {
   const { selectedContact } = useChatContext();
   const [showMoreOptions, setShowMoreOptions] = useState(false);
@@ -26,7 +26,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
 
   const getLastSeen = () => {
     if (selectedContact.status === 'online') return 'online';
-    
+
     const lastMessage = messages.find(msg => msg.senderId !== 1);
     if (lastMessage) {
       const now = new Date();
@@ -34,7 +34,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
       const minutes = Math.floor(diff / 60000);
       const hours = Math.floor(diff / 3600000);
       const days = Math.floor(diff / 86400000);
-      
+
       if (minutes < 1) return 'just now';
       if (minutes < 60) return `${minutes}m ago`;
       if (hours < 24) return `${hours}h ago`;
@@ -96,12 +96,12 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
                   // Create a more user-friendly search results display
                   const results = matchingMessages.map((msg, index) => {
                     const time = formatTime(msg.timestamp);
-                    const preview = msg.content.length > 50 
-                      ? msg.content.substring(0, 50) + '...' 
+                    const preview = msg.content.length > 50
+                      ? msg.content.substring(0, 50) + '...'
                       : msg.content;
                     return `${index + 1}. [${time}] ${msg.senderName}: ${preview}`;
                   }).join('\n\n');
-                  
+
                   alert(`🔍 Found ${matchingMessages.length} message(s) containing "${searchTerm}":\n\n${results}`);
                 } else {
                   alert(`🔍 No messages found containing "${searchTerm}"`);
@@ -127,7 +127,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
               </svg>
             </button>
-            
+
             {/* Dropdown Menu */}
             {showMoreOptions && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
@@ -145,7 +145,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
                   </svg>
                   <span>Voice Call</span>
                 </button>
-                
+
                 <button
                   onClick={() => {
                     setShowMoreOptions(false);
@@ -158,9 +158,9 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
                   </svg>
                   <span>Video Call</span>
                 </button>
-                
+
                 <div className="border-t border-gray-200 my-1"></div>
-                
+
                 <button
                   onClick={() => {
                     setShowMoreOptions(false);
@@ -178,11 +178,11 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
           </div>
         </div>
       </div>
-      
+
       {/* Click outside to close dropdown */}
       {showMoreOptions && (
-        <div 
-          className="fixed inset-0 z-40" 
+        <div
+          className="fixed inset-0 z-40"
           onClick={() => setShowMoreOptions(false)}
         />
       )}

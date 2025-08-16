@@ -30,18 +30,18 @@ import { Tag, TagApiService } from "../../lib/updateApi";
  * Full-featured update reader with comments and interactions
  */
 const NewsRightCard: React.FC = () => {
-  const { 
-    selectedUpdate, 
-    toggleLike, 
-    createComment, 
-    editComment, 
+  const {
+    selectedUpdate,
+    toggleLike,
+    createComment,
+    editComment,
     deleteComment,
     createUpdate,
     editUpdate,
     deleteUpdate
   } = useNewsContext();
   const { user } = useAuth();
-  
+
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState("");
@@ -83,7 +83,7 @@ const NewsRightCard: React.FC = () => {
         // Initial tag loading failed, will retry when user is available
       }
     };
-    
+
     loadTags();
   }, []);
 
@@ -226,7 +226,7 @@ const NewsRightCard: React.FC = () => {
 
   const loadComments = async () => {
     if (!selectedUpdate) return;
-    
+
     try {
       setLoadingComments(true);
       // This would call the API to get comments
@@ -529,7 +529,7 @@ const NewsRightCard: React.FC = () => {
               </button>
             )}
           </div>
-          
+
           {editingComment === comment.id ? (
             <div className="mb-2">
               <textarea
@@ -559,9 +559,9 @@ const NewsRightCard: React.FC = () => {
           ) : (
             <p className="text-gray-700 mb-2">{comment.content}</p>
           )}
-          
+
           <div className="flex items-center gap-4">
-            <button 
+            <button
               onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
               className="text-sm text-gray-500 hover:text-blue-600 transition-colors flex items-center gap-1"
             >
@@ -569,7 +569,7 @@ const NewsRightCard: React.FC = () => {
               Reply
             </button>
           </div>
-          
+
           {/* Reply form */}
           {replyingTo === comment.id && (
             <div className="mt-3">
@@ -601,7 +601,7 @@ const NewsRightCard: React.FC = () => {
           )}
         </div>
       </div>
-      
+
       {/* Render replies */}
       {comment.replies && comment.replies.map((reply) => renderComment(reply, true))}
     </div>
@@ -682,7 +682,7 @@ const NewsRightCard: React.FC = () => {
               <span>{selectedUpdate.dislikes_count || 0}</span>
             </button>
           </div>
-          
+
           <button
             onClick={handleBookmark}
             className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
@@ -694,7 +694,7 @@ const NewsRightCard: React.FC = () => {
             <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-current" : ""}`} />
             <span>Bookmark</span>
           </button>
-          
+
           <button className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 transition-colors">
             <Share2 className="h-4 w-4" />
             <span>Share</span>
@@ -718,7 +718,7 @@ const NewsRightCard: React.FC = () => {
               ✕
             </button>
           </div>
-          
+
           <form onSubmit={showCreateForm ? handleCreateUpdate : handleEditUpdate} className="space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <input
@@ -739,7 +739,7 @@ const NewsRightCard: React.FC = () => {
                 <option value="alert">Alert</option>
               </select>
             </div>
-            
+
             <textarea
               placeholder="Summary *"
               value={formData.summary}
@@ -748,7 +748,7 @@ const NewsRightCard: React.FC = () => {
               rows={2}
               required
             />
-            
+
             <textarea
               placeholder="Body *"
               value={formData.body}
@@ -757,7 +757,7 @@ const NewsRightCard: React.FC = () => {
               rows={4}
               required
             />
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <input
                 type="text"
@@ -781,7 +781,7 @@ const NewsRightCard: React.FC = () => {
                 >
                   {formData.tags.length > 0 ? `${formData.tags.length} tag(s) selected` : 'Select tags...'}
                 </button>
-                
+
                 {/* Tag Selector Dropdown */}
                 {showTagSelector && (
                   <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
@@ -811,7 +811,7 @@ const NewsRightCard: React.FC = () => {
                         </button>
                       </div>
                     </div>
-                    
+
                     {/* Tags List */}
                     <div className="p-2">
                       {loadingTags ? (
@@ -834,8 +834,8 @@ const NewsRightCard: React.FC = () => {
                             }`}
                           >
                             <div className="flex items-center gap-2">
-                              <div 
-                                className="w-3 h-3 rounded-full" 
+                              <div
+                                className="w-3 h-3 rounded-full"
                                 style={{ backgroundColor: tag.color }}
                               />
                               <span className="font-medium">{tag.name}</span>
@@ -877,7 +877,7 @@ const NewsRightCard: React.FC = () => {
                 )}
               </div>
             </div>
-            
+
             {/* Tags display */}
             {formData.tags.length > 0 && (
               <div className="flex flex-wrap gap-2">
@@ -898,7 +898,7 @@ const NewsRightCard: React.FC = () => {
                 ))}
               </div>
             )}
-            
+
             <div className="text-center text-sm text-gray-500">
               {isLoading ? (
                 <div className="flex items-center justify-center gap-2 text-blue-600">
