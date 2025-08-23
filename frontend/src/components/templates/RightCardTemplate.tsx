@@ -11,6 +11,7 @@ interface RightCardTemplateProps {
   expandedCard?: "left" | "right" | "left-full" | "right-full" | null;
   onExpandClick?: (side: "left" | "right") => void;
   className?: string;
+  showThreeDots?: boolean; // New prop to show three orange dots
 }
 
 /**
@@ -31,6 +32,7 @@ const RightCardTemplate: React.FC<RightCardTemplateProps> = ({
   expandedCard,
   onExpandClick,
   className = "",
+  showThreeDots = false, // Default to false
 }) => {
   const isHidden = expandedCard === "left-full";
   const isExpanded = expandedCard === "right-full";
@@ -45,6 +47,15 @@ const RightCardTemplate: React.FC<RightCardTemplateProps> = ({
     >
       {/* Header - Template Structure NEVER changes */}
       <CardHeader className="flex flex-row items-center justify-between h-16 border-b border-gray-200 bg-gray-50/90 backdrop-blur-md shadow-sm px-4">
+        {/* Three Teal Dots - Only shown when showThreeDots is true */}
+        {showThreeDots && (
+          <div className="flex items-center gap-1 mr-3">
+            <div className="w-2 h-2 bg-teal-500 rounded-full"></div>
+            <div className="w-2 h-2 bg-teal-500 rounded-full"></div>
+            <div className="w-2 h-2 bg-teal-500 rounded-full"></div>
+          </div>
+        )}
+
         <div className="flex flex-col text-center flex-1">
           <span className="text-xl font-bold text-teal-600">{rightTitle}</span>
           <span className="text-sm font-medium text-teal-600">
@@ -69,8 +80,8 @@ const RightCardTemplate: React.FC<RightCardTemplateProps> = ({
       </CardHeader>
 
       {/* Content Area - Template Structure NEVER changes, only content varies */}
-      <CardContent className="flex-grow p-0 overflow-hidden">
-        <div className="h-full overflow-hidden">
+      <CardContent className="flex-1 p-0 overflow-hidden relative">
+        <div className="h-full overflow-y-auto pb-4">
           {content || (
             <div className="p-4">
               <p className="text-gray-600">Page content will appear here</p>
@@ -80,7 +91,7 @@ const RightCardTemplate: React.FC<RightCardTemplateProps> = ({
       </CardContent>
 
       {/* Footer - Template Structure NEVER changes */}
-      <CardFooter className="h-12 border-t border-gray-200 bg-gray-50/90 backdrop-blur-md shadow-sm shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] flex items-center justify-center p-0">
+      <CardFooter className="absolute bottom-0 left-0 right-0 h-12 border-t border-gray-200 bg-gray-50/90 backdrop-blur-md shadow-sm shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] flex items-center justify-center p-0">
         {typeof footer === "string" ? (
           <span className="text-sm text-teal-600 px-3 py-1 rounded">
             {footer}

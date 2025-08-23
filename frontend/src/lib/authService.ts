@@ -139,19 +139,19 @@ export class AuthService {
       const token = this.getToken();
       if (!token) return false;
 
-      console.log('DEBUG: validateToken - Token:', token);
-      console.log('DEBUG: validateToken - Auth headers:', this.getAuthHeaders());
+  console.debug('DEBUG: validateToken - token presence:', !!token);
+  console.debug('DEBUG: validateToken - auth headers present:', !!this.getAuthHeaders());
 
       const response = await fetch(`${API_BASE_URL}/api/auth/user/`, {
         headers: this.getAuthHeaders(),
       });
 
-      console.log('DEBUG: validateToken - Response status:', response.status);
-      console.log('DEBUG: validateToken - Response headers:', response.headers);
+  console.debug('DEBUG: validateToken - Response status:', response.status);
+  console.debug('DEBUG: validateToken - Response headers present:', !!response.headers);
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.log('DEBUG: validateToken - Error response:', errorText);
+  console.debug('DEBUG: validateToken - Error response (trimmed):', errorText?.slice?.(0, 200));
       }
 
       return response.ok;

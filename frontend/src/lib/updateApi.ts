@@ -41,7 +41,7 @@ export class TagApiService {
         const authHeaders = AuthService.getAuthHeaders();
         headers = { ...headers, ...authHeaders };
       } catch (authError) {
-        console.log('No authentication available, proceeding without auth headers');
+  console.debug('No authentication available, proceeding without auth headers');
       }
 
       const response = await fetch(`${API_BASE_URL}/api/tags/?${params}`, {
@@ -52,7 +52,7 @@ export class TagApiService {
 
       if (!response.ok) {
         if (response.status === 401 || response.status === 403) {
-          console.log('Authentication required for tags, using fallback');
+          console.debug('Authentication required for tags, using fallback');
           throw new Error('AUTH_REQUIRED');
         }
         throw new Error(`HTTP error! status: ${response.status}`);

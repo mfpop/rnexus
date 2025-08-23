@@ -1,4 +1,5 @@
 import json
+import uuid
 from typing import List, Optional, Union
 
 from django.contrib.auth.models import User
@@ -39,6 +40,161 @@ class Item(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class ActivityStatus(models.Model):
+    """Model to store activity status configurations with colors and icons"""
+
+    STATUS_CHOICES = [
+        ("planned", "Planned"),
+        ("in-progress", "In Progress"),
+        ("completed", "Completed"),
+        ("cancelled", "Cancelled"),
+        ("overdue", "Overdue"),
+    ]
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, unique=True)
+    display_name = models.CharField(max_length=50)
+    color_bg = models.CharField(
+        max_length=20, help_text="Tailwind CSS background color class"
+    )
+    color_text = models.CharField(
+        max_length=20, help_text="Tailwind CSS text color class"
+    )
+    color_border = models.CharField(
+        max_length=20, help_text="Tailwind CSS border color class"
+    )
+    icon = models.CharField(max_length=10, help_text="Emoji or icon representation")
+    description = models.TextField(
+        blank=True, help_text="Description of what this status means"
+    )
+    is_active = models.BooleanField(default=True)
+    sort_order = models.IntegerField(default=0, help_text="Order for display purposes")
+
+    class Meta:
+        ordering = ["sort_order", "status"]
+        verbose_name_plural = "Activity Statuses"
+
+    def __str__(self):
+        return f"{self.display_name} ({self.status})"
+
+
+class ActivityPriority(models.Model):
+    """Model to store activity priority configurations with colors"""
+
+    PRIORITY_CHOICES = [
+        ("low", "Low"),
+        ("medium", "Medium"),
+        ("high", "High"),
+        ("critical", "Critical"),
+    ]
+
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, unique=True)
+    display_name = models.CharField(max_length=50)
+    color_bg = models.CharField(
+        max_length=20, help_text="Tailwind CSS background color class"
+    )
+    color_text = models.CharField(
+        max_length=20, help_text="Tailwind CSS text color class"
+    )
+    color_border = models.CharField(
+        max_length=20, help_text="Tailwind CSS border color class"
+    )
+    description = models.TextField(
+        blank=True, help_text="Description of priority level"
+    )
+    is_active = models.BooleanField(default=True)
+    sort_order = models.IntegerField(default=0, help_text="Order for display purposes")
+
+    class Meta:
+        ordering = ["sort_order", "priority"]
+        verbose_name_plural = "Activity Priorities"
+
+    def __str__(self):
+        return f"{self.display_name} ({self.priority})"
+
+
+class Activity(models.Model):
+    """Model to store activities with status and priority references"""
+
+    STATUS_CHOICES = [
+        ("planned", "Planned"),
+        ("in-progress", "In Progress"),
+        ("completed", "Completed"),
+        ("cancelled", "Cancelled"),
+        ("overdue", "Overdue"),
+    ]
+
+    PRIORITY_CHOICES = [
+        ("low", "Low"),
+        ("medium", "Medium"),
+        ("high", "High"),
+        ("critical", "Critical"),
+    ]
+
+    TYPE_CHOICES = [
+        ("Production", "Production"),
+        ("Maintenance", "Maintenance"),
+        ("Inspection & Audit", "Inspection & Audit"),
+        ("Engineering", "Engineering"),
+        ("Logistics", "Logistics"),
+        ("Quality", "Quality"),
+        ("Meetings", "Meetings"),
+        ("Projects", "Projects"),
+        ("Training", "Training"),
+        ("Admin & Systems", "Admin & Systems"),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    type = models.CharField(max_length=50, choices=TYPE_CHOICES)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="planned")
+    priority = models.CharField(
+        max_length=20, choices=PRIORITY_CHOICES, default="medium"
+    )
+
+    # Status and Priority references for color management
+    status_config = models.ForeignKey(
+        ActivityStatus, on_delete=models.PROTECT, related_name="activities"
+    )
+    priority_config = models.ForeignKey(
+        ActivityPriority, on_delete=models.PROTECT, related_name="activities"
+    )
+
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    assigned_to = models.CharField(max_length=100)
+    assigned_by = models.CharField(max_length=100)
+    location = models.CharField(max_length=200, blank=True, null=True)
+    progress = models.IntegerField(default=0, help_text="Progress percentage (0-100)")
+    estimated_duration = models.IntegerField(help_text="Estimated duration in minutes")
+    actual_duration = models.IntegerField(
+        blank=True, null=True, help_text="Actual duration in minutes"
+    )
+    notes = models.TextField(blank=True)
+
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="created_activities"
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name_plural = "Activities"
+
+    def __str__(self):
+        return f"{self.title} ({self.status})"
+
+    def save(self, *args, **kwargs):
+        # Auto-assign status and priority configs if not set
+        if not hasattr(self, "status_config") or not self.status_config:
+            self.status_config = ActivityStatus.objects.get(status=self.status)
+        if not hasattr(self, "priority_config") or not self.priority_config:
+            self.priority_config = ActivityPriority.objects.get(priority=self.priority)
+        super().save(*args, **kwargs)
 
 
 class Chat(models.Model):

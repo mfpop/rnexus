@@ -8,7 +8,7 @@ import {
   ResetPasswordLeftCard,
   ProfileLeftCard,
 } from "./auth";
-import { HelpLeftCard, HelpProvider } from "./help";
+import { HelpProvider, HelpMainContainer } from "./help";
 import { SettingsLeftCard, SettingsProvider } from "./settings";
 import { SystemLeftCard, SystemProvider } from "./system";
 import { NewsRightCard, NewsProvider, NewsLeftCardWrapper } from "./news";
@@ -253,12 +253,25 @@ export default function StableLayout() {
         };
       case "/help":
         return {
-          leftTitle: "Help & Support",
-          leftSubtitle: "Complete user manual and support resources",
-          leftFooter: "User manual",
-          rightTitle: "Manual Instructions",
-          rightSubtitle: "Step-by-step guides and tutorials",
-          rightFooter: "Need more help? Contact support",
+          leftTitle: "User Manual",
+          leftSubtitle: "Complete guide to using Nexus LMD platform",
+          leftFooter: (
+            <div className="text-center h-12 flex items-center justify-center">
+              <div className="flex items-center justify-center gap-3">
+                <span className="text-sm text-teal-600">Need more help?</span>
+                <button
+                  className="h-18 w-12 text-teal-600 hover:bg-gray-100 hover:text-teal-700 transition-colors flex items-center justify-center"
+                  onClick={() => window.location.href = '/contact'}
+                  title="Contact Support"
+                >
+                  <Mail className="h-6 w-6" />
+                </button>
+              </div>
+            </div>
+          ),
+          rightTitle: "Getting Started",
+          rightSubtitle: "Welcome to Nexus LMD",
+          rightFooter: "~5 min read • Beginner level",
         };
       case "/settings":
         return {
@@ -316,12 +329,12 @@ export default function StableLayout() {
         };
       case "/activities":
         return {
-          leftTitle: "Activities & Tasks",
-          leftSubtitle: "Task management and scheduling",
-          leftFooter: "Manage all activities and tasks across the organization",
+          leftTitle: "Activities Management",
+                      leftSubtitle: "Activities management and scheduling",
+            leftFooter: "Manage all activities and tasks across the organization",
           rightTitle: "Activity Dashboard",
           rightSubtitle: "Select an activity to view detailed information",
-          rightFooter: "Comprehensive activity management and tracking",
+          rightFooter: "© 2024 Nexus LMD. All rights reserved.",
         };
       case "/chat":
         return {
@@ -628,19 +641,10 @@ export default function StableLayout() {
         ) : location.pathname === "/help" ? (
           // Help page uses HelpProvider for left-right card communication
           <HelpProvider>
-            <MainContainerTemplate
-              key={location.pathname}
-              leftTitle={pageConfig.leftTitle}
-              leftSubtitle={pageConfig.leftSubtitle}
-              leftFooter={pageConfig.leftFooter}
-              leftContent={<HelpLeftCard />}
-              rightTitle={pageConfig.rightTitle}
-              rightSubtitle={pageConfig.rightSubtitle}
-              rightFooter={pageConfig.rightFooter}
-              rightContent={getCurrentPage}
+            <HelpMainContainer
+              pageConfig={pageConfig}
               expandedCard={expandedCard}
-              onExpandClick={handleExpandClick}
-              gridProportions="1fr 3fr"
+              handleExpandClick={handleExpandClick}
             />
           </HelpProvider>
         ) : location.pathname === "/settings" ? (

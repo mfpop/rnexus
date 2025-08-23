@@ -157,41 +157,50 @@ const DropdownMenuContent = React.forwardRef<
   const contentRef = useRef<HTMLDivElement>(null)
   const [position, setPosition] = useState({ top: 0, left: 0 })
 
+  // Throttled position updater using requestAnimationFrame
+  const rafRef = useRef<number | null>(null)
+  const lastPositionRef = useRef<{ top: number; left: number } | null>(null)
+
   const updatePosition = useCallback(() => {
-    if (!contentRef.current || !context?.triggerRef.current) {
-      return
-    }
+    if (rafRef.current !== null) return
 
-    const triggerElement = context.triggerRef.current
-    const triggerRect = triggerElement.getBoundingClientRect()
-    const contentRect = contentRef.current.getBoundingClientRect()
+    rafRef.current = window.requestAnimationFrame(() => {
+      rafRef.current = null
 
-    const { innerWidth: windowWidth, innerHeight: windowHeight } = window
+      if (!contentRef.current || !context?.triggerRef.current) {
+        return
+      }
 
-    let top = triggerRect.bottom + 8
-    let left = triggerRect.left
+      const triggerElement = context.triggerRef.current
+      const triggerRect = triggerElement.getBoundingClientRect()
+      const contentRect = contentRef.current.getBoundingClientRect()
 
-    if (align === 'end') {
-      left = triggerRect.right - contentRect.width
-    } else if (align === 'center') {
-      left = triggerRect.left + triggerRect.width / 2 - contentRect.width / 2
-    }
+      const { innerWidth: windowWidth, innerHeight: windowHeight } = window
 
-    // Boundary checks
-    if (left < 16) {
-      left = 16
-    }
-    if (left + contentRect.width > windowWidth - 16) {
-      left = windowWidth - contentRect.width - 16
-    }
-    if (top + contentRect.height > windowHeight - 16) {
-      top = triggerRect.top - contentRect.height - 8
-    }
-    if (top < 16) {
-      top = 16
-    }
+      let top = triggerRect.bottom + 8
+      let left = triggerRect.left
 
-    setPosition({ top, left })
+      if (align === 'end') {
+        left = triggerRect.right - contentRect.width
+      } else if (align === 'center') {
+        left = triggerRect.left + triggerRect.width / 2 - contentRect.width / 2
+      }
+
+      // Boundary checks
+      left = Math.max(16, left)
+      left = Math.min(windowWidth - contentRect.width - 16, left)
+      if (top + contentRect.height > windowHeight - 16) {
+        top = triggerRect.top - contentRect.height - 8
+      }
+      top = Math.max(16, top)
+
+      const last = lastPositionRef.current
+      // Only update state if position actually changed to avoid re-renders
+      if (!last || last.top !== top || last.left !== left) {
+        lastPositionRef.current = { top, left }
+        setPosition({ top, left })
+      }
+    })
   }, [align, context?.triggerRef])
 
   useEffect(() => {
@@ -240,6 +249,10 @@ const DropdownMenuContent = React.forwardRef<
         document.removeEventListener('keydown', handleEscape)
         window.removeEventListener('resize', updatePosition)
         window.removeEventListener('scroll', updatePosition, true)
+        if (rafRef.current !== null) {
+          window.cancelAnimationFrame(rafRef.current)
+          rafRef.current = null
+        }
       }
     }
 

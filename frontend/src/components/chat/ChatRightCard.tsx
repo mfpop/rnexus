@@ -120,7 +120,7 @@ const ChatRightCard: React.FC = () => {
 
   const handleForward = useCallback((message: Message) => {
     // Implementation for forwarding messages
-    console.log('Forwarding message:', message);
+  console.debug('Forwarding message id:', message.id);
   }, []);
 
   const handleDelete = useCallback(async (messageId: number) => {
@@ -175,7 +175,7 @@ const ChatRightCard: React.FC = () => {
 
   const handleBulkForward = useCallback(() => {
     // Implementation for bulk forwarding
-    console.log('Bulk forwarding messages:', selectedMessages);
+  console.debug('Bulk forwarding messages count:', selectedMessages.size);
   }, [selectedMessages]);
 
   // Scroll to bottom
@@ -193,7 +193,7 @@ const ChatRightCard: React.FC = () => {
   // File handling
   const handleFileUpload = useCallback((acceptedTypes: string) => {
     // Handle file upload logic here
-    console.log('File upload for types:', acceptedTypes);
+  console.debug('File upload for types:', acceptedTypes);
   }, []);
 
   const handlePhotoCapture = useCallback(async () => {

@@ -1,42 +1,50 @@
 import React from "react";
 import {
-  BookOpen,
   Play,
-  Settings,
-  MessageSquare,
-  BarChart3,
-  Users,
-  Shield,
-  Lightbulb,
-  Phone,
-  AlertCircle,
-  ChevronRight,
   Home,
+  BarChart3,
+  MessageSquare,
   Factory,
   ClipboardList,
-  Newspaper,
   Calendar,
+  Newspaper,
   Monitor,
+  User,
   HelpCircle,
+  ChevronRight,
 } from "lucide-react";
 import { useHelpContext } from "./HelpContext";
 
 const HelpLeftCard: React.FC = () => {
-  const { selectedSection, setSelectedSection } = useHelpContext();
-
-  // Debug logging
-  console.log('HelpLeftCard - selectedSection:', selectedSection);
+  const { selectedSection, selectedSubsection, setSelectedSection, setSelectedSubsection } = useHelpContext();
 
   const handleSectionClick = (sectionId: string) => {
-    console.log('handleSectionClick called with sectionId:', sectionId);
-    setSelectedSection(sectionId);
+    // Toggle section: if already selected, collapse it; otherwise, expand it
+    if (selectedSection === sectionId) {
+      setSelectedSection(""); // Collapse the section
+      setSelectedSubsection(""); // Clear subsection selection
+    } else {
+      setSelectedSection(sectionId); // Expand the section
+      // Reset to first subsection when expanding
+      const section = helpSections.find(s => s.id === sectionId);
+      if (section && section.subsections && section.subsections.length > 0) {
+        const firstSubsection = section.subsections[0];
+        if (firstSubsection) {
+          setSelectedSubsection(firstSubsection.id);
+        }
+      }
+    }
+  };
+
+  const handleSubsectionClick = (subsectionId: string) => {
+    setSelectedSubsection(subsectionId);
   };
 
   const helpSections = [
     {
       id: "getting-started",
       title: "Getting Started",
-      icon: <Play className="h-5 w-5" />,
+      icon: <Play className="h-4 w-4" />,
       subsections: [
         { id: "welcome", title: "Welcome to Nexus LMD" },
         { id: "first-login", title: "First Login" },
@@ -47,7 +55,7 @@ const HelpLeftCard: React.FC = () => {
     {
       id: "navigation",
       title: "Navigation Guide",
-      icon: <Home className="h-5 w-5" />,
+      icon: <Home className="h-4 w-4" />,
       subsections: [
         { id: "sidebar-navigation", title: "Sidebar Navigation" },
         { id: "card-expansion", title: "Card Expansion" },
@@ -58,7 +66,7 @@ const HelpLeftCard: React.FC = () => {
     {
       id: "dashboard",
       title: "Dashboard Features",
-      icon: <BarChart3 className="h-5 w-5" />,
+      icon: <BarChart3 className="h-4 w-4" />,
       subsections: [
         { id: "stats-overview", title: "Statistics Overview" },
         { id: "recent-activities", title: "Recent Activities" },
@@ -69,7 +77,7 @@ const HelpLeftCard: React.FC = () => {
     {
       id: "communication",
       title: "Team Communication",
-      icon: <MessageSquare className="h-5 w-5" />,
+      icon: <MessageSquare className="h-4 w-4" />,
       subsections: [
         { id: "chat-basics", title: "Chat Basics" },
         { id: "file-sharing", title: "File Sharing" },
@@ -80,7 +88,7 @@ const HelpLeftCard: React.FC = () => {
     {
       id: "production",
       title: "Production Management",
-      icon: <Factory className="h-5 w-5" />,
+      icon: <Factory className="h-4 w-4" />,
       subsections: [
         { id: "production-overview", title: "Production Overview" },
         { id: "monitoring", title: "Real-time Monitoring" },
@@ -91,7 +99,7 @@ const HelpLeftCard: React.FC = () => {
     {
       id: "project-management",
       title: "Project Management",
-      icon: <ClipboardList className="h-5 w-5" />,
+      icon: <ClipboardList className="h-4 w-4" />,
       subsections: [
         { id: "project-creation", title: "Creating Projects" },
         { id: "task-management", title: "Task Management" },
@@ -101,19 +109,23 @@ const HelpLeftCard: React.FC = () => {
     },
     {
       id: "activities",
-      title: "Activity Tracking",
-      icon: <Calendar className="h-5 w-5" />,
+      title: "Activity Management",
+      icon: <Calendar className="h-4 w-4" />,
       subsections: [
-        { id: "activity-overview", title: "Activity Overview" },
-        { id: "scheduling", title: "Scheduling Tasks" },
-        { id: "status-management", title: "Status Management" },
-        { id: "reporting", title: "Activity Reporting" },
+        { id: "activity-overview", title: "Getting Started" },
+        { id: "activity-list", title: "Activity List View" },
+        { id: "activity-details", title: "Activity Details" },
+        { id: "filtering-sorting", title: "Filtering & Sorting" },
+        { id: "creating-activities", title: "Creating Activities" },
+        { id: "managing-activities", title: "Managing Activities" },
+        { id: "activity-types", title: "Activity Types" },
+        { id: "best-practices", title: "Best Practices" },
       ],
     },
     {
       id: "news-updates",
       title: "News & Updates",
-      icon: <Newspaper className="h-5 w-5" />,
+      icon: <Newspaper className="h-4 w-4" />,
       subsections: [
         { id: "reading-news", title: "Reading News" },
         { id: "notifications", title: "Notifications" },
@@ -124,7 +136,7 @@ const HelpLeftCard: React.FC = () => {
     {
       id: "system-admin",
       title: "System Administration",
-      icon: <Monitor className="h-5 w-5" />,
+      icon: <Monitor className="h-4 w-4" />,
       subsections: [
         { id: "user-management", title: "User Management" },
         { id: "permissions", title: "Permissions & Roles" },
@@ -135,7 +147,7 @@ const HelpLeftCard: React.FC = () => {
     {
       id: "account-settings",
       title: "Account & Settings",
-      icon: <Settings className="h-5 w-5" />,
+      icon: <User className="h-4 w-4" />,
       subsections: [
         { id: "profile-setup", title: "Profile Setup" },
         { id: "password-security", title: "Password & Security" },
@@ -146,7 +158,7 @@ const HelpLeftCard: React.FC = () => {
     {
       id: "troubleshooting",
       title: "Troubleshooting",
-      icon: <AlertCircle className="h-5 w-5" />,
+      icon: <HelpCircle className="h-4 w-4" />,
       subsections: [
         { id: "common-issues", title: "Common Issues" },
         { id: "error-messages", title: "Error Messages" },
@@ -157,7 +169,7 @@ const HelpLeftCard: React.FC = () => {
     {
       id: "support",
       title: "Support & Contact",
-      icon: <Phone className="h-5 w-5" />,
+      icon: <HelpCircle className="h-4 w-4" />,
       subsections: [
         { id: "contact-support", title: "Contact Support" },
         { id: "support-tickets", title: "Support Tickets" },
@@ -168,104 +180,109 @@ const HelpLeftCard: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-4 p-4 h-full overflow-hidden flex flex-col">
-      <div className="mb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <BookOpen className="h-6 w-6 text-teal-600" />
-          <h1 className="text-2xl font-bold text-gray-800">User Manual</h1>
-        </div>
-        <p className="text-sm text-gray-600">
-          Complete guide to using Nexus LMD platform
-        </p>
-      </div>
+    <div className="h-full overflow-hidden flex flex-col bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100">
 
-      <div className="space-y-3 flex-1 overflow-auto">
-        {helpSections.map((section) => (
-          <div
-            key={section.id}
-            className="bg-white rounded-lg border border-gray-200 overflow-hidden"
-          >
-            <div
-              className={`p-3 cursor-pointer hover:bg-gray-50 transition-colors ${
-                selectedSection === section.id
-                  ? "bg-teal-50 border-l-4 border-l-teal-500"
-                  : ""
-              }`}
-              onClick={() => handleSectionClick(section.id)}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`p-2 rounded-lg ${
-                      selectedSection === section.id
-                        ? "bg-teal-100 text-teal-600"
-                        : "bg-gray-100 text-gray-600"
-                    }`}
-                  >
-                    {section.icon}
+
+      {/* Table of Contents */}
+      <div className="flex-1 overflow-auto p-6">
+        <div className="space-y-2">
+          {helpSections.map((section, index) => (
+            <div key={section.id} className="group">
+              {/* Chapter Header */}
+              <div
+                className={`relative cursor-pointer transition-all duration-300 ease-out transform ${
+                  selectedSection === section.id
+                    ? "bg-gradient-to-r from-gray-100 to-gray-200 shadow-sm"
+                    : "hover:bg-white/80 hover:shadow-md hover:scale-[1.02]"
+                }`}
+                onClick={() => handleSectionClick(section.id)}
+              >
+                <div className="flex items-center gap-4 p-4">
+                  {/* Chapter Number */}
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold transition-all duration-300 ease-out transform ${
+                    selectedSection === section.id
+                      ? "bg-gradient-to-br from-gray-600 to-gray-700 text-white shadow-lg"
+                      : "bg-gradient-to-br from-gray-50 to-gray-100 text-gray-700 hover:from-gray-100 hover:to-gray-200 hover:scale-110 hover:shadow-md border border-gray-200"
+                  }`}>
+                    {index + 1}
                   </div>
-                  <div>
-                    <h3
-                      className={`font-semibold ${
-                        selectedSection === section.id
-                          ? "text-teal-700"
-                          : "text-gray-800"
-                      }`}
-                    >
+
+                  {/* Chapter Title */}
+                  <div className="flex-1">
+                    <h3 className={`text-base font-semibold tracking-tight ${
+                      selectedSection === section.id
+                        ? "text-gray-900"
+                        : "text-gray-700 group-hover:text-gray-800"
+                    }`}>
                       {section.title}
                     </h3>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 font-medium tracking-wide uppercase">
                       {section.subsections.length} topics
                     </p>
                   </div>
+
+                  {/* Expand Icon */}
+                  <ChevronRight
+                    className={`h-4 w-4 transition-all duration-300 ease-out transform ${
+                      selectedSection === section.id
+                        ? "rotate-90 text-gray-600 scale-110"
+                        : "text-gray-400 hover:text-gray-600 hover:scale-110"
+                    }`}
+                  />
                 </div>
-                <ChevronRight
-                  className={`h-4 w-4 transition-transform ${
-                    selectedSection === section.id
-                      ? "rotate-90 text-teal-600"
-                      : "text-gray-400"
-                  }`}
-                />
               </div>
-            </div>
 
-            {selectedSection === section.id && (
-              <div className="bg-gray-50 border-t border-gray-200">
-                {section.subsections.map((subsection) => (
-                  <div
-                    key={subsection.id}
-                    className="px-6 py-2 hover:bg-white cursor-pointer transition-colors border-b border-gray-100 last:border-b-0"
-                    onClick={() => handleSectionClick(subsection.id)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-700 hover:text-teal-600">
-                        {subsection.title}
-                      </span>
-                      <ChevronRight className="h-3 w-3 text-gray-400" />
+              {/* Subtopics */}
+              {selectedSection === section.id && selectedSection !== "" && (
+                <div className="ml-12 space-y-2 mt-3">
+                  {section.subsections.map((subsection, subIndex) => (
+                    <div
+                      key={subsection.id}
+                      className={`relative cursor-pointer transition-all duration-300 ease-out transform rounded-lg ${
+                        selectedSubsection === subsection.id
+                          ? "bg-white shadow-md"
+                          : "hover:bg-white/90 hover:shadow-sm hover:scale-[1.01]"
+                      }`}
+                      onClick={() => handleSubsectionClick(subsection.id)}
+                    >
+                      <div className="flex items-center gap-4 px-5 py-3">
+                        {/* Subtopic Number */}
+                        <span className={`text-xs font-mono font-semibold tracking-wide transition-all duration-300 ease-out ${
+                          selectedSubsection === subsection.id
+                            ? "text-gray-700"
+                            : "text-gray-500 hover:text-gray-600"
+                        }`}>
+                          {index + 1}.{subIndex + 1}
+                        </span>
+
+                        {/* Subtopic Title */}
+                        <span className={`text-sm font-medium leading-relaxed transition-all duration-300 ease-out ${
+                          selectedSubsection === subsection.id
+                            ? "text-gray-900"
+                            : "text-gray-600 hover:text-gray-700"
+                        }`}>
+                          {subsection.title}
+                        </span>
+
+                        {/* Page indicator */}
+                        <div className="ml-auto">
+                          <div className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ease-out transform ${
+                            selectedSubsection === subsection.id
+                              ? "bg-gray-600 scale-125 shadow-sm"
+                              : "bg-gray-300 hover:bg-gray-400 hover:scale-125"
+                          }`} />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div className="mt-8 p-4 bg-gradient-to-r from-teal-50 to-blue-50 rounded-lg border border-teal-200">
-        <div className="flex items-center gap-3 mb-2">
-          <HelpCircle className="h-5 w-5 text-teal-600" />
-          <h3 className="font-semibold text-teal-700">Need More Help?</h3>
-        </div>
-        <p className="text-sm text-gray-600 mb-3">
-          Can't find what you're looking for? Our support team is here to help.
-        </p>
-        <button
-          className="text-xs bg-teal-600 text-white px-3 py-1.5 rounded-lg hover:bg-teal-700 transition-colors"
-          onClick={() => handleSectionClick("contact-support")}
-        >
-          Contact Support
-        </button>
-      </div>
+
     </div>
   );
 };

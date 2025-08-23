@@ -82,7 +82,7 @@ const CameraModal: React.FC<CameraModalProps> = ({
             <button
               onClick={() => {
                 // Placeholder for camera switching functionality
-                console.log('Switch camera');
+                console.debug('Switch camera');
               }}
               className="p-3 bg-gray-600 hover:bg-gray-500 text-white rounded-full transition-colors"
               title="Switch camera">

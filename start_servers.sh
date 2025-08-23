@@ -87,6 +87,7 @@ if [ -d "backend" ]; then
             exit 1
         fi
     else
+        export DJANGO_SETTINGS_MODULE=core.settings
         daphne -b 0.0.0.0 -p 8000 core.asgi:application &
         BACKEND_PID=$!
         echo "Backend server (Daphne) started with PID: $BACKEND_PID"

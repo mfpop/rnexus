@@ -124,6 +124,30 @@ urlpatterns = [
     ),
     # WebSocket endpoints
     path("ws/test/", views.websocket_test_view, name="websocket_test"),
+    # Test endpoint
+    path("api/test/", views.test_view, name="api_test"),
+    # Activities API endpoints
+    path("api/activities/", views.activity_list_view, name="api_activities_list"),
+    path(
+        "api/activities/<str:activity_id>/",
+        views.activity_detail_view,
+        name="api_activity_detail",
+    ),
+    path(
+        "api/activities/<str:activity_id>/start/",
+        views.activity_start_view,
+        name="api_activity_start",
+    ),
+    path(
+        "api/activities/<str:activity_id>/pause/",
+        views.activity_pause_view,
+        name="api_activity_pause",
+    ),
+    path(
+        "api/activities/<str:activity_id>/complete/",
+        views.activity_complete_view,
+        name="api_activity_complete",
+    ),
 ]
 
 # Serve static files during development

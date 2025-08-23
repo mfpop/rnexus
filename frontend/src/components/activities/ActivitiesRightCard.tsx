@@ -1,29 +1,23 @@
 import React, { useState } from "react";
 import {
   Calendar,
-  Clock,
-  User,
-  MapPin,
   Users,
-  FileText,
   MessageSquare,
-  Edit,
-  Share2,
   Download,
   Settings,
   CheckCircle,
-  AlertTriangle,
   Play,
   Pause,
-  Square,
-  Tag,
   Paperclip,
   Plus,
   Send,
   Star,
+  Link,
+  X,
 } from "lucide-react";
-import { Activity } from "./ActivitiesContext";
-import { SimpleProgress } from "../ui/bits/SimpleProgress";
+import { Activity, useActivitiesContext } from "./ActivitiesContext";
+import { activitiesApi } from "../../lib/activitiesApi";
+
 
 interface ActivitiesRightCardProps {
   selectedActivity: Activity | null;
@@ -37,6 +31,12 @@ interface Comment {
   avatar: string;
 }
 
+interface Toast {
+  id: string;
+  type: 'success' | 'error' | 'info';
+  message: string;
+}
+
 /**
  * ActivitiesRightCard - Activities page specific right card content component
  * Detail component - contains the activity details and management for the selected activity
@@ -46,10 +46,14 @@ interface Comment {
 const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
   selectedActivity,
 }) => {
+  const { selectedActivity: contextActivity, setSelectedActivity } = useActivitiesContext();
   const [activeSection, setActiveSection] = useState<
-    "details" | "participants" | "notes" | "attachments"
-  >("details");
+    "participants" | "tasks" | "equipment" | "dependencies" | "notes" | "attachments" | "history"
+  >("participants");
   const [newComment, setNewComment] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  const [showCompleteConfirm, setShowCompleteConfirm] = useState(false);
   const [comments] = useState<Comment[]>([
     {
       id: "c1",
@@ -69,109 +73,174 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
     },
   ]);
 
+  // Use the activity from context if available, otherwise use the prop
+  const currentActivity = contextActivity || selectedActivity;
+
+  // Toast notification functions
+  const addToast = (type: Toast['type'], message: string) => {
+    const id = Date.now().toString();
+    const newToast: Toast = { id, type, message };
+    setToasts(prev => [...prev, newToast]);
+
+    // Auto-remove toast after 5 seconds
+    setTimeout(() => {
+      removeToast(id);
+    }, 5000);
+  };
+
+  const removeToast = (id: string) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  };
+
+  // Activity action handlers
+  const handleStartActivity = async (activityId: string) => {
+    if (!currentActivity) return;
+
+    setIsLoading(true);
+    try {
+      const response = await activitiesApi.startActivity(activityId);
+      if (response.success && response.data) {
+        // Update the context with the updated activity
+        setSelectedActivity(response.data);
+        addToast('success', 'Activity started successfully!');
+        console.log('Activity started successfully:', response.data);
+      } else {
+        addToast('error', `Failed to start activity: ${response.message || 'Unknown error'}`);
+        console.error('Failed to start activity:', response.message);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      addToast('error', `Error starting activity: ${errorMessage}`);
+      console.error('Error starting activity:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePauseActivity = async (activityId: string) => {
+    if (!currentActivity) return;
+
+    setIsLoading(true);
+    try {
+      const response = await activitiesApi.pauseActivity(activityId);
+      if (response.success && response.data) {
+        // Update the context with the updated activity
+        setSelectedActivity(response.data);
+        addToast('success', 'Activity paused successfully!');
+        console.log('Activity paused successfully:', response.data);
+      } else {
+        addToast('error', `Failed to pause activity: ${response.message || 'Unknown error'}`);
+        console.error('Failed to pause activity:', response.message);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      addToast('error', `Error pausing activity: ${errorMessage}`);
+      console.error('Error pausing activity:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCompleteActivity = async (activityId: string) => {
+    if (!currentActivity) return;
+
+    setIsLoading(true);
+    try {
+      const response = await activitiesApi.completeActivity(activityId);
+      if (response.success && response.data) {
+        // Update the context with the updated activity
+        setSelectedActivity(response.data);
+        addToast('success', 'Activity completed successfully!');
+        console.log('Activity completed successfully:', response.data);
+        setShowCompleteConfirm(false); // Close confirmation dialog
+      } else {
+        addToast('error', `Failed to complete activity: ${response.message || 'Unknown error'}`);
+        console.error('Failed to complete activity:', response.message);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      addToast('error', `Error completing activity: ${errorMessage}`);
+      console.error('Error completing activity:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCompleteClick = () => {
+    setShowCompleteConfirm(true);
+  };
+
+  const handleCompleteConfirm = () => {
+    if (currentActivity) {
+      handleCompleteActivity(currentActivity.id);
+    }
+  };
+
+  const handleExportActivity = async () => {
+    if (!currentActivity) return;
+
+    setIsLoading(true);
+    try {
+      // Create a comprehensive activity report
+      const reportData = {
+        title: currentActivity.title,
+        description: currentActivity.description,
+        type: currentActivity.type,
+        status: currentActivity.status,
+        priority: currentActivity.priority,
+        startTime: currentActivity.startTime,
+        endTime: currentActivity.endTime,
+        assignedTo: currentActivity.assignedTo,
+        assignedBy: currentActivity.assignedBy,
+        location: currentActivity.location,
+        progress: currentActivity.progress,
+        estimatedDuration: currentActivity.estimatedDuration,
+        actualDuration: currentActivity.actualDuration,
+        notes: currentActivity.notes,
+        equipment: currentActivity.equipment,
+        dependencies: currentActivity.dependencies,
+        exportDate: new Date().toISOString(),
+      };
+
+      // Convert to JSON and create downloadable file
+      const dataStr = JSON.stringify(reportData, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+
+      // Create download link
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `activity-${currentActivity.title.replace(/\s+/g, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.json`;
+
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Clean up
+      URL.revokeObjectURL(url);
+
+      addToast('success', 'Activity exported successfully!');
+      console.log('Activity exported successfully');
+    } catch (error) {
+      addToast('error', 'Error exporting activity. Please try again.');
+      console.error('Error exporting activity:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const formatDateTime = (date: Date | undefined) => {
     if (!date) return "Not specified";
     return date.toLocaleDateString("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
+      month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
     });
   };
 
-  const formatTime = (date: Date | undefined) => {
-    if (!date) return "Not specified";
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
 
-  const formatDuration = (
-    startTime: Date | undefined,
-    endTime: Date | undefined,
-  ) => {
-    if (!startTime || !endTime) return "Duration not specified";
-    const diffInMinutes = Math.floor(
-      (endTime.getTime() - startTime.getTime()) / (1000 * 60),
-    );
-    const hours = Math.floor(diffInMinutes / 60);
-    const minutes = diffInMinutes % 60;
-
-    if (hours > 0) {
-      return `${hours}h ${minutes}m`;
-    }
-    return `${minutes}m`;
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "planned":
-        return "bg-blue-100 text-blue-800 border-blue-200";
-      case "in-progress":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "completed":
-        return "bg-purple-100 text-purple-800 border-purple-200";
-      case "cancelled":
-        return "bg-gray-100 text-gray-800 border-gray-200";
-      case "overdue":
-        return "bg-red-100 text-red-800 border-red-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "planned":
-        return <Calendar className="h-6 w-6 text-blue-500" />;
-      case "in-progress":
-        return <Play className="h-6 w-6 text-green-500" />;
-      case "completed":
-        return <CheckCircle className="h-6 w-6 text-purple-500" />;
-      case "cancelled":
-        return <AlertTriangle className="h-6 w-6 text-gray-500" />;
-      case "overdue":
-        return <AlertTriangle className="h-6 w-6 text-red-500" />;
-      default:
-        return <Clock className="h-6 w-6 text-gray-500" />;
-    }
-  };
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case "task":
-        return "bg-blue-100 text-blue-800";
-      case "meeting":
-        return "bg-green-100 text-green-800";
-      case "maintenance":
-        return "bg-orange-100 text-orange-800";
-      case "training":
-        return "bg-purple-100 text-purple-800";
-      case "inspection":
-        return "bg-yellow-100 text-yellow-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "critical":
-        return "text-red-600 bg-red-100";
-      case "high":
-        return "text-orange-600 bg-orange-100";
-      case "medium":
-        return "text-yellow-600 bg-yellow-100";
-      case "low":
-        return "text-green-600 bg-green-100";
-      default:
-        return "text-gray-600 bg-gray-100";
-    }
-  };
 
   const handleCommentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -197,7 +266,7 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
     return `${diffInDays}d ago`;
   };
 
-  if (!selectedActivity) {
+  if (!currentActivity) {
     return (
       <div className="h-full flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -216,277 +285,329 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="p-6 border-b border-gray-200 bg-white">
+      <div className="p-6 border-b border-gray-200 bg-gray-50">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              {getStatusIcon(selectedActivity.status)}
-              <h1 className="text-2xl font-bold text-gray-900">
-                {selectedActivity.title}
-              </h1>
-              <span
-                className={`px-3 py-1 text-sm font-medium rounded-full border ${getStatusColor(selectedActivity.status)}`}
-              >
-                {selectedActivity.status.charAt(0).toUpperCase() +
-                  selectedActivity.status.slice(1)}
-              </span>
-              <span
-                className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(selectedActivity.priority)}`}
-              >
-                {selectedActivity.priority.charAt(0).toUpperCase() +
-                  selectedActivity.priority.slice(1)}{" "}
-                Priority
-              </span>
-            </div>
-
-            <p className="text-gray-600 mb-4">{selectedActivity.description}</p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div className="flex items-center gap-2 text-gray-600">
-                <Calendar className="h-4 w-4" />
-                <span>{formatDateTime(selectedActivity.startTime)}</span>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-gray-100 rounded-lg border border-gray-200">
+                <Calendar className="h-6 w-6 text-gray-600" />
               </div>
-              <div className="flex items-center gap-2 text-gray-600">
-                <Clock className="h-4 w-4" />
-                <span>
-                  Duration:{" "}
-                  {formatDuration(
-                    selectedActivity.startTime,
-                    selectedActivity.endTime,
-                  )}
+              <h1 className="text-2xl font-bold text-gray-900">
+                {currentActivity.title}
+              </h1>
+
+              {/* Activity Status Indicator */}
+              <div className="flex items-center gap-2">
+                <span className={`px-2 py-1 text-xs font-medium rounded-full border ${
+                  currentActivity.status === 'completed'
+                    ? 'bg-green-100 text-green-800 border-green-200'
+                    : currentActivity.status === 'in-progress'
+                    ? 'bg-blue-100 text-blue-800 border-blue-200'
+                    : currentActivity.status === 'planned'
+                    ? 'bg-gray-100 text-gray-800 border-gray-200'
+                    : currentActivity.status === 'cancelled'
+                    ? 'bg-red-100 text-red-800 border-red-200'
+                    : 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                }`}>
+                  {currentActivity.status.charAt(0).toUpperCase() + currentActivity.status.slice(1).replace('-', ' ')}
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-gray-600">
-                <User className="h-4 w-4" />
-                <span>Assigned to: {selectedActivity.assignedTo}</span>
-              </div>
-              <div className="flex items-center gap-2 text-gray-600">
-                <MapPin className="h-4 w-4" />
-                <span>{selectedActivity.location}</span>
-              </div>
-            </div>
-          </div>
 
-          {/* Controls */}
-          <div className="flex items-center gap-2 ml-4">
-            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-              <Edit className="h-5 w-5 text-gray-600" />
-            </button>
-            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-              <Share2 className="h-5 w-5 text-gray-600" />
-            </button>
-            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-              <Settings className="h-5 w-5 text-gray-600" />
-            </button>
-          </div>
-        </div>
-
-        {/* Progress for in-progress activities */}
-        {selectedActivity.status === "in-progress" && (
-          <div className="mt-4 p-4 bg-green-50 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-green-900 font-medium">
-                Activity Progress
-              </span>
-              <span className="text-green-700 text-lg font-semibold">
-                {selectedActivity.progress}%
-              </span>
-            </div>
-            <SimpleProgress
-              value={selectedActivity.progress}
-              variant="success"
-              size="lg"
-              className="bg-green-200"
-              indicatorClassName="bg-gradient-to-r from-green-500 to-green-600"
-            />
-            <div className="flex items-center justify-between mt-2 text-sm text-green-700">
-              <span>Started {formatTime(selectedActivity.startTime)}</span>
-              <span>
-                Expected completion: {formatTime(selectedActivity.endTime)}
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* Type and Tags */}
-        <div className="mt-4 flex items-center gap-3">
-          <span
-            className={`px-3 py-1 text-sm font-medium rounded-full ${getTypeColor(selectedActivity.type)}`}
-          >
-            {selectedActivity.type.charAt(0).toUpperCase() +
-              selectedActivity.type.slice(1)}
-          </span>
-          {selectedActivity.equipment &&
-            selectedActivity.equipment.length > 0 && (
-              <div className="flex items-center gap-1">
-                <Tag className="h-4 w-4 text-gray-400" />
-                <div className="flex gap-1">
-                  {selectedActivity.equipment.slice(0, 4).map((equipment) => (
-                    <span
-                      key={equipment}
-                      className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-md"
-                    >
-                      {equipment}
-                    </span>
-                  ))}
-                  {selectedActivity.equipment.length > 4 && (
-                    <span className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-md">
-                      +{selectedActivity.equipment.length - 4}
-                    </span>
+              {/* Activity Action Buttons - moved to same line */}
+              <div className="flex items-center gap-2 ml-auto">
+                <button
+                  onClick={() => handleStartActivity(currentActivity.id)}
+                  disabled={currentActivity.status === 'completed' || currentActivity.status === 'in-progress' || isLoading}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors border flex items-center gap-2 ${
+                    currentActivity.status === 'completed' || currentActivity.status === 'in-progress' || isLoading
+                      ? 'bg-gray-50 text-gray-400 border-gray-100 cursor-not-allowed'
+                      : currentActivity.status === 'planned'
+                      ? 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200'
+                      : 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200'
+                  }`}
+                  title={
+                    currentActivity.status === 'completed'
+                      ? 'Activity already completed'
+                      : currentActivity.status === 'in-progress'
+                      ? 'Activity already in progress'
+                      : 'Start this activity'
+                  }
+                >
+                  {isLoading ? (
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <Play className="h-4 w-4" />
                   )}
+                  Start
+                </button>
+                <button
+                  onClick={() => handlePauseActivity(currentActivity.id)}
+                  disabled={currentActivity.status !== 'in-progress' || isLoading}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors border flex items-center gap-2 ${
+                    currentActivity.status !== 'in-progress' || isLoading
+                      ? 'bg-gray-50 text-gray-400 border-gray-100 cursor-not-allowed'
+                      : 'bg-yellow-100 text-yellow-700 border-yellow-200 hover:bg-yellow-200'
+                  }`}
+                  title={
+                    currentActivity.status !== 'in-progress'
+                      ? 'Can only pause activities in progress'
+                      : 'Pause this activity'
+                  }
+                >
+                  {isLoading ? (
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <Pause className="h-4 w-4" />
+                  )}
+                  Pause
+                </button>
+                <button
+                  onClick={handleCompleteClick}
+                  disabled={currentActivity.status === 'completed' || isLoading}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors border flex items-center gap-2 ${
+                    currentActivity.status === 'completed' || isLoading
+                      ? 'bg-gray-50 text-gray-400 border-gray-100 cursor-not-allowed'
+                      : 'bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200'
+                  }`}
+                  title={
+                    currentActivity.status === 'completed'
+                      ? 'Activity already completed'
+                      : 'Mark this activity as completed'
+                  }
+                >
+                  {isLoading ? (
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <CheckCircle className="h-4 w-4" />
+                  )}
+                  Complete
+                </button>
+                <button
+                  onClick={() => handleExportActivity()}
+                  disabled={isLoading}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors border flex items-center gap-2 ${
+                    isLoading
+                      ? 'bg-gray-50 text-gray-400 border-gray-100 cursor-not-allowed'
+                      : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200'
+                  }`}
+                  title="Export activity data as JSON file"
+                >
+                  {isLoading ? (
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <Download className="h-4 w-4" />
+                  )}
+                  Export
+                </button>
+              </div>
+            </div>
+
+            {/* Side by Side Cards with 60/40 proportion */}
+            <div className="grid grid-cols-5 gap-16 mb-4">
+              {/* Activity Overview Card - 60% width (3/5 columns) - LEFT SIDE */}
+              <div className="col-span-3 h-full">
+                {/* Card Content */}
+                <div className="h-full flex flex-col justify-between">
+                  {/* Description */}
+                  <div>
+                    <p className="text-base text-gray-600 leading-relaxed mb-4">
+                      {currentActivity.description}
+                    </p>
+                  </div>
+
+                  {/* Tags */}
+                  <div>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-full border border-gray-200">
+                        {currentActivity.type}
+                      </span>
+                      <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-full border border-gray-200">
+                        {currentActivity.status}
+                      </span>
+                      <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-full border border-gray-200">
+                        {currentActivity.priority}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            )}
+
+              {/* Activity Details Card - 40% width (2/5 columns) - RIGHT SIDE */}
+              <div className="col-span-2 bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                {/* Card Content - Two columns: left (scheduled, priority, status) and right (start, end, duration) */}
+                                  <div className="grid grid-cols-2 gap-x-16">
+                  {/* Left Column */}
+                  <div className="space-y-2">
+                    {/* Scheduled */}
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600 font-medium">Scheduled:</span>
+                      <span className="text-sm text-gray-900">
+                        {formatTimeAgo(currentActivity.startTime)}
+                      </span>
+                    </div>
+
+                    {/* Priority */}
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600 font-medium">Priority:</span>
+                      <span className="text-sm text-gray-900 capitalize">
+                        {currentActivity.priority}
+                      </span>
+                    </div>
+
+                    {/* Status */}
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600 font-medium">Status:</span>
+                      <span className="text-sm text-gray-900 capitalize">
+                        {currentActivity.status}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Right Column */}
+                  <div className="space-y-2">
+                    {/* Start Date */}
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600 font-medium">Start:</span>
+                      <span className="text-sm text-gray-900">
+                        {formatDateTime(currentActivity.startTime)}
+                      </span>
+                    </div>
+
+                    {/* Due Date */}
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600 font-medium">Due:</span>
+                      <span className="text-sm text-gray-900">
+                        {formatDateTime(currentActivity.endTime)}
+                      </span>
+                    </div>
+
+                    {/* Duration */}
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600 font-medium">Duration:</span>
+                      <span className="text-sm text-gray-900">
+                        {currentActivity.actualDuration ? `${currentActivity.actualDuration} min` : `${currentActivity.estimatedDuration} min`}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+
+              </div>
+            </div>
+          </div>
+
+
         </div>
       </div>
 
-      {/* Navigation Tabs */}
+      {/* Navigation Tabs with Progress Bar */}
       <div className="border-b border-gray-200">
-        <div className="flex">
-          {[
-            {
-              key: "details",
-              label: "Details",
-              icon: <FileText className="h-4 w-4" />,
-            },
-            {
-              key: "participants",
-              label: "Participants",
-              icon: <Users className="h-4 w-4" />,
-            },
-            {
-              key: "notes",
-              label: "Notes",
-              icon: <MessageSquare className="h-4 w-4" />,
-            },
-            {
-              key: "attachments",
-              label: "Files",
-              icon: <Paperclip className="h-4 w-4" />,
-            },
-          ].map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveSection(tab.key as any)}
-              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
-                activeSection === tab.key
-                  ? "text-blue-600 border-blue-600 bg-blue-50"
-                  : "text-gray-600 hover:text-gray-800 border-transparent"
-              }`}
-            >
-              {tab.icon}
-              <span>{tab.label}</span>
-              {tab.key === "participants" && (
-                <span className="px-2 py-0.5 text-xs bg-gray-200 rounded-full">
-                  {selectedActivity.assignedTo ? 1 : 0}
-                </span>
-              )}
-              {tab.key === "attachments" && (
-                <span className="px-2 py-0.5 text-xs bg-gray-200 rounded-full">
-                  {selectedActivity.attachments?.length || 0}
-                </span>
-              )}
-            </button>
-          ))}
+        <div className="flex items-center justify-between">
+          {/* Tabs */}
+          <div className="flex">
+            {[
+              {
+                key: "participants",
+                label: "Participants",
+                icon: <Users className="h-4 w-4" />,
+              },
+
+              {
+                key: "tasks",
+                label: "Tasks & Milestones",
+                icon: <CheckCircle className="h-4 w-4" />,
+              },
+              {
+                key: "equipment",
+                label: "Equipment",
+                icon: <Settings className="h-4 w-4" />,
+              },
+              {
+                key: "dependencies",
+                label: "Dependencies",
+                icon: <Link className="h-4 w-4" />,
+              },
+              {
+                key: "notes",
+                label: "Notes",
+                icon: <MessageSquare className="h-4 w-4" />,
+              },
+              {
+                key: "attachments",
+                label: "Files",
+                icon: <Paperclip className="h-4 w-4" />,
+              },
+              {
+                key: "history",
+                label: "History",
+                icon: <Calendar className="h-4 w-4" />,
+              },
+            ].map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveSection(tab.key as any)}
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
+                  activeSection === tab.key
+                    ? "text-gray-800 border-gray-800 bg-gray-50"
+                    : "text-gray-600 hover:text-gray-800 border-transparent"
+                }`}
+              >
+                {tab.icon}
+                <span>{tab.label}</span>
+                {tab.key === "participants" && (
+                  <span className="px-2 py-0.5 text-xs bg-gray-200 rounded-full">
+                    {currentActivity.assignedTo ? 1 : 0}
+                  </span>
+                )}
+                {tab.key === "attachments" && (
+                  <span className="px-2 py-0.5 text-xs bg-gray-200 rounded-full">
+                    {currentActivity.attachments?.length || 0}
+                  </span>
+                )}
+                {tab.key === "notes" && (
+                  <span className="px-2 py-0.5 text-xs bg-gray-200 rounded-full">
+                    {currentActivity.notes ? 1 : 0}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Progress Bar */}
+          <div className="flex items-center gap-3 px-4 py-2">
+            <span className="text-sm text-gray-600 font-medium">Progress:</span>
+            <div className="w-32 bg-gray-200 rounded-full h-2">
+              <div
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  currentActivity.status === 'completed' ? 'bg-green-500' :
+                  currentActivity.status === 'in-progress' ? 'bg-blue-500' :
+                  currentActivity.status === 'planned' ? 'bg-gray-300' : 'bg-yellow-500'
+                }`}
+                style={{ width: `${currentActivity.status === 'completed' ? 100 :
+                               currentActivity.status === 'in-progress' ? 65 :
+                               currentActivity.status === 'planned' ? 0 : 25}%` }}
+              ></div>
+            </div>
+            <span className="text-sm text-gray-600 font-medium">
+              {currentActivity.status === 'completed' ? '100%' :
+               currentActivity.status === 'in-progress' ? '65%' :
+               currentActivity.status === 'planned' ? '0%' : '25%'}
+            </span>
+          </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
-        {activeSection === "details" && (
-          <div className="space-y-6">
-            {/* Basic Information */}
-            <div className="bg-white p-6 rounded-lg border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Activity Information
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Type</div>
-                  <div className="font-medium text-gray-900 capitalize">
-                    {selectedActivity.type}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Department</div>
-                  <div className="font-medium text-gray-900">
-                    {selectedActivity.department}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Assigned By</div>
-                  <div className="font-medium text-gray-900">
-                    {selectedActivity.assignedBy}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Start Time</div>
-                  <div className="font-medium text-gray-900">
-                    {formatDateTime(selectedActivity.startTime)}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">End Time</div>
-                  <div className="font-medium text-gray-900">
-                    {formatDateTime(selectedActivity.endTime)}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Timeline */}
-            <div className="bg-white p-6 rounded-lg border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Timeline
-              </h3>
-              <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                    <Calendar className="h-4 w-4 text-blue-600" />
-                  </div>
-                  <div>
-                    <div className="font-medium text-gray-900">Start Time</div>
-                    <div className="text-sm text-gray-600">
-                      {formatDateTime(selectedActivity.startTime)}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                    <Clock className="h-4 w-4 text-green-600" />
-                  </div>
-                  <div>
-                    <div className="font-medium text-gray-900">End Time</div>
-                    <div className="text-sm text-gray-600">
-                      {formatDateTime(selectedActivity.endTime)}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                    <User className="h-4 w-4 text-purple-600" />
-                  </div>
-                  <div>
-                    <div className="font-medium text-gray-900">Duration</div>
-                    <div className="text-sm text-gray-600">
-                      {selectedActivity.estimatedDuration} minutes estimated
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
+      <div className="overflow-y-auto p-6 bg-gray-50" style={{ maxHeight: '60vh' }}>
         {activeSection === "participants" && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900">
                 Assigned Personnel (1)
               </h3>
-              <button className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <button className="flex items-center gap-2 px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
                 <Plus className="h-4 w-4" />
                 <span>Add Participant</span>
               </button>
@@ -495,36 +616,276 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
             <div className="bg-white rounded-lg border border-gray-200">
               <div className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium">
-                    {selectedActivity.assignedTo
+                  <div className="w-10 h-10 bg-gray-500 rounded-full flex items-center justify-center text-white font-medium">
+                    {currentActivity.assignedTo
                       .split(" ")
                       .map((n) => n[0])
                       .join("")}
                   </div>
                   <div className="flex-1">
                     <div className="font-medium text-gray-900">
-                      {selectedActivity.assignedTo}
+                      {currentActivity.assignedTo}
                     </div>
                     <div className="text-sm text-gray-600">
                       Primary Assignee
                     </div>
                   </div>
-                  <Star className="h-5 w-5 text-yellow-500 fill-current" />
+                  <Star className="h-5 w-5 text-gray-500 fill-current" />
                 </div>
               </div>
               <div className="p-4 border-t border-gray-100">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center text-white font-medium">
-                    {selectedActivity.assignedBy
+                  <div className="w-10 h-10 bg-gray-500 rounded-full flex items-center justify-center text-white font-medium">
+                    {currentActivity.assignedBy
                       .split(" ")
                       .map((n) => n[0])
                       .join("")}
                   </div>
                   <div className="flex-1">
                     <div className="font-medium text-gray-900">
-                      {selectedActivity.assignedBy}
+                      {currentActivity.assignedBy}
                     </div>
                     <div className="text-sm text-gray-600">Assigned By</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+
+
+        {activeSection === "tasks" && (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Tasks & Milestones
+            </h3>
+
+            {/* Sub-tasks and Milestones */}
+            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="font-medium text-gray-900">Sub-tasks</h4>
+                <button className="flex items-center gap-2 px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                  <Plus className="h-4 w-4" />
+                  <span>Add Task</span>
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {/* This would typically come from a related tasks table */}
+                <div className="p-4 border border-gray-200 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium text-gray-900">Review Documentation</div>
+                      <div className="text-sm text-gray-600">Review and approve related documents</div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full">In Progress</span>
+                      <span className="text-sm text-gray-600">75%</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 border border-gray-200 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium text-gray-900">Equipment Setup</div>
+                      <div className="text-sm text-gray-600">Prepare and configure required equipment</div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full">Planned</span>
+                      <span className="text-sm text-gray-600">0%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Milestones */}
+            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+              <h4 className="font-medium text-gray-900 mb-4">Key Milestones</h4>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  <div className="w-6 h-6 bg-green-200 rounded-full flex items-center justify-center">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-medium text-gray-900">Planning Complete</div>
+                    <div className="text-sm text-gray-600">Initial planning and scheduling completed</div>
+                  </div>
+                  <div className="text-sm text-gray-500">Completed</div>
+                </div>
+
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  <div className="w-6 h-6 bg-blue-200 rounded-full flex items-center justify-center">
+                    <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-medium text-gray-900">Execution Phase</div>
+                    <div className="text-sm text-gray-600">Main activity execution in progress</div>
+                  </div>
+                  <div className="text-sm text-gray-500">Current</div>
+                </div>
+
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
+                    <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-medium text-gray-900">Review & Approval</div>
+                    <div className="text-sm text-gray-600">Final review and stakeholder approval</div>
+                  </div>
+                  <div className="text-sm text-gray-500">Pending</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeSection === "equipment" && (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Equipment & Resources
+            </h3>
+
+            {/* Equipment List */}
+            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="font-medium text-gray-900">Required Equipment</h4>
+                <button className="flex items-center gap-2 px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                  <Plus className="h-4 w-4" />
+                  <span>Add Equipment</span>
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {currentActivity.equipment && currentActivity.equipment.length > 0 ? (
+                  currentActivity.equipment.map((equipment, index) => (
+                    <div key={index} className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium text-gray-900">{equipment}</div>
+                          <div className="text-sm text-gray-600">Equipment required for this activity</div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full">Available</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-4 border border-gray-200 rounded-lg text-center text-gray-500">
+                    No equipment specified for this activity
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Resource Allocation */}
+            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+              <h4 className="font-medium text-gray-900 mb-4">Resource Allocation</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <div className="text-sm text-gray-600 mb-1">Human Resources</div>
+                  <div className="font-medium text-gray-900">
+                    {currentActivity.assignedTo ? '1 person assigned' : 'No one assigned'}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-sm text-gray-600 mb-1">Equipment Resources</div>
+                  <div className="font-medium text-gray-900">
+                    {currentActivity.equipment ? currentActivity.equipment.length : 0} items
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-sm text-gray-600 mb-1">Time Allocation</div>
+                  <div className="font-medium text-gray-900">
+                    {currentActivity.estimatedDuration} minutes
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-sm text-gray-600 mb-1">Location</div>
+                  <div className="font-medium text-gray-900">
+                    {currentActivity.location || 'Not specified'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeSection === "dependencies" && (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Dependencies & Relationships
+            </h3>
+
+            {/* Activity Dependencies */}
+            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="font-medium text-gray-900">Prerequisites</h4>
+                <button className="flex items-center gap-2 px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                  <Plus className="h-4 w-4" />
+                  <span>Add Dependency</span>
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {currentActivity.dependencies && currentActivity.dependencies.length > 0 ? (
+                  currentActivity.dependencies.map((dependency, index) => (
+                    <div key={index} className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium text-gray-900">{dependency}</div>
+                          <div className="text-sm text-gray-600">Must be completed before this activity</div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full">Completed</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-4 border border-gray-200 rounded-lg text-center text-gray-500">
+                    No dependencies specified for this activity
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Impact Analysis */}
+            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+              <h4 className="font-medium text-gray-900 mb-4">Impact Analysis</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <div className="text-sm text-gray-600 mb-1">Blocking Activities</div>
+                  <div className="font-medium text-gray-900">
+                    {currentActivity.dependencies ? currentActivity.dependencies.length : 0} activities
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-sm text-gray-600 mb-1">Dependent Activities</div>
+                  <div className="font-medium text-gray-900">
+                    {/* This would come from a reverse lookup in the database */}
+                    '0 activities'
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-sm text-gray-600 mb-1">Critical Path</div>
+                  <div className="font-medium text-gray-900">
+                    {currentActivity.dependencies && currentActivity.dependencies.length > 0 ? 'Yes' : 'No'}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-sm text-gray-600 mb-1">Risk Level</div>
+                  <div className="font-medium text-gray-900">
+                    {currentActivity.dependencies && currentActivity.dependencies.length > 0 ? 'Medium' : 'Low'}
                   </div>
                 </div>
               </div>
@@ -539,13 +900,13 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
             </h3>
 
             {/* Existing Notes */}
-            {selectedActivity.notes && (
+            {currentActivity.notes && (
               <div className="bg-white rounded-lg border border-gray-200 p-6">
                 <h4 className="font-medium text-gray-900 mb-3">
                   Activity Notes
                 </h4>
                 <div className="p-3 bg-gray-50 rounded-lg">
-                  <p className="text-gray-700">{selectedActivity.notes}</p>
+                  <p className="text-gray-700">{currentActivity.notes}</p>
                 </div>
               </div>
             )}
@@ -559,25 +920,24 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
               {/* Comment Form */}
               <form onSubmit={handleCommentSubmit} className="mb-6">
                 <div className="flex gap-3">
-                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                  <div className="w-8 h-8 bg-gray-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
                     MH
                   </div>
                   <div className="flex-1">
                     <textarea
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 resize-none"
                       placeholder="Add a comment..."
                       rows={3}
                     />
                     <div className="flex justify-end mt-2">
                       <button
                         type="submit"
-                        disabled={!newComment.trim()}
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        disabled={!newComment.trim() || isLoading}
+                        className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <Send className="h-4 w-4" />
-                        <span>Post Comment</span>
                       </button>
                     </div>
                   </div>
@@ -586,21 +946,26 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
 
               {/* Comments List */}
               <div className="space-y-4">
-                {comments.map((comment) => (
-                  <div key={comment.id} className="flex gap-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                      {comment.avatar}
+                {comments.map((comment, index) => (
+                  <div key={index} className="flex gap-3">
+                    <div className="w-8 h-8 bg-gray-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                      {comment.author
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
                     </div>
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-gray-900">
-                          {comment.author}
-                        </span>
-                        <span className="text-xs text-gray-500">
-                          {formatTimeAgo(comment.timestamp)}
-                        </span>
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-medium text-gray-900">
+                            {comment.author}
+                          </span>
+                                                   <span className="text-sm text-gray-500">
+                           {comment.timestamp.toString()}
+                         </span>
+                        </div>
+                                                 <p className="text-gray-700">{comment.content}</p>
                       </div>
-                      <p className="text-gray-700">{comment.content}</p>
                     </div>
                   </div>
                 ))}
@@ -610,91 +975,203 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
         )}
 
         {activeSection === "attachments" && (
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900">
-                Attachments ({selectedActivity.attachments?.length || 0})
+                Files & Attachments
               </h3>
-              <button className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <button className="flex items-center gap-2 px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
                 <Plus className="h-4 w-4" />
-                <span>Add File</span>
+                <span>Upload File</span>
               </button>
             </div>
 
-            {selectedActivity.attachments &&
-            selectedActivity.attachments.length > 0 ? (
-              <div className="bg-white rounded-lg border border-gray-200">
-                {selectedActivity.attachments.map((attachment, index) => (
+            {currentActivity.attachments && currentActivity.attachments.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {currentActivity.attachments.map((attachment) => (
                   <div
                     key={attachment.id}
-                    className={`p-4 ${index < selectedActivity.attachments.length - 1 ? "border-b border-gray-100" : ""}`}
+                    className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                          <FileText className="h-5 w-5 text-blue-600" />
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <Paperclip className="h-5 w-5 text-gray-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-gray-900 truncate">
+                          {attachment.name}
                         </div>
-                        <div>
-                          <div className="font-medium text-gray-900">
-                            {attachment.name}
-                          </div>
-                          <div className="text-sm text-gray-600">
-                            Type: {attachment.type}
-                          </div>
+                        <div className="text-sm text-gray-600 capitalize">
+                          {attachment.type}
                         </div>
                       </div>
-                      <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                        <Download className="h-4 w-4 text-gray-600" />
+                    </div>
+                    <div className="mt-3 flex gap-2">
+                      <button className="flex-1 px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                        Download
+                      </button>
+                      <button className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors">
+                        <Settings className="h-4 w-4" />
                       </button>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
-                <Paperclip className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                <p className="text-gray-500">No attachments yet</p>
-                <p className="text-sm text-gray-400 mt-1">
+              <div className="bg-white p-8 rounded-lg border border-gray-200 text-center">
+                <Paperclip className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h4 className="text-lg font-medium text-gray-900 mb-2">
+                  No files uploaded yet
+                </h4>
+                <p className="text-sm text-gray-400 mb-4">
                   Files will appear here when added
                 </p>
               </div>
             )}
           </div>
         )}
+
+        {activeSection === "history" && (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Activity History
+            </h3>
+
+            {/* Status Changes */}
+            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+              <h4 className="font-medium text-gray-900 mb-4">Status Changes</h4>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
+                    <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-medium text-gray-900">Created</div>
+                    <div className="text-sm text-gray-600">Activity was created and assigned</div>
+                  </div>
+                  <div className="text-sm text-gray-500">Initial</div>
+                </div>
+
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  <div className="w-6 h-6 bg-blue-200 rounded-full flex items-center justify-center">
+                    <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-medium text-gray-900">Scheduled</div>
+                    <div className="text-sm text-gray-600">Activity was scheduled for execution</div>
+                  </div>
+                  <div className="text-sm text-gray-500">Planned</div>
+                </div>
+
+                {currentActivity.status === 'in-progress' && (
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <div className="w-6 h-6 bg-green-200 rounded-full flex items-center justify-center">
+                      <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-medium text-gray-900">Started</div>
+                      <div className="text-sm text-gray-600">Activity execution began</div>
+                    </div>
+                    <div className="text-sm text-gray-500">In Progress</div>
+                  </div>
+                )}
+
+                {currentActivity.status === 'completed' && (
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <div className="w-6 h-6 bg-purple-200 rounded-full flex items-center justify-center">
+                      <div className="w-2 h-2 bg-purple-600 rounded-full"></div>
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-medium text-gray-900">Completed</div>
+                      <div className="text-sm text-gray-600">Activity was successfully completed</div>
+                    </div>
+                    <div className="text-sm text-gray-500">Completed</div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Performance Metrics */}
+            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+              <h4 className="font-medium text-gray-900 mb-4">Performance Metrics</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <div className="text-sm text-gray-600 mb-1">Efficiency</div>
+                  <div className="font-medium text-gray-900">
+                    {currentActivity.actualDuration && currentActivity.estimatedDuration
+                      ? Math.round((currentActivity.estimatedDuration / currentActivity.actualDuration) * 100)
+                      : 'N/A'}%
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-sm text-gray-600 mb-1">On Time</div>
+                  <div className="font-medium text-gray-900">
+                    {currentActivity.status === 'completed' ? 'Yes' : 'Pending'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Action Controls */}
-      <div className="p-4 border-t border-gray-200 bg-white">
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-600">
-            Scheduled: {formatTimeAgo(selectedActivity.startTime)}
-          </div>
-          <div className="flex items-center gap-2">
-            {selectedActivity.status === "planned" && (
-              <button className="flex items-center gap-2 px-3 py-2 bg-green-100 text-green-700 hover:bg-green-200 rounded-lg transition-colors">
-                <Play className="h-4 w-4" />
-                <span>Start</span>
-              </button>
-            )}
-            {selectedActivity.status === "in-progress" && (
-              <>
-                <button className="flex items-center gap-2 px-3 py-2 bg-yellow-100 text-yellow-700 hover:bg-yellow-200 rounded-lg transition-colors">
-                  <Pause className="h-4 w-4" />
-                  <span>Pause</span>
-                </button>
-                <button className="flex items-center gap-2 px-3 py-2 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded-lg transition-colors">
-                  <CheckCircle className="h-4 w-4" />
-                  <span>Complete</span>
-                </button>
-              </>
-            )}
-            <button className="flex items-center gap-2 px-3 py-2 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-lg transition-colors">
-              <Download className="h-4 w-4" />
-              <span>Export</span>
+      {/* Toast Notifications */}
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 space-y-2">
+        {toasts.map((toast) => (
+          <div
+            key={toast.id}
+            className={`flex items-center gap-3 p-4 rounded-lg shadow-lg max-w-md transform transition-all duration-300 ${
+              toast.type === 'success'
+                ? 'bg-green-500 text-white border border-green-600'
+                : toast.type === 'error'
+                ? 'bg-red-500 text-white border border-red-600'
+                : 'bg-blue-500 text-white border border-blue-600'
+            }`}
+          >
+            <span className="flex-1">{toast.message}</span>
+            <button
+              onClick={() => removeToast(toast.id)}
+              className="text-white hover:text-gray-200 transition-colors"
+            >
+              <X className="h-4 w-4" />
             </button>
           </div>
-        </div>
+        ))}
       </div>
+
+      {/* Confirmation Dialog for Complete Action */}
+      {showCompleteConfirm && currentActivity && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Confirm Activity Completion
+            </h3>
+            <p className="text-gray-700 mb-6">
+              Are you sure you want to mark this activity as completed? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowCompleteConfirm(false)}
+                className="px-4 py-2 text-sm font-medium rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCompleteConfirm}
+                disabled={isLoading}
+                className="px-4 py-2 text-sm font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoading ? (
+                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  'Complete Activity'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

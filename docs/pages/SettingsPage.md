@@ -192,7 +192,7 @@ interface PrivacySettings {
 
 ### Privacy Controls
 - **Data Sharing**: Control over data sharing and analytics
-- **Activity Tracking**: User activity monitoring preferences
+- **Activity Management**: User activity monitoring preferences
 - **Cookie Management**: Cookie and tracking preferences
 - **Data Export**: Personal data export and portability
 - **Right to Deletion**: Account and data deletion requests

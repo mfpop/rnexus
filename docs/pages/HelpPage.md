@@ -113,7 +113,7 @@ interface UserFeedback {
 - **News Management**: News page functionality and features
 - **Production Monitoring**: Production page usage and metrics
 - **Project Management**: Project tracking and collaboration
-- **Activity Tracking**: Activity management and scheduling
+- **Activity Management**: Manufacturing activity management and scheduling
 - **Metrics and Analytics**: Data visualization and reporting
 
 ### Advanced Topics

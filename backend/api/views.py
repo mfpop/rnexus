@@ -18,6 +18,9 @@ import jwt
 from api.decorators import jwt_login_required
 
 from .models import (
+    Activity,
+    ActivityPriority,
+    ActivityStatus,
     Chat,
     Message,
     SystemMessage,
@@ -1872,3 +1875,583 @@ def tag_create_view(request: HttpRequest) -> JsonResponse:
             return JsonResponse({"success": False, "error": str(e)}, status=400)
 
     return JsonResponse({"success": False, "error": "Method not allowed"}, status=405)
+
+
+# Activity Views
+@csrf_exempt
+def activity_list_view(request: HttpRequest) -> JsonResponse:
+    """Get list of activities with optional filtering"""
+
+    # Check JWT authentication first
+    user = get_user_from_jwt(request)
+    if not user:
+        return JsonResponse(
+            {
+                "success": False,
+                "error": "Authentication required",
+                "code": "AUTH_REQUIRED",
+            },
+            status=401,
+        )
+
+    if request.method == "GET":
+        try:
+            # Get query parameters for filtering
+            status_filter = request.GET.get("status")
+            priority_filter = request.GET.get("priority")
+            type_filter = request.GET.get("type")
+            assigned_to_filter = request.GET.get("assigned_to")
+
+            # Build queryset
+            activities = Activity.objects.all()
+
+            # Apply filters
+            if status_filter:
+                activities = activities.filter(status=status_filter)
+            if priority_filter:
+                activities = activities.filter(priority=priority_filter)
+            if type_filter:
+                activities = activities.filter(type=type_filter)
+            if assigned_to_filter:
+                activities = activities.filter(
+                    assigned_to__icontains=assigned_to_filter
+                )
+
+            # Serialize activities
+            activities_data = []
+            for activity in activities:
+                activities_data.append(
+                    {
+                        "id": str(activity.id),
+                        "title": activity.title,
+                        "description": activity.description,
+                        "type": activity.type,
+                        "status": activity.status,
+                        "priority": activity.priority,
+                        "startTime": activity.start_time.isoformat(),
+                        "endTime": activity.end_time.isoformat(),
+                        "assignedTo": activity.assigned_to,
+                        "assignedBy": activity.assigned_by,
+                        "location": activity.location,
+                        "progress": activity.progress,
+                        "estimatedDuration": activity.estimated_duration,
+                        "actualDuration": activity.actual_duration,
+                        "notes": activity.notes,
+                        "createdAt": activity.created_at.isoformat(),
+                        "updatedAt": activity.updated_at.isoformat(),
+                    }
+                )
+
+            return JsonResponse(
+                {
+                    "success": True,
+                    "activities": activities_data,
+                    "count": len(activities_data),
+                }
+            )
+
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+    elif request.method == "POST":
+        try:
+            data = json.loads(request.body)
+
+            # Validate required fields
+            required_fields = [
+                "title",
+                "description",
+                "type",
+                "start_time",
+                "end_time",
+                "assigned_to",
+                "estimated_duration",
+            ]
+            for field in required_fields:
+                if field not in data:
+                    return JsonResponse(
+                        {"success": False, "error": f"Field '{field}' is required"},
+                        status=400,
+                    )
+
+            # Create activity
+            activity = Activity.objects.create(
+                title=data["title"],
+                description=data["description"],
+                type=data["type"],
+                status=data.get("status", "planned"),
+                priority=data.get("priority", "medium"),
+                start_time=datetime.fromisoformat(
+                    data["start_time"].replace("Z", "+00:00")
+                ),
+                end_time=datetime.fromisoformat(
+                    data["end_time"].replace("Z", "+00:00")
+                ),
+                assigned_to=data["assigned_to"],
+                assigned_by=data.get("assigned_by", user.username),
+                location=data.get("location", ""),
+                progress=data.get("progress", 0),
+                estimated_duration=data["estimated_duration"],
+                notes=data.get("notes", ""),
+                created_by=user,
+            )
+
+            # Serialize the created activity
+            activity_data = {
+                "id": str(activity.id),
+                "title": activity.title,
+                "description": activity.description,
+                "type": activity.type,
+                "status": activity.status,
+                "priority": activity.priority,
+                "startTime": activity.start_time.isoformat(),
+                "endTime": activity.end_time.isoformat(),
+                "assignedTo": activity.assigned_to,
+                "assignedBy": activity.assigned_by,
+                "location": activity.location,
+                "progress": activity.progress,
+                "estimatedDuration": activity.estimated_duration,
+                "actualDuration": activity.actual_duration,
+                "notes": activity.notes,
+                "createdAt": activity.created_at.isoformat(),
+                "updatedAt": activity.updated_at.isoformat(),
+            }
+
+            return JsonResponse(
+                {"success": True, "activity": activity_data}, status=201
+            )
+
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+    return JsonResponse({"success": False, "error": "Method not allowed"}, status=405)
+
+
+@csrf_exempt
+@jwt_login_required
+def activity_detail_view(request: HttpRequest, activity_id: str) -> JsonResponse:
+    """Get, update, or delete a specific activity"""
+    try:
+        activity = get_object_or_404(Activity, id=activity_id)
+    except Exception:
+        return JsonResponse(
+            {"success": False, "error": "Activity not found"}, status=404
+        )
+
+    if request.method == "GET":
+        try:
+            activity_data = {
+                "id": str(activity.id),
+                "title": activity.title,
+                "description": activity.description,
+                "type": activity.type,
+                "status": activity.status,
+                "priority": activity.priority,
+                "startTime": activity.start_time.isoformat(),
+                "endTime": activity.end_time.isoformat(),
+                "assignedTo": activity.assigned_to,
+                "assignedBy": activity.assigned_by,
+                "location": activity.location,
+                "progress": activity.progress,
+                "estimatedDuration": activity.estimated_duration,
+                "actualDuration": activity.actual_duration,
+                "notes": activity.notes,
+                "createdAt": activity.created_at.isoformat(),
+                "updatedAt": activity.updated_at.isoformat(),
+            }
+
+            return JsonResponse({"success": True, "activity": activity_data})
+
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+    elif request.method == "PUT":
+        try:
+            user = get_user_from_jwt(request)
+            if not user:
+                return JsonResponse(
+                    {"success": False, "error": "Authentication required"}, status=401
+                )
+
+            data = json.loads(request.body)
+
+            # Update fields
+            if "title" in data:
+                activity.title = data["title"]
+            if "description" in data:
+                activity.description = data["description"]
+            if "type" in data:
+                activity.type = data["type"]
+            if "status" in data:
+                activity.status = data["status"]
+            if "priority" in data:
+                activity.priority = data["priority"]
+            if "start_time" in data:
+                activity.start_time = datetime.fromisoformat(
+                    data["start_time"].replace("Z", "+00:00")
+                )
+            if "end_time" in data:
+                activity.end_time = datetime.fromisoformat(
+                    data["end_time"].replace("Z", "+00:00")
+                )
+            if "assigned_to" in data:
+                activity.assigned_to = data["assigned_to"]
+            if "location" in data:
+                activity.location = data["location"]
+            if "progress" in data:
+                activity.progress = data["progress"]
+            if "estimated_duration" in data:
+                activity.estimated_duration = data["estimated_duration"]
+            if "actual_duration" in data:
+                activity.actual_duration = data["actual_duration"]
+            if "notes" in data:
+                activity.notes = data["notes"]
+
+            activity.save()
+
+            # Serialize the updated activity
+            activity_data = {
+                "id": str(activity.id),
+                "title": activity.title,
+                "description": activity.description,
+                "type": activity.type,
+                "status": activity.status,
+                "priority": activity.priority,
+                "startTime": activity.start_time.isoformat(),
+                "endTime": activity.end_time.isoformat(),
+                "assignedTo": activity.assigned_to,
+                "assignedBy": activity.assigned_by,
+                "location": activity.location,
+                "progress": activity.progress,
+                "estimatedDuration": activity.estimated_duration,
+                "actualDuration": activity.actual_duration,
+                "notes": activity.notes,
+                "createdAt": activity.created_at.isoformat(),
+                "updatedAt": activity.updated_at.isoformat(),
+            }
+
+            return JsonResponse({"success": True, "activity": activity_data})
+
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+    elif request.method == "DELETE":
+        try:
+            user = get_user_from_jwt(request)
+            if not user:
+                return JsonResponse(
+                    {"success": False, "error": "Authentication required"}, status=401
+                )
+
+            activity.delete()
+
+            return JsonResponse(
+                {"success": True, "message": "Activity deleted successfully"}
+            )
+
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+    return JsonResponse({"success": False, "error": "Method not allowed"}, status=405)
+
+
+@csrf_exempt
+@jwt_login_required
+def activity_start_view(request: HttpRequest, activity_id: str) -> JsonResponse:
+    """Start an activity (change status to in-progress)"""
+    if request.method == "POST":
+        try:
+            user = get_user_from_jwt(request)
+            if not user:
+                return JsonResponse(
+                    {"success": False, "error": "Authentication required"}, status=401
+                )
+
+            activity = get_object_or_404(Activity, id=activity_id)
+
+            # Check if activity can be started
+            if activity.status == "completed":
+                return JsonResponse(
+                    {"success": False, "error": "Cannot start a completed activity"},
+                    status=400,
+                )
+
+            if activity.status == "in-progress":
+                return JsonResponse(
+                    {"success": False, "error": "Activity is already in progress"},
+                    status=400,
+                )
+
+            # Start the activity
+            activity.status = "in-progress"
+            activity.progress = max(activity.progress, 10)  # Set minimum progress
+            activity.save()
+
+            # Serialize the updated activity
+            activity_data = {
+                "id": str(activity.id),
+                "title": activity.title,
+                "description": activity.description,
+                "type": activity.type,
+                "status": activity.status,
+                "priority": activity.priority,
+                "startTime": activity.start_time.isoformat(),
+                "endTime": activity.end_time.isoformat(),
+                "assignedTo": activity.assigned_to,
+                "assignedBy": activity.assigned_by,
+                "location": activity.location,
+                "progress": activity.progress,
+                "estimatedDuration": activity.estimated_duration,
+                "actualDuration": activity.actual_duration,
+                "notes": activity.notes,
+                "createdAt": activity.created_at.isoformat(),
+                "updatedAt": activity.updated_at.isoformat(),
+            }
+
+            return JsonResponse(
+                {
+                    "success": True,
+                    "activity": activity_data,
+                    "message": "Activity started successfully",
+                }
+            )
+
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+    return JsonResponse({"success": False, "error": "Method not allowed"}, status=405)
+
+
+@csrf_exempt
+@jwt_login_required
+def activity_pause_view(request: HttpRequest, activity_id: str) -> JsonResponse:
+    """Pause an activity (change status back to planned)"""
+    if request.method == "POST":
+        try:
+            user = get_user_from_jwt(request)
+            if not user:
+                return JsonResponse(
+                    {"success": False, "error": "Authentication required"}, status=401
+                )
+
+            activity = get_object_or_404(Activity, id=activity_id)
+
+            # Check if activity can be paused
+            if activity.status != "in-progress":
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "error": "Can only pause activities that are in progress",
+                    },
+                    status=400,
+                )
+
+            # Pause the activity
+            activity.status = "planned"
+            activity.save()
+
+            # Serialize the updated activity
+            activity_data = {
+                "id": str(activity.id),
+                "title": activity.title,
+                "description": activity.description,
+                "type": activity.type,
+                "status": activity.status,
+                "priority": activity.priority,
+                "startTime": activity.start_time.isoformat(),
+                "endTime": activity.end_time.isoformat(),
+                "assignedTo": activity.assigned_to,
+                "assignedBy": activity.assigned_by,
+                "location": activity.location,
+                "progress": activity.progress,
+                "estimatedDuration": activity.estimated_duration,
+                "actualDuration": activity.actual_duration,
+                "notes": activity.notes,
+                "createdAt": activity.created_at.isoformat(),
+                "updatedAt": activity.updated_at.isoformat(),
+            }
+
+            return JsonResponse(
+                {
+                    "success": True,
+                    "activity": activity_data,
+                    "message": "Activity paused successfully",
+                }
+            )
+
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+    return JsonResponse({"success": False, "error": "Method not allowed"}, status=405)
+
+
+@csrf_exempt
+@jwt_login_required
+def activity_complete_view(request: HttpRequest, activity_id: str) -> JsonResponse:
+    """Complete an activity (change status to completed)"""
+    if request.method == "POST":
+        try:
+            user = get_user_from_jwt(request)
+            if not user:
+                return JsonResponse(
+                    {"success": False, "error": "Authentication required"}, status=401
+                )
+
+            activity = get_object_or_404(Activity, id=activity_id)
+
+            # Check if activity can be completed
+            if activity.status == "completed":
+                return JsonResponse(
+                    {"success": False, "error": "Activity is already completed"},
+                    status=400,
+                )
+
+            # Complete the activity
+            activity.status = "completed"
+            activity.progress = 100
+
+            # Calculate actual duration if not set
+            if not activity.actual_duration:
+                start_time = activity.start_time
+                end_time = timezone.now()
+                duration_minutes = int((end_time - start_time).total_seconds() / 60)
+                activity.actual_duration = duration_minutes
+
+            activity.save()
+
+            # Serialize the updated activity
+            activity_data = {
+                "id": str(activity.id),
+                "title": activity.title,
+                "description": activity.description,
+                "type": activity.type,
+                "status": activity.status,
+                "priority": activity.priority,
+                "startTime": activity.start_time.isoformat(),
+                "endTime": activity.end_time.isoformat(),
+                "assignedTo": activity.assigned_to,
+                "assignedBy": activity.assigned_by,
+                "location": activity.location,
+                "progress": activity.progress,
+                "estimatedDuration": activity.estimated_duration,
+                "actualDuration": activity.actual_duration,
+                "notes": activity.notes,
+                "createdAt": activity.created_at.isoformat(),
+                "updatedAt": activity.updated_at.isoformat(),
+            }
+
+            return JsonResponse(
+                {
+                    "success": True,
+                    "activity": activity_data,
+                    "message": "Activity completed successfully",
+                }
+            )
+
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+    return JsonResponse({"success": False, "error": "Method not allowed"}, status=405)
+
+
+# Activity ViewSet for DRF router
+class ActivityViewSet:
+    """ViewSet for Activity model - provides CRUD operations"""
+
+    def list(self, request):
+        """Get list of activities"""
+        return activity_list_view(request)
+
+    def create(self, request):
+        """Create a new activity"""
+        return activity_list_view(request)
+
+    def retrieve(self, request, pk=None):
+        """Get a specific activity"""
+        if pk is None:
+            return JsonResponse(
+                {"success": False, "error": "Activity ID is required"}, status=400
+            )
+        return activity_detail_view(request, str(pk))
+
+    def update(self, request, pk=None):
+        """Update an activity"""
+        if pk is None:
+            return JsonResponse(
+                {"success": False, "error": "Activity ID is required"}, status=400
+            )
+        return activity_detail_view(request, str(pk))
+
+    def destroy(self, request, pk=None):
+        """Delete an activity"""
+        if pk is None:
+            return JsonResponse(
+                {"success": False, "error": "Activity ID is required"}, status=400
+            )
+        return activity_detail_view(request, str(pk))
+
+
+class TaskViewSet:
+    """ViewSet for Task model - placeholder for future implementation"""
+
+    pass
+
+
+class MilestoneViewSet:
+    """ViewSet for Milestone model - placeholder for future implementation"""
+
+    pass
+
+
+class ChecklistViewSet:
+    """ViewSet for Checklist model - placeholder for future implementation"""
+
+    pass
+
+
+class ChecklistItemViewSet:
+    """ViewSet for ChecklistItem model - placeholder for future implementation"""
+
+    pass
+
+
+class TimeLogViewSet:
+    """ViewSet for TimeLog model - placeholder for future implementation"""
+
+    pass
+
+
+class AttachmentViewSet:
+    """ViewSet for Attachment model - placeholder for future implementation"""
+
+    pass
+
+
+class CommentViewSet:
+    """ViewSet for Comment model - placeholder for future implementation"""
+
+    pass
+
+
+class ProjectViewSet:
+    """ViewSet for Project model - placeholder for future implementation"""
+
+    pass
+
+
+class ProjectTeamMemberViewSet:
+    """ViewSet for ProjectTeamMember model - placeholder for future implementation"""
+
+    pass
+
+
+class ActivityParticipantViewSet:
+    """ViewSet for ActivityParticipant model - placeholder for future implementation"""
+
+    pass
+
+
+@csrf_exempt
+def test_view(request: HttpRequest) -> JsonResponse:
+    """Simple test view to debug URL configuration"""
+    return JsonResponse({"success": True, "message": "Test endpoint working!"})

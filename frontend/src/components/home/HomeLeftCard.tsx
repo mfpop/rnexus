@@ -89,7 +89,7 @@ const HomeLeftCard: React.FC<HomeLeftCardProps> = () => {
             </div>
             <div>
               <h3 className="text-sm font-bold text-gray-800">
-                Activity Tracking
+                Activity Management
               </h3>
               <p className="text-gray-600 text-xs">
                 Track and manage ongoing activities

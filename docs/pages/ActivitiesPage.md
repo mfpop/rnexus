@@ -248,7 +248,7 @@ The page includes comprehensive sample data featuring:
 
 ### Mobile Optimization
 - **Offline Capability**: Limited offline functionality for field workers
-- **GPS Integration**: Location-based activity tracking
+- **GPS Integration**: Location-based activity management
 - **Barcode Scanning**: Equipment and material identification
 - **Photo Attachments**: On-site documentation capture
 - **Voice Notes**: Audio note recording capabilities

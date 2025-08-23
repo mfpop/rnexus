@@ -24,10 +24,11 @@ interface MainContainerTemplateProps {
   leftContent?: React.ReactNode;
 
   // Right Card Props
-  rightTitle?: string;
-  rightSubtitle?: string;
+  rightTitle?: string | (() => string);
+  rightSubtitle?: string | (() => string);
   rightFooter?: string | React.ReactNode;
   rightContent?: React.ReactNode;
+  showThreeDots?: boolean; // New prop for three orange dots
 
   // Master-Detail Pattern Props
   recordsList?: ListRecord[];
@@ -91,6 +92,7 @@ const MainContainerTemplate: React.FC<MainContainerTemplateProps> = ({
   rightSubtitle = "Page content",
   rightFooter = "Page content",
   rightContent,
+  showThreeDots = false, // Default to false
 
   // Master-Detail Pattern Props
   recordsList = [],
@@ -279,12 +281,13 @@ const MainContainerTemplate: React.FC<MainContainerTemplateProps> = ({
       {/* Right Card - Uses RightCardTemplate */}
       {!cardVisibility.rightCardHidden && (
         <RightCardTemplate
-          rightTitle={rightTitle}
-          rightSubtitle={rightSubtitle}
+          rightTitle={typeof rightTitle === 'function' ? rightTitle() : rightTitle}
+          rightSubtitle={typeof rightSubtitle === 'function' ? rightSubtitle() : rightSubtitle}
           footer={rightFooter}
           content={resolvedRightContent}
           expandedCard={expandedCard}
           onExpandClick={onExpandClick}
+          showThreeDots={showThreeDots}
         />
       )}
     </div>

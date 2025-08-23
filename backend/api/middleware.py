@@ -3,8 +3,8 @@ from urllib.parse import parse_qs
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.middleware import get_user
 from django.contrib.auth.models import AnonymousUser
+from django.utils import timezone
 from django.utils.deprecation import MiddlewareMixin
 from django.utils.functional import SimpleLazyObject
 
@@ -21,6 +21,7 @@ def get_user_jwt(request):
     """
     Get user from JWT token in Authorization header
     """
+    print(f"DEBUG: JWT Middleware - get_user_jwt called for {request.path}")
     user = None
     auth_header = request.META.get("HTTP_AUTHORIZATION", "")
 
@@ -35,6 +36,8 @@ def get_user_jwt(request):
             # This is a temporary solution to get the system working
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
             print(f"DEBUG: JWT Middleware - Payload: {payload}")
+            print(f"DEBUG: JWT Middleware - Current time: {timezone.now()}")
+            print(f"DEBUG: JWT Middleware - Token exp: {payload.get('exp')}")
 
             user_id = payload.get("user_id")
             if user_id:
@@ -44,13 +47,21 @@ def get_user_jwt(request):
                 print(f"DEBUG: JWT Middleware - No user_id in payload")
         except (jwt.InvalidTokenError, User.DoesNotExist) as e:
             print(f"DEBUG: JWT Middleware - Error: {e}")
+            print(f"DEBUG: JWT Middleware - Error type: {type(e)}")
             pass
 
-    fallback_user = get_user(request)
+    fallback_user = AnonymousUser()
     result = user or fallback_user
-    print(
-        f"DEBUG: JWT Middleware - Final user: {result.username if result else 'Anonymous'}"
-    )
+
+    # Safely get username for logging
+    if result and hasattr(result, "username") and result.username:
+        username = result.username
+    elif isinstance(result, AnonymousUser):
+        username = "Anonymous"
+    else:
+        username = "None"
+
+    print(f"DEBUG: JWT Middleware - Final user: {username}")
     return result
 
 
@@ -60,7 +71,45 @@ class JWTAuthenticationMiddleware(MiddlewareMixin):
     """
 
     def process_request(self, request):
-        request.user = SimpleLazyObject(lambda: get_user_jwt(request))
+        print(f"DEBUG: JWT Middleware - process_request called for {request.path}")
+        print(f"DEBUG: JWT Middleware - request.META keys: {list(request.META.keys())}")
+
+        # Check if there's a JWT token in the Authorization header
+        auth_header = request.META.get("HTTP_AUTHORIZATION", "")
+        if auth_header.startswith("Bearer "):
+            # Only process JWT authentication if we have a Bearer token
+            user = get_user_jwt(request)
+            request.user = user
+            print(
+                f"DEBUG: JWT Middleware - Set request.user to: {user.username if hasattr(user, 'username') else 'Anonymous'}"
+            )
+        else:
+            print(f"DEBUG: JWT Middleware - No Bearer token, skipping JWT auth")
+
+        print(f"DEBUG: JWT Middleware - process_request completed for {request.path}")
+
+    def process_view(self, request, view_func, view_args, view_kwargs):
+        """
+        Ensure request.user is set correctly before the view is called
+        """
+        print(f"DEBUG: JWT Middleware - process_view called for {request.path}")
+        print(f"DEBUG: JWT Middleware - request.user before view: {request.user}")
+        print(f"DEBUG: JWT Middleware - request.user type: {type(request.user)}")
+
+        # Check if there's a JWT token and ensure the user is set
+        auth_header = request.META.get("HTTP_AUTHORIZATION", "")
+        if auth_header.startswith("Bearer "):
+            # Re-check and set user if needed
+            user = get_user_jwt(request)
+            if user and not isinstance(user, AnonymousUser):
+                request.user = user
+                print(
+                    f"DEBUG: JWT Middleware - Re-set request.user to: {user.username}"
+                )
+
+        print(f"DEBUG: JWT Middleware - request.user after view setup: {request.user}")
+        print(f"DEBUG: JWT Middleware - process_view completed for {request.path}")
+        return None
 
 
 # WebSocket authentication middleware
@@ -85,7 +134,6 @@ class WebSocketAuthMiddleware(BaseMiddleware):
         else:
             scope["user"] = AnonymousUser()
 
-        # Continue the WebSocket connection
         return await super().__call__(scope, receive, send)
 
     @database_sync_to_async
