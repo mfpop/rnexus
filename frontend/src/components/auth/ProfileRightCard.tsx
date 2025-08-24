@@ -1008,6 +1008,35 @@ const ProfileRightCard: React.FC = () => {
                       </div>
                     </div>
                   </div>
+
+                  {/* Address Card Footer - Saved Address Display */}
+                  <div className="px-4 py-3 border-t border-gray-200 bg-gray-50">
+                    <div className="text-xs font-medium text-gray-600 mb-2">Saved Address:</div>
+                    <div className="text-sm text-gray-800">
+                      {profileData.street_address || profileData.apartment_suite || profileData.city || profileData.state_province || profileData.country ? (
+                        <div className="space-y-1">
+                          {profileData.street_address && (
+                            <div>{profileData.street_address}</div>
+                          )}
+                          {profileData.apartment_suite && (
+                            <div>Apt/Suite: {profileData.apartment_suite}</div>
+                          )}
+                          {(profileData.city || profileData.state_province || profileData.zip_code) && (
+                            <div>
+                              {profileData.city && `${profileData.city}, `}
+                              {profileData.state_province && `${profileData.state_province} `}
+                              {profileData.zip_code && profileData.zip_code}
+                            </div>
+                          )}
+                          {profileData.country && (
+                            <div className="font-medium">{profileData.country}</div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-gray-400 italic">No address information saved yet</div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
