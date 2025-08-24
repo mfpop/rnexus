@@ -262,16 +262,16 @@ const NamePhoneForm: React.FC<NamePhoneFormProps> = ({ value, onChange, classNam
     return placeholders[countryCode] || "Enter phone number";
   };
 
-  return (
-    <div className={`space-y-6 ${className}`}>
+    return (
+    <div className={`space-y-4 ${className}`}>
       {/* Name Section */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium text-gray-900 flex items-center">
-          <User className="w-5 h-5 mr-2" />
+      <div className="space-y-3">
+        <h3 className="text-base font-medium text-gray-900 flex items-center">
+          <User className="w-4 h-4 mr-2" />
           Personal Information
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {/* First Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -326,39 +326,36 @@ const NamePhoneForm: React.FC<NamePhoneFormProps> = ({ value, onChange, classNam
               className="w-full"
               placeholder="López"
             />
-            <p className="text-xs text-gray-500 mt-1">
-              Common in Hispanic cultures
-            </p>
-          </div>
+                      <p className="text-xs text-gray-500 mt-1">
+            Common in Hispanic cultures
+          </p>
+        </div>
 
-          {/* Preferred Name */}
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <Star className="inline w-4 h-4 mr-2" />
-              Preferred Name / Nickname
-            </label>
-            <Input
-              type="text"
-              value={value.preferred_name}
-              onChange={(e) => handleFieldChange("preferred_name", e.target.value)}
-              className="w-full"
-              placeholder="Johnny, J.C., etc."
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              How you'd like to be called
-            </p>
-          </div>
+        {/* Preferred Name */}
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            <Star className="inline w-4 h-4 mr-2" />
+            Preferred Name / Nickname
+          </label>
+          <Input
+            type="text"
+            value={value.preferred_name}
+            onChange={(e) => handleFieldChange("preferred_name", e.target.value)}
+            className="w-full"
+            placeholder="Johnny, J.C., etc."
+          />
+        </div>
         </div>
       </div>
 
-      {/* Phone Section */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium text-gray-900 flex items-center">
-          <Phone className="w-5 h-5 mr-2" />
+            {/* Phone Section */}
+      <div className="space-y-3">
+        <h3 className="text-base font-medium text-gray-900 flex items-center">
+          <Phone className="w-4 h-4 mr-2" />
           Contact Information
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {/* Primary Phone */}
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -407,11 +404,8 @@ const NamePhoneForm: React.FC<NamePhoneFormProps> = ({ value, onChange, classNam
               </div>
             </div>
             {phoneError && (
-              <p className="text-sm text-red-500 mt-1">{phoneError}</p>
+              <p className="text-xs text-red-500 mt-1">{phoneError}</p>
             )}
-            <p className="text-xs text-gray-500 mt-1">
-              Format: {getPhonePlaceholder(value.phone_country_code)}
-            </p>
           </div>
 
           {/* Secondary Phone */}
@@ -450,31 +444,7 @@ const NamePhoneForm: React.FC<NamePhoneFormProps> = ({ value, onChange, classNam
         </div>
       </div>
 
-      {/* Name Preview */}
-      {(value.first_name || value.last_name) && (
-        <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Name Preview:</h4>
-          <p className="text-sm text-gray-600">
-            <strong>Full Name:</strong> {value.first_name} {value.middle_name} {value.last_name} {value.maternal_last_name}
-            {value.preferred_name && (
-              <>
-                <br />
-                <strong>Preferred:</strong> {value.preferred_name}
-              </>
-            )}
-          </p>
-        </div>
-      )}
-
-      {/* Cultural Note */}
-      <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-        <p className="text-xs text-blue-700">
-          <strong>Cultural Note:</strong> In Mexican and Hispanic cultures, people often have two last names:
-          the paternal last name (from father) and maternal last name (from mother).
-          For example: Juan Carlos García López (García = paternal, López = maternal).
-        </p>
-      </div>
-    </div>
+          </div>
   );
 };
 

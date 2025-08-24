@@ -544,52 +544,51 @@ const ProfileRightCard: React.FC = () => {
     switch (activeTab) {
       case 'personal':
         return (
-          <div className="space-y-6">
-            <div className="space-y-6">
-              {/* Name and Phone Form */}
-              <NamePhoneForm
-                value={getNamePhoneData()}
-                onChange={handleNamePhoneChange}
-                className="space-y-4"
+          <div className="space-y-4">
+            {/* Name and Phone Form - Compact */}
+            <NamePhoneForm
+              value={getNamePhoneData()}
+              onChange={handleNamePhoneChange}
+              className="space-y-3"
+            />
+
+            {/* Email Field */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Email Address
+              </label>
+              <Input
+                type="email"
+                value={profileData.email}
+                onChange={(e) => handleProfileChange("email", e.target.value)}
+                variant={errors["email"] ? "error" : "default"}
+                className="w-full"
+                placeholder="your.email@example.com"
               />
+              {errors["email"] && (
+                <p className="text-red-600 text-xs mt-1">{errors["email"]}</p>
+              )}
+            </div>
 
-              {/* Email Field */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address
-                </label>
-                <Input
-                  type="email"
-                  value={profileData.email}
-                  onChange={(e) => handleProfileChange("email", e.target.value)}
-                  variant={errors["email"] ? "error" : "default"}
-                  className="w-full"
-                />
-                {errors["email"] && (
-                  <p className="text-red-600 text-sm mt-1">{errors["email"]}</p>
-                )}
-              </div>
+            {/* Address Form - Compact */}
+            <AddressFormEnhanced
+              value={getAddressData()}
+              onChange={handleAddressChange}
+              className="space-y-3"
+            />
 
-              <div className="md:col-span-2">
-                <AddressFormEnhanced
-                  value={getAddressData()}
-                  onChange={handleAddressChange}
-                  className="space-y-4"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Bio
-                </label>
-                <textarea
-                  value={profileData.bio || ""}
-                  onChange={(e) => handleProfileChange("bio", e.target.value)}
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                  placeholder="Tell us about yourself..."
-                />
-              </div>
+            {/* Bio Field */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Bio
+              </label>
+              <textarea
+                value={profileData.bio || ""}
+                onChange={(e) => handleProfileChange("bio", e.target.value)}
+                rows={2}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
+                placeholder="Tell us about yourself..."
+              />
             </div>
           </div>
         );
