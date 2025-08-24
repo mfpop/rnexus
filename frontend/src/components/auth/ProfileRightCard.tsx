@@ -1217,7 +1217,7 @@ const ProfileRightCard: React.FC = () => {
       case 'experience':
         console.log("Rendering experience tab, profileData.work_history:", profileData.work_history);
         return (
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium text-gray-900">Work Experience Records</h3>
               <Button
@@ -1244,7 +1244,7 @@ const ProfileRightCard: React.FC = () => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {(profileData.work_history || []).map((work) => (
                     <tr key={work.id} className="hover:bg-gray-50 transition-colors [&>td]:!p-0">
-                      <td className="py-4 whitespace-nowrap">
+                      <td className="py-2 whitespace-nowrap">
                         <div className="space-y-2">
                           <Input
                             value={work.title || ''}
@@ -1260,7 +1260,7 @@ const ProfileRightCard: React.FC = () => {
                           />
                         </div>
                       </td>
-                      <td className="px-3 py-4 whitespace-nowrap">
+                      <td className="px-3 py-2 whitespace-nowrap">
                         <Input
                           value={work.department || ''}
                           onChange={(e) => updateWork(work.id, 'department', e.target.value)}
@@ -1268,7 +1268,7 @@ const ProfileRightCard: React.FC = () => {
                           className="w-full h-8 text-sm border-0 !border-0 bg-transparent hover:bg-gray-100 focus:bg-blue-50 focus:outline-none focus:ring-0 !ring-0 focus-visible:ring-0 !focus-visible:ring-0 rounded px-2"
                         />
                       </td>
-                      <td className="py-4 whitespace-nowrap w-24">
+                      <td className="py-2 whitespace-nowrap w-24">
                         <div className="flex items-center gap-1">
                           <Input
                             value={work.startYear || ''}
@@ -1290,11 +1290,11 @@ const ProfileRightCard: React.FC = () => {
                           value={work.description || ''}
                           onChange={(e) => updateWork(work.id, 'description', e.target.value)}
                           placeholder="Job description, responsibilities, achievements..."
-                          rows={3}
-                          className="w-full min-h-48 px-2 py-1 border-0 rounded-b-lg focus:outline-none focus:ring-0 !ring-0 focus-visible:ring-0 !focus-visible:ring-0 resize-none text-sm bg-transparent hover:bg-gray-100 focus:bg-blue-50"
+                          rows={5}
+                          className="w-full px-2 py-1 border-0 rounded-b-lg focus:outline-none focus:ring-0 !ring-0 focus-visible:ring-0 !focus-visible:ring-0 resize-none text-sm bg-transparent hover:bg-gray-100 focus:bg-blue-50"
                         />
                       </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-center w-20">
+                      <td className="px-3 py-2 whitespace-nowrap text-center w-20">
                         <select
                           value={work.visible ? "visible" : "hidden"}
                           onChange={(e) => updateWork(work.id, 'visible', e.target.value === "visible")}
@@ -1304,7 +1304,7 @@ const ProfileRightCard: React.FC = () => {
                           <option value="hidden">Hidden</option>
                         </select>
                       </td>
-                      <td className="px-3 py-4 whitespace-nowrap text-right text-sm font-medium w-16">
+                      <td className="px-3 py-2 whitespace-nowrap text-right text-sm font-medium w-16">
                         <Button
                           onClick={() => removeWork(work.id)}
                           className="bg-red-50 hover:bg-red-100 text-red-600 border-0 p-2 rounded"
