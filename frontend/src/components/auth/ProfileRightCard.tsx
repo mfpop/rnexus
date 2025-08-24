@@ -47,6 +47,7 @@ interface ProfileData {
   phone_country_code?: string;
   phone_type?: 'mobile' | 'home' | 'work' | 'other';
   secondary_phone?: string;
+  secondary_phone_type?: 'mobile' | 'home' | 'work' | 'other';
 
   // Address fields
   street_address?: string;
@@ -114,6 +115,7 @@ const ProfileRightCard: React.FC = () => {
     phone_country_code: "+1", // Default to US
     phone_type: "mobile",
     secondary_phone: "",
+    secondary_phone_type: "mobile",
     street_address: "",
     apartment_suite: "",
     city: "",
@@ -166,6 +168,7 @@ const ProfileRightCard: React.FC = () => {
     phone_country_code: profileData.phone_country_code || "+1",
     phone_type: profileData.phone_type || "mobile",
     secondary_phone: profileData.secondary_phone || "",
+    secondary_phone_type: profileData.secondary_phone_type || "mobile",
   });
 
   // Helper function to update profile data from name and phone form
@@ -181,6 +184,7 @@ const ProfileRightCard: React.FC = () => {
       phone_country_code: namePhoneData.phone_country_code,
       phone_type: namePhoneData.phone_type,
       secondary_phone: namePhoneData.secondary_phone,
+      secondary_phone_type: namePhoneData.secondary_phone_type,
     }));
   };
 
@@ -218,6 +222,7 @@ const ProfileRightCard: React.FC = () => {
       phone_country_code: data.phone_country_code,
       phone_type: data.phone_type,
       secondary_phone: data.secondary_phone,
+      secondary_phone_type: data.secondary_phone_type,
       street_address: data.street_address,
       apartment_suite: data.apartment_suite,
       city: data.city,
@@ -701,6 +706,7 @@ const ProfileRightCard: React.FC = () => {
                       Secondary Phone Number
                     </label>
                     <div className="flex space-x-2">
+                      {/* Country Code */}
                       <div className="w-32">
                         <select
                           value={profileData.phone_country_code || "+1"}
@@ -781,6 +787,7 @@ const ProfileRightCard: React.FC = () => {
                           <option value="+257">🇧🇮 +257</option>
                         </select>
                       </div>
+                      {/* Phone Number */}
                       <div className="flex-1">
                         <Input
                           type="tel"
@@ -789,6 +796,19 @@ const ProfileRightCard: React.FC = () => {
                           className="w-full"
                           placeholder="(555) 123-4567"
                         />
+                      </div>
+                      {/* Phone Type */}
+                      <div className="w-32">
+                        <select
+                          value={profileData.secondary_phone_type || "mobile"}
+                          onChange={(e) => handleProfileChange("secondary_phone_type", e.target.value)}
+                          className="w-full h-8 px-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                          <option value="mobile">📱 Mobile</option>
+                          <option value="home">🏠 Home</option>
+                          <option value="work">🏢 Work</option>
+                          <option value="other">📞 Other</option>
+                        </select>
                       </div>
                     </div>
                   </div>
@@ -1261,11 +1281,15 @@ const ProfileRightCard: React.FC = () => {
             })}
           </div>
 
-          {/* Auto-save indicator */}
+          {/* Save Button - replaces auto-save indicator */}
           {activeTab !== 'security' && (
-            <div className="px-4 py-3 text-xs text-gray-500 flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              Auto-save enabled
+            <div className="px-4 py-3">
+              <button
+                type="submit"
+                className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+              >
+                Save Changes
+              </button>
             </div>
           )}
         </div>
@@ -1275,18 +1299,6 @@ const ProfileRightCard: React.FC = () => {
       <div className="flex-1 p-6 overflow-y-auto">
         <form onSubmit={activeTab === 'security' ? handlePasswordSubmit : handleProfileSubmit} className="h-full">
           {renderTabContent()}
-
-          {/* Manual Save Button for Profile */}
-          {activeTab !== 'security' && (
-            <div className="mt-6 flex justify-end">
-              <button
-                type="submit"
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-              >
-                Save Profile
-              </button>
-            </div>
-          )}
 
           {/* Success/Error Messages for Profile */}
           {activeTab !== 'security' && (
