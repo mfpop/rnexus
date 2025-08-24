@@ -946,44 +946,44 @@ const ProfileRightCard: React.FC = () => {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {(profileData.education || []).map((edu) => (
                       <tr key={edu.id} className="hover:bg-gray-50 transition-colors [&>td]:!p-0">
-                        <td className="px-3 py-2 whitespace-nowrap">
+                        <td className="px-3 py-4 whitespace-nowrap">
                           <Input
                             value={edu.school || ''}
                             onChange={(e) => updateEducation(edu.id, 'school', e.target.value)}
                             placeholder="Institution name"
-                            className="w-full h-7 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-2"
+                            className="w-full h-8 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-2"
                           />
                         </td>
-                        <td className="px-3 py-2 whitespace-nowrap">
-                          <div className="space-y-1">
+                        <td className="px-3 py-4 whitespace-nowrap">
+                          <div className="space-y-2">
                             <Input
                               value={edu.degree || ''}
                               onChange={(e) => updateEducation(edu.id, 'degree', e.target.value)}
                               placeholder="Degree"
-                              className="w-full h-7 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-2"
+                              className="w-full h-8 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-2"
                             />
                             <Input
                               value={edu.field || ''}
                               onChange={(e) => updateEducation(edu.id, 'field', e.target.value)}
                               placeholder="Field of study"
-                              className="w-full h-7 text-sm border-0 bg-transparent hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 rounded px-2"
+                              className="w-full h-8 text-sm border-0 bg-transparent hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 rounded px-2"
                             />
                           </div>
                         </td>
-                        <td className="px-3 py-2 whitespace-nowrap w-24">
+                        <td className="px-3 py-4 whitespace-nowrap w-24">
                           <div className="flex items-center gap-1">
                             <Input
                               value={edu.startYear || ''}
                               onChange={(e) => updateEducation(edu.id, 'startYear', e.target.value)}
                               placeholder="Start"
-                              className="w-16 h-7 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-1 text-center"
+                              className="w-16 h-8 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-1 text-center"
                             />
                             <span className="text-gray-400 text-xs">-</span>
                             <Input
                               value={edu.endYear || ''}
                               onChange={(e) => updateEducation(edu.id, 'endYear', e.target.value)}
                               placeholder="End"
-                              className="w-16 h-7 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-1 text-center"
+                              className="w-16 h-8 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-1 text-center"
                             />
                           </div>
                         </td>
@@ -992,11 +992,11 @@ const ProfileRightCard: React.FC = () => {
                             value={edu.description || ''}
                             onChange={(e) => updateEducation(edu.id, 'description', e.target.value)}
                             placeholder="Brief description..."
-                            rows={2}
-                            className="w-full text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-2 py-1 resize-none"
+                            rows={3}
+                            className="w-full text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-2 py-2 resize-none"
                           />
                         </td>
-                        <td className="px-3 py-2 whitespace-nowrap w-20">
+                        <td className="px-3 py-4 whitespace-nowrap w-20">
                           <label className="flex items-center">
                             <input
                               type="checkbox"
@@ -1009,10 +1009,10 @@ const ProfileRightCard: React.FC = () => {
                             </span>
                           </label>
                         </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-right text-sm font-medium w-16">
+                        <td className="px-3 py-4 whitespace-nowrap text-right text-sm font-medium w-16">
                           <Button
                             onClick={() => removeEducation(edu.id)}
-                            className="bg-red-50 hover:bg-red-100 text-red-600 border-0 p-1.5 rounded"
+                            className="bg-red-50 hover:bg-red-100 text-red-600 border-0 p-2 rounded"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
