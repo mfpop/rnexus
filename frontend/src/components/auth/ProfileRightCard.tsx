@@ -12,9 +12,19 @@ import {
 } from "lucide-react";
 import { Button, Input, PhoneTypeDropdown, NotificationToast } from "../ui/bits";
 import AuthService from "../../lib/authService";
+import { useQuery, useMutation } from '@apollo/client';
+import {
+  GET_USER_PROFILE,
+  UPDATE_USER_PROFILE,
+  CHANGE_PASSWORD,
+  GetUserProfileData,
+  UpdateUserProfileData,
+  UpdateUserProfileVariables,
+  ChangePasswordData,
+  ChangePasswordVariables
+} from '../../graphql/userProfile';
 
-// API configuration
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+
 
 interface ProfileData {
   username: string;
@@ -91,43 +101,96 @@ interface PasswordData {
 const ProfileRightCard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'personal' | 'professional' | 'education' | 'experience' | 'security'>('personal');
 
-  const [profileData, setProfileData] = useState<ProfileData>({
-    username: "",
-    email: "",
-    first_name: "",
-    middle_name: "",
-    last_name: "",
-    maternal_last_name: "",
-    preferred_name: "",
-    date_joined: "",
-    last_login: "",
-    is_active: true, // Default to active for new profiles
-    is_staff: false,
-    is_superuser: false,
-    position: "",
-    department: "",
-    phone: "",
-    phone_country_code: "+1", // Default to US
-    phone_type: "mobile",
-    secondary_phone: "",
-    secondary_phone_type: "mobile",
-    street_address: "",
-    apartment_suite: "",
-    city: "",
-    state_province: "",
-    zip_code: "",
-    country: "",
-    bio: "",
-    education: [],
-    work_history: [],
-    profile_visibility: {
-      education: true,
-      work_history: true,
-      position: true,
-      contact: true,
-      bio: true
-    },
-  });
+  // GraphQL hooks
+  const { data: profileQueryData } = useQuery<GetUserProfileData>(GET_USER_PROFILE);
+  const [updateUserProfile] = useMutation<UpdateUserProfileData, UpdateUserProfileVariables>(UPDATE_USER_PROFILE);
+  const [changePassword] = useMutation<ChangePasswordData, ChangePasswordVariables>(CHANGE_PASSWORD);
+
+  // Initialize profile data from GraphQL query or default values
+  const initializeProfileData = (): ProfileData => {
+    if (profileQueryData?.userProfile) {
+      const profile = profileQueryData.userProfile;
+      return {
+        username: profile.user.email, // Using email as username
+        email: profile.user.email,
+        first_name: profile.user.firstName,
+        middle_name: profile.middleName || "",
+        last_name: profile.user.lastName,
+        maternal_last_name: profile.maternalLastName || "",
+        preferred_name: profile.preferredName || "",
+        date_joined: profile.createdAt,
+        last_login: profile.updatedAt,
+        is_active: profile.user.isActive,
+        is_staff: false,
+        is_superuser: false,
+        position: profile.position || "",
+        department: profile.department || "",
+        phone: profile.phone || "",
+        phone_country_code: profile.phoneCountryCode || "+1",
+        phone_type: (profile.phoneType as any) || "mobile",
+        secondary_phone: profile.secondaryPhone || "",
+        secondary_phone_type: "mobile",
+        street_address: profile.streetAddress || "",
+        apartment_suite: profile.apartmentSuite || "",
+        city: profile.city || "",
+        state_province: profile.stateProvince || "",
+        zip_code: profile.zipCode || "",
+        country: profile.country || "",
+        bio: profile.bio || "",
+        education: profile.education || [],
+        work_history: profile.workHistory || [],
+        profile_visibility: profile.profileVisibility || { email: true, phone: true },
+      };
+    }
+
+    // Default values when no profile data
+    return {
+      username: "",
+      email: "",
+      first_name: "",
+      middle_name: "",
+      last_name: "",
+      maternal_last_name: "",
+      preferred_name: "",
+      date_joined: "",
+      last_login: "",
+      is_active: true,
+      is_staff: false,
+      is_superuser: false,
+      position: "",
+      department: "",
+      phone: "",
+      phone_country_code: "+1",
+      phone_type: "mobile",
+      secondary_phone: "",
+      secondary_phone_type: "mobile",
+      street_address: "",
+      apartment_suite: "",
+      city: "",
+      state_province: "",
+      zip_code: "",
+      country: "",
+      bio: "",
+      education: [],
+      work_history: [],
+      profile_visibility: {
+        education: true,
+        work_history: true,
+        position: true,
+        contact: true,
+        bio: true
+      },
+    };
+  };
+
+  const [profileData, setProfileData] = useState<ProfileData>(initializeProfileData());
+
+  // Update profile data when GraphQL data changes
+  useEffect(() => {
+    if (profileQueryData?.userProfile) {
+      setProfileData(initializeProfileData());
+    }
+  }, [profileQueryData]);
 
   // OpenAddresses data state
   const [countries, setCountries] = useState<Array<{name: string, cca2: string, flag: string}>>([]);
@@ -153,79 +216,52 @@ const ProfileRightCard: React.FC = () => {
     confirm: false,
   });
 
-  // Auto-save functionality with fallback endpoint on 403/405
+  // Auto-save functionality using GraphQL mutation
   const autoSaveProfile = useCallback(async (data: ProfileData) => {
-    const payload = {
-      email: data.email,
-      first_name: data.first_name,
-      middle_name: data.middle_name,
-      last_name: data.last_name,
-      maternal_last_name: data.maternal_last_name,
-      preferred_name: data.preferred_name,
-      position: data.position,
-      department: data.department,
-      phone: data.phone,
-      phone_country_code: data.phone_country_code,
-      phone_type: data.phone_type,
-      secondary_phone: data.secondary_phone,
-      secondary_phone_type: data.secondary_phone_type,
-      street_address: data.street_address,
-      apartment_suite: data.apartment_suite,
-      city: data.city,
-      state_province: data.state_province,
-      zip_code: data.zip_code,
-      country: data.country,
-      bio: data.bio,
-      education: data.education,
-      work_history: data.work_history,
-      profile_visibility: data.profile_visibility,
-      is_active: data.is_active,
-    };
-
-    const tryPost = async (path: string) =>
-      fetch(`${API_BASE_URL}${path}`, {
-        method: "POST",
-        headers: AuthService.getAuthHeaders(),
-        body: JSON.stringify(payload),
-      });
-
     try {
-      // First try primary endpoint
-      let response = await tryPost('/user/profile/');
+      const variables: UpdateUserProfileVariables = {
+        email: data.email,
+        firstName: data.first_name,
+        lastName: data.last_name,
+        middleName: data.middle_name,
+        maternalLastName: data.maternal_last_name,
+        preferredName: data.preferred_name,
+        position: data.position,
+        department: data.department,
+        phone: data.phone,
+        phoneCountryCode: data.phone_country_code,
+        phoneType: data.phone_type,
+        secondaryPhone: data.secondary_phone,
+        streetAddress: data.street_address,
+        apartmentSuite: data.apartment_suite,
+        city: data.city,
+        stateProvince: data.state_province,
+        zipCode: data.zip_code,
+        country: data.country,
+        bio: data.bio,
+        education: JSON.stringify(data.education),
+        workHistory: JSON.stringify(data.work_history),
+        profileVisibility: JSON.stringify(data.profile_visibility),
+        isActive: data.is_active,
+      };
 
-      // Fallback to dedicated update endpoint on 403/405
-      if (!response.ok && (response.status === 403 || response.status === 405)) {
-        response = await tryPost('/user/profile/update/');
-      }
+      const result = await updateUserProfile({ variables });
 
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success) {
-          setSuccessMessage("Profile saved automatically");
-          setTimeout(() => setSuccessMessage(""), 3000);
-          // Dispatch profile update event for left card to refresh
-          (window as any).dispatchEvent(new CustomEvent('profile-updated'));
-        }
-        return;
-      }
-
-      if (response.status === 401) {
-        console.warn('Auto-save blocked: authentication required');
-      } else if (response.status === 403) {
-        console.warn('Auto-save blocked by server (403).');
+      if (result.data?.updateUserProfile.ok) {
+        console.log('Profile auto-saved successfully');
+        // Dispatch profile-updated event for ProfileLeftCard
+        window.dispatchEvent(new CustomEvent('profile-updated'));
       } else {
-        console.error("Profile save failed:", response.status, response.statusText);
+        console.error('Profile auto-save failed:', result.data?.updateUserProfile.errors);
       }
     } catch (error) {
-      console.error("Auto-save error:", error);
-      setSuccessMessage("Profile changes saved locally (network error)");
-      setTimeout(() => setSuccessMessage(""), 3000);
+      console.error('Profile auto-save error:', error);
     }
-  }, []);
+  }, [updateUserProfile]);
 
   // Debounced auto-save effect
   useEffect(() => {
-  // Only attempt auto-save when authenticated
+    // Only attempt auto-save when authenticated
   if (!AuthService.isAuthenticated()) return;
 
     const timeoutId = setTimeout(() => {
@@ -237,13 +273,6 @@ const ProfileRightCard: React.FC = () => {
 
     return () => clearTimeout(timeoutId);
   }, [profileData, autoSaveProfile]);
-
-  // Load profile data on component mount
-  useEffect(() => {
-    if (AuthService.isAuthenticated()) {
-      loadProfile();
-    }
-  }, []);
 
   // Load countries on component mount
   useEffect(() => {
@@ -276,29 +305,6 @@ const ProfileRightCard: React.FC = () => {
       }));
     }
   }, [profileData.state_province]);
-
-  const loadProfile = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/user/profile/`, {
-        headers: AuthService.getAuthHeaders(),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Profile data received:", data);
-        if (data.success) {
-          console.log("Setting profile data:", data.profile);
-          console.log("Education count:", data.profile.education?.length || 0);
-          console.log("Work history count:", data.profile.work_history?.length || 0);
-          setProfileData(data.profile);
-        }
-      } else {
-        console.error("Failed to load profile:", response.status, response.statusText);
-      }
-    } catch (error) {
-      console.error("Error loading profile:", error);
-    }
-  };
 
   const handleProfileChange = (field: keyof ProfileData, value: any) => {
     console.log(`Profile change - Field: ${field}, Value:`, value);
@@ -536,66 +542,46 @@ const ProfileRightCard: React.FC = () => {
     setSuccessMessage("");
 
     try {
-      const payload = {
+      const variables: UpdateUserProfileVariables = {
         email: profileData.email,
-        first_name: profileData.first_name,
-        last_name: profileData.last_name,
+        firstName: profileData.first_name,
+        lastName: profileData.last_name,
+        middleName: profileData.middle_name,
+        maternalLastName: profileData.maternal_last_name,
+        preferredName: profileData.preferred_name,
         position: profileData.position,
         department: profileData.department,
         phone: profileData.phone,
-        // Address fields
-        street_address: profileData.street_address,
-        apartment_suite: profileData.apartment_suite,
+        phoneCountryCode: profileData.phone_country_code,
+        phoneType: profileData.phone_type,
+        secondaryPhone: profileData.secondary_phone,
+        streetAddress: profileData.street_address,
+        apartmentSuite: profileData.apartment_suite,
         city: profileData.city,
-        state_province: profileData.state_province,
-        zip_code: profileData.zip_code,
+        stateProvince: profileData.state_province,
+        zipCode: profileData.zip_code,
         country: profileData.country,
         bio: profileData.bio,
-        education: profileData.education,
-        work_history: profileData.work_history,
-        profile_visibility: profileData.profile_visibility,
-        is_active: profileData.is_active,
+        education: JSON.stringify(profileData.education),
+        workHistory: JSON.stringify(profileData.work_history),
+        profileVisibility: JSON.stringify(profileData.profile_visibility),
+        isActive: profileData.is_active,
       };
 
-      const tryPost = async (path: string) =>
-        fetch(`${API_BASE_URL}${path}`, {
-          method: "POST",
-          headers: AuthService.getAuthHeaders(),
-          body: JSON.stringify(payload),
-        });
+      const result = await updateUserProfile({ variables });
 
-      // Try primary endpoint first
-      let response = await tryPost('/user/profile/');
-      // Fallback on 403/405
-      if (!response.ok && (response.status === 403 || response.status === 405)) {
-        response = await tryPost('/user/profile/update/');
-      }
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          setSuccessMessage("Profile updated successfully!");
-          setProfileData(data.profile);
-          setErrors({});
-          // Dispatch profile update event for left card to refresh
-          (window as any).dispatchEvent(new CustomEvent('profile-updated'));
-          return;
-        }
-        setErrors({ submit: data.error || "Failed to update profile" });
-        return;
-      }
-
-      if (response.status === 401) {
-        setErrors({ submit: "Authentication required. Please log in again." });
-      } else if (response.status === 403) {
-        setErrors({ submit: "Profile update blocked by server (403)." });
+      if (result.data?.updateUserProfile.ok) {
+        setSuccessMessage("Profile updated successfully!");
+        // Dispatch profile-updated event for ProfileLeftCard
+        window.dispatchEvent(new CustomEvent('profile-updated'));
+        setTimeout(() => setSuccessMessage(""), 3000);
       } else {
-        console.error("Profile update failed:", response.status, response.statusText);
-        setErrors({ submit: `Server error (${response.status}). Please try again later.` });
+        console.error('Profile update failed:', result.data?.updateUserProfile.errors);
+        setSuccessMessage(`Update failed: ${result.data?.updateUserProfile.errors?.join(', ')}`);
       }
     } catch (error) {
       console.error("Profile update error:", error);
-      setErrors({ submit: "Network error. Please try again." });
+      setSuccessMessage("Network error. Please try again.");
     }
   };
 
@@ -609,31 +595,25 @@ const ProfileRightCard: React.FC = () => {
     setIsPasswordLoading(true);
     setPasswordSuccessMessage("");
 
-      try {
-        const response = await fetch(
-          `${API_BASE_URL}/user/change-password/`,
-          {
-            method: "POST",
-            headers: AuthService.getAuthHeaders(),
-            body: JSON.stringify({
-              current_password: passwordData.current_password,
-              new_password: passwordData.new_password,
-            }),
-          },
-        );      const data = await response.json();
+    try {
+      const result = await changePassword({
+        variables: {
+          currentPassword: passwordData.current_password,
+          newPassword: passwordData.new_password,
+        },
+      });
 
-      if (data.success) {
+      if (result.data?.changePassword.ok) {
         setPasswordSuccessMessage("Password changed successfully!");
         setPasswordData({
           current_password: "",
           new_password: "",
           confirm_password: "",
         });
-        // Clear errors
         setPasswordErrors({});
       } else {
         setPasswordErrors({
-          submit: data.error || "Failed to change password",
+          submit: result.data?.changePassword.errors?.join(', ') || "Failed to change password",
         });
       }
     } catch (error) {

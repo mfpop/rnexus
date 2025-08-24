@@ -5,8 +5,11 @@ from .models import (
     ActivityPriority,
     ActivityStatus,
     Chat,
+    Department,
+    Employee,
     Item,
     Message,
+    Role,
     SystemMessage,
     Tag,
     Update,
@@ -146,3 +149,66 @@ class ActivityAdmin(admin.ModelAdmin):
         ("Progress", {"fields": ("progress", "notes")}),
         ("Metadata", {"fields": ("created_by", "created_at", "updated_at")}),
     )
+
+
+@admin.register(Department)
+class DepartmentAdmin(admin.ModelAdmin):
+    list_display = ("name", "description", "role_count")
+    search_fields = ("name", "description")
+    ordering = ("name",)
+
+    def role_count(self, obj: Department) -> int:
+        return obj.roles.count()  # type: ignore
+
+    role_count.short_description = "Number of Roles"  # type: ignore
+
+
+@admin.register(Role)
+class RoleAdmin(admin.ModelAdmin):
+    list_display = (
+        "title",
+        "department",
+        "reports_to",
+        "employee_count",
+        "hierarchy_level",
+    )
+    list_filter = ("department", "reports_to")
+    search_fields = ("title", "description", "department__name")
+    ordering = ("department__name", "title")
+    autocomplete_fields = ["department", "reports_to"]
+
+    def employee_count(self, obj: Role) -> int:
+        return obj.employees.count()  # type: ignore
+
+    employee_count.short_description = "Employees"  # type: ignore
+
+    def hierarchy_level(self, obj: Role) -> int:
+        return obj.get_hierarchy_level()
+
+    hierarchy_level.short_description = "Level"  # type: ignore
+
+
+@admin.register(Employee)
+class EmployeeAdmin(admin.ModelAdmin):
+    list_display = ("name", "email", "role", "department", "supervisor", "user_linked")
+    list_filter = ("role__department", "role__reports_to")
+    search_fields = ("name", "email", "role__title", "role__department__name")
+    ordering = ("name",)
+    autocomplete_fields = ["role", "user"]
+
+    def department(self, obj: Employee) -> str:
+        dept = obj.get_department()
+        return dept.name if dept else "Unknown"
+
+    department.short_description = "Department"  # type: ignore
+
+    def supervisor(self, obj: Employee) -> str:
+        supervisor_role = obj.get_supervisor()
+        return supervisor_role.title if supervisor_role else "None"
+
+    supervisor.short_description = "Supervisor"  # type: ignore
+
+    def user_linked(self, obj: Employee) -> str:
+        return "Yes" if obj.user else "No"
+
+    user_linked.short_description = "User Account"  # type: ignore

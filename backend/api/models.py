@@ -98,9 +98,111 @@ class UserProfile(models.Model):
 class Item(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = "items"
+        verbose_name = "Item"
+        verbose_name_plural = "Items"
 
     def __str__(self):
         return self.name
+
+
+class Department(models.Model):
+    """Department model for organizational structure"""
+
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = "departments"
+        verbose_name = "Department"
+        verbose_name_plural = "Departments"
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
+class Role(models.Model):
+    """Role model for organizational positions"""
+
+    title = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
+    department = models.ForeignKey(
+        Department,
+        on_delete=models.CASCADE,
+        related_name="roles",
+        help_text="Department this role belongs to",
+    )
+    reports_to = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="subordinates",
+        help_text="Role this position reports to",
+    )
+
+    class Meta:
+        db_table = "roles"
+        verbose_name = "Role"
+        verbose_name_plural = "Roles"
+        ordering = ["department__name", "title"]
+        unique_together = ["title", "department"]
+
+    def __str__(self):
+        return f"{self.title} - {self.department.name}"
+
+    def get_hierarchy_level(self):
+        """Get the hierarchy level of this role"""
+        if not self.reports_to:
+            return 0
+        return self.reports_to.get_hierarchy_level() + 1
+
+
+class Employee(models.Model):
+    """Employee model linking users to organizational roles"""
+
+    name = models.CharField(max_length=100)
+    email = models.EmailField(unique=True)
+    role = models.ForeignKey(
+        Role,
+        on_delete=models.CASCADE,
+        related_name="employees",
+        help_text="Organizational role of this employee",
+    )
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="employee_profile",
+        null=True,
+        blank=True,
+        help_text="Associated Django user account",
+    )
+
+    class Meta:
+        db_table = "employees"
+        verbose_name = "Employee"
+        verbose_name_plural = "Employees"
+        ordering = ["name"]
+
+    def __str__(self):
+        return f"{self.name} - {self.role.title}"
+
+    def get_department(self):
+        """Get the department this employee belongs to"""
+        return self.role.department
+
+    def get_supervisor(self):
+        """Get the supervisor role this employee reports to"""
+        return self.role.reports_to
+
+    def get_subordinates(self):
+        """Get all employees that report to this employee's role"""
+        return Employee.objects.filter(role__reports_to=self.role)
 
 
 class ActivityStatus(models.Model):
