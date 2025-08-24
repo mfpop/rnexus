@@ -341,7 +341,7 @@ const ProfileRightCard: React.FC = () => {
   // OpenAddresses data loading functions
   const loadCountries = async () => {
     try {
-      const response = await fetch("https://restcountries.com/v3.1/all");
+      const response = await fetch("https://restcountries.com/v3.1/all?fields=name,cca2,flag");
       if (response.ok) {
         const data = await response.json();
         const sortedCountries = data
@@ -352,11 +352,13 @@ const ProfileRightCard: React.FC = () => {
           }))
           .sort((a: any, b: any) => a.name.localeCompare(b.name));
         setCountries(sortedCountries);
+      } else {
+        console.error("Failed to fetch countries, status:", response.status);
       }
     } catch (error) {
       console.error("Failed to load countries:", error);
       // Fallback to basic countries
-      setCountries([
+      const fallbackCountries = [
         { name: "United States", cca2: "US", flag: "🇺🇸" },
         { name: "Canada", cca2: "CA", flag: "🇨🇦" },
         { name: "Mexico", cca2: "MX", flag: "🇲🇽" },
@@ -365,7 +367,8 @@ const ProfileRightCard: React.FC = () => {
         { name: "France", cca2: "FR", flag: "🇫🇷" },
         { name: "Spain", cca2: "ES", flag: "🇪🇸" },
         { name: "Italy", cca2: "IT", flag: "🇮🇹" }
-      ]);
+      ];
+      setCountries(fallbackCountries);
     }
   };
 
