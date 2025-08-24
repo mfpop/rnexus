@@ -11,6 +11,10 @@ import {
   Plus,
   Trash2,
   Camera,
+  Smartphone,
+  Home,
+  Building,
+  Phone,
 } from "lucide-react";
 import { Button, Input } from "../ui/bits";
 import AuthService from "../../lib/authService";
@@ -672,10 +676,10 @@ const ProfileRightCard: React.FC = () => {
                         onChange={(e) => handleProfileChange("phone_type", e.target.value)}
                         className="w-24 h-8 px-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
-                        <option value="mobile">📱 Mobile</option>
-                        <option value="home">🏠 Home</option>
-                        <option value="work">🏢 Work</option>
-                        <option value="other">📞 Other</option>
+                        <option value="mobile"><Smartphone className="inline w-4 h-4 mr-1" /> Mobile</option>
+                        <option value="home"><Home className="inline w-4 h-4 mr-1" /> Home</option>
+                        <option value="work"><Building className="inline w-4 h-4 mr-1" /> Work</option>
+                        <option value="other"><Phone className="inline w-4 h-4 mr-1" /> Other</option>
                       </select>
                     </div>
                   </div>
@@ -768,10 +772,10 @@ const ProfileRightCard: React.FC = () => {
                         onChange={(e) => handleProfileChange("secondary_phone_type", e.target.value)}
                         className="w-24 h-8 px-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
-                        <option value="mobile">📱 Mobile</option>
-                        <option value="home">🏠 Home</option>
-                        <option value="work">🏢 Work</option>
-                        <option value="other">📞 Other</option>
+                        <option value="mobile"><Smartphone className="inline w-4 h-4 mr-1" /> Mobile</option>
+                        <option value="home"><Home className="inline w-4 h-4 mr-1" /> Home</option>
+                        <option value="work"><Building className="inline w-4 h-4 mr-1" /> Work</option>
+                        <option value="other"><Phone className="inline w-4 h-4 mr-1" /> Other</option>
                       </select>
                     </div>
                   </div>
@@ -869,7 +873,7 @@ const ProfileRightCard: React.FC = () => {
                 <textarea
                   value={profileData.bio || ""}
                   onChange={(e) => handleProfileChange("bio", e.target.value)}
-                  className="w-full h-32 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
+                  className="w-full min-h-48 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
                   placeholder="Tell us about yourself..."
                 />
               </div>
@@ -1318,18 +1322,6 @@ const ProfileRightCard: React.FC = () => {
               );
             })}
           </div>
-
-          {/* Save Button - replaces auto-save indicator */}
-          {activeTab !== 'security' && (
-            <div className="px-4 py-3">
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-              >
-                Save Changes
-              </button>
-            </div>
-          )}
         </div>
       </div>
 
