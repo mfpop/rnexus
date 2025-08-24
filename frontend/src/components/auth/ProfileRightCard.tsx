@@ -993,7 +993,7 @@ const ProfileRightCard: React.FC = () => {
                             onChange={(e) => updateEducation(edu.id, 'description', e.target.value)}
                             placeholder="Brief description..."
                             rows={2}
-                            className="w-full text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-2 py-1 resize-none"
+                            className="w-full text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded resize-none"
                           />
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap w-20">
