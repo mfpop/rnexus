@@ -987,7 +987,7 @@ const ProfileRightCard: React.FC = () => {
                             />
                           </div>
                         </td>
-                        <td className="py-2">
+                        <td className="py-0">
                           <textarea
                             value={edu.description || ''}
                             onChange={(e) => updateEducation(edu.id, 'description', e.target.value)}
