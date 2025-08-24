@@ -1,34 +1,4 @@
-# Nexus Development Tools Summary
-
-## 🛠️ Development Environment Overview
-
-This document provides a comprehensive overview of all development tools, quality assurance processes, and development workflows used in the Nexus manufacturing operations management system.
-
-## 🔐 Authentication & Security Tools
-
-### JWT Authentication System
-The system now includes a robust JWT authentication system with enhanced middleware:
-
-#### JWT Middleware Implementation
-```python
-# backend/api/middleware.py
-class JWTAuthenticationMiddleware(MiddlewareMixin):
-    def process_request(self, request):
-        # Handle JWT authentication in process_request
-        auth_header = request.META.get("HTTP_AUTHORIZATION", "")
-        if auth_header.startswith("Bearer "):
-            user = get_user_jwt(request)
-            request.user = user
-
-    def process_view(self, request, view_func, view_args, view_kwargs):
-        # Re-ensure user authentication before view execution
-        # Resolves conflicts with Django's AuthenticationMiddleware
-        auth_header = request.META.get("HTTP_AUTHORIZATION", "")
-        if auth_header.startswith("Bearer "):
-            user = get_user_jwt(request)
-            if user and not isinstance(user, AnonymousUser):
-                request.user = user
-```
+This document has moved to docs/DEVELOPMENT_TOOLS_SUMMARY.md
 
 #### JWT Debug Tools
 ```python

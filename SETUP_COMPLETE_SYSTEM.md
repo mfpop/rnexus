@@ -1,11 +1,4 @@
-# 🚀 Complete System Setup Guide
-
-## Overview
-This guide will help you set up the complete Activities Management System with:
-- ✅ Database setup with optimized structure
-- ✅ API integration with Django REST Framework
-- ✅ Real-time updates via WebSocket
-- ✅ Frontend integration with actual database calls
+This document has moved to docs/SETUP_COMPLETE_SYSTEM.md
 
 ## 📋 Prerequisites
 - Python 3.8+

@@ -1,23 +1,4 @@
-# Nexus Dependencies Update Report
-
-## 📦 Dependency Overview
-
-This document provides a comprehensive overview of all dependencies used in the Nexus manufacturing operations management system, including recent updates, security considerations, and maintenance recommendations.
-
-## 🔐 Recent System Updates
-
-### JWT Authentication Enhancement
-The system has been updated with enhanced JWT authentication middleware that resolves the "logged out on refresh" issue:
-
-- **Enhanced Middleware**: Added `process_view` method for proper user authentication
-- **Conflict Resolution**: Handles conflicts with Django's AuthenticationMiddleware
-- **Improved Security**: Better token validation and user session management
-- **Comprehensive Testing**: Full authentication flow testing and validation
-
-### System Enhancements
-- **Activities System**: Complete manufacturing activities management
-- **Real-time Updates**: WebSocket-based notifications and updates
-- **Enhanced Database Models**: Comprehensive data modeling for manufacturing operations
+This document has moved to docs/DEPENDENCIES_UPDATE.md
 - **Frontend Components**: Improved React components with TypeScript
 
 ## 🐍 Python Backend Dependencies

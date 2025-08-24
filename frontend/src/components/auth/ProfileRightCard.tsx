@@ -251,7 +251,11 @@ const ProfileRightCard: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
+        console.log("Profile data received:", data);
         if (data.success) {
+          console.log("Setting profile data:", data.profile);
+          console.log("Education count:", data.profile.education?.length || 0);
+          console.log("Work history count:", data.profile.work_history?.length || 0);
           setProfileData(data.profile);
         }
       } else {
@@ -915,6 +919,7 @@ const ProfileRightCard: React.FC = () => {
         );
 
       case 'education':
+        console.log("Rendering education tab, profileData.education:", profileData.education);
         return (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -1002,6 +1007,7 @@ const ProfileRightCard: React.FC = () => {
         );
 
       case 'experience':
+        console.log("Rendering experience tab, profileData.work_history:", profileData.work_history);
         return (
           <div className="space-y-6">
             <div className="flex items-center justify-between">

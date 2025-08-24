@@ -1,5 +1,7 @@
 # Nexus - Manufacturing Operations Management System
 
+Note: This file replaces the former root README and now lives under docs/.
+
 ## 🚀 Project Overview
 
 Nexus is a comprehensive manufacturing operations management system built with modern web technologies. It provides a unified platform for managing activities, projects, production processes, and team collaboration in manufacturing environments.

@@ -1,43 +1,4 @@
-# Nexus Project Architecture
-
-## 🏗️ System Overview
-
-Nexus is a modern manufacturing operations management system built with a microservices-inspired architecture, featuring a Django backend with REST/GraphQL APIs and a React frontend with real-time WebSocket capabilities.
-
-## 🔐 Authentication & Security Architecture
-
-### JWT Authentication System
-- **Token-based authentication** using JSON Web Tokens
-- **Secure middleware implementation** with conflict resolution
-- **Automatic token refresh** and validation
-- **Role-based access control** (Admin, Staff, User)
-
-#### JWT Middleware Implementation
-```python
-class JWTAuthenticationMiddleware(MiddlewareMixin):
-    def process_request(self, request):
-        # Handle JWT authentication in process_request
-        auth_header = request.META.get("HTTP_AUTHORIZATION", "")
-        if auth_header.startswith("Bearer "):
-            user = get_user_jwt(request)
-            request.user = user
-
-    def process_view(self, request, view_func, view_args, view_kwargs):
-        # Re-ensure user authentication before view execution
-        # Resolves conflicts with Django's AuthenticationMiddleware
-        auth_header = request.META.get("HTTP_AUTHORIZATION", "")
-        if auth_header.startswith("Bearer "):
-            user = get_user_jwt(request)
-            if user and not isinstance(user, AnonymousUser):
-                request.user = user
-```
-
-#### Security Features
-- **CSRF protection** on all forms and API endpoints
-- **Input validation** and sanitization
-- **Rate limiting** on authentication endpoints
-- **Secure headers** (HSTS, XSS protection)
-- **Session management** with secure cookies
+This document has moved to docs/PROJECT_ARCHITECTURE.md
 
 ## 🗄️ Database Architecture
 

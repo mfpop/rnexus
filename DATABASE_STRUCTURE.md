@@ -1,23 +1,4 @@
-# Nexus Database Structure
-
-## 🗄️ Database Overview
-
-The Nexus system uses PostgreSQL as its primary database, with Django ORM for data modeling and management. The database is designed to support comprehensive manufacturing operations management with real-time updates and user collaboration.
-
-## 🏗️ Core Models
-
-### User Management
-
-#### User Model
-```python
-class User(AbstractUser):
-    """Extended user model with role-based permissions"""
-    ROLE_CHOICES = [
-        ('admin', 'Administrator'),
-        ('staff', 'Staff Member'),
-        ('user', 'Regular User'),
-    ]
-
+This document has moved to docs/DATABASE_STRUCTURE.md
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='user')
     email = models.EmailField(unique=True)
     is_active = models.BooleanField(default=True)
