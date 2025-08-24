@@ -364,7 +364,7 @@ const NamePhoneForm: React.FC<NamePhoneFormProps> = ({ value, onChange, classNam
                 <select
                   value={value.phone_country_code}
                   onChange={(e) => handleFieldChange("phone_country_code", e.target.value)}
-                  className="w-full h-10 px-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full h-8 px-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   {countryCodes.map((country) => (
                     <option key={country.code} value={country.code}>
@@ -390,7 +390,7 @@ const NamePhoneForm: React.FC<NamePhoneFormProps> = ({ value, onChange, classNam
                 <select
                   value={value.phone_type}
                   onChange={(e) => handleFieldChange("phone_type", e.target.value as any)}
-                  className="w-full h-10 px-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full h-8 px-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   {phoneTypes.map((type) => (
                     <option key={type.value} value={type.value}>
@@ -415,7 +415,7 @@ const NamePhoneForm: React.FC<NamePhoneFormProps> = ({ value, onChange, classNam
                 <select
                   value={value.phone_country_code}
                   onChange={(e) => handleFieldChange("phone_country_code", e.target.value)}
-                  className="w-full h-10 px-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full h-8 px-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   {countryCodes.map((country) => (
                     <option key={country.code} value={country.code}>
