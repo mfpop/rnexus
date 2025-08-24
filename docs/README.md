@@ -3,6 +3,16 @@
 ## Overview
 This documentation provides comprehensive information about all pages and features of the RNexus platform. Each page document includes detailed information about functionality, architecture, user interactions, data structures, and technical implementation.
 
+## Technical docs (moved from repo root)
+- Project overview: ./PROJECT_README.md
+- Architecture: ./PROJECT_ARCHITECTURE.md
+- Setup guide: ./SETUP_GUIDE.md
+- Complete system setup: ./SETUP_COMPLETE_SYSTEM.md
+- Database structure: ./DATABASE_STRUCTURE.md
+- CI/CD integration: ./CI_CD_INTEGRATION.md
+- Dev tools summary: ./DEVELOPMENT_TOOLS_SUMMARY.md
+- Dependencies update report: ./DEPENDENCIES_UPDATE.md
+
 ## Key Platform Modules
 
 ### News, Alerts, and Communication

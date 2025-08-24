@@ -13,7 +13,7 @@ import {
   Camera,
   Smartphone,
   Home,
-  Building,
+  Building2,
   Phone,
 } from "lucide-react";
 import { Button, Input } from "../ui/bits";
@@ -678,7 +678,7 @@ const ProfileRightCard: React.FC = () => {
                       >
                         <option value="mobile"><Smartphone className="inline w-4 h-4 mr-1" /> Mobile</option>
                         <option value="home"><Home className="inline w-4 h-4 mr-1" /> Home</option>
-                        <option value="work"><Building className="inline w-4 h-4 mr-1" /> Work</option>
+                        <option value="work"><Building2 className="inline w-4 h-4 mr-1" /> Work</option>
                         <option value="other"><Phone className="inline w-4 h-4 mr-1" /> Other</option>
                       </select>
                     </div>
@@ -774,7 +774,7 @@ const ProfileRightCard: React.FC = () => {
                       >
                         <option value="mobile"><Smartphone className="inline w-4 h-4 mr-1" /> Mobile</option>
                         <option value="home"><Home className="inline w-4 h-4 mr-1" /> Home</option>
-                        <option value="work"><Building className="inline w-4 h-4 mr-1" /> Work</option>
+                        <option value="work"><Building2 className="inline w-4 h-4 mr-1" /> Work</option>
                         <option value="other"><Phone className="inline w-4 h-4 mr-1" /> Other</option>
                       </select>
                     </div>
@@ -869,11 +869,11 @@ const ProfileRightCard: React.FC = () => {
               <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
                 <h3 className="text-lg font-medium text-gray-900">Bio</h3>
               </div>
-              <div className="p-4">
+              <div>
                 <textarea
                   value={profileData.bio || ""}
                   onChange={(e) => handleProfileChange("bio", e.target.value)}
-                  className="w-full min-h-48 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
+                  className="w-full min-h-48 px-4 py-3 border-0 rounded-b-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset resize-none text-sm"
                   placeholder="Tell us about yourself..."
                 />
               </div>
