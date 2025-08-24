@@ -674,7 +674,7 @@ const ProfileRightCard: React.FC = () => {
                       <PhoneTypeDropdown
                         value={profileData.phone_type || "mobile"}
                         onChange={(value) => handleProfileChange("phone_type", value)}
-                        className="w-24 h-8 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        className="w-24"
                       />
                     </div>
                   </div>
@@ -765,7 +765,7 @@ const ProfileRightCard: React.FC = () => {
                       <PhoneTypeDropdown
                         value={profileData.secondary_phone_type || "mobile"}
                         onChange={(value) => handleProfileChange("secondary_phone_type", value)}
-                        className="w-24 h-8 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        className="w-24"
                       />
                     </div>
                   </div>
