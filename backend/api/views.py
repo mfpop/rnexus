@@ -525,6 +525,39 @@ def profile_update_view(request: HttpRequest) -> JsonResponse:
 
         user.save()
 
+        # Get or create user profile and update it
+        user_profile, created = UserProfile.objects.get_or_create(user=user)
+
+        # Update profile fields
+        profile_fields = [
+            "position",
+            "department",
+            "phone",
+            "phone_country_code",
+            "phone_type",
+            "secondary_phone",
+            "street_address",
+            "apartment_suite",
+            "city",
+            "state_province",
+            "zip_code",
+            "country",
+            "bio",
+            "education",
+            "work_history",
+            "profile_visibility",
+            "middle_name",
+            "maternal_last_name",
+            "preferred_name",
+        ]
+
+        for field in profile_fields:
+            if field in data:
+                setattr(user_profile, field, data[field])
+
+        user_profile.save()
+
+        # Return updated profile data
         return JsonResponse(
             {
                 "success": True,
@@ -540,21 +573,31 @@ def profile_update_view(request: HttpRequest) -> JsonResponse:
                     "is_active": user.is_active,  # type: ignore
                     "is_staff": user.is_staff,  # type: ignore
                     "is_superuser": user.is_superuser,  # type: ignore
-                    "position": "",
-                    "department": "",
-                    "phone": "",
-                    "street_address": "",
-                    "apartment_suite": "",
-                    "city": "",
-                    "state_province": "",
-                    "zip_code": "",
-                    "country": "",
-                    "bio": "",
-                    "education": [],
-                    "work_history": [],
-                    "profile_visibility": {
-                        "education_visible": True,
-                        "work_history_visible": True,
+                    "middle_name": user_profile.middle_name or "",
+                    "maternal_last_name": user_profile.maternal_last_name or "",
+                    "preferred_name": user_profile.preferred_name or "",
+                    "position": user_profile.position or "",
+                    "department": user_profile.department or "",
+                    "phone": user_profile.phone or "",
+                    "phone_country_code": user_profile.phone_country_code or "+1",
+                    "phone_type": user_profile.phone_type or "mobile",
+                    "secondary_phone": user_profile.secondary_phone or "",
+                    "street_address": user_profile.street_address or "",
+                    "apartment_suite": user_profile.apartment_suite or "",
+                    "city": user_profile.city or "",
+                    "state_province": user_profile.state_province or "",
+                    "zip_code": user_profile.zip_code or "",
+                    "country": user_profile.country or "",
+                    "bio": user_profile.bio or "",
+                    "education": user_profile.education or [],
+                    "work_history": user_profile.work_history or [],
+                    "profile_visibility": user_profile.profile_visibility
+                    or {
+                        "education": True,
+                        "work_history": True,
+                        "position": True,
+                        "contact": True,
+                        "bio": True,
                     },
                 },
             }

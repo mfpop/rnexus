@@ -229,7 +229,8 @@ const ProfileRightCard: React.FC = () => {
   if (!AuthService.isAuthenticated()) return;
 
     const timeoutId = setTimeout(() => {
-      if (profileData.first_name || profileData.last_name || profileData.email) {
+      // Trigger auto-save for any profile field changes, not just name/email
+      if (Object.keys(profileData).some(key => profileData[key as keyof ProfileData])) {
         autoSaveProfile(profileData);
       }
     }, 2000); // Auto-save after 2 seconds of inactivity
