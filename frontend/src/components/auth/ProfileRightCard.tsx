@@ -946,7 +946,7 @@ const ProfileRightCard: React.FC = () => {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {(profileData.education || []).map((edu) => (
                       <tr key={edu.id} className="hover:bg-gray-50 transition-colors [&>td]:!p-0">
-                        <td className="px-3 py-4 whitespace-nowrap">
+                        <td className="py-4 whitespace-nowrap">
                           <Input
                             value={edu.school || ''}
                             onChange={(e) => updateEducation(edu.id, 'school', e.target.value)}
@@ -970,7 +970,7 @@ const ProfileRightCard: React.FC = () => {
                             />
                           </div>
                         </td>
-                        <td className="px-3 py-4 whitespace-nowrap w-24">
+                        <td className="py-4 whitespace-nowrap w-24">
                           <div className="flex items-center gap-1">
                             <Input
                               value={edu.startYear || ''}
