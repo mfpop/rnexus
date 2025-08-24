@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button, Input } from "../ui/bits";
 import AddressForm from "../shared/AddressForm";
+import NamePhoneForm from "../shared/NamePhoneForm";
 import AuthService from "../../lib/authService";
 
 // API configuration
@@ -22,18 +23,29 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 interface ProfileData {
   username: string;
   email: string;
+
+  // Comprehensive name fields
   first_name: string;
+  middle_name?: string;
   last_name: string;
+  maternal_last_name?: string; // For Mexican naming convention
+  preferred_name?: string; // Nickname or preferred name
+
   date_joined: string;
   last_login: string;
   is_active: boolean;
   is_staff: boolean;
   is_superuser: boolean;
+
   // New fields
   position?: string;
   department?: string;
+
+  // Enhanced phone support
   phone?: string;
-  location?: string;
+  phone_country_code?: string;
+  phone_type?: 'mobile' | 'home' | 'work' | 'other';
+  secondary_phone?: string;
 
   // Address fields
   street_address?: string;
@@ -86,7 +98,10 @@ const ProfileRightCard: React.FC = () => {
     username: "",
     email: "",
     first_name: "",
+    middle_name: "",
     last_name: "",
+    maternal_last_name: "",
+    preferred_name: "",
     date_joined: "",
     last_login: "",
     is_active: true, // Default to active for new profiles
@@ -95,6 +110,9 @@ const ProfileRightCard: React.FC = () => {
     position: "",
     department: "",
     phone: "",
+    phone_country_code: "+1", // Default to US
+    phone_type: "mobile",
+    secondary_phone: "",
     street_address: "",
     apartment_suite: "",
     city: "",
@@ -136,6 +154,35 @@ const ProfileRightCard: React.FC = () => {
     }));
   };
 
+  // Helper function to get name and phone data for NamePhoneForm
+  const getNamePhoneData = () => ({
+    first_name: profileData.first_name || "",
+    middle_name: profileData.middle_name || "",
+    last_name: profileData.last_name || "",
+    maternal_last_name: profileData.maternal_last_name || "",
+    preferred_name: profileData.preferred_name || "",
+    phone: profileData.phone || "",
+    phone_country_code: profileData.phone_country_code || "+1",
+    phone_type: profileData.phone_type || "mobile",
+    secondary_phone: profileData.secondary_phone || "",
+  });
+
+  // Helper function to update profile data from name and phone form
+  const handleNamePhoneChange = (namePhoneData: any) => {
+    setProfileData(prev => ({
+      ...prev,
+      first_name: namePhoneData.first_name,
+      middle_name: namePhoneData.middle_name,
+      last_name: namePhoneData.last_name,
+      maternal_last_name: namePhoneData.maternal_last_name,
+      preferred_name: namePhoneData.preferred_name,
+      phone: namePhoneData.phone,
+      phone_country_code: namePhoneData.phone_country_code,
+      phone_type: namePhoneData.phone_type,
+      secondary_phone: namePhoneData.secondary_phone,
+    }));
+  };
+
   const [passwordData, setPasswordData] = useState<PasswordData>({
     current_password: "",
     new_password: "",
@@ -160,10 +207,16 @@ const ProfileRightCard: React.FC = () => {
     const payload = {
       email: data.email,
       first_name: data.first_name,
+      middle_name: data.middle_name,
       last_name: data.last_name,
+      maternal_last_name: data.maternal_last_name,
+      preferred_name: data.preferred_name,
       position: data.position,
       department: data.department,
       phone: data.phone,
+      phone_country_code: data.phone_country_code,
+      phone_type: data.phone_type,
+      secondary_phone: data.secondary_phone,
       street_address: data.street_address,
       apartment_suite: data.apartment_suite,
       city: data.city,
@@ -394,7 +447,6 @@ const ProfileRightCard: React.FC = () => {
         position: profileData.position,
         department: profileData.department,
         phone: profileData.phone,
-        location: profileData.location,
         bio: profileData.bio,
         education: profileData.education,
         work_history: profileData.work_history,
@@ -493,39 +545,15 @@ const ProfileRightCard: React.FC = () => {
       case 'personal':
         return (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  First Name
-                </label>
-                <Input
-                  type="text"
-                  value={profileData.first_name}
-                  onChange={(e) => handleProfileChange("first_name", e.target.value)}
-                  variant={errors["first_name"] ? "error" : "default"}
-                  className="w-full"
-                />
-                {errors["first_name"] && (
-                  <p className="text-red-600 text-sm mt-1">{errors["first_name"]}</p>
-                )}
-              </div>
+            <div className="space-y-6">
+              {/* Name and Phone Form */}
+              <NamePhoneForm
+                value={getNamePhoneData()}
+                onChange={handleNamePhoneChange}
+                className="space-y-4"
+              />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Last Name
-                </label>
-                <Input
-                  type="text"
-                  value={profileData.last_name}
-                  onChange={(e) => handleProfileChange("last_name", e.target.value)}
-                  variant={errors["last_name"] ? "error" : "default"}
-                  className="w-full"
-                />
-                {errors["last_name"] && (
-                  <p className="text-red-600 text-sm mt-1">{errors["last_name"]}</p>
-                )}
-              </div>
-
+              {/* Email Field */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Email Address
@@ -540,18 +568,6 @@ const ProfileRightCard: React.FC = () => {
                 {errors["email"] && (
                   <p className="text-red-600 text-sm mt-1">{errors["email"]}</p>
                 )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number
-                </label>
-                <Input
-                  type="tel"
-                  value={profileData.phone || ""}
-                  onChange={(e) => handleProfileChange("phone", e.target.value)}
-                  className="w-full"
-                />
               </div>
 
               <div className="md:col-span-2">

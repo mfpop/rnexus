@@ -314,9 +314,15 @@ def profile_view(request: HttpRequest) -> JsonResponse:
                     "is_active": user.is_active,  # type: ignore
                     "is_staff": user.is_staff,  # type: ignore
                     "is_superuser": user.is_superuser,  # type: ignore
+                    "middle_name": user_profile.middle_name or "",
+                    "maternal_last_name": user_profile.maternal_last_name or "",
+                    "preferred_name": user_profile.preferred_name or "",
                     "position": user_profile.position or "",
                     "department": user_profile.department or "",
                     "phone": user_profile.phone or "",
+                    "phone_country_code": user_profile.phone_country_code or "+1",
+                    "phone_type": user_profile.phone_type or "mobile",
+                    "secondary_phone": user_profile.secondary_phone or "",
                     "street_address": user_profile.street_address or "",
                     "apartment_suite": user_profile.apartment_suite or "",
                     "city": user_profile.city or "",
@@ -365,12 +371,24 @@ def profile_view(request: HttpRequest) -> JsonResponse:
             user_profile, created = UserProfile.objects.get_or_create(user=user)
 
             # Update profile fields
+            if "middle_name" in data:
+                user_profile.middle_name = data["middle_name"]
+            if "maternal_last_name" in data:
+                user_profile.maternal_last_name = data["maternal_last_name"]
+            if "preferred_name" in data:
+                user_profile.preferred_name = data["preferred_name"]
             if "position" in data:
                 user_profile.position = data["position"]
             if "department" in data:
                 user_profile.department = data["department"]
             if "phone" in data:
                 user_profile.phone = data["phone"]
+            if "phone_country_code" in data:
+                user_profile.phone_country_code = data["phone_country_code"]
+            if "phone_type" in data:
+                user_profile.phone_type = data["phone_type"]
+            if "secondary_phone" in data:
+                user_profile.secondary_phone = data["secondary_phone"]
             if "street_address" in data:
                 user_profile.street_address = data["street_address"]
             if "apartment_suite" in data:
@@ -409,9 +427,15 @@ def profile_view(request: HttpRequest) -> JsonResponse:
                         "is_active": user.is_active,  # type: ignore
                         "is_staff": user.is_staff,  # type: ignore
                         "is_superuser": user.is_superuser,  # type: ignore
+                        "middle_name": user_profile.middle_name or "",
+                        "maternal_last_name": user_profile.maternal_last_name or "",
+                        "preferred_name": user_profile.preferred_name or "",
                         "position": user_profile.position or "",
                         "department": user_profile.department or "",
                         "phone": user_profile.phone or "",
+                        "phone_country_code": user_profile.phone_country_code or "+1",
+                        "phone_type": user_profile.phone_type or "mobile",
+                        "secondary_phone": user_profile.secondary_phone or "",
                         "street_address": user_profile.street_address or "",
                         "apartment_suite": user_profile.apartment_suite or "",
                         "city": user_profile.city or "",

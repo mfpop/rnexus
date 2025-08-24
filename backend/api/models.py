@@ -39,10 +39,33 @@ class UserProfile(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
 
+    # Enhanced name fields
+    middle_name = models.CharField(max_length=100, blank=True, null=True)
+    maternal_last_name = models.CharField(max_length=100, blank=True, null=True)
+    preferred_name = models.CharField(max_length=100, blank=True, null=True)
+
     # Professional information
     position = models.CharField(max_length=100, blank=True, null=True)
     department = models.CharField(max_length=100, blank=True, null=True)
+
+    # Enhanced phone support
     phone = models.CharField(max_length=20, blank=True, null=True)
+    phone_country_code = models.CharField(
+        max_length=5, default="+1", blank=True, null=True
+    )
+    phone_type = models.CharField(
+        max_length=10,
+        choices=[
+            ("mobile", "Mobile"),
+            ("home", "Home"),
+            ("work", "Work"),
+            ("other", "Other"),
+        ],
+        default="mobile",
+        blank=True,
+        null=True,
+    )
+    secondary_phone = models.CharField(max_length=20, blank=True, null=True)
 
     # Address information
     street_address = models.CharField(max_length=255, blank=True, null=True)
