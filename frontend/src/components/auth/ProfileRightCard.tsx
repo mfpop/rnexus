@@ -1061,29 +1061,119 @@ const ProfileRightCard: React.FC = () => {
                   <h3 className="text-lg font-medium text-gray-900">Position and Department</h3>
                 </div>
                 <div className="p-6">
-                  {/* Org Chart Style Display */}
+                  {/* Lean Manufacturing Plant Hierarchy */}
                   <div className="space-y-4">
                     <div className="text-center">
-                      <div className="inline-block p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
-                        <div className="text-sm font-medium text-blue-600 mb-1">Current Position</div>
-                        <div className="text-xl font-semibold text-blue-800">
-                          {profileData.position || "Not specified"}
+                      <h4 className="text-sm font-medium text-gray-600 mb-3">Plant Organizational Structure</h4>
+
+                      {/* Plant Manager Level */}
+                      <div className={`inline-block p-3 rounded-lg border-2 transition-all duration-200 ${
+                        profileData.position?.toLowerCase().includes('plant manager') ||
+                        profileData.position?.toLowerCase().includes('plant director') ||
+                        profileData.position?.toLowerCase().includes('general manager')
+                          ? 'bg-blue-100 border-blue-400 shadow-lg scale-105'
+                          : 'bg-gray-50 border-gray-200'
+                      }`}>
+                        <div className="text-xs font-medium text-gray-600">Plant Manager</div>
+                        <div className="text-sm font-semibold text-gray-800">Plant Leadership</div>
+                      </div>
+
+                      {/* Connector */}
+                      <div className="flex justify-center my-2">
+                        <div className="w-px h-4 bg-gray-300"></div>
+                      </div>
+
+                      {/* Department Level */}
+                      <div className="grid grid-cols-3 gap-2 mb-3">
+                        {/* Operations */}
+                        <div className={`p-2 rounded border transition-all duration-200 ${
+                          profileData.department?.toLowerCase().includes('operations') ||
+                          profileData.department?.toLowerCase().includes('production') ||
+                          profileData.position?.toLowerCase().includes('operations') ||
+                          profileData.position?.toLowerCase().includes('production')
+                            ? 'bg-green-100 border-green-400 shadow-md scale-105'
+                            : 'bg-gray-50 border-gray-200'
+                        }`}>
+                          <div className="text-xs font-medium text-gray-600">Operations</div>
+                          <div className="text-xs text-gray-500">Production</div>
+                        </div>
+
+                        {/* Engineering */}
+                        <div className={`p-2 rounded border transition-all duration-200 ${
+                          profileData.department?.toLowerCase().includes('engineering') ||
+                          profileData.department?.toLowerCase().includes('maintenance') ||
+                          profileData.position?.toLowerCase().includes('engineer') ||
+                          profileData.position?.toLowerCase().includes('maintenance')
+                            ? 'bg-blue-100 border-blue-400 shadow-md scale-105'
+                            : 'bg-gray-50 border-gray-200'
+                        }`}>
+                          <div className="text-xs font-medium text-gray-600">Engineering</div>
+                          <div className="text-xs text-gray-500">Maintenance</div>
+                        </div>
+
+                        {/* Quality */}
+                        <div className={`p-2 rounded border transition-all duration-200 ${
+                          profileData.department?.toLowerCase().includes('quality') ||
+                          profileData.department?.toLowerCase().includes('qc') ||
+                          profileData.position?.toLowerCase().includes('quality') ||
+                          profileData.position?.toLowerCase().includes('qc')
+                            ? 'bg-purple-100 border-purple-400 shadow-md scale-105'
+                            : 'bg-gray-50 border-gray-200'
+                        }`}>
+                          <div className="text-xs font-medium text-gray-600">Quality</div>
+                          <div className="text-xs text-gray-500">QC/QA</div>
+                        </div>
+                      </div>
+
+                      {/* Connector */}
+                      <div className="flex justify-center my-2">
+                        <div className="w-px h-4 bg-gray-300"></div>
+                      </div>
+
+                      {/* Team Level */}
+                      <div className="grid grid-cols-2 gap-2">
+                        {/* Production Teams */}
+                        <div className={`p-2 rounded border transition-all duration-200 ${
+                          profileData.position?.toLowerCase().includes('supervisor') ||
+                          profileData.position?.toLowerCase().includes('team lead') ||
+                          profileData.position?.toLowerCase().includes('operator') ||
+                          profileData.position?.toLowerCase().includes('technician')
+                            ? 'bg-green-100 border-green-400 shadow-md scale-105'
+                            : 'bg-gray-50 border-gray-200'
+                        }`}>
+                          <div className="text-xs font-medium text-gray-600">Production Teams</div>
+                          <div className="text-xs text-gray-500">Supervisors, Operators</div>
+                        </div>
+
+                        {/* Support Teams */}
+                        <div className={`p-2 rounded border transition-all duration-200 ${
+                          profileData.position?.toLowerCase().includes('analyst') ||
+                          profileData.position?.toLowerCase().includes('coordinator') ||
+                          profileData.position?.toLowerCase().includes('specialist') ||
+                          profileData.position?.toLowerCase().includes('planner')
+                            ? 'bg-blue-100 border-blue-400 shadow-md scale-105'
+                            : 'bg-gray-50 border-gray-200'
+                        }`}>
+                          <div className="text-xs font-medium text-gray-600">Support Teams</div>
+                          <div className="text-xs text-gray-500">Analysts, Coordinators</div>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex justify-center">
-                      <div className="w-px h-8 bg-gray-300"></div>
-                    </div>
-
-                    <div className="text-center">
-                      <div className="inline-block p-4 bg-gray-50 border-2 border-gray-200 rounded-lg">
-                        <div className="text-sm font-medium text-gray-600 mb-1">Department</div>
-                        <div className="text-lg font-semibold text-gray-800">
-                          {profileData.department || "Not specified"}
+                    {/* Position Indicator */}
+                    {profileData.position && (
+                      <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="text-xs font-medium text-blue-600 mb-1">Your Position</div>
+                        <div className="text-sm font-semibold text-blue-800">
+                          {profileData.position}
                         </div>
+                        {profileData.department && (
+                          <div className="text-xs text-blue-600 mt-1">
+                            Department: {profileData.department}
+                          </div>
+                        )}
                       </div>
-                    </div>
+                    )}
                   </div>
 
                   {/* Edit Fields */}
@@ -1097,7 +1187,7 @@ const ProfileRightCard: React.FC = () => {
                         value={profileData.position || ""}
                         onChange={(e) => handleProfileChange("position", e.target.value)}
                         className="w-full"
-                        placeholder="e.g. Senior Software Engineer"
+                        placeholder="e.g. Production Supervisor"
                       />
                     </div>
 
@@ -1110,7 +1200,7 @@ const ProfileRightCard: React.FC = () => {
                         value={profileData.department || ""}
                         onChange={(e) => handleProfileChange("department", e.target.value)}
                         className="w-full"
-                        placeholder="e.g. Technology & Innovation"
+                        placeholder="e.g. Operations"
                       />
                     </div>
                   </div>
@@ -1131,10 +1221,10 @@ const ProfileRightCard: React.FC = () => {
                     </h4>
                     <div className="space-y-2">
                       {[
-                        "Code review and debugging",
+                        "Production line monitoring",
                         "Team stand-up meetings",
-                        "Feature development",
-                        "Collaborating with product managers"
+                        "Quality control checks",
+                        "Lean process improvement"
                       ].map((activity, index) => (
                         <div key={index} className="flex items-start gap-3">
                           <div className="w-1.5 h-1.5 bg-green-400 rounded-full mt-2 flex-shrink-0"></div>
@@ -1152,10 +1242,10 @@ const ProfileRightCard: React.FC = () => {
                     </h4>
                     <div className="space-y-2">
                       {[
-                        "Maintain code quality",
-                        "Mentor junior developers",
-                        "Ensure timely delivery of features",
-                        "Participate in architectural decisions"
+                        "Ensure production targets",
+                        "Maintain safety standards",
+                        "Implement lean principles",
+                        "Lead continuous improvement"
                       ].map((responsibility, index) => (
                         <div key={index} className="flex items-start gap-3">
                           <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 flex-shrink-0"></div>
@@ -1173,9 +1263,10 @@ const ProfileRightCard: React.FC = () => {
                     </h4>
                     <div className="space-y-2">
                       {[
-                        "Complete Q2 roadmap features",
-                        "Reduce bug count by 30%",
-                        "Improve CI/CD pipeline efficiency"
+                        "Reduce cycle time by 15%",
+                        "Achieve 99.5% quality rate",
+                        "Implement 5S methodology",
+                        "Reduce waste by 25%"
                       ].map((target, index) => (
                         <div key={index} className="flex items-start gap-3">
                           <div className="w-1.5 h-1.5 bg-purple-400 rounded-full mt-2 flex-shrink-0"></div>

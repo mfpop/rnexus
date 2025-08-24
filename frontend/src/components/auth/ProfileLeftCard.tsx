@@ -9,12 +9,26 @@ import {
   Lightbulb,
   FileText,
 } from "lucide-react";
+import AuthService from "../../lib/authService";
+import { computeProfileCompletion } from "../../lib/profileCompletion";
 
 // API configuration
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 const ProfileLeftCard: React.FC = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [percent, setPercent] = React.useState<number>(0);
+  const [details, setDetails] = React.useState({
+    basicInfo: false,
+    contact: false,
+    address: false,
+    professional: false,
+    education: false,
+    work: false,
+    bio: false,
+  });
 
   const handleReturnToDashboard = () => {
     navigate('/');
@@ -58,6 +72,43 @@ const ProfileLeftCard: React.FC = () => {
       alert('Error downloading CV. Please try again.');
     }
   };
+
+  const loadCompletion = React.useCallback(async () => {
+    if (!AuthService.isAuthenticated()) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_BASE_URL}/user/profile/`, {
+        headers: AuthService.getAuthHeaders(),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (data?.success && data?.profile) {
+        const { percent, details } = computeProfileCompletion(data.profile);
+        setPercent(percent);
+        setDetails(details);
+      }
+    } catch (e: any) {
+      console.error('Profile completion fetch failed:', e);
+      setError('Unable to load profile completion');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    loadCompletion();
+  }, [loadCompletion]);
+
+  React.useEffect(() => {
+    const handler = () => loadCompletion();
+    // @ts-ignore - custom event name
+    window.addEventListener('profile-updated', handler);
+    return () => {
+      // @ts-ignore - custom event name
+      window.removeEventListener('profile-updated', handler);
+    };
+  }, [loadCompletion]);
 
   return (
     <div className="h-full bg-white flex flex-col overflow-hidden">
@@ -111,25 +162,28 @@ const ProfileLeftCard: React.FC = () => {
               <User className="h-4 w-4 text-purple-500" />
               Profile Completion
             </h4>
-            <span className="text-sm font-medium text-gray-900">85%</span>
+            <span className="text-sm font-medium text-gray-900">{loading ? '...' : `${percent}%`}</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
-            <div className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full" style={{ width: '85%' }}></div>
+            <div className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full" style={{ width: `${percent}%` }}></div>
           </div>
           <div className="space-y-1 text-xs text-gray-500">
             <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+              <div className={`w-1.5 h-1.5 rounded-full ${details.basicInfo ? 'bg-green-500' : 'bg-gray-300'}`}></div>
               <span>Basic information completed</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+              <div className={`w-1.5 h-1.5 rounded-full ${details.contact ? 'bg-green-500' : 'bg-gray-300'}`}></div>
               <span>Contact details added</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full"></div>
-              <span>Add more education details</span>
+              <div className={`w-1.5 h-1.5 rounded-full ${details.education ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+              <span>{details.education ? 'Education provided' : 'Add more education details'}</span>
             </div>
           </div>
+          {error && (
+            <p className="text-xs text-red-600 mt-2">{error}</p>
+          )}
         </div>
 
         {/* Profile Tips */}
