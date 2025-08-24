@@ -3,9 +3,60 @@ import { test, expect } from "@playwright/test";
 test.describe("Dropdown Menu Positioning", () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to the chat page where dropdowns are used
+    // Mock chat API endpoints so the right card renders messages without backend
+    await page.route('**/api/chat/**', async (route) => {
+      const url = route.request().url();
+      if (url.includes('/messages')) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            success: true,
+            messages: [
+              {
+                id: 100,
+                sender_id: '2',
+                sender_name: 'Sarah',
+                content: 'Hello from mocked API',
+                message_type: 'text',
+                timestamp: new Date().toISOString(),
+                status: 'sent',
+              }
+            ],
+            chat: {
+              id: '1',
+              name: 'Mock Chat',
+              type: 'user',
+              participants: []
+            }
+          })
+        });
+        return;
+      }
+      await route.continue();
+    });
+
+    await page.route('**/api/message/**', async (route) => {
+      if (route.request().method() === 'PUT') {
+        const m = /\/message\/(\d+)\//.exec(route.request().url());
+        const id = m ? Number(m[1]) : 0;
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ success: true, message: { id, status: 'read' } })
+        });
+        return;
+      }
+      await route.continue();
+    });
+
     await page.goto("/chat");
     // Wait for the page to load
     await page.waitForLoadState("networkidle");
+
+    // Select the first chat so the right card renders messages
+    const firstChat = page.locator('[data-testid="chat-item"]').first();
+    await firstChat.click();
   });
 
   // Helper to find the more options button with several fallbacks
@@ -38,7 +89,7 @@ test.describe("Dropdown Menu Positioning", () => {
     await moreOptionsButton.click();
 
     // Wait for dropdown to appear
-    const dropdownContent = page.locator(".fixed.z-50").first();
+  const dropdownContent = page.locator('[data-testid="dropdown-content"]').first();
     await expect(dropdownContent).toBeVisible();
 
   // Get the button position
@@ -64,14 +115,16 @@ test.describe("Dropdown Menu Positioning", () => {
     page,
   }) => {
     // Find the more options button in the right card
-  const moreOptionsButton = page.locator('[data-testid="message-more-options"]').nth(0);
-    await expect(moreOptionsButton).toBeVisible();
+  const moreOptionsButton = page.locator('[data-testid="message-more-options"]').first();
+    await moreOptionsButton.scrollIntoViewIfNeeded();
+    // Button shows on hover, so force the click
+    await moreOptionsButton.click({ force: true });
 
     // Click the more options button to open dropdown
     await moreOptionsButton.click();
 
     // Wait for dropdown to appear
-    const dropdownContent = page.locator(".fixed.z-50").first();
+  const dropdownContent = page.locator('[data-testid="dropdown-content"]').first();
     await expect(dropdownContent).toBeVisible();
 
   // Get the button position
@@ -98,7 +151,7 @@ test.describe("Dropdown Menu Positioning", () => {
     await moreOptionsButton.click();
 
     // Wait for dropdown to appear
-    const dropdownContent = page.locator(".fixed.z-50").first();
+  const dropdownContent = page.locator('[data-testid="dropdown-content"]').first();
     await expect(dropdownContent).toBeVisible();
 
   // Get initial position

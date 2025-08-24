@@ -272,6 +272,7 @@ const DropdownMenuContent = React.forwardRef<
         "fixed z-[9999] min-w-40 bg-white border border-gray-200 rounded-lg shadow-lg py-1 pointer-events-auto",
         className
       )}
+  data-testid="dropdown-content"
       style={{
         top: position.top,
         left: position.left,

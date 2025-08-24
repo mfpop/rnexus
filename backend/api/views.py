@@ -30,6 +30,7 @@ from .models import (
     UpdateComment,
     UpdateLike,
     UpdateMedia,
+    UserProfile,
 )
 
 # Type alias for Django User to help with type checking
@@ -294,7 +295,11 @@ def profile_view(request: HttpRequest) -> JsonResponse:
             )
 
         user = cast(User, request.user)  # Type assertion for Pylance
-        # Return basic user information
+
+        # Get or create user profile
+        user_profile, created = UserProfile.objects.get_or_create(user=user)
+
+        # Return basic user information with profile data
         return JsonResponse(
             {
                 "success": True,
@@ -309,16 +314,20 @@ def profile_view(request: HttpRequest) -> JsonResponse:
                     "is_active": user.is_active,  # type: ignore
                     "is_staff": user.is_staff,  # type: ignore
                     "is_superuser": user.is_superuser,  # type: ignore
-                    "position": "",
-                    "department": "",
-                    "phone": "",
-                    "location": "",
-                    "bio": "",
-                    "education": [],
-                    "work_history": [],
-                    "profile_visibility": {
-                        "education_visible": True,
-                        "work_history_visible": True,
+                    "position": user_profile.position or "",
+                    "department": user_profile.department or "",
+                    "phone": user_profile.phone or "",
+                    "location": user_profile.location or "",
+                    "bio": user_profile.bio or "",
+                    "education": user_profile.education or [],
+                    "work_history": user_profile.work_history or [],
+                    "profile_visibility": user_profile.profile_visibility
+                    or {
+                        "education": True,
+                        "work_history": True,
+                        "position": True,
+                        "contact": True,
+                        "bio": True,
                     },
                 },
             }
@@ -347,6 +356,29 @@ def profile_view(request: HttpRequest) -> JsonResponse:
 
             user.save()
 
+            # Get or create user profile and update it
+            user_profile, created = UserProfile.objects.get_or_create(user=user)
+
+            # Update profile fields
+            if "position" in data:
+                user_profile.position = data["position"]
+            if "department" in data:
+                user_profile.department = data["department"]
+            if "phone" in data:
+                user_profile.phone = data["phone"]
+            if "location" in data:
+                user_profile.location = data["location"]
+            if "bio" in data:
+                user_profile.bio = data["bio"]
+            if "education" in data:
+                user_profile.education = data["education"]
+            if "work_history" in data:
+                user_profile.work_history = data["work_history"]
+            if "profile_visibility" in data:
+                user_profile.profile_visibility = data["profile_visibility"]
+
+            user_profile.save()
+
             return JsonResponse(
                 {
                     "success": True,
@@ -362,16 +394,20 @@ def profile_view(request: HttpRequest) -> JsonResponse:
                         "is_active": user.is_active,  # type: ignore
                         "is_staff": user.is_staff,  # type: ignore
                         "is_superuser": user.is_superuser,  # type: ignore
-                        "position": "",
-                        "department": "",
-                        "phone": "",
-                        "location": "",
-                        "bio": "",
-                        "education": [],
-                        "work_history": [],
-                        "profile_visibility": {
-                            "education_visible": True,
-                            "work_history_visible": True,
+                        "position": user_profile.position or "",
+                        "department": user_profile.department or "",
+                        "phone": user_profile.phone or "",
+                        "location": user_profile.location or "",
+                        "bio": user_profile.bio or "",
+                        "education": user_profile.education or [],
+                        "work_history": user_profile.work_history or [],
+                        "profile_visibility": user_profile.profile_visibility
+                        or {
+                            "education": True,
+                            "work_history": True,
+                            "position": True,
+                            "contact": True,
+                            "bio": True,
                         },
                     },
                 }

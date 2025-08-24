@@ -463,6 +463,7 @@ const ChatLeftCardSimple: React.FC = () => {
               {paginatedChatItems.map((item) => (
                 <div
                   key={`${item.type}-${item.id}`}
+                  data-testid="chat-item"
                   onClick={() => setSelectedContact(item)}
                   className={`p-2.5 hover:bg-gray-50 cursor-pointer transition-all duration-200 border-b border-gray-100 flex flex-col justify-center ${
                     selectedContact?.id === item.id
