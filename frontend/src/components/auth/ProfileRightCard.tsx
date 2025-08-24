@@ -299,15 +299,13 @@ const ProfileRightCard: React.FC = () => {
     }
   };
 
-  const handleProfileChange = (
-    field: keyof ProfileData,
-    value: string | boolean,
-  ) => {
-    setProfileData((prev) => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
-    }
+  const handleProfileChange = (field: keyof ProfileData, value: any) => {
+    console.log(`Profile change - Field: ${field}, Value:`, value);
+    setProfileData((prev) => {
+      const updated = { ...prev, [field]: value };
+      console.log(`Updated profile data:`, updated);
+      return updated;
+    });
   };
 
   const addEducation = () => {
@@ -666,7 +664,7 @@ const ProfileRightCard: React.FC = () => {
                         type="text"
                         value={profileData.first_name || ""}
                         onChange={(e) => handleProfileChange("first_name", e.target.value)}
-                        className="w-full h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                        className="w-full h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:ring-inset"
                         placeholder="Enter first name"
                       />
                     </div>
@@ -678,7 +676,7 @@ const ProfileRightCard: React.FC = () => {
                          type="text"
                          value={profileData.middle_name || ""}
                          onChange={(e) => handleProfileChange("middle_name", e.target.value)}
-                         className="w-full h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                         className="w-full h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:ring-inset"
                          placeholder="Enter middle name"
                        />
                     </div>
@@ -690,7 +688,7 @@ const ProfileRightCard: React.FC = () => {
                          type="text"
                          value={profileData.last_name || ""}
                          onChange={(e) => handleProfileChange("last_name", e.target.value)}
-                         className="w-full h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                         className="w-full h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:ring-inset"
                          placeholder="Enter last name"
                        />
                     </div>
@@ -702,7 +700,7 @@ const ProfileRightCard: React.FC = () => {
                         type="text"
                         value={profileData.maternal_last_name || ""}
                         onChange={(e) => handleProfileChange("maternal_last_name", e.target.value)}
-                        className="w-full h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                        className="w-full h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:ring-inset"
                         placeholder="Enter maternal last name"
                       />
                     </div>
@@ -714,7 +712,7 @@ const ProfileRightCard: React.FC = () => {
                         type="text"
                         value={profileData.preferred_name || ""}
                         onChange={(e) => handleProfileChange("preferred_name", e.target.value)}
-                        className="w-full h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                        className="w-full h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:ring-inset"
                         placeholder="Enter nickname"
                       />
                     </div>
@@ -735,7 +733,7 @@ const ProfileRightCard: React.FC = () => {
                         type="email"
                         value={profileData.email || ""}
                         onChange={(e) => handleProfileChange("email", e.target.value)}
-                        className="w-full h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                        className="w-full h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:ring-inset"
                         placeholder="Enter email address"
                       />
                     </div>
@@ -821,7 +819,7 @@ const ProfileRightCard: React.FC = () => {
                         type="tel"
                         value={profileData.phone || ""}
                         onChange={(e) => handleProfileChange("phone", e.target.value)}
-                        className="flex-1 h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                        className="flex-1 h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:ring-inset"
                         placeholder="Phone number"
                       />
                       <PhoneTypeDropdown
@@ -912,7 +910,7 @@ const ProfileRightCard: React.FC = () => {
                         type="tel"
                         value={profileData.secondary_phone || ""}
                         onChange={(e) => handleProfileChange("secondary_phone", e.target.value)}
-                        className="flex-1 h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                        className="flex-1 h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:ring-inset"
                         placeholder="Phone number"
                       />
                       <PhoneTypeDropdown
@@ -939,7 +937,7 @@ const ProfileRightCard: React.FC = () => {
                           type="text"
                           value={profileData.street_address || ""}
                           onChange={(e) => handleProfileChange("street_address", e.target.value)}
-                          className="w-full h-7 text-sm border border-gray-300 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                          className="w-full h-7 text-sm border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:ring-inset"
                           placeholder="123 Tech Street"
                         />
                       </div>
@@ -951,7 +949,7 @@ const ProfileRightCard: React.FC = () => {
                           type="text"
                           value={profileData.apartment_suite || ""}
                           onChange={(e) => handleProfileChange("apartment_suite", e.target.value)}
-                          className="w-full h-7 text-sm border border-gray-300 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                          className="w-full h-7 text-sm border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:ring-inset"
                           placeholder="Enter apartment/suite"
                         />
                       </div>
@@ -999,7 +997,7 @@ const ProfileRightCard: React.FC = () => {
                           type="text"
                           value={profileData.zip_code || ""}
                           onChange={(e) => handleProfileChange("zip_code", e.target.value)}
-                          className="w-full h-7 text-sm border border-gray-300 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                          className="w-full h-7 text-sm border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:ring-inset"
                           placeholder="Enter ZIP/postal code"
                         />
                       </div>
@@ -1084,7 +1082,7 @@ const ProfileRightCard: React.FC = () => {
                           type="text"
                           value={profileData.position || ""}
                           onChange={(e) => handleProfileChange("position", e.target.value)}
-                          className="w-full border border-gray-300 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                          className="w-full border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:ring-inset"
                           placeholder="e.g. Production Manager, Quality Engineer, Line Supervisor, Machine Operator"
                         />
                       </div>
@@ -1097,7 +1095,7 @@ const ProfileRightCard: React.FC = () => {
                           type="text"
                           value={profileData.department || ""}
                           onChange={(e) => handleProfileChange("department", e.target.value)}
-                          className="w-full border border-gray-300 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                          className="w-full border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:ring-inset"
                           placeholder="e.g. Production, Quality, Maintenance, Engineering, IT, Logistics"
                         />
                       </div>
