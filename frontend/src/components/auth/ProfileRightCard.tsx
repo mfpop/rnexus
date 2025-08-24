@@ -1064,114 +1064,178 @@ const ProfileRightCard: React.FC = () => {
                   {/* Lean Manufacturing Plant Hierarchy */}
                   <div className="space-y-4">
                     <div className="text-center">
-                      <h4 className="text-sm font-medium text-gray-600 mb-3">Plant Organizational Structure</h4>
+                      <h4 className="text-sm font-medium text-gray-600 mb-4">Plant Organizational Structure</h4>
 
                       {/* Plant Manager Level */}
-                      <div className={`inline-block p-3 rounded-lg border-2 transition-all duration-200 ${
+                      <div className={`inline-block p-4 rounded-lg border-2 transition-all duration-300 ${
                         profileData.position?.toLowerCase().includes('plant manager') ||
                         profileData.position?.toLowerCase().includes('plant director') ||
-                        profileData.position?.toLowerCase().includes('general manager')
-                          ? 'bg-blue-100 border-blue-400 shadow-lg scale-105'
-                          : 'bg-gray-50 border-gray-200'
+                        profileData.position?.toLowerCase().includes('general manager') ||
+                        profileData.position?.toLowerCase().includes('plant supervisor')
+                          ? 'bg-blue-200 border-blue-600 shadow-xl scale-110 ring-4 ring-blue-200'
+                          : 'bg-gray-100 border-gray-300'
                       }`}>
-                        <div className="text-xs font-medium text-gray-600">Plant Manager</div>
-                        <div className="text-sm font-semibold text-gray-800">Plant Leadership</div>
+                        <div className="text-sm font-bold text-gray-800 mb-1">🏭 PLANT MANAGER</div>
+                        <div className="text-xs text-gray-600">Plant Leadership</div>
+                        {profileData.position?.toLowerCase().includes('plant manager') ||
+                         profileData.position?.toLowerCase().includes('plant director') ||
+                         profileData.position?.toLowerCase().includes('general manager') ||
+                         profileData.position?.toLowerCase().includes('plant supervisor') ? (
+                          <div className="mt-2 text-xs bg-blue-600 text-white px-2 py-1 rounded-full">
+                            YOUR ROLE
+                          </div>
+                        ) : null}
                       </div>
 
                       {/* Connector */}
-                      <div className="flex justify-center my-2">
-                        <div className="w-px h-4 bg-gray-300"></div>
+                      <div className="flex justify-center my-3">
+                        <div className="w-1 h-6 bg-gray-400"></div>
                       </div>
 
                       {/* Department Level */}
-                      <div className="grid grid-cols-3 gap-2 mb-3">
+                      <div className="grid grid-cols-3 gap-3 mb-4">
                         {/* Operations */}
-                        <div className={`p-2 rounded border transition-all duration-200 ${
+                        <div className={`p-3 rounded-lg border-2 transition-all duration-300 ${
                           profileData.department?.toLowerCase().includes('operations') ||
                           profileData.department?.toLowerCase().includes('production') ||
                           profileData.position?.toLowerCase().includes('operations') ||
-                          profileData.position?.toLowerCase().includes('production')
-                            ? 'bg-green-100 border-green-400 shadow-md scale-105'
-                            : 'bg-gray-50 border-gray-200'
+                          profileData.position?.toLowerCase().includes('production') ||
+                          profileData.position?.toLowerCase().includes('supervisor') ||
+                          profileData.position?.toLowerCase().includes('team lead')
+                            ? 'bg-green-200 border-green-600 shadow-lg scale-105 ring-4 ring-green-200'
+                            : 'bg-gray-100 border-gray-300'
                         }`}>
-                          <div className="text-xs font-medium text-gray-600">Operations</div>
-                          <div className="text-xs text-gray-500">Production</div>
+                          <div className="text-xs font-bold text-gray-800 mb-1">🏭 OPERATIONS</div>
+                          <div className="text-xs text-gray-600">Production</div>
+                          {profileData.department?.toLowerCase().includes('operations') ||
+                           profileData.department?.toLowerCase().includes('production') ||
+                           profileData.position?.toLowerCase().includes('operations') ||
+                           profileData.position?.toLowerCase().includes('production') ||
+                           profileData.position?.toLowerCase().includes('supervisor') ||
+                           profileData.position?.toLowerCase().includes('team lead') ? (
+                            <div className="mt-2 text-xs bg-green-600 text-white px-2 py-1 rounded-full">
+                              YOUR DEPT
+                            </div>
+                          ) : null}
                         </div>
 
                         {/* Engineering */}
-                        <div className={`p-2 rounded border transition-all duration-200 ${
+                        <div className={`p-3 rounded-lg border-2 transition-all duration-300 ${
                           profileData.department?.toLowerCase().includes('engineering') ||
                           profileData.department?.toLowerCase().includes('maintenance') ||
                           profileData.position?.toLowerCase().includes('engineer') ||
-                          profileData.position?.toLowerCase().includes('maintenance')
-                            ? 'bg-blue-100 border-blue-400 shadow-md scale-105'
-                            : 'bg-gray-50 border-gray-200'
+                          profileData.position?.toLowerCase().includes('maintenance') ||
+                          profileData.position?.toLowerCase().includes('technician')
+                            ? 'bg-blue-200 border-blue-600 shadow-lg scale-105 ring-4 ring-blue-200'
+                            : 'bg-gray-100 border-gray-300'
                         }`}>
-                          <div className="text-xs font-medium text-gray-600">Engineering</div>
-                          <div className="text-xs text-gray-500">Maintenance</div>
+                          <div className="text-xs font-bold text-gray-800 mb-1">⚙️ ENGINEERING</div>
+                          <div className="text-xs text-gray-600">Maintenance</div>
+                          {profileData.department?.toLowerCase().includes('engineering') ||
+                           profileData.department?.toLowerCase().includes('maintenance') ||
+                           profileData.position?.toLowerCase().includes('engineer') ||
+                           profileData.position?.toLowerCase().includes('maintenance') ||
+                           profileData.position?.toLowerCase().includes('technician') ? (
+                            <div className="mt-2 text-xs bg-blue-600 text-white px-2 py-1 rounded-full">
+                              YOUR DEPT
+                            </div>
+                          ) : null}
                         </div>
 
                         {/* Quality */}
-                        <div className={`p-2 rounded border transition-all duration-200 ${
+                        <div className={`p-3 rounded-lg border-2 transition-all duration-300 ${
                           profileData.department?.toLowerCase().includes('quality') ||
                           profileData.department?.toLowerCase().includes('qc') ||
                           profileData.position?.toLowerCase().includes('quality') ||
-                          profileData.position?.toLowerCase().includes('qc')
-                            ? 'bg-purple-100 border-purple-400 shadow-md scale-105'
-                            : 'bg-gray-50 border-gray-200'
+                          profileData.position?.toLowerCase().includes('qc') ||
+                          profileData.position?.toLowerCase().includes('inspector')
+                            ? 'bg-purple-200 border-purple-600 shadow-lg scale-105 ring-4 ring-purple-200'
+                            : 'bg-gray-100 border-gray-300'
                         }`}>
-                          <div className="text-xs font-medium text-gray-600">Quality</div>
-                          <div className="text-xs text-gray-500">QC/QA</div>
+                          <div className="text-xs font-bold text-gray-800 mb-1">🔍 QUALITY</div>
+                          <div className="text-xs text-gray-600">QC/QA</div>
+                          {profileData.department?.toLowerCase().includes('quality') ||
+                           profileData.department?.toLowerCase().includes('qc') ||
+                           profileData.position?.toLowerCase().includes('quality') ||
+                           profileData.position?.toLowerCase().includes('qc') ||
+                           profileData.position?.toLowerCase().includes('inspector') ? (
+                            <div className="mt-2 text-xs bg-purple-600 text-white px-2 py-1 rounded-full">
+                              YOUR DEPT
+                            </div>
+                          ) : null}
                         </div>
                       </div>
 
                       {/* Connector */}
-                      <div className="flex justify-center my-2">
-                        <div className="w-px h-4 bg-gray-300"></div>
+                      <div className="flex justify-center my-3">
+                        <div className="w-1 h-6 bg-gray-400"></div>
                       </div>
 
                       {/* Team Level */}
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-2 gap-3">
                         {/* Production Teams */}
-                        <div className={`p-2 rounded border transition-all duration-200 ${
-                          profileData.position?.toLowerCase().includes('supervisor') ||
-                          profileData.position?.toLowerCase().includes('team lead') ||
+                        <div className={`p-3 rounded-lg border-2 transition-all duration-300 ${
                           profileData.position?.toLowerCase().includes('operator') ||
-                          profileData.position?.toLowerCase().includes('technician')
-                            ? 'bg-green-100 border-green-400 shadow-md scale-105'
-                            : 'bg-gray-50 border-gray-200'
+                          profileData.position?.toLowerCase().includes('assembler') ||
+                          profileData.position?.toLowerCase().includes('machinist') ||
+                          profileData.position?.toLowerCase().includes('welder')
+                            ? 'bg-green-200 border-green-600 shadow-lg scale-105 ring-4 ring-green-200'
+                            : 'bg-gray-100 border-gray-300'
                         }`}>
-                          <div className="text-xs font-medium text-gray-600">Production Teams</div>
-                          <div className="text-xs text-gray-500">Supervisors, Operators</div>
+                          <div className="text-xs font-bold text-gray-800 mb-1">👷 PRODUCTION</div>
+                          <div className="text-xs text-gray-600">Operators, Assemblers</div>
+                          {profileData.position?.toLowerCase().includes('operator') ||
+                           profileData.position?.toLowerCase().includes('assembler') ||
+                           profileData.position?.toLowerCase().includes('machinist') ||
+                           profileData.position?.toLowerCase().includes('welder') ? (
+                            <div className="mt-2 text-xs bg-green-600 text-white px-2 py-1 rounded-full">
+                              YOUR ROLE
+                            </div>
+                          ) : null}
                         </div>
 
                         {/* Support Teams */}
-                        <div className={`p-2 rounded border transition-all duration-200 ${
+                        <div className={`p-3 rounded-lg border-2 transition-all duration-300 ${
                           profileData.position?.toLowerCase().includes('analyst') ||
                           profileData.position?.toLowerCase().includes('coordinator') ||
                           profileData.position?.toLowerCase().includes('specialist') ||
-                          profileData.position?.toLowerCase().includes('planner')
-                            ? 'bg-blue-100 border-blue-400 shadow-md scale-105'
-                            : 'bg-gray-50 border-gray-200'
+                          profileData.position?.toLowerCase().includes('planner') ||
+                          profileData.position?.toLowerCase().includes('clerk')
+                            ? 'bg-orange-200 border-orange-600 shadow-lg scale-105 ring-4 ring-orange-200'
+                            : 'bg-gray-100 border-gray-300'
                         }`}>
-                          <div className="text-xs font-medium text-gray-600">Support Teams</div>
-                          <div className="text-xs text-gray-500">Analysts, Coordinators</div>
+                          <div className="text-xs font-bold text-gray-800 mb-1">📊 SUPPORT</div>
+                          <div className="text-xs text-gray-600">Analysts, Coordinators</div>
+                          {profileData.position?.toLowerCase().includes('analyst') ||
+                           profileData.position?.toLowerCase().includes('coordinator') ||
+                           profileData.position?.toLowerCase().includes('specialist') ||
+                           profileData.position?.toLowerCase().includes('planner') ||
+                           profileData.position?.toLowerCase().includes('clerk') ? (
+                            <div className="mt-2 text-xs bg-orange-600 text-white px-2 py-1 rounded-full">
+                              YOUR ROLE
+                            </div>
+                          ) : null}
                         </div>
                       </div>
                     </div>
 
                     {/* Position Indicator */}
                     {profileData.position && (
-                      <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                        <div className="text-xs font-medium text-blue-600 mb-1">Your Position</div>
-                        <div className="text-sm font-semibold text-blue-800">
+                      <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-lg">
+                        <div className="text-sm font-bold text-blue-800 mb-2 flex items-center gap-2">
+                          🎯 <span>Your Current Position</span>
+                        </div>
+                        <div className="text-lg font-bold text-blue-900 mb-2">
                           {profileData.position}
                         </div>
                         {profileData.department && (
-                          <div className="text-xs text-blue-600 mt-1">
-                            Department: {profileData.department}
+                          <div className="text-sm text-blue-700">
+                            📍 Department: <span className="font-semibold">{profileData.department}</span>
                           </div>
                         )}
+                        <div className="mt-3 text-xs text-blue-600 bg-blue-100 px-3 py-2 rounded-lg">
+                          💡 <strong>Tip:</strong> This position is automatically highlighted in the diagram above
+                        </div>
                       </div>
                     )}
                   </div>
