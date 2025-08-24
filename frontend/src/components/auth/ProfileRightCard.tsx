@@ -923,22 +923,22 @@ const ProfileRightCard: React.FC = () => {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Institution
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Degree & Field
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                         Period
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Description
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
                         Status
                       </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
                         Actions
                       </th>
                     </tr>
@@ -946,48 +946,48 @@ const ProfileRightCard: React.FC = () => {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {(profileData.education || []).map((edu) => (
                       <tr key={edu.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-3 py-2 whitespace-nowrap">
                           <Input
                             value={edu.school || ''}
                             onChange={(e) => updateEducation(edu.id, 'school', e.target.value)}
                             placeholder="Institution name"
-                            className="w-full h-8 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-2"
+                            className="w-full h-7 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-2"
                           />
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-3 py-2 whitespace-nowrap">
                           <div className="space-y-1">
                             <Input
                               value={edu.degree || ''}
                               onChange={(e) => updateEducation(edu.id, 'degree', e.target.value)}
                               placeholder="Degree"
-                              className="w-full h-8 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-2"
+                              className="w-full h-7 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-2"
                             />
                             <Input
                               value={edu.field || ''}
                               onChange={(e) => updateEducation(edu.id, 'field', e.target.value)}
                               placeholder="Field of study"
-                              className="w-full h-8 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-2"
+                              className="w-full h-7 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-2"
                             />
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-2">
+                        <td className="px-3 py-2 whitespace-nowrap w-24">
+                          <div className="flex items-center gap-1">
                             <Input
                               value={edu.startYear || ''}
                               onChange={(e) => updateEducation(edu.id, 'startYear', e.target.value)}
                               placeholder="Start"
-                              className="w-20 h-8 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-2 text-center"
+                              className="w-16 h-7 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-1 text-center"
                             />
-                            <span className="text-gray-400">-</span>
+                            <span className="text-gray-400 text-xs">-</span>
                             <Input
                               value={edu.endYear || ''}
                               onChange={(e) => updateEducation(edu.id, 'endYear', e.target.value)}
                               placeholder="End"
-                              className="w-20 h-8 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-2 text-center"
+                              className="w-16 h-7 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-1 text-center"
                             />
                           </div>
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-3 py-2">
                           <textarea
                             value={edu.description || ''}
                             onChange={(e) => updateEducation(edu.id, 'description', e.target.value)}
@@ -996,7 +996,7 @@ const ProfileRightCard: React.FC = () => {
                             className="w-full text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-2 py-1 resize-none"
                           />
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-3 py-2 whitespace-nowrap w-20">
                           <label className="flex items-center">
                             <input
                               type="checkbox"
@@ -1009,10 +1009,10 @@ const ProfileRightCard: React.FC = () => {
                             </span>
                           </label>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <td className="px-3 py-2 whitespace-nowrap text-right text-sm font-medium w-16">
                           <Button
                             onClick={() => removeEducation(edu.id)}
-                            className="bg-red-50 hover:bg-red-100 text-red-600 border-0 p-2 rounded-lg"
+                            className="bg-red-50 hover:bg-red-100 text-red-600 border-0 p-1.5 rounded"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
