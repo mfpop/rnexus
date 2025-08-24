@@ -8,6 +8,28 @@ This document describes the application data model: entities, fields, relationsh
 - Backing DB: PostgreSQL in production, SQLite in tests/dev (see `core.settings_test`).
 - Conventions: Most models have `created_at` and `updated_at`, sensible default orderings, and indexes for common queries.
 
+## Entity Relationship Diagram
+
+```mermaid
+erDiagram
+  User ||--|| UserProfile : has
+  ActivityStatus ||--o{ Activity : status_config
+  ActivityPriority ||--o{ Activity : priority_config
+  User ||--o{ Activity : created_by
+  Chat ||--o{ Message : has
+  Update ||--o{ UpdateAttachment : has
+  Update ||--o{ UpdateMedia : has
+  Update ||--o{ UpdateComment : has
+  Update ||--o{ UpdateLike : has
+  Update ||--o{ UpdateRelation : source
+  Update ||--o{ UpdateRelation : target
+  User ||--o{ Update : created_by
+  User ||--o{ UpdateComment : author
+  User ||--o{ UpdateLike : user
+```
+
+Note: `Chat.members` is a JSON array of user IDs (no join table yet). `Message` links to `Chat` by `chat_id` (string), not an FK.
+
 ## Entities and Fields
 
 ### Users
@@ -240,12 +262,109 @@ These capture operational events/tasks and reference presentational configs for 
   - `0001_initial.py`: core models
   - `0002_systemmessage.py`: adds `SystemMessage`
 
-## Seed Data & Fixtures
-- ActivityStatus and ActivityPriority should be pre-seeded with all enum values used by the app to ensure Activity.save() can resolve configs.
-- Management commands (e.g., `populate_all`) can initialize demo data for development and testing.
+## Seed Data & Fixtures (detailed)
+These management commands populate realistic sample data. Use the existing backend virtual environment.
+
+- One-shot full seed (recommended):
+
+```bash
+backend/venv/bin/python backend/manage.py migrate
+backend/venv/bin/python backend/manage.py populate_activity_configs
+backend/venv/bin/python backend/manage.py populate_all
+```
+
+- Individual commands (order-aware):
+
+```bash
+# Ensure DB schema is up to date
+backend/venv/bin/python backend/manage.py migrate
+
+# Seed configs used by Activities UI colors and enums
+backend/venv/bin/python backend/manage.py populate_activity_configs
+
+# Foundation for Updates
+backend/venv/bin/python backend/manage.py populate_tags
+
+# Users (with profiles)
+backend/venv/bin/python backend/manage.py populate_users
+
+# Rich news/communications content
+backend/venv/bin/python backend/manage.py populate_enhanced_updates
+
+# Direct and group chats with messages
+backend/venv/bin/python backend/manage.py populate_chats
+
+# System notifications
+backend/venv/bin/python backend/manage.py populate_system_messages
+
+# Optional: legacy/basic updates
+backend/venv/bin/python backend/manage.py populate_updates
+```
+
+- Re-seeding: Most commands are idempotent (update-or-create). If you need a clean slate, drop and recreate the DB or truncate tables before re-running.
 
 ## Testing Notes
 - For CI and local tests, `core.settings_test` configures SQLite and minimal settings; migrations are applied automatically by Django test runner.
+
+## Common queries and API mappings
+Mappings between typical data access patterns and current REST endpoints.
+
+### Auth & Profile
+- Current user info: GET `/api/auth/user/` or `/api/user/info/`
+- Login/Logout/Register: POST `/api/login/`, `/api/logout/`, `/api/register/`
+- Profile view/update: GET `/api/user/profile/`, POST `/api/user/profile/update/`
+- Change password: POST `/api/user/change-password/`
+
+### Health & Meta
+- Healthcheck: GET `/api/health/`
+- Version: GET `/api/version/`
+
+### Activities
+- Legacy endpoints:
+  - List: GET `/api/activities/`
+  - Detail: GET `/api/activities/<activity_id>/`
+  - Start/Pause: POST `/api/activities/<activity_id>/start/`, `/api/activities/<activity_id>/pause/`
+- DRF v2 (preferred for new work):
+  - List/Create: GET/POST `/api/v2/activities/`
+  - Retrieve/Update/Delete: GET/PUT/PATCH/DELETE `/api/v2/activities/<id>/`
+  - Actions: POST `/api/v2/activities/<id>/start/`, `/api/v2/activities/<id>/pause/`
+- Query shape in DB: `Activity.objects.order_by('-created_at')`, commonly filtered by `status`, `priority`, and `type`.
+
+### Chat & Messages
+- Chats list: GET `/api/chat/`
+- Chat messages: GET `/api/chat/<chat_id>/messages/`
+- Update message status: POST `/api/message/<int:message_id>/status/`
+- Delete message: POST `/api/message/<int:message_id>/` (delete)
+- Search chats: GET `/api/chat/search/?q=...`
+- Query shape in DB:
+  - Chats: `Chat.objects.order_by('-last_activity')`
+  - Messages: `Message.objects.filter(chat_id=...).order_by('timestamp')`
+
+### Updates, Tags, Likes, Comments
+- Updates:
+  - List: GET `/api/updates/`
+  - Detail: GET `/api/updates/<update_id>/`
+  - Search: GET `/api/updates/search/?q=...`
+  - Status change: POST `/api/updates/<update_id>/status/`
+  - CRUD: POST `/api/updates/create/`, `/api/updates/<update_id>/edit/`, `/api/updates/<update_id>/delete/`
+- Tags:
+  - List: GET `/api/tags/`
+  - Create: POST `/api/tags/create/`
+  - Detail: GET `/api/tags/<int:tag_id>/`
+- Likes:
+  - Toggle like/dislike: POST `/api/updates/<update_id>/like/` (payload indicates like/dislike)
+- Comments:
+  - List for update: GET `/api/updates/<update_id>/comments/`
+  - Create: POST `/api/updates/<update_id>/comments/create/`
+  - Edit/Delete: POST `/api/comments/<int:comment_id>/edit/`, `/api/comments/<int:comment_id>/delete/`
+- Query shape in DB:
+  - Updates: `Update.objects.filter(is_active=True).order_by('-priority','-timestamp')`
+  - Tags: `Tag.objects.filter(is_active=True).order_by('category','name')`
+  - Comments: `UpdateComment.objects.filter(update=...).order_by('created_at')`
+
+### System Messages
+- Delivered internally and via WebSockets; not exposed as public REST endpoints yet.
+- Query shape in DB: `SystemMessage.objects.order_by('-created_at')`
 
 ## Future Enhancements
 - Normalize group chat members into a join table for better analytics and to support member attributes (roles, joined_at).

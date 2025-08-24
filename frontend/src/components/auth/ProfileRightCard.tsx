@@ -920,38 +920,38 @@ const ProfileRightCard: React.FC = () => {
                   <h3 className="text-lg font-medium text-gray-900">Address</h3>
                 </div>
                 <div className="p-4 space-y-3">
-                  <div className="p-4 space-y-3">
-                    <div className="grid grid-cols-2 gap-4">
+                  <div className="p-3 space-y-2">
+                    <div className="grid grid-cols-2 gap-3">
                       <div className="text-sm font-medium text-gray-600">Street Address:</div>
                       <div className="text-sm">
                         <Input
                           type="text"
                           value={profileData.street_address || ""}
                           onChange={(e) => handleProfileChange("street_address", e.target.value)}
-                          className="w-full h-8 text-sm"
+                          className="w-full h-7 text-sm"
                           placeholder="123 Tech Street"
                         />
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-3">
                       <div className="text-sm font-medium text-gray-600">Apartment/Suite:</div>
                       <div className="text-sm">
                         <Input
                           type="text"
                           value={profileData.apartment_suite || ""}
                           onChange={(e) => handleProfileChange("apartment_suite", e.target.value)}
-                          className="w-full h-8 text-sm"
+                          className="w-full h-7 text-sm"
                           placeholder="Enter apartment/suite"
                         />
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-3">
                       <div className="text-sm font-medium text-gray-600">City:</div>
                       <div className="text-sm">
                         <select
                           value={profileData.city || ""}
                           onChange={(e) => handleProfileChange("city", e.target.value)}
-                          className="w-full h-8 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                          className="w-full h-7 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                           disabled={!profileData.state_province}
                         >
                           <option value="">Select city</option>
@@ -963,13 +963,13 @@ const ProfileRightCard: React.FC = () => {
                         </select>
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-3">
                       <div className="text-sm font-medium text-gray-600">State/Province:</div>
                       <div className="text-sm">
                         <select
                           value={profileData.state_province || ""}
                           onChange={(e) => handleProfileChange("state_province", e.target.value)}
-                          className="w-full h-8 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                          className="w-full h-7 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                           disabled={!profileData.country}
                         >
                           <option value="">Select state/province</option>
@@ -981,25 +981,25 @@ const ProfileRightCard: React.FC = () => {
                         </select>
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-3">
                       <div className="text-sm font-medium text-gray-600">ZIP Code:</div>
                       <div className="text-sm">
                         <Input
                           type="text"
                           value={profileData.zip_code || ""}
                           onChange={(e) => handleProfileChange("zip_code", e.target.value)}
-                          className="w-full h-8 text-sm"
+                          className="w-full h-7 text-sm"
                           placeholder="Enter ZIP/postal code"
                         />
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-3">
                       <div className="text-sm font-medium text-gray-600">Country:</div>
                       <div className="text-sm">
                         <select
                           value={profileData.country || ""}
                           onChange={(e) => handleProfileChange("country", e.target.value)}
-                          className="w-full h-8 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                          className="w-full h-7 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                         >
                           <option value="">Select country</option>
                           {countries.map((country) => (
@@ -1013,7 +1013,7 @@ const ProfileRightCard: React.FC = () => {
                   </div>
 
                   {/* Address Card Footer - Saved Address Display */}
-                  <div className="px-4 py-3 border-t border-gray-200 bg-gray-50">
+                  <div className="px-3 py-2 border-t border-gray-200 bg-gray-50">
                     <div className="text-sm text-gray-800">
                       {profileData.street_address || profileData.apartment_suite || profileData.city || profileData.state_province || profileData.country ? (
                         <div>
