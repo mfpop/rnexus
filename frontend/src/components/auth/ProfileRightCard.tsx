@@ -11,6 +11,7 @@ import {
   Camera,
 } from "lucide-react";
 import { Button, Input, PhoneTypeDropdown, NotificationToast } from "../ui/bits";
+import AddressFormEnhanced from "../shared/AddressFormEnhanced";
 import AuthService from "../../lib/authService";
 
 // API configuration
@@ -776,78 +777,28 @@ const ProfileRightCard: React.FC = () => {
                   <h3 className="text-lg font-medium text-gray-900">Address</h3>
                 </div>
                 <div className="p-4 space-y-3">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-sm font-medium text-gray-600">Country:</div>
-                    <div className="text-sm">
-                      <Input
-                        type="text"
-                        value={profileData.country || ""}
-                        onChange={(e) => handleProfileChange("country", e.target.value)}
-                        className="w-full h-8 text-sm"
-                        placeholder="Enter country"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-sm font-medium text-gray-600">State/Province:</div>
-                    <div className="text-sm">
-                      <Input
-                        type="text"
-                        value={profileData.state_province || ""}
-                        onChange={(e) => handleProfileChange("state_province", e.target.value)}
-                        className="w-full h-8 text-sm"
-                        placeholder="Enter state/province"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-sm font-medium text-gray-600">City:</div>
-                    <div className="text-sm">
-                      <Input
-                        type="text"
-                        value={profileData.city || ""}
-                        onChange={(e) => handleProfileChange("city", e.target.value)}
-                        className="w-full h-8 text-sm"
-                        placeholder="Enter city"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-sm font-medium text-gray-600">Street Address:</div>
-                    <div className="text-sm">
-                      <Input
-                        type="text"
-                        value={profileData.street_address || ""}
-                        onChange={(e) => handleProfileChange("street_address", e.target.value)}
-                        className="w-full h-8 text-sm"
-                        placeholder="Enter street address"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-sm font-medium text-gray-600">Apartment/Suite:</div>
-                    <div className="text-sm">
-                      <Input
-                        type="text"
-                        value={profileData.apartment_suite || ""}
-                        onChange={(e) => handleProfileChange("apartment_suite", e.target.value)}
-                        className="w-full h-8 text-sm"
-                        placeholder="Enter apartment/suite"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-sm font-medium text-gray-600">ZIP Code:</div>
-                    <div className="text-sm">
-                      <Input
-                        type="text"
-                        value={profileData.zip_code || ""}
-                        onChange={(e) => handleProfileChange("zip_code", e.target.value)}
-                        className="w-full h-8 text-sm"
-                        placeholder="Enter ZIP code"
-                      />
-                    </div>
-                  </div>
+                  <AddressFormEnhanced
+                    value={{
+                      street_address: profileData.street_address || "",
+                      apartment_suite: profileData.apartment_suite || "",
+                      country: profileData.country || "",
+                      state_province: profileData.state_province || "",
+                      city: profileData.city || "",
+                      zip_code: profileData.zip_code || ""
+                    }}
+                    onChange={(updatedAddress) => {
+                      setProfileData(prev => ({
+                        ...prev,
+                        street_address: updatedAddress.street_address,
+                        apartment_suite: updatedAddress.apartment_suite,
+                        country: updatedAddress.country,
+                        state_province: updatedAddress.state_province,
+                        city: updatedAddress.city,
+                        zip_code: updatedAddress.zip_code
+                      }));
+                    }}
+                    className="w-full"
+                  />
                 </div>
               </div>
             </div>
