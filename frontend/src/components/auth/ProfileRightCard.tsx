@@ -1070,6 +1070,35 @@ const ProfileRightCard: React.FC = () => {
                 <div className="p-6">
                   {/* Lean Manufacturing Plant Hierarchy */}
                   <div className="space-y-4">
+                    {/* Edit Fields - Moved to top */}
+                    <div className="space-y-4 mb-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Position
+                        </label>
+                        <Input
+                          type="text"
+                          value={profileData.position || ""}
+                          onChange={(e) => handleProfileChange("position", e.target.value)}
+                          className="w-full"
+                          placeholder="e.g. Production Manager, Quality Engineer, Line Supervisor, Machine Operator"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Department
+                        </label>
+                        <Input
+                          type="text"
+                          value={profileData.department || ""}
+                          onChange={(e) => handleProfileChange("department", e.target.value)}
+                          className="w-full"
+                          placeholder="e.g. Production, Quality, Maintenance, Engineering, IT, Logistics"
+                        />
+                      </div>
+                    </div>
+
                     <div className="text-center">
                       <h4 className="text-sm font-medium text-gray-600 mb-4">Plant Organizational Structure</h4>
 
@@ -1438,35 +1467,6 @@ const ProfileRightCard: React.FC = () => {
                         </div>
                       </div>
                     )}
-
-                    {/* Edit Fields */}
-                    <div className="mt-6 space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Position
-                        </label>
-                        <Input
-                          type="text"
-                          value={profileData.position || ""}
-                          onChange={(e) => handleProfileChange("position", e.target.value)}
-                          className="w-full"
-                          placeholder="e.g. Production Manager, Quality Engineer, Line Supervisor, Machine Operator"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Department
-                        </label>
-                        <Input
-                          type="text"
-                          value={profileData.department || ""}
-                          onChange={(e) => handleProfileChange("department", e.target.value)}
-                          className="w-full"
-                          placeholder="e.g. Production, Quality, Maintenance, Engineering, IT, Logistics"
-                        />
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
