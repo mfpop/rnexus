@@ -271,7 +271,7 @@ const NamePhoneForm: React.FC<NamePhoneFormProps> = ({ value, onChange, classNam
           Personal Information
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           {/* First Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -326,13 +326,11 @@ const NamePhoneForm: React.FC<NamePhoneFormProps> = ({ value, onChange, classNam
               className="w-full"
               placeholder="López"
             />
-                      <p className="text-xs text-gray-500 mt-1">
-            Common in Hispanic cultures
-          </p>
+          </div>
         </div>
 
         {/* Preferred Name */}
-        <div className="md:col-span-2">
+        <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             <Star className="inline w-4 h-4 mr-2" />
             Preferred Name / Nickname
@@ -345,10 +343,9 @@ const NamePhoneForm: React.FC<NamePhoneFormProps> = ({ value, onChange, classNam
             placeholder="Johnny, J.C., etc."
           />
         </div>
-        </div>
       </div>
 
-            {/* Phone Section */}
+      {/* Phone Section */}
       <div className="space-y-3">
         <h3 className="text-base font-medium text-gray-900 flex items-center">
           <Phone className="w-4 h-4 mr-2" />
