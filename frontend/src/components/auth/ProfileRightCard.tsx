@@ -13,7 +13,7 @@ import {
   Camera,
 } from "lucide-react";
 import { Button, Input } from "../ui/bits";
-import AddressForm from "../shared/AddressForm";
+import AddressFormEnhanced from "../shared/AddressFormEnhanced";
 import NamePhoneForm from "../shared/NamePhoneForm";
 import AuthService from "../../lib/authService";
 
@@ -571,7 +571,7 @@ const ProfileRightCard: React.FC = () => {
               </div>
 
               <div className="md:col-span-2">
-                <AddressForm
+                <AddressFormEnhanced
                   value={getAddressData()}
                   onChange={handleAddressChange}
                   className="space-y-4"
