@@ -907,83 +907,128 @@ const ProfileRightCard: React.FC = () => {
         return (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-600">Manage your educational background</p>
+              <h3 className="text-lg font-medium text-gray-900">Education Records</h3>
               <Button
                 onClick={addEducation}
-                className="bg-blue-50 hover:bg-blue-100 text-blue-600 border-0 flex items-center gap-2"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
               >
                 <Plus className="h-4 w-4" />
                 Add Education
               </Button>
             </div>
 
-            <div className="space-y-4">
-              {(profileData.education || []).map((edu) => (
-                <div key={edu.id} className="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-                    <Input
-                      value={edu.school}
-                      onChange={(e) => updateEducation(edu.id, 'school', e.target.value)}
-                      placeholder="University/School"
-                      className="font-medium"
-                    />
-                    <Input
-                      value={edu.degree}
-                      onChange={(e) => updateEducation(edu.id, 'degree', e.target.value)}
-                      placeholder="Degree"
-                    />
-                    <Input
-                      value={edu.field || ''}
-                      onChange={(e) => updateEducation(edu.id, 'field', e.target.value)}
-                      placeholder="Field of Study"
-                    />
-                    <div className="flex gap-2">
-                      <Input
-                        value={edu.startYear || ''}
-                        onChange={(e) => updateEducation(edu.id, 'startYear', e.target.value)}
-                        placeholder="Start Year"
-                        className="flex-1"
-                      />
-                      <Input
-                        value={edu.endYear || ''}
-                        onChange={(e) => updateEducation(edu.id, 'endYear', e.target.value)}
-                        placeholder="End Year"
-                        className="flex-1"
-                      />
-                    </div>
-                  </div>
-                  <textarea
-                    value={edu.description || ''}
-                    onChange={(e) => updateEducation(edu.id, 'description', e.target.value)}
-                    placeholder="Description (achievements, honors, etc.)"
-                    rows={2}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm mb-3"
-                  />
-                  <div className="flex items-center justify-between">
-                    <label className="flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        checked={edu.visible ?? true}
-                        onChange={(e) => updateEducation(edu.id, 'visible', e.target.checked)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className="text-gray-600">Visible on profile</span>
-                    </label>
-                    <Button
-                      onClick={() => removeEducation(edu.id)}
-                      className="bg-red-50 hover:bg-red-100 text-red-600 border-0 p-2"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
+            {/* Education Table */}
+            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Institution
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Degree & Field
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Period
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Description
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {(profileData.education || []).map((edu) => (
+                      <tr key={edu.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <Input
+                            value={edu.school || ''}
+                            onChange={(e) => updateEducation(edu.id, 'school', e.target.value)}
+                            placeholder="Institution name"
+                            className="w-full h-8 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-2"
+                          />
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="space-y-1">
+                            <Input
+                              value={edu.degree || ''}
+                              onChange={(e) => updateEducation(edu.id, 'degree', e.target.value)}
+                              placeholder="Degree"
+                              className="w-full h-8 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-2"
+                            />
+                            <Input
+                              value={edu.field || ''}
+                              onChange={(e) => updateEducation(edu.id, 'field', e.target.value)}
+                              placeholder="Field of study"
+                              className="w-full h-8 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-2"
+                            />
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <Input
+                              value={edu.startYear || ''}
+                              onChange={(e) => updateEducation(edu.id, 'startYear', e.target.value)}
+                              placeholder="Start"
+                              className="w-20 h-8 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-2 text-center"
+                            />
+                            <span className="text-gray-400">-</span>
+                            <Input
+                              value={edu.endYear || ''}
+                              onChange={(e) => updateEducation(edu.id, 'endYear', e.target.value)}
+                              placeholder="End"
+                              className="w-20 h-8 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-2 text-center"
+                            />
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <textarea
+                            value={edu.description || ''}
+                            onChange={(e) => updateEducation(edu.id, 'description', e.target.value)}
+                            placeholder="Brief description..."
+                            rows={2}
+                            className="w-full text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-2 py-1 resize-none"
+                          />
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <label className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={edu.visible ?? true}
+                              onChange={(e) => updateEducation(edu.id, 'visible', e.target.checked)}
+                              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            />
+                            <span className="ml-2 text-xs text-gray-600">
+                              {edu.visible ? 'Visible' : 'Hidden'}
+                            </span>
+                          </label>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <Button
+                            onClick={() => removeEducation(edu.id)}
+                            className="bg-red-50 hover:bg-red-100 text-red-600 border-0 p-2 rounded-lg"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
+              {/* Empty State */}
               {(!profileData.education || profileData.education.length === 0) && (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-12 text-gray-500">
                   <GraduationCap className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                  <p>No education entries yet</p>
-                  <p className="text-sm">Click "Add Education" to add your educational background</p>
+                  <p className="text-sm font-medium">No education records yet</p>
+                  <p className="text-xs text-gray-400 mt-1">Click "Add Education" to get started</p>
                 </div>
               )}
             </div>
