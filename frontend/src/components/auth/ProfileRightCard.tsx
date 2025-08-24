@@ -923,22 +923,22 @@ const ProfileRightCard: React.FC = () => {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Institution
                       </th>
-                      <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Degree & Field
                       </th>
                       <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                         Period
                       </th>
-                      <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Description
                       </th>
-                      <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
                         Status
                       </th>
-                      <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
                         Actions
                       </th>
                     </tr>
@@ -987,13 +987,13 @@ const ProfileRightCard: React.FC = () => {
                             />
                           </div>
                         </td>
-                        <td className="px-3 py-2">
+                        <td className="py-2">
                           <textarea
                             value={edu.description || ''}
                             onChange={(e) => updateEducation(edu.id, 'description', e.target.value)}
                             placeholder="Brief description..."
                             rows={2}
-                            className="w-full text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded resize-none"
+                            className="w-full text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-2 py-1 resize-none"
                           />
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap w-20">
