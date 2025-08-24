@@ -102,11 +102,9 @@ const ProfileLeftCard: React.FC = () => {
 
   React.useEffect(() => {
     const handler = () => loadCompletion();
-    // @ts-ignore - custom event name
-    window.addEventListener('profile-updated', handler);
+    (window as any).addEventListener('profile-updated', handler);
     return () => {
-      // @ts-ignore - custom event name
-      window.removeEventListener('profile-updated', handler);
+      (window as any).removeEventListener('profile-updated', handler);
     };
   }, [loadCompletion]);
 
