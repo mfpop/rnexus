@@ -12,6 +12,9 @@ This documentation provides comprehensive information about all pages and featur
 - CI/CD integration: ./CI_CD_INTEGRATION.md
 - Dev tools summary: ./DEVELOPMENT_TOOLS_SUMMARY.md
 - Dependencies update report: ./DEPENDENCIES_UPDATE.md
+ - Environment configuration: ./ENVIRONMENT.md
+ - Restore runbook: ./RESTORE_RUNBOOK.md
+ - Production deployment: ./DEPLOYMENT_PRODUCTION.md
 
 ## Key Platform Modules
 

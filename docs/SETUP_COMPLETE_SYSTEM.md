@@ -2,6 +2,7 @@
 
 End-to-end setup steps:
 - Backend: create venv, `pip install -r requirements.txt`, `python manage.py migrate`, runserver
+ - Backend: activate existing venv (`cd backend && source venv/bin/activate`), `pip install -r requirements.txt`, `python manage.py migrate`, runserver
 - Frontend: `npm install`, `npm run dev`
 - Optional services: PostgreSQL, Redis for Channels
 - WebSocket: configure Channels in `core/asgi.py`

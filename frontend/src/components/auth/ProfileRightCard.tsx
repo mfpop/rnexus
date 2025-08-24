@@ -11,7 +11,6 @@ import {
   Camera,
 } from "lucide-react";
 import { Button, Input, PhoneTypeDropdown, NotificationToast } from "../ui/bits";
-import AddressFormEnhanced from "../shared/AddressFormEnhanced";
 import AuthService from "../../lib/authService";
 
 // API configuration
@@ -130,6 +129,11 @@ const ProfileRightCard: React.FC = () => {
     },
   });
 
+  // OpenAddresses data state
+  const [countries, setCountries] = useState<Array<{name: string, cca2: string, flag: string}>>([]);
+  const [states, setStates] = useState<Array<{geonameId: number, name: string}>>([]);
+  const [cities, setCities] = useState<Array<{geonameId: number, name: string}>>([]);
+
   const [passwordData, setPasswordData] = useState<PasswordData>({
     current_password: "",
     new_password: "",
@@ -238,6 +242,38 @@ const ProfileRightCard: React.FC = () => {
     }
   }, []);
 
+  // Load countries on component mount
+  useEffect(() => {
+    loadCountries();
+  }, []);
+
+  // Load states when country changes
+  useEffect(() => {
+    if (profileData.country) {
+      loadStates(profileData.country);
+      // Reset dependent fields
+      setProfileData(prev => ({
+        ...prev,
+        state_province: "",
+        city: "",
+        zip_code: "",
+      }));
+    }
+  }, [profileData.country]);
+
+  // Load cities when state changes
+  useEffect(() => {
+    if (profileData.state_province) {
+      loadCities(profileData.state_province);
+      // Reset dependent fields
+      setProfileData(prev => ({
+        ...prev,
+        city: "",
+        zip_code: "",
+      }));
+    }
+  }, [profileData.state_province]);
+
   const loadProfile = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/user/profile/`, {
@@ -300,6 +336,110 @@ const ProfileRightCard: React.FC = () => {
       ...prev,
       education: (prev.education || []).filter(e => e.id !== id)
     } as ProfileData));
+  };
+
+  // OpenAddresses data loading functions
+  const loadCountries = async () => {
+    try {
+      const response = await fetch("https://restcountries.com/v3.1/all");
+      if (response.ok) {
+        const data = await response.json();
+        const sortedCountries = data
+          .map((country: any) => ({
+            name: country.name.common,
+            cca2: country.cca2,
+            flag: country.flag
+          }))
+          .sort((a: any, b: any) => a.name.localeCompare(b.name));
+        setCountries(sortedCountries);
+      }
+    } catch (error) {
+      console.error("Failed to load countries:", error);
+      // Fallback to basic countries
+      setCountries([
+        { name: "United States", cca2: "US", flag: "🇺🇸" },
+        { name: "Canada", cca2: "CA", flag: "🇨🇦" },
+        { name: "Mexico", cca2: "MX", flag: "🇲🇽" },
+        { name: "United Kingdom", cca2: "GB", flag: "🇬🇧" },
+        { name: "Germany", cca2: "DE", flag: "🇩🇪" },
+        { name: "France", cca2: "FR", flag: "🇫🇷" },
+        { name: "Spain", cca2: "ES", flag: "🇪🇸" },
+        { name: "Italy", cca2: "IT", flag: "🇮🇹" }
+      ]);
+    }
+  };
+
+  const loadStates = async (countryName: string) => {
+    try {
+      // Mock states data for now - in a real implementation, this would call OpenAddresses API
+      const mockStates = getMockStates(countryName);
+      setStates(mockStates);
+    } catch (error) {
+      console.error("Failed to load states:", error);
+      setStates([]);
+    }
+  };
+
+  const loadCities = async (stateName: string) => {
+    try {
+      // Mock cities data for now - in a real implementation, this would call OpenAddresses API
+      const mockCities = getMockCities(stateName);
+      setCities(mockCities);
+    } catch (error) {
+      console.error("Failed to load cities:", error);
+      setCities([]);
+    }
+  };
+
+  const getMockStates = (countryName: string) => {
+    const stateMap: Record<string, Array<{geonameId: number, name: string}>> = {
+      "United States": [
+        { geonameId: 1, name: "California" },
+        { geonameId: 2, name: "New York" },
+        { geonameId: 3, name: "Texas" },
+        { geonameId: 4, name: "Florida" },
+        { geonameId: 5, name: "Illinois" }
+      ],
+      "Canada": [
+        { geonameId: 101, name: "Ontario" },
+        { geonameId: 102, name: "Quebec" },
+        { geonameId: 103, name: "British Columbia" },
+        { geonameId: 104, name: "Alberta" }
+      ],
+      "Mexico": [
+        { geonameId: 201, name: "Jalisco" },
+        { geonameId: 202, name: "Mexico City" },
+        { geonameId: 203, name: "Nuevo Leon" },
+        { geonameId: 204, name: "Baja California" }
+      ]
+    };
+    return stateMap[countryName] || [];
+  };
+
+  const getMockCities = (stateName: string) => {
+    const cityMap: Record<string, Array<{geonameId: number, name: string}>> = {
+      "California": [
+        { geonameId: 1001, name: "Los Angeles" },
+        { geonameId: 1002, name: "San Francisco" },
+        { geonameId: 1003, name: "San Diego" }
+      ],
+      "New York": [
+        { geonameId: 2001, name: "New York City" },
+        { geonameId: 2002, name: "Buffalo" },
+        { geonameId: 2003, name: "Rochester" }
+      ],
+      "Ontario": [
+        { geonameId: 3001, name: "Toronto" },
+        { geonameId: 3002, name: "Ottawa" },
+        { geonameId: 3003, name: "Mississauga" }
+      ],
+      "Jalisco": [
+        { geonameId: 4001, name: "Guadalajara" },
+        { geonameId: 4002, name: "Zapopan" },
+        { geonameId: 4003, name: "Tlaquepaque" }
+      ]
+    };
+    return cityMap[stateName] || [];
   };
 
   const addWork = () => {
@@ -777,28 +917,97 @@ const ProfileRightCard: React.FC = () => {
                   <h3 className="text-lg font-medium text-gray-900">Address</h3>
                 </div>
                 <div className="p-4 space-y-3">
-                  <AddressFormEnhanced
-                    value={{
-                      street_address: profileData.street_address || "",
-                      apartment_suite: profileData.apartment_suite || "",
-                      country: profileData.country || "",
-                      state_province: profileData.state_province || "",
-                      city: profileData.city || "",
-                      zip_code: profileData.zip_code || ""
-                    }}
-                    onChange={(updatedAddress) => {
-                      setProfileData(prev => ({
-                        ...prev,
-                        street_address: updatedAddress.street_address,
-                        apartment_suite: updatedAddress.apartment_suite,
-                        country: updatedAddress.country,
-                        state_province: updatedAddress.state_province,
-                        city: updatedAddress.city,
-                        zip_code: updatedAddress.zip_code
-                      }));
-                    }}
-                    className="w-full"
-                  />
+                  <div className="p-4 space-y-3">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="text-sm font-medium text-gray-600">Country:</div>
+                      <div className="text-sm">
+                        <select
+                          value={profileData.country || ""}
+                          onChange={(e) => handleProfileChange("country", e.target.value)}
+                          className="w-full h-8 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        >
+                          <option value="">Select country</option>
+                          {countries.map((country) => (
+                            <option key={country.cca2} value={country.name}>
+                              {country.flag} {country.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="text-sm font-medium text-gray-600">State/Province:</div>
+                      <div className="text-sm">
+                        <select
+                          value={profileData.state_province || ""}
+                          onChange={(e) => handleProfileChange("state_province", e.target.value)}
+                          className="w-full h-8 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                          disabled={!profileData.country}
+                        >
+                          <option value="">Select state/province</option>
+                          {states.map((state) => (
+                            <option key={state.geonameId} value={state.name}>
+                              {state.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="text-sm font-medium text-gray-600">City:</div>
+                      <div className="text-sm">
+                        <select
+                          value={profileData.city || ""}
+                          onChange={(e) => handleProfileChange("city", e.target.value)}
+                          className="w-full h-8 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                          disabled={!profileData.state_province}
+                        >
+                          <option value="">Select city</option>
+                          {cities.map((city) => (
+                            <option key={city.geonameId} value={city.name}>
+                              {city.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="text-sm font-medium text-gray-600">Street Address:</div>
+                      <div className="text-sm">
+                        <Input
+                          type="text"
+                          value={profileData.street_address || ""}
+                          onChange={(e) => handleProfileChange("street_address", e.target.value)}
+                          className="w-full h-8 text-sm"
+                          placeholder="Enter street address"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="text-sm font-medium text-gray-600">Apartment/Suite:</div>
+                      <div className="text-sm">
+                        <Input
+                          type="text"
+                          value={profileData.apartment_suite || ""}
+                          onChange={(e) => handleProfileChange("apartment_suite", e.target.value)}
+                          className="w-full h-8 text-sm"
+                          placeholder="Enter apartment/suite"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="text-sm font-medium text-gray-600">ZIP Code:</div>
+                      <div className="text-sm">
+                        <Input
+                          type="text"
+                          value={profileData.zip_code || ""}
+                          onChange={(e) => handleProfileChange("zip_code", e.target.value)}
+                          className="w-full h-8 text-sm"
+                          placeholder="Enter ZIP code"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
