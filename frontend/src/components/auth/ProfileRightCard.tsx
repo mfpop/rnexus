@@ -12,7 +12,7 @@ import {
   Trash2,
   Camera,
 } from "lucide-react";
-import { Button, Input } from "../ui/bits";
+import { Button, Input, PhoneTypeDropdown } from "../ui/bits";
 import AuthService from "../../lib/authService";
 
 // API configuration
@@ -671,16 +671,11 @@ const ProfileRightCard: React.FC = () => {
                         className="flex-1 h-8 text-sm"
                         placeholder="Phone number"
                       />
-                      <select
+                      <PhoneTypeDropdown
                         value={profileData.phone_type || "mobile"}
-                        onChange={(e) => handleProfileChange("phone_type", e.target.value)}
+                        onChange={(value) => handleProfileChange("phone_type", value)}
                         className="w-24 h-8 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                      >
-                        <option value="mobile">📱 Mobile</option>
-                        <option value="home">🏠 Home</option>
-                        <option value="work">🏢 Work</option>
-                        <option value="other">📞 Other</option>
-                      </select>
+                      />
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -767,16 +762,11 @@ const ProfileRightCard: React.FC = () => {
                         className="flex-1 h-8 text-sm"
                         placeholder="Phone number"
                       />
-                      <select
+                      <PhoneTypeDropdown
                         value={profileData.secondary_phone_type || "mobile"}
-                        onChange={(e) => handleProfileChange("secondary_phone_type", e.target.value)}
+                        onChange={(value) => handleProfileChange("secondary_phone_type", value)}
                         className="w-24 h-8 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                      >
-                        <option value="mobile">📱 Mobile</option>
-                        <option value="home">🏠 Home</option>
-                        <option value="work">🏢 Work</option>
-                        <option value="other">📞 Other</option>
-                      </select>
+                      />
                     </div>
                   </div>
                 </div>
