@@ -504,23 +504,63 @@ const ProfileRightCard: React.FC = () => {
                 <div className="p-4 space-y-3">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="text-sm font-medium text-gray-600">First Name:</div>
-                    <div className="text-sm text-gray-900">{profileData.first_name || "Not provided"}</div>
+                    <div className="text-sm">
+                      <Input
+                        type="text"
+                        value={profileData.first_name || ""}
+                        onChange={(e) => handleProfileChange("first_name", e.target.value)}
+                        className="w-full h-8 text-sm"
+                        placeholder="Enter first name"
+                      />
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="text-sm font-medium text-gray-600">Middle Name:</div>
-                    <div className="text-sm text-gray-900">{profileData.middle_name || "Not provided"}</div>
+                    <div className="text-sm">
+                      <Input
+                        type="text"
+                        value={profileData.middle_name || ""}
+                        onChange={(e) => handleProfileChange("middle_name", e.target.value)}
+                        className="w-full h-8 text-sm"
+                        placeholder="Enter middle name"
+                      />
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="text-sm font-medium text-gray-600">Last Name:</div>
-                    <div className="text-sm text-gray-900">{profileData.last_name || "Not provided"}</div>
+                    <div className="text-sm">
+                      <Input
+                        type="text"
+                        value={profileData.last_name || ""}
+                        onChange={(e) => handleProfileChange("last_name", e.target.value)}
+                        className="w-full h-8 text-sm"
+                        placeholder="Enter last name"
+                      />
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="text-sm font-medium text-gray-600">Maternal Last:</div>
-                    <div className="text-sm text-gray-900">{profileData.maternal_last_name || "Not provided"}</div>
+                    <div className="text-sm">
+                      <Input
+                        type="text"
+                        value={profileData.maternal_last_name || ""}
+                        onChange={(e) => handleProfileChange("maternal_last_name", e.target.value)}
+                        className="w-full h-8 text-sm"
+                        placeholder="Enter maternal last name"
+                      />
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="text-sm font-medium text-gray-600">Nickname:</div>
-                    <div className="text-sm text-gray-900">{profileData.preferred_name || "Not provided"}</div>
+                    <div className="text-sm">
+                      <Input
+                        type="text"
+                        value={profileData.preferred_name || ""}
+                        onChange={(e) => handleProfileChange("preferred_name", e.target.value)}
+                        className="w-full h-8 text-sm"
+                        placeholder="Enter nickname"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -533,18 +573,206 @@ const ProfileRightCard: React.FC = () => {
                 <div className="p-4 space-y-3">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="text-sm font-medium text-gray-600">Email Address:</div>
-                    <div className="text-sm text-gray-900">{profileData.email || "Not provided"}</div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-sm font-medium text-gray-600">Primary Phone:</div>
-                    <div className="text-sm text-gray-900">
-                      {profileData.phone ? `${profileData.phone_country_code || ""} ${profileData.phone} (${profileData.phone_type || "mobile"})` : "Not provided"}
+                    <div className="text-sm">
+                      <Input
+                        type="email"
+                        value={profileData.email || ""}
+                        onChange={(e) => handleProfileChange("email", e.target.value)}
+                        className="w-full h-8 text-sm"
+                        placeholder="Enter email address"
+                      />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <div className="text-sm font-medium text-gray-600">Primary Phone:</div>
+                    <div className="flex space-x-2">
+                      <select
+                        value={profileData.phone_country_code || "+1"}
+                        onChange={(e) => handleProfileChange("phone_country_code", e.target.value)}
+                        className="w-20 h-8 px-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="+1">🇺🇸 +1</option>
+                        <option value="+52">🇲🇽 +52</option>
+                        <option value="+44">🇬🇧 +44</option>
+                        <option value="+49">🇩🇪 +49</option>
+                        <option value="+33">🇫🇷 +33</option>
+                        <option value="+34">🇪🇸 +34</option>
+                        <option value="+39">🇮🇹 +39</option>
+                        <option value="+31">🇳🇱 +31</option>
+                        <option value="+32">🇧🇪 +32</option>
+                        <option value="+41">🇨🇭 +41</option>
+                        <option value="+46">🇸🇪 +46</option>
+                        <option value="+47">🇳🇴 +47</option>
+                        <option value="+45">🇩🇰 +45</option>
+                        <option value="+358">🇫🇮 +358</option>
+                        <option value="+48">🇵🇱 +48</option>
+                        <option value="+420">🇨🇿 +420</option>
+                        <option value="+36">🇭🇺 +36</option>
+                        <option value="+43">🇦🇹 +43</option>
+                        <option value="+351">🇵🇹 +351</option>
+                        <option value="+30">🇬🇷 +30</option>
+                        <option value="+90">🇹🇷 +90</option>
+                        <option value="+7">🇷🇺 +7</option>
+                        <option value="+86">🇨🇳 +86</option>
+                        <option value="+81">🇯🇵 +81</option>
+                        <option value="+82">🇰🇷 +82</option>
+                        <option value="+91">🇮🇳 +91</option>
+                        <option value="+61">🇦🇺 +61</option>
+                        <option value="+64">🇳🇿 +64</option>
+                        <option value="+55">🇧🇷 +55</option>
+                        <option value="+54">🇦🇷 +54</option>
+                        <option value="+56">🇨🇱 +56</option>
+                        <option value="+57">🇨🇴 +57</option>
+                        <option value="+58">🇻🇪 +58</option>
+                        <option value="+51">🇵🇪 +51</option>
+                        <option value="+593">🇪🇨 +593</option>
+                        <option value="+595">🇵🇾 +595</option>
+                        <option value="+598">🇺🇾 +598</option>
+                        <option value="+591">🇧🇴 +591</option>
+                        <option value="+503">🇸🇻 +503</option>
+                        <option value="+502">🇬🇹 +502</option>
+                        <option value="+504">🇭🇳 +504</option>
+                        <option value="+505">🇳🇮 +505</option>
+                        <option value="+506">🇨🇷 +506</option>
+                        <option value="+507">🇵🇦 +507</option>
+                        <option value="+971">🇦🇪 +971</option>
+                        <option value="+966">🇸🇦 +966</option>
+                        <option value="+972">🇮🇱 +972</option>
+                        <option value="+20">🇪🇬 +20</option>
+                        <option value="+27">🇿🇦 +27</option>
+                        <option value="+234">🇳🇬 +234</option>
+                        <option value="+254">🇰🇪 +254</option>
+                        <option value="+233">🇬🇭 +233</option>
+                        <option value="+212">🇲🇦 +212</option>
+                        <option value="+216">🇹🇳 +216</option>
+                        <option value="+213">🇩🇿 +213</option>
+                        <option value="+221">🇸🇳 +221</option>
+                        <option value="+225">🇨🇮 +225</option>
+                        <option value="+237">🇨🇲 +237</option>
+                        <option value="+236">🇨🇫 +236</option>
+                        <option value="+235">🇹🇩 +235</option>
+                        <option value="+249">🇸🇩 +249</option>
+                        <option value="+251">🇪🇹 +251</option>
+                        <option value="+255">🇹🇿 +255</option>
+                        <option value="+256">🇺🇬 +256</option>
+                        <option value="+257">🇧🇮 +257</option>
+                        <option value="+250">🇷🇼 +250</option>
+                        <option value="+252">🇸🇴 +252</option>
+                        <option value="+253">🇩🇯 +253</option>
+                      </select>
+                      <Input
+                        type="tel"
+                        value={profileData.phone || ""}
+                        onChange={(e) => handleProfileChange("phone", e.target.value)}
+                        className="flex-1 h-8 text-sm"
+                        placeholder="Phone number"
+                      />
+                      <select
+                        value={profileData.phone_type || "mobile"}
+                        onChange={(e) => handleProfileChange("phone_type", e.target.value)}
+                        className="w-24 h-8 px-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="mobile">📱 Mobile</option>
+                        <option value="home">🏠 Home</option>
+                        <option value="work">🏢 Work</option>
+                        <option value="other">📞 Other</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
                     <div className="text-sm font-medium text-gray-600">Secondary Phone:</div>
-                    <div className="text-sm text-gray-900">
-                      {profileData.secondary_phone ? `${profileData.phone_country_code || ""} ${profileData.secondary_phone} (${profileData.secondary_phone_type || "mobile"})` : "Not provided"}
+                    <div className="flex space-x-2">
+                      <select
+                        value={profileData.phone_country_code || "+1"}
+                        onChange={(e) => handleProfileChange("phone_country_code", e.target.value)}
+                        className="w-20 h-8 px-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="+1">🇺🇸 +1</option>
+                        <option value="+52">🇲🇽 +52</option>
+                        <option value="+44">🇬🇧 +44</option>
+                        <option value="+49">🇩🇪 +49</option>
+                        <option value="+33">🇫🇷 +33</option>
+                        <option value="+34">🇪🇸 +34</option>
+                        <option value="+39">🇮🇹 +39</option>
+                        <option value="+31">🇳🇱 +31</option>
+                        <option value="+32">🇧🇪 +32</option>
+                        <option value="+41">🇨🇭 +41</option>
+                        <option value="+46">🇸🇪 +46</option>
+                        <option value="+47">🇳🇴 +47</option>
+                        <option value="+45">🇩🇰 +45</option>
+                        <option value="+358">🇫🇮 +358</option>
+                        <option value="+48">🇵🇱 +48</option>
+                        <option value="+420">🇨🇿 +420</option>
+                        <option value="+36">🇭🇺 +36</option>
+                        <option value="+43">🇦🇹 +43</option>
+                        <option value="+351">🇵🇹 +351</option>
+                        <option value="+30">🇬🇷 +30</option>
+                        <option value="+90">🇹🇷 +90</option>
+                        <option value="+7">🇷🇺 +7</option>
+                        <option value="+86">🇨🇳 +86</option>
+                        <option value="+81">🇯🇵 +81</option>
+                        <option value="+82">🇰🇷 +82</option>
+                        <option value="+91">🇮🇳 +91</option>
+                        <option value="+61">🇦🇺 +61</option>
+                        <option value="+64">🇳🇿 +64</option>
+                        <option value="+55">🇧🇷 +55</option>
+                        <option value="+54">🇦🇷 +54</option>
+                        <option value="+56">🇨🇱 +56</option>
+                        <option value="+57">🇨🇴 +57</option>
+                        <option value="+58">🇻🇪 +58</option>
+                        <option value="+51">🇵🇪 +51</option>
+                        <option value="+593">🇪🇨 +593</option>
+                        <option value="+595">🇵🇾 +595</option>
+                        <option value="+598">🇺🇾 +598</option>
+                        <option value="+591">🇧🇴 +591</option>
+                        <option value="+503">🇸🇻 +503</option>
+                        <option value="+502">🇬🇹 +502</option>
+                        <option value="+504">🇭🇳 +504</option>
+                        <option value="+505">🇳🇮 +505</option>
+                        <option value="+506">🇨🇷 +506</option>
+                        <option value="+507">🇵🇦 +507</option>
+                        <option value="+971">🇦🇪 +971</option>
+                        <option value="+966">🇸🇦 +966</option>
+                        <option value="+972">🇮🇱 +972</option>
+                        <option value="+20">🇪🇬 +20</option>
+                        <option value="+27">🇿🇦 +27</option>
+                        <option value="+234">🇳🇬 +234</option>
+                        <option value="+254">🇰🇪 +254</option>
+                        <option value="+233">🇬🇭 +233</option>
+                        <option value="+212">🇲🇦 +212</option>
+                        <option value="+216">🇹🇳 +216</option>
+                        <option value="+213">🇩🇿 +213</option>
+                        <option value="+221">🇸🇳 +221</option>
+                        <option value="+225">🇨🇮 +225</option>
+                        <option value="+237">🇨🇲 +237</option>
+                        <option value="+236">🇨🇫 +236</option>
+                        <option value="+235">🇹🇩 +235</option>
+                        <option value="+249">🇸🇩 +249</option>
+                        <option value="+251">🇪🇹 +251</option>
+                        <option value="+255">🇹🇿 +255</option>
+                        <option value="+256">🇺🇬 +256</option>
+                        <option value="+257">🇧🇮 +257</option>
+                        <option value="+250">🇷🇼 +250</option>
+                        <option value="+252">🇸🇴 +252</option>
+                        <option value="+253">🇩🇯 +253</option>
+                      </select>
+                      <Input
+                        type="tel"
+                        value={profileData.secondary_phone || ""}
+                        onChange={(e) => handleProfileChange("secondary_phone", e.target.value)}
+                        className="flex-1 h-8 text-sm"
+                        placeholder="Phone number"
+                      />
+                      <select
+                        value={profileData.secondary_phone_type || "mobile"}
+                        onChange={(e) => handleProfileChange("secondary_phone_type", e.target.value)}
+                        className="w-24 h-8 px-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="mobile">📱 Mobile</option>
+                        <option value="home">🏠 Home</option>
+                        <option value="work">🏢 Work</option>
+                        <option value="other">📞 Other</option>
+                      </select>
                     </div>
                   </div>
                 </div>
@@ -557,28 +785,76 @@ const ProfileRightCard: React.FC = () => {
                 </div>
                 <div className="p-4 space-y-3">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="text-sm font-medium text-gray-600">Street Address:</div>
-                    <div className="text-sm text-gray-900">{profileData.street_address || "Not provided"}</div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-sm font-medium text-gray-600">Apartment/Suite:</div>
-                    <div className="text-sm text-gray-900">{profileData.apartment_suite || "Not provided"}</div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-sm font-medium text-gray-600">City:</div>
-                    <div className="text-sm text-gray-900">{profileData.city || "Not provided"}</div>
+                    <div className="text-sm font-medium text-gray-600">Country:</div>
+                    <div className="text-sm">
+                      <Input
+                        type="text"
+                        value={profileData.country || ""}
+                        onChange={(e) => handleProfileChange("country", e.target.value)}
+                        className="w-full h-8 text-sm"
+                        placeholder="Enter country"
+                      />
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="text-sm font-medium text-gray-600">State/Province:</div>
-                    <div className="text-sm text-gray-900">{profileData.state_province || "Not provided"}</div>
+                    <div className="text-sm">
+                      <Input
+                        type="text"
+                        value={profileData.state_province || ""}
+                        onChange={(e) => handleProfileChange("state_province", e.target.value)}
+                        className="w-full h-8 text-sm"
+                        placeholder="Enter state/province"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-sm font-medium text-gray-600">City:</div>
+                    <div className="text-sm">
+                      <Input
+                        type="text"
+                        value={profileData.city || ""}
+                        onChange={(e) => handleProfileChange("city", e.target.value)}
+                        className="w-full h-8 text-sm"
+                        placeholder="Enter city"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-sm font-medium text-gray-600">Street Address:</div>
+                    <div className="text-sm">
+                      <Input
+                        type="text"
+                        value={profileData.street_address || ""}
+                        onChange={(e) => handleProfileChange("street_address", e.target.value)}
+                        className="w-full h-8 text-sm"
+                        placeholder="Enter street address"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-sm font-medium text-gray-600">Apartment/Suite:</div>
+                    <div className="text-sm">
+                      <Input
+                        type="text"
+                        value={profileData.apartment_suite || ""}
+                        onChange={(e) => handleProfileChange("apartment_suite", e.target.value)}
+                        className="w-full h-8 text-sm"
+                        placeholder="Enter apartment/suite"
+                      />
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="text-sm font-medium text-gray-600">ZIP Code:</div>
-                    <div className="text-sm text-gray-900">{profileData.zip_code || "Not provided"}</div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-sm font-medium text-gray-600">Country:</div>
-                    <div className="text-sm text-gray-900">{profileData.country || "Not provided"}</div>
+                    <div className="text-sm">
+                      <Input
+                        type="text"
+                        value={profileData.zip_code || ""}
+                        onChange={(e) => handleProfileChange("zip_code", e.target.value)}
+                        className="w-full h-8 text-sm"
+                        placeholder="Enter ZIP code"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -590,9 +866,12 @@ const ProfileRightCard: React.FC = () => {
                 <h3 className="text-lg font-medium text-gray-900">Bio</h3>
               </div>
               <div className="p-4">
-                <div className="text-sm text-gray-900">
-                  {profileData.bio || "No bio information provided."}
-                </div>
+                <textarea
+                  value={profileData.bio || ""}
+                  onChange={(e) => handleProfileChange("bio", e.target.value)}
+                  className="w-full h-32 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
+                  placeholder="Tell us about yourself..."
+                />
               </div>
             </div>
           </div>
