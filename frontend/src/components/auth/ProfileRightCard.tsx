@@ -951,7 +951,7 @@ const ProfileRightCard: React.FC = () => {
                             value={edu.school || ''}
                             onChange={(e) => updateEducation(edu.id, 'school', e.target.value)}
                             placeholder="Institution name"
-                            className="w-full h-8 text-base font-medium border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-3"
+                            className="w-full h-8 text-base font-medium border-0 bg-transparent hover:bg-gray-100 focus:bg-blue-50 focus:outline-none text-sm rounded px-3"
                           />
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap">
@@ -960,13 +960,13 @@ const ProfileRightCard: React.FC = () => {
                               value={edu.degree || ''}
                               onChange={(e) => updateEducation(edu.id, 'degree', e.target.value)}
                               placeholder="Degree"
-                              className="w-full h-8 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-2"
+                              className="w-full h-8 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-blue-50 focus:outline-none rounded px-2"
                             />
                             <Input
                               value={edu.field || ''}
                               onChange={(e) => updateEducation(edu.id, 'field', e.target.value)}
                               placeholder="Field of study"
-                              className="w-full h-8 text-sm border-0 bg-transparent hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 rounded px-2"
+                              className="w-full h-8 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-blue-50 focus:outline-none rounded px-2"
                             />
                           </div>
                         </td>
@@ -976,14 +976,14 @@ const ProfileRightCard: React.FC = () => {
                               value={edu.startYear || ''}
                               onChange={(e) => updateEducation(edu.id, 'startYear', e.target.value)}
                               placeholder="Start"
-                              className="w-16 h-8 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-1 text-center"
+                              className="w-16 h-8 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-blue-50 focus:outline-none rounded px-1 text-center"
                             />
                             <span className="text-gray-400 text-xs">-</span>
                             <Input
                               value={edu.endYear || ''}
                               onChange={(e) => updateEducation(edu.id, 'endYear', e.target.value)}
                               placeholder="End"
-                              className="w-16 h-8 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-1 text-center"
+                              className="w-16 h-8 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-blue-50 focus:outline-none rounded px-1 text-center"
                             />
                           </div>
                         </td>
@@ -993,7 +993,7 @@ const ProfileRightCard: React.FC = () => {
                             onChange={(e) => updateEducation(edu.id, 'description', e.target.value)}
                             placeholder="Brief description..."
                             rows={3}
-                            className="w-full text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-2 py-2 resize-none"
+                            className="w-full text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-blue-50 focus:outline-none rounded px-2 py-2 resize-none"
                           />
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap w-20">
