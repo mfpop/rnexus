@@ -997,17 +997,14 @@ const ProfileRightCard: React.FC = () => {
                           />
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap w-20">
-                          <label className="flex items-center">
-                            <input
-                              type="checkbox"
-                              checked={edu.visible ?? true}
-                              onChange={(e) => updateEducation(edu.id, 'visible', e.target.checked)}
-                              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                            />
-                            <span className="ml-2 text-xs text-gray-600">
-                              {edu.visible ? 'Visible' : 'Hidden'}
-                            </span>
-                          </label>
+                          <select
+                            value={edu.visible ? 'visible' : 'hidden'}
+                            onChange={(e) => updateEducation(edu.id, 'visible', e.target.value === 'visible')}
+                            className="w-full h-8 px-2 border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:outline-none text-sm rounded"
+                          >
+                            <option value="visible">Visible</option>
+                            <option value="hidden">Hidden</option>
+                          </select>
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap text-right text-sm font-medium w-16">
                           <Button
