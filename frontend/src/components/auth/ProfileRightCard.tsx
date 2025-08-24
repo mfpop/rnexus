@@ -11,11 +11,8 @@ import {
   Plus,
   Trash2,
   Camera,
-  Phone,
 } from "lucide-react";
 import { Button, Input } from "../ui/bits";
-import AddressFormEnhanced from "../shared/AddressFormEnhanced";
-import NamePhoneForm from "../shared/NamePhoneForm";
 import AuthService from "../../lib/authService";
 
 // API configuration
@@ -133,60 +130,6 @@ const ProfileRightCard: React.FC = () => {
       bio: true
     },
   });
-
-  // Helper function to get address data for AddressForm
-  const getAddressData = () => ({
-    street_address: profileData.street_address || "",
-    apartment_suite: profileData.apartment_suite || "",
-    country: profileData.country || "",
-    state_province: profileData.state_province || "",
-    city: profileData.city || "",
-    zip_code: profileData.zip_code || "",
-  });
-
-  // Helper function to update profile data from address form
-  const handleAddressChange = (addressData: any) => {
-    setProfileData(prev => ({
-      ...prev,
-      street_address: addressData.street_address,
-      apartment_suite: addressData.apartment_suite,
-      country: addressData.country,
-      state_province: addressData.state_province,
-      city: addressData.city,
-      zip_code: addressData.zip_code,
-    }));
-  };
-
-  // Helper function to get name and phone data for NamePhoneForm
-  const getNamePhoneData = () => ({
-    first_name: profileData.first_name || "",
-    middle_name: profileData.middle_name || "",
-    last_name: profileData.last_name || "",
-    maternal_last_name: profileData.maternal_last_name || "",
-    preferred_name: profileData.preferred_name || "",
-    phone: profileData.phone || "",
-    phone_country_code: profileData.phone_country_code || "+1",
-    phone_type: profileData.phone_type || "mobile",
-    secondary_phone: profileData.secondary_phone || "",
-    secondary_phone_type: profileData.secondary_phone_type || "mobile",
-  });
-
-  // Helper function to update profile data from name and phone form
-  const handleNamePhoneChange = (namePhoneData: any) => {
-    setProfileData(prev => ({
-      ...prev,
-      first_name: namePhoneData.first_name,
-      middle_name: namePhoneData.middle_name,
-      last_name: namePhoneData.last_name,
-      maternal_last_name: namePhoneData.maternal_last_name,
-      preferred_name: namePhoneData.preferred_name,
-      phone: namePhoneData.phone,
-      phone_country_code: namePhoneData.phone_country_code,
-      phone_type: namePhoneData.phone_type,
-      secondary_phone: namePhoneData.secondary_phone,
-      secondary_phone_type: namePhoneData.secondary_phone_type,
-    }));
-  };
 
   const [passwordData, setPasswordData] = useState<PasswordData>({
     current_password: "",
@@ -550,291 +493,107 @@ const ProfileRightCard: React.FC = () => {
     switch (activeTab) {
       case 'personal':
         return (
-          <div className="space-y-4">
-            {/* Name and Phone Form - Compact */}
-            <NamePhoneForm
-              value={getNamePhoneData()}
-              onChange={handleNamePhoneChange}
-              className="space-y-3"
-            />
-
-            {/* Email and Phone Section - Side by Side */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Email Field - Left Side */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email Address
-                </label>
-                <Input
-                  type="email"
-                  value={profileData.email}
-                  onChange={(e) => handleProfileChange("email", e.target.value)}
-                  variant={errors["email"] ? "error" : "default"}
-                  className="w-full"
-                  placeholder="your.email@example.com"
-                />
-                {errors["email"] && (
-                  <p className="text-red-600 text-xs mt-1">{errors["email"]}</p>
-                )}
+          <div className="space-y-6">
+            {/* Three Cards Side by Side */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Name Card */}
+              <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                  <h3 className="text-lg font-medium text-gray-900">Name</h3>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-sm font-medium text-gray-600">First Name:</div>
+                    <div className="text-sm text-gray-900">{profileData.first_name || "Not provided"}</div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-sm font-medium text-gray-600">Middle Name:</div>
+                    <div className="text-sm text-gray-900">{profileData.middle_name || "Not provided"}</div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-sm font-medium text-gray-600">Last Name:</div>
+                    <div className="text-sm text-gray-900">{profileData.last_name || "Not provided"}</div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-sm font-medium text-gray-600">Maternal Last:</div>
+                    <div className="text-sm text-gray-900">{profileData.maternal_last_name || "Not provided"}</div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-sm font-medium text-gray-600">Nickname:</div>
+                    <div className="text-sm text-gray-900">{profileData.preferred_name || "Not provided"}</div>
+                  </div>
+                </div>
               </div>
 
-              {/* Phone Section - Right Side */}
-              <div className="space-y-3">
-                <h3 className="text-base font-medium text-gray-900 flex items-center">
-                  <Phone className="w-4 h-4 mr-2" />
-                  Contact Information
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Primary Phone */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Primary Phone Number *
-                    </label>
-                    <div className="flex space-x-2">
-                      {/* Country Code */}
-                      <div className="w-32">
-                        <select
-                          value={profileData.phone_country_code || "+1"}
-                          onChange={(e) => handleProfileChange("phone_country_code", e.target.value)}
-                          className="w-full h-8 px-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        >
-                          <option value="+1">🇺🇸 +1</option>
-                          <option value="+52">🇲🇽 +52</option>
-                          <option value="+44">🇬🇧 +44</option>
-                          <option value="+49">🇩🇪 +49</option>
-                          <option value="+33">🇫🇷 +33</option>
-                          <option value="+34">🇪🇸 +34</option>
-                          <option value="+39">🇮🇹 +39</option>
-                          <option value="+31">🇳🇱 +31</option>
-                          <option value="+32">🇧🇪 +32</option>
-                          <option value="+41">🇨🇭 +41</option>
-                          <option value="+46">🇸🇪 +46</option>
-                          <option value="+47">🇳🇴 +47</option>
-                          <option value="+45">🇩🇰 +45</option>
-                          <option value="+358">🇫🇮 +358</option>
-                          <option value="+48">🇵🇱 +48</option>
-                          <option value="+420">🇨🇿 +48</option>
-                          <option value="+36">🇭🇺 +36</option>
-                          <option value="+43">🇦🇹 +43</option>
-                          <option value="+351">🇵🇹 +351</option>
-                          <option value="+30">🇬🇷 +30</option>
-                          <option value="+90">🇹🇷 +90</option>
-                          <option value="+7">🇷🇺 +7</option>
-                          <option value="+86">🇨🇳 +86</option>
-                          <option value="+81">🇯🇵 +81</option>
-                          <option value="+82">🇰🇷 +82</option>
-                          <option value="+91">🇮🇳 +91</option>
-                          <option value="+61">🇦🇺 +61</option>
-                          <option value="+64">🇳🇿 +64</option>
-                          <option value="+55">🇧🇷 +55</option>
-                          <option value="+54">🇦🇷 +54</option>
-                          <option value="+56">🇨🇱 +56</option>
-                          <option value="+57">🇨🇴 +57</option>
-                          <option value="+58">🇻🇪 +58</option>
-                          <option value="+51">🇵🇪 +51</option>
-                          <option value="+593">🇪🇨 +593</option>
-                          <option value="+595">🇵🇾 +595</option>
-                          <option value="+598">🇺🇾 +598</option>
-                          <option value="+591">🇧🇴 +591</option>
-                          <option value="+503">🇸🇻 +503</option>
-                          <option value="+502">🇬🇹 +502</option>
-                          <option value="+504">🇭🇳 +504</option>
-                          <option value="+505">🇳🇮 +505</option>
-                          <option value="+506">🇨🇷 +506</option>
-                          <option value="+507">🇵🇦 +507</option>
-                          <option value="+971">🇦🇪 +971</option>
-                          <option value="+966">🇸🇦 +966</option>
-                          <option value="+972">🇮🇱 +972</option>
-                          <option value="+20">🇪🇬 +20</option>
-                          <option value="+27">🇿🇦 +27</option>
-                          <option value="+234">🇳🇬 +234</option>
-                          <option value="+254">🇰🇪 +254</option>
-                          <option value="+233">🇬🇭 +233</option>
-                          <option value="+212">🇲🇦 +212</option>
-                          <option value="+216">🇹🇳 +216</option>
-                          <option value="+213">🇩🇿 +213</option>
-                          <option value="+221">🇸🇳 +221</option>
-                          <option value="+225">🇨🇮 +225</option>
-                          <option value="+237">🇨🇲 +237</option>
-                          <option value="+236">🇨🇫 +236</option>
-                          <option value="+235">🇹🇩 +235</option>
-                          <option value="+249">🇸🇩 +249</option>
-                          <option value="+251">🇪🇹 +251</option>
-                          <option value="+255">🇹🇿 +255</option>
-                          <option value="+256">🇺🇬 +256</option>
-                          <option value="+257">🇧🇮 +257</option>
-                          <option value="+250">🇷🇼 +250</option>
-                          <option value="+252">🇸🇴 +252</option>
-                          <option value="+253">🇩🇯 +253</option>
-                          <option value="+254">🇰🇪 +254</option>
-                          <option value="+255">🇹🇿 +255</option>
-                          <option value="+256">🇺🇬 +256</option>
-                          <option value="+257">🇧🇮 +257</option>
-                        </select>
-                      </div>
-
-                      {/* Phone Number */}
-                      <div className="flex-1">
-                        <Input
-                          type="tel"
-                          value={profileData.phone || ""}
-                          onChange={(e) => handleProfileChange("phone", e.target.value)}
-                          className="w-full"
-                          placeholder="(555) 123-4567"
-                        />
-                      </div>
-
-                      {/* Phone Type */}
-                      <div className="w-32">
-                        <select
-                          value={profileData.phone_type || "mobile"}
-                          onChange={(e) => handleProfileChange("phone_type", e.target.value)}
-                          className="w-full h-8 px-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        >
-                          <option value="mobile">📱 Mobile</option>
-                          <option value="home">🏠 Home</option>
-                          <option value="work">🏢 Work</option>
-                          <option value="other">📞 Other</option>
-                        </select>
-                      </div>
+              {/* Contact Card */}
+              <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                  <h3 className="text-lg font-medium text-gray-900">Contact</h3>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-sm font-medium text-gray-600">Email Address:</div>
+                    <div className="text-sm text-gray-900">{profileData.email || "Not provided"}</div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-sm font-medium text-gray-600">Primary Phone:</div>
+                    <div className="text-sm text-gray-900">
+                      {profileData.phone ? `${profileData.phone_country_code || ""} ${profileData.phone} (${profileData.phone_type || "mobile"})` : "Not provided"}
                     </div>
                   </div>
-
-                  {/* Secondary Phone */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Secondary Phone Number
-                    </label>
-                    <div className="flex space-x-2">
-                      {/* Country Code */}
-                      <div className="w-32">
-                        <select
-                          value={profileData.phone_country_code || "+1"}
-                          onChange={(e) => handleProfileChange("phone_country_code", e.target.value)}
-                          className="w-full h-8 px-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        >
-                          <option value="+1">🇺🇸 +1</option>
-                          <option value="+52">🇲🇽 +52</option>
-                          <option value="+44">🇬🇧 +44</option>
-                          <option value="+49">🇩🇪 +49</option>
-                          <option value="+33">🇫🇷 +33</option>
-                          <option value="+34">🇪🇸 +34</option>
-                          <option value="+39">🇮🇹 +39</option>
-                          <option value="+31">🇳🇱 +31</option>
-                          <option value="+32">🇧🇪 +32</option>
-                          <option value="+41">🇨🇭 +41</option>
-                          <option value="+46">🇸🇪 +46</option>
-                          <option value="+47">🇳🇴 +47</option>
-                          <option value="+45">🇩🇰 +45</option>
-                          <option value="+358">🇫🇮 +358</option>
-                          <option value="+48">🇵🇱 +48</option>
-                          <option value="+420">🇨🇿 +48</option>
-                          <option value="+36">🇭🇺 +36</option>
-                          <option value="+43">🇦🇹 +43</option>
-                          <option value="+351">🇵🇹 +351</option>
-                          <option value="+30">🇬🇷 +30</option>
-                          <option value="+90">🇹🇷 +90</option>
-                          <option value="+7">🇷🇺 +7</option>
-                          <option value="+86">🇨🇳 +86</option>
-                          <option value="+81">🇯🇵 +81</option>
-                          <option value="+82">🇰🇷 +82</option>
-                          <option value="+91">🇮🇳 +91</option>
-                          <option value="+61">🇦🇺 +61</option>
-                          <option value="+64">🇳🇿 +64</option>
-                          <option value="+55">🇧🇷 +55</option>
-                          <option value="+54">🇦🇷 +54</option>
-                          <option value="+56">🇨🇱 +56</option>
-                          <option value="+57">🇨🇴 +57</option>
-                          <option value="+58">🇻🇪 +58</option>
-                          <option value="+51">🇵🇪 +51</option>
-                          <option value="+593">🇪🇨 +593</option>
-                          <option value="+595">🇵🇾 +595</option>
-                          <option value="+598">🇺🇾 +598</option>
-                          <option value="+591">🇧🇴 +591</option>
-                          <option value="+503">🇸🇻 +503</option>
-                          <option value="+502">🇬🇹 +502</option>
-                          <option value="+504">🇭🇳 +504</option>
-                          <option value="+505">🇳🇮 +505</option>
-                          <option value="+506">🇨🇷 +506</option>
-                          <option value="+507">🇵🇦 +507</option>
-                          <option value="+971">🇦🇪 +971</option>
-                          <option value="+966">🇸🇦 +966</option>
-                          <option value="+972">🇮🇱 +972</option>
-                          <option value="+20">🇪🇬 +20</option>
-                          <option value="+27">🇿🇦 +27</option>
-                          <option value="+234">🇳🇬 +234</option>
-                          <option value="+254">🇰🇪 +254</option>
-                          <option value="+233">🇬🇭 +233</option>
-                          <option value="+212">🇲🇦 +212</option>
-                          <option value="+216">🇹🇳 +216</option>
-                          <option value="+213">🇩🇿 +213</option>
-                          <option value="+221">🇸🇳 +221</option>
-                          <option value="+225">🇨🇮 +225</option>
-                          <option value="+237">🇨🇲 +237</option>
-                          <option value="+236">🇨🇫 +236</option>
-                          <option value="+235">🇹🇩 +235</option>
-                          <option value="+249">🇸🇩 +249</option>
-                          <option value="+251">🇪🇹 +251</option>
-                          <option value="+255">🇹🇿 +255</option>
-                          <option value="+256">🇺🇬 +256</option>
-                          <option value="+257">🇧🇮 +257</option>
-                          <option value="+250">🇷🇼 +250</option>
-                          <option value="+252">🇸🇴 +252</option>
-                          <option value="+253">🇩🇯 +253</option>
-                          <option value="+254">🇰🇪 +254</option>
-                          <option value="+255">🇹🇿 +255</option>
-                          <option value="+256">🇺🇬 +256</option>
-                          <option value="+257">🇧🇮 +257</option>
-                        </select>
-                      </div>
-                      {/* Phone Number */}
-                      <div className="flex-1">
-                        <Input
-                          type="tel"
-                          value={profileData.secondary_phone || ""}
-                          onChange={(e) => handleProfileChange("secondary_phone", e.target.value)}
-                          className="w-full"
-                          placeholder="(555) 123-4567"
-                        />
-                      </div>
-                      {/* Phone Type */}
-                      <div className="w-32">
-                        <select
-                          value={profileData.secondary_phone_type || "mobile"}
-                          onChange={(e) => handleProfileChange("secondary_phone_type", e.target.value)}
-                          className="w-full h-8 px-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        >
-                          <option value="mobile">📱 Mobile</option>
-                          <option value="home">🏠 Home</option>
-                          <option value="work">🏢 Work</option>
-                          <option value="other">📞 Other</option>
-                        </select>
-                      </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-sm font-medium text-gray-600">Secondary Phone:</div>
+                    <div className="text-sm text-gray-900">
+                      {profileData.secondary_phone ? `${profileData.phone_country_code || ""} ${profileData.secondary_phone} (${profileData.secondary_phone_type || "mobile"})` : "Not provided"}
                     </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Address Card */}
+              <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                  <h3 className="text-lg font-medium text-gray-900">Address</h3>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-sm font-medium text-gray-600">Street Address:</div>
+                    <div className="text-sm text-gray-900">{profileData.street_address || "Not provided"}</div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-sm font-medium text-gray-600">Apartment/Suite:</div>
+                    <div className="text-sm text-gray-900">{profileData.apartment_suite || "Not provided"}</div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-sm font-medium text-gray-600">City:</div>
+                    <div className="text-sm text-gray-900">{profileData.city || "Not provided"}</div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-sm font-medium text-gray-600">State/Province:</div>
+                    <div className="text-sm text-gray-900">{profileData.state_province || "Not provided"}</div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-sm font-medium text-gray-600">ZIP Code:</div>
+                    <div className="text-sm text-gray-900">{profileData.zip_code || "Not provided"}</div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-sm font-medium text-gray-600">Country:</div>
+                    <div className="text-sm text-gray-900">{profileData.country || "Not provided"}</div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Address Form - Compact */}
-            <AddressFormEnhanced
-              value={getAddressData()}
-              onChange={handleAddressChange}
-              className="space-y-3"
-            />
-
-            {/* Bio Field */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Bio
-              </label>
-              <textarea
-                value={profileData.bio || ""}
-                onChange={(e) => handleProfileChange("bio", e.target.value)}
-                rows={2}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
-                placeholder="Tell us about yourself..."
-              />
+            {/* Bio Card - Full Width */}
+            <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+              <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                <h3 className="text-lg font-medium text-gray-900">Bio</h3>
+              </div>
+              <div className="p-4">
+                <div className="text-sm text-gray-900">
+                  {profileData.bio || "No bio information provided."}
+                </div>
+              </div>
             </div>
           </div>
         );
