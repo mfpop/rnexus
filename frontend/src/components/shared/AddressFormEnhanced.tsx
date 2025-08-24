@@ -347,130 +347,133 @@ const AddressFormEnhanced: React.FC<AddressFormProps> = ({ value, onChange, clas
   return (
     <div className={`space-y-4 ${className}`}>
 
-      {/* Street Address */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          <MapPin className="inline w-4 h-4 mr-2" />
-          Street Address
-        </label>
-        <Input
-          type="text"
-          value={value.street_address}
-          onChange={(e) => handleFieldChange("street_address", e.target.value)}
-          className="w-full"
-          placeholder="123 Main Street"
-        />
+      {/* Street Address and Apartment - Same Line */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {/* Street Address */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            <MapPin className="inline w-4 h-4 mr-2" />
+            Street Address
+          </label>
+          <Input
+            type="text"
+            value={value.street_address}
+            onChange={(e) => handleFieldChange("street_address", e.target.value)}
+            className="w-full"
+            placeholder="123 Main Street"
+          />
+        </div>
+
+        {/* Apartment/Suite */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            <Building className="inline w-4 h-4 mr-2" />
+            Apartment, Suite, etc.
+          </label>
+          <Input
+            type="text"
+            value={value.apartment_suite}
+            onChange={(e) => handleFieldChange("apartment_suite", e.target.value)}
+            className="w-full"
+            placeholder="Apt 4B, Suite 100, etc."
+          />
+        </div>
       </div>
 
-      {/* Apartment/Suite */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          <Building className="inline w-4 h-4 mr-2" />
-          Apartment, Suite, etc.
-        </label>
-        <Input
-          type="text"
-          value={value.apartment_suite}
-          onChange={(e) => handleFieldChange("apartment_suite", e.target.value)}
-          className="w-full"
-          placeholder="Apt 4B, Suite 100, etc."
-        />
-      </div>
-
-      {/* Country Selection */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          <Globe className="inline w-4 h-4 mr-2" />
-          Country
-        </label>
-        <div className="relative">
-          <select
-            value={value.country}
-            onChange={(e) => handleFieldChange("country", e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            disabled={loading.countries}
-          >
-            <option value="">Select a country</option>
-            {countries.map((country) => (
-              <option key={country.cca2} value={country.name}>
-                {country.flag} {country.name}
-
-              </option>
-            ))}
-          </select>
-          {loading.countries && (
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-            </div>
+      {/* Country, State, and City - Same Line */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        {/* Country Selection */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            <Globe className="inline w-4 h-4 mr-2" />
+            Country
+          </label>
+          <div className="relative">
+            <select
+              value={value.country}
+              onChange={(e) => handleFieldChange("country", e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={loading.countries}
+            >
+              <option value="">Select a country</option>
+              {countries.map((country) => (
+                <option key={country.cca2} value={country.name}>
+                  {country.flag} {country.name}
+                </option>
+              ))}
+            </select>
+            {loading.countries && (
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+              </div>
+            )}
+          </div>
+          {errors['countries'] && (
+            <p className="text-sm text-red-500 mt-1">{errors['countries']}</p>
           )}
         </div>
-        {errors['countries'] && (
-          <p className="text-sm text-red-500 mt-1">{errors['countries']}</p>
-        )}
-      </div>
 
-      {/* State/Province Selection */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          <Building className="inline w-4 h-4 mr-2" />
-          State / Province
-        </label>
-        <div className="relative">
-          <select
-            value={value.state_province}
-            onChange={(e) => handleFieldChange("state_province", e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            disabled={!value.country || loading.states}
-          >
-            <option value="">Select a state/province</option>
-            {states.map((state) => (
-              <option key={state.geonameId} value={state.name}>
-                {state.name} {state.adminName1 && `(${state.adminName1})`}
-
-              </option>
-            ))}
-          </select>
-          {loading.states && (
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-            </div>
+        {/* State/Province Selection */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            <Building className="inline w-4 h-4 mr-2" />
+            State / Province
+          </label>
+          <div className="relative">
+            <select
+              value={value.state_province}
+              onChange={(e) => handleFieldChange("state_province", e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={!value.country || loading.states}
+            >
+              <option value="">Select a state/province</option>
+              {states.map((state) => (
+                <option key={state.geonameId} value={state.name}>
+                  {state.name} {state.adminName1 && `(${state.adminName1})`}
+                </option>
+              ))}
+            </select>
+            {loading.states && (
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+              </div>
+            )}
+          </div>
+          {errors['states'] && (
+            <p className="text-sm text-red-500 mt-1">{errors['states']}</p>
           )}
         </div>
-        {errors['states'] && (
-          <p className="text-sm text-red-500 mt-1">{errors['states']}</p>
-        )}
-      </div>
 
-      {/* City Selection */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          <Building className="inline w-4 h-4 mr-2" />
-          City / Town
-        </label>
-        <div className="relative">
-          <select
-            value={value.city}
-            onChange={(e) => handleFieldChange("city", e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            disabled={!value.state_province || loading.cities}
-          >
-            <option value="">Select a city/town</option>
-            {cities.map((city) => (
-              <option key={city.geonameId} value={city.name}>
-                {city.name}
-
-              </option>
-            ))}
-          </select>
-          {loading.cities && (
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-            </div>
+        {/* City Selection */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            <Building className="inline w-4 h-4 mr-2" />
+            City / Town
+          </label>
+          <div className="relative">
+            <select
+              value={value.city}
+              onChange={(e) => handleFieldChange("city", e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={!value.state_province || loading.cities}
+            >
+              <option value="">Select a city/town</option>
+              {cities.map((city) => (
+                <option key={city.geonameId} value={city.name}>
+                  {city.name}
+                </option>
+              ))}
+            </select>
+            {loading.cities && (
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+              </div>
+            )}
+          </div>
+          {errors['cities'] && (
+            <p className="text-sm text-red-500 mt-1">{errors['cities']}</p>
           )}
         </div>
-        {errors['cities'] && (
-          <p className="text-sm text-red-500 mt-1">{errors['cities']}</p>
-        )}
       </div>
 
       {/* ZIP/Postal Code */}

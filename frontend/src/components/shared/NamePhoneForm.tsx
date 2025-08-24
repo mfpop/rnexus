@@ -271,7 +271,7 @@ const NamePhoneForm: React.FC<NamePhoneFormProps> = ({ value, onChange, classNam
           Personal Information
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
           {/* First Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -327,21 +327,21 @@ const NamePhoneForm: React.FC<NamePhoneFormProps> = ({ value, onChange, classNam
               placeholder="López"
             />
           </div>
-        </div>
 
-        {/* Preferred Name */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            <Star className="inline w-4 h-4 mr-2" />
-            Preferred Name / Nickname
-          </label>
-          <Input
-            type="text"
-            value={value.preferred_name}
-            onChange={(e) => handleFieldChange("preferred_name", e.target.value)}
-            className="w-full"
-            placeholder="Johnny, J.C., etc."
-          />
+          {/* Preferred Name / Nickname */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <Star className="inline w-4 h-4 mr-2" />
+              Preferred Name / Nickname
+            </label>
+            <Input
+              type="text"
+              value={value.preferred_name}
+              onChange={(e) => handleFieldChange("preferred_name", e.target.value)}
+              className="w-full"
+              placeholder="Johnny, J.C., etc."
+            />
+          </div>
         </div>
       </div>
 

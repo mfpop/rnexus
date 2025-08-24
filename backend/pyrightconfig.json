@@ -3,9 +3,7 @@
     "venv": "venv",
     "typeCheckingMode": "basic",
     "include": [
-        "api/permissions.py",
-        "api/viewsets.py",
-        "api/routers.py",
+        "api/v2/**/*.py",
         "api/__init__.py",
         "core/settings.py",
         "core/urls.py"

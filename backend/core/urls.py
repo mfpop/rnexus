@@ -24,7 +24,7 @@ from django.views.decorators.csrf import csrf_exempt
 from graphene_django.views import GraphQLView
 
 from api import views
-from api.routers import urlpatterns as api_router_urls
+from api.v2.routers import urlpatterns as api_v2_router_urls
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -154,8 +154,8 @@ urlpatterns = [
         views.activity_pause_view,
         name="api_activity_pause",
     ),
-    # DRF router endpoints (mirror under /api/v2 to avoid conflicts while migrating)
-    path("api/v2/", include((api_router_urls, "api"), namespace="api-router")),
+    # DRF v2 router endpoints (clean namespace during migration)
+    path("api/v2/", include((api_v2_router_urls, "api-v2"), namespace="api-v2-router")),
 ]
 
 # Serve static files during development

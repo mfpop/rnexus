@@ -1,12 +1,6 @@
-from django.urls import include, path
+"""Legacy router placeholder; v2 routers live in api.v2.routers.
 
-from rest_framework.routers import DefaultRouter
+Kept for compatibility if imported elsewhere.
+"""
 
-from .viewsets import ActivityViewSet
-
-router = DefaultRouter()
-router.register(r"activities", ActivityViewSet, basename="activity")
-
-urlpatterns = [
-    path("", include(router.urls)),
-]
+urlpatterns: list = []
