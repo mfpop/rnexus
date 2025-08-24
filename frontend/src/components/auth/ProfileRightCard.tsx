@@ -945,7 +945,7 @@ const ProfileRightCard: React.FC = () => {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {(profileData.education || []).map((edu) => (
-                      <tr key={edu.id} className="hover:bg-gray-50 transition-colors">
+                      <tr key={edu.id} className="hover:bg-gray-50 transition-colors [&>td]:!p-0">
                         <td className="px-3 py-2 whitespace-nowrap">
                           <Input
                             value={edu.school || ''}
@@ -966,7 +966,7 @@ const ProfileRightCard: React.FC = () => {
                               value={edu.field || ''}
                               onChange={(e) => updateEducation(edu.id, 'field', e.target.value)}
                               placeholder="Field of study"
-                              className="w-full h-7 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-2"
+                              className="w-full h-7 text-sm border-0 bg-transparent hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 rounded px-2"
                             />
                           </div>
                         </td>
@@ -987,7 +987,7 @@ const ProfileRightCard: React.FC = () => {
                             />
                           </div>
                         </td>
-                        <td className="py-0 !py-0">
+                        <td className="!p-0 !m-0">
                           <textarea
                             value={edu.description || ''}
                             onChange={(e) => updateEducation(edu.id, 'description', e.target.value)}
