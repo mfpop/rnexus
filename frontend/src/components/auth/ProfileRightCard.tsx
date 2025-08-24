@@ -1219,83 +1219,110 @@ const ProfileRightCard: React.FC = () => {
         return (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-600">Manage your work experience</p>
+              <h3 className="text-lg font-medium text-gray-900">Work Experience Records</h3>
               <Button
                 onClick={addWork}
-                className="bg-purple-50 hover:bg-purple-100 text-purple-600 border-0 flex items-center gap-2"
+                className="bg-blue-600 hover:bg-blue-700 text-white border-0 flex items-center gap-2"
               >
                 <Plus className="h-4 w-4" />
                 Add Experience
               </Button>
             </div>
 
-            <div className="space-y-4">
-              {(profileData.work_history || []).map((work) => (
-                <div key={work.id} className="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-                    <Input
-                      value={work.title}
-                      onChange={(e) => updateWork(work.id, 'title', e.target.value)}
-                      placeholder="Job Title"
-                      className="font-medium"
-                    />
-                    <Input
-                      value={work.company}
-                      onChange={(e) => updateWork(work.id, 'company', e.target.value)}
-                      placeholder="Company"
-                    />
-                    <Input
-                      value={work.department || ''}
-                      onChange={(e) => updateWork(work.id, 'department', e.target.value)}
-                      placeholder="Department"
-                    />
-                    <div className="flex gap-2">
-                      <Input
-                        value={work.startYear || ''}
-                        onChange={(e) => updateWork(work.id, 'startYear', e.target.value)}
-                        placeholder="Start Year"
-                        className="flex-1"
-                      />
-                      <Input
-                        value={work.endYear || ''}
-                        onChange={(e) => updateWork(work.id, 'endYear', e.target.value)}
-                        placeholder="End Year"
-                        className="flex-1"
-                      />
-                    </div>
-                  </div>
-                  <textarea
-                    value={work.description || ''}
-                    onChange={(e) => updateWork(work.id, 'description', e.target.value)}
-                    placeholder="Job description, responsibilities, achievements..."
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none text-sm mb-3"
-                  />
-                  <div className="flex items-center justify-between">
-                    <label className="flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        checked={work.visible ?? true}
-                        onChange={(e) => updateWork(work.id, 'visible', e.target.checked)}
-                        className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-                      />
-                      <span className="text-gray-600">Visible on profile</span>
-                    </label>
-                    <Button
-                      onClick={() => removeWork(work.id)}
-                      className="bg-red-50 hover:bg-red-100 text-red-600 border-0 p-2"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
+            <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-3 py-2 text-xs font-semibold text-gray-700 text-left">Position & Company</th>
+                    <th className="px-3 py-2 text-xs font-semibold text-gray-700 text-left">Department</th>
+                    <th className="px-3 py-2 text-xs font-semibold text-gray-700 text-center w-24">Period</th>
+                    <th className="px-3 py-2 text-xs font-semibold text-gray-700 text-left">Description</th>
+                    <th className="px-3 py-2 text-xs font-semibold text-gray-700 text-center w-20">Status</th>
+                    <th className="px-3 py-2 text-xs font-semibold text-gray-700 text-center w-16">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {(profileData.work_history || []).map((work) => (
+                    <tr key={work.id} className="hover:bg-gray-50 transition-colors [&>td]:!p-0">
+                      <td className="py-4 whitespace-nowrap">
+                        <div className="space-y-2">
+                          <Input
+                            value={work.title || ''}
+                            onChange={(e) => updateWork(work.id, 'title', e.target.value)}
+                            placeholder="Job Title"
+                            className="w-full h-8 text-base font-medium border-0 !border-0 bg-transparent hover:bg-gray-100 focus:bg-blue-50 focus:outline-none focus:ring-0 !ring-0 focus-visible:ring-0 !focus-visible:ring-0 text-sm rounded px-3"
+                          />
+                          <Input
+                            value={work.company || ''}
+                            onChange={(e) => updateWork(work.id, 'company', e.target.value)}
+                            placeholder="Company Name"
+                            className="w-full h-8 text-sm border-0 !border-0 bg-transparent hover:bg-gray-100 focus:bg-blue-50 focus:outline-none focus:ring-0 !ring-0 focus-visible:ring-0 !focus-visible:ring-0 rounded px-3"
+                          />
+                        </div>
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap">
+                        <Input
+                          value={work.department || ''}
+                          onChange={(e) => updateWork(work.id, 'department', e.target.value)}
+                          placeholder="Department"
+                          className="w-full h-8 text-sm border-0 !border-0 bg-transparent hover:bg-gray-100 focus:bg-blue-50 focus:outline-none focus:ring-0 !ring-0 focus-visible:ring-0 !focus-visible:ring-0 rounded px-2"
+                        />
+                      </td>
+                      <td className="py-4 whitespace-nowrap w-24">
+                        <div className="flex items-center gap-1">
+                          <Input
+                            value={work.startYear || ''}
+                            onChange={(e) => updateWork(work.id, 'startYear', e.target.value)}
+                            placeholder="Start"
+                            className="w-16 h-8 text-sm border-0 !border-0 bg-transparent hover:bg-gray-100 focus:bg-blue-50 focus:outline-none focus:ring-0 !ring-0 focus-visible:ring-0 !focus-visible:ring-0 rounded px-1 text-center"
+                          />
+                          <span className="text-gray-400 text-xs">-</span>
+                          <Input
+                            value={work.endYear || ''}
+                            onChange={(e) => updateWork(work.id, 'endYear', e.target.value)}
+                            placeholder="End"
+                            className="w-16 h-8 text-sm border-0 !border-0 bg-transparent hover:bg-gray-100 focus:bg-blue-50 focus:outline-none focus:ring-0 !ring-0 focus-visible:ring-0 !focus-visible:ring-0 rounded px-1 text-center"
+                          />
+                        </div>
+                      </td>
+                      <td className="!p-0 !m-0">
+                        <textarea
+                          value={work.description || ''}
+                          onChange={(e) => updateWork(work.id, 'description', e.target.value)}
+                          placeholder="Job description, responsibilities, achievements..."
+                          rows={3}
+                          className="w-full min-h-48 px-2 py-1 border-0 rounded-b-lg focus:outline-none focus:ring-0 !ring-0 focus-visible:ring-0 !focus-visible:ring-0 resize-none text-sm bg-transparent hover:bg-gray-100 focus:bg-blue-50"
+                        />
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap text-center w-20">
+                        <select
+                          value={work.visible ? "visible" : "hidden"}
+                          onChange={(e) => updateWork(work.id, 'visible', e.target.value === "visible")}
+                          className="w-full h-8 px-2 border-0 bg-transparent hover:bg-gray-100 focus:bg-blue-50 focus:outline-none text-sm rounded"
+                        >
+                          <option value="visible">Visible</option>
+                          <option value="hidden">Hidden</option>
+                        </select>
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap text-right text-sm font-medium w-16">
+                        <Button
+                          onClick={() => removeWork(work.id)}
+                          className="bg-red-50 hover:bg-red-100 text-red-600 border-0 p-2 rounded"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
 
+              {/* Empty State */}
               {(!profileData.work_history || profileData.work_history.length === 0) && (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-12 text-gray-500">
                   <Briefcase className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                  <p>No work experience entries yet</p>
-                  <p className="text-sm">Click "Add Experience" to add your work history</p>
+                  <p className="text-sm font-medium">No work experience records yet</p>
+                  <p className="text-xs text-gray-400 mt-1">Click "Add Experience" to get started</p>
                 </div>
               )}
             </div>
