@@ -98,13 +98,23 @@ const AddressFormEnhanced: React.FC<AddressFormProps> = ({ value, onChange, clas
           }))
           .sort((a: Country, b: Country) => a.name.localeCompare(b.name));
         setCountries(sortedCountries);
+        // Clear any existing country errors when countries load successfully
+        if (errors['countries']) {
+          setErrors(prev => ({ ...prev, countries: "" }));
+        }
       } else {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
     } catch (error) {
       console.error("Failed to load countries:", error);
-      setErrors(prev => ({ ...prev, countries: "Failed to load countries. Please refresh the page." }));
-      setCountries(getFallbackCountries());
+      // Only show error if we don't have fallback countries
+      const fallbackCountries = getFallbackCountries();
+      if (fallbackCountries.length === 0) {
+        setErrors(prev => ({ ...prev, countries: "Failed to load countries. Please refresh the page." }));
+      } else {
+        // Use fallback countries silently without showing error
+        setCountries(fallbackCountries);
+      }
     } finally {
       setLoading(prev => ({ ...prev, countries: false }));
     }
@@ -347,8 +357,8 @@ const AddressFormEnhanced: React.FC<AddressFormProps> = ({ value, onChange, clas
   return (
     <div className={`space-y-4 ${className}`}>
 
-      {/* Street Address and Apartment - Same Line */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      {/* Street Address, Apartment, and ZIP Code - Same Line */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {/* Street Address */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -377,6 +387,27 @@ const AddressFormEnhanced: React.FC<AddressFormProps> = ({ value, onChange, clas
             className="w-full"
             placeholder="Apt 4B, Suite 100, etc."
           />
+        </div>
+
+        {/* ZIP/Postal Code */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            <Mail className="inline w-4 h-4 mr-2" />
+            ZIP / Postal Code
+          </label>
+          <Input
+            type="text"
+            value={value.zip_code}
+            onChange={(e) => handleFieldChange("zip_code", e.target.value)}
+            className={`w-full ${errors['zip_code'] ? 'border-red-500' : ''}`}
+            placeholder={getZipCodePlaceholder(value.country)}
+          />
+          {errors['zip_code'] && (
+            <p className="text-sm text-red-500 mt-1 flex items-center">
+              <AlertCircle className="w-4 h-4 mr-1" />
+              {errors['zip_code']}
+            </p>
+          )}
         </div>
       </div>
 
@@ -476,30 +507,6 @@ const AddressFormEnhanced: React.FC<AddressFormProps> = ({ value, onChange, clas
         </div>
       </div>
 
-      {/* ZIP/Postal Code */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          <Mail className="inline w-4 h-4 mr-2" />
-          ZIP / Postal Code
-        </label>
-        <Input
-          type="text"
-          value={value.zip_code}
-          onChange={(e) => handleFieldChange("zip_code", e.target.value)}
-          className={`w-full ${errors['zip_code'] ? 'border-red-500' : ''}`}
-          placeholder={getZipCodePlaceholder(value.country)}
-        />
-        {errors['zip_code'] && (
-          <p className="text-sm text-red-500 mt-1 flex items-center">
-            <AlertCircle className="w-4 h-4 mr-1" />
-            {errors['zip_code']}
-          </p>
-        )}
-        <p className="text-xs text-gray-500 mt-1">
-          Format: {getZipCodePlaceholder(value.country)}
-        </p>
-      </div>
-
       {/* Address Preview - Compact */}
       {(value.street_address || value.city || value.state_province || value.country) && (
         <div className="p-2 bg-gray-50 rounded border border-gray-200">
@@ -508,19 +515,19 @@ const AddressFormEnhanced: React.FC<AddressFormProps> = ({ value, onChange, clas
               <>
                 {value.street_address}
                 {value.apartment_suite && `, ${value.apartment_suite}`}
+                {value.zip_code && `, ${value.zip_code}`}
                 {value.city && ", "}
               </>
             )}
             {value.city && value.city}
             {value.state_province && value.city && ", "}
             {value.state_province && value.state_province}
-            {value.zip_code && ` ${value.zip_code}`}
             {value.country && `, ${value.country}`}
           </p>
         </div>
       )}
 
-          </div>
+    </div>
   );
 };
 

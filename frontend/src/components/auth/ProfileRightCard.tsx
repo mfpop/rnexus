@@ -849,40 +849,6 @@ const ProfileRightCard: React.FC = () => {
                 />
               </div>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-200">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Account Status
-                </label>
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`w-3 h-3 rounded-full ${profileData.is_active ? "bg-green-500" : "bg-red-500"}`}
-                  ></div>
-                  <span className="text-sm text-gray-600">
-                    {profileData.is_active ? "Active" : "Inactive"}
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Staff Status
-                </label>
-                <span className="text-sm text-gray-600">
-                  {profileData.is_staff ? "Staff Member" : "Regular User"}
-                </span>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Admin Status
-                </label>
-                <span className="text-sm text-gray-600">
-                  {profileData.is_superuser ? "Administrator" : "Regular User"}
-                </span>
-              </div>
-            </div>
           </div>
         );
 
