@@ -923,7 +923,7 @@ const ProfileRightCard: React.FC = () => {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 py-2 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
                         Institution
                       </th>
                       <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -951,7 +951,7 @@ const ProfileRightCard: React.FC = () => {
                             value={edu.school || ''}
                             onChange={(e) => updateEducation(edu.id, 'school', e.target.value)}
                             placeholder="Institution name"
-                            className="w-full h-8 text-sm border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-2"
+                            className="w-full h-8 text-base font-medium border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500 rounded px-3"
                           />
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap">
