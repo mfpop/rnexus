@@ -255,6 +255,40 @@ const AddressForm: React.FC<AddressFormProps> = ({ value, onChange, className = 
         { geonameId: 95, name: "Pays de la Loire", adminName1: "PDL" },
         { geonameId: 96, name: "Provence-Alpes-Côte d'Azur", adminName1: "PAC" },
       ],
+      "Mexico": [
+        { geonameId: 100, name: "Aguascalientes", adminName1: "AGU" },
+        { geonameId: 101, name: "Baja California", adminName1: "BCN" },
+        { geonameId: 102, name: "Baja California Sur", adminName1: "BCS" },
+        { geonameId: 103, name: "Campeche", adminName1: "CAM" },
+        { geonameId: 104, name: "Chiapas", adminName1: "CHP" },
+        { geonameId: 105, name: "Chihuahua", adminName1: "CHH" },
+        { geonameId: 106, name: "Ciudad de México", adminName1: "CDMX" },
+        { geonameId: 107, name: "Coahuila", adminName1: "COA" },
+        { geonameId: 108, name: "Colima", adminName1: "COL" },
+        { geonameId: 109, name: "Durango", adminName1: "DUR" },
+        { geonameId: 110, name: "Estado de México", adminName1: "MEX" },
+        { geonameId: 111, name: "Guanajuato", adminName1: "GUA" },
+        { geonameId: 112, name: "Guerrero", adminName1: "GRO" },
+        { geonameId: 113, name: "Hidalgo", adminName1: "HID" },
+        { geonameId: 114, name: "Jalisco", adminName1: "JAL" },
+        { geonameId: 115, name: "Michoacán", adminName1: "MIC" },
+        { geonameId: 116, name: "Morelos", adminName1: "MOR" },
+        { geonameId: 117, name: "Nayarit", adminName1: "NAY" },
+        { geonameId: 118, name: "Nuevo León", adminName1: "NLE" },
+        { geonameId: 119, name: "Oaxaca", adminName1: "OAX" },
+        { geonameId: 120, name: "Puebla", adminName1: "PUE" },
+        { geonameId: 121, name: "Querétaro", adminName1: "QUE" },
+        { geonameId: 122, name: "Quintana Roo", adminName1: "ROO" },
+        { geonameId: 123, name: "San Luis Potosí", adminName1: "SLP" },
+        { geonameId: 124, name: "Sinaloa", adminName1: "SIN" },
+        { geonameId: 125, name: "Sonora", adminName1: "SON" },
+        { geonameId: 126, name: "Tabasco", adminName1: "TAB" },
+        { geonameId: 127, name: "Tamaulipas", adminName1: "TAM" },
+        { geonameId: 128, name: "Tlaxcala", adminName1: "TLA" },
+        { geonameId: 129, name: "Veracruz", adminName1: "VER" },
+        { geonameId: 130, name: "Yucatán", adminName1: "YUC" },
+        { geonameId: 131, name: "Zacatecas", adminName1: "ZAC" },
+      ],
     };
     return stateMap[countryName] || [];
   };
@@ -306,6 +340,77 @@ const AddressForm: React.FC<AddressFormProps> = ({ value, onChange, className = 
         { geonameId: 604, name: "Liverpool", adminName1: "ENG", adminName2: "Merseyside" },
         { geonameId: 605, name: "Leeds", adminName1: "ENG", adminName2: "West Yorkshire" },
       ],
+      // Mexican Cities
+      "Ciudad de México": [
+        { geonameId: 701, name: "Mexico City", adminName1: "CDMX", adminName2: "Cuauhtémoc" },
+        { geonameId: 702, name: "Iztapalapa", adminName1: "CDMX", adminName2: "Iztapalapa" },
+        { geonameId: 703, name: "Gustavo A. Madero", adminName1: "CDMX", adminName2: "Gustavo A. Madero" },
+        { geonameId: 704, name: "Álvaro Obregón", adminName1: "CDMX", adminName2: "Álvaro Obregón" },
+        { geonameId: 705, name: "Coyoacán", adminName1: "CDMX", adminName2: "Coyoacán" },
+      ],
+      "Jalisco": [
+        { geonameId: 801, name: "Guadalajara", adminName1: "JAL", adminName2: "Guadalajara" },
+        { geonameId: 802, name: "Zapopan", adminName1: "JAL", adminName2: "Zapopan" },
+        { geonameId: 803, name: "San Pedro Tlaquepaque", adminName1: "JAL", adminName2: "San Pedro Tlaquepaque" },
+        { geonameId: 804, name: "Tlaquepaque", adminName1: "JAL", adminName2: "Tlaquepaque" },
+        { geonameId: 805, name: "Tonalá", adminName1: "JAL", adminName2: "Tonalá" },
+      ],
+      "Nuevo León": [
+        { geonameId: 901, name: "Monterrey", adminName1: "NLE", adminName2: "Monterrey" },
+        { geonameId: 902, name: "San Nicolás de los Garza", adminName1: "NLE", adminName2: "San Nicolás de los Garza" },
+        { geonameId: 903, name: "Guadalupe", adminName1: "NLE", adminName2: "Guadalupe" },
+        { geonameId: 904, name: "Santa Catarina", adminName1: "NLE", adminName2: "Santa Catarina" },
+        { geonameId: 905, name: "San Pedro Garza García", adminName1: "NLE", adminName2: "San Pedro Garza García" },
+      ],
+      "Puebla": [
+        { geonameId: 1001, name: "Puebla", adminName1: "PUE", adminName2: "Puebla" },
+        { geonameId: 1002, name: "Amozoc", adminName1: "PUE", adminName2: "Amozoc" },
+        { geonameId: 1003, name: "Atlixco", adminName1: "PUE", adminName2: "Atlixco" },
+        { geonameId: 1004, name: "Cuautlancingo", adminName1: "PUE", adminName2: "Cuautlancingo" },
+        { geonameId: 1005, name: "San Pedro Cholula", adminName1: "PUE", adminName2: "San Pedro Cholula" },
+      ],
+      "Baja California": [
+        { geonameId: 1101, name: "Tijuana", adminName1: "BCN", adminName2: "Tijuana" },
+        { geonameId: 1102, name: "Mexicali", adminName1: "BCN", adminName2: "Mexicali" },
+        { geonameId: 1103, name: "Ensenada", adminName1: "BCN", adminName2: "Ensenada" },
+        { geonameId: 1104, name: "Tecate", adminName1: "BCN", adminName2: "Tecate" },
+        { geonameId: 1105, name: "Playas de Rosarito", adminName1: "BCN", adminName2: "Playas de Rosarito" },
+      ],
+      "Quintana Roo": [
+        { geonameId: 1201, name: "Cancún", adminName1: "ROO", adminName2: "Benito Juárez" },
+        { geonameId: 1202, name: "Chetumal", adminName1: "ROO", adminName2: "Othón P. Blanco" },
+        { geonameId: 1203, name: "Playa del Carmen", adminName1: "ROO", adminName2: "Solidaridad" },
+        { geonameId: 1204, name: "Cozumel", adminName1: "ROO", adminName2: "Cozumel" },
+        { geonameId: 1205, name: "Tulum", adminName1: "ROO", adminName2: "Tulum" },
+      ],
+      "Yucatán": [
+        { geonameId: 1301, name: "Mérida", adminName1: "YUC", adminName2: "Mérida" },
+        { geonameId: 1302, name: "Valladolid", adminName1: "YUC", adminName2: "Valladolid" },
+        { geonameId: 1303, name: "Progreso", adminName1: "YUC", adminName2: "Progreso" },
+        { geonameId: 1304, name: "Tekax", adminName1: "YUC", adminName2: "Tekax" },
+        { geonameId: 1305, name: "Umán", adminName1: "YUC", adminName2: "Umán" },
+      ],
+      "Guanajuato": [
+        { geonameId: 1401, name: "León", adminName1: "GUA", adminName2: "León" },
+        { geonameId: 1402, name: "Irapuato", adminName1: "GUA", adminName2: "Irapuato" },
+        { geonameId: 1403, name: "Celaya", adminName1: "GUA", adminName2: "Celaya" },
+        { geonameId: 1404, name: "Salamanca", adminName1: "GUA", adminName2: "Salamanca" },
+        { geonameId: 1405, name: "San Miguel de Allende", adminName1: "GUA", adminName2: "San Miguel de Allende" },
+      ],
+      "Chihuahua": [
+        { geonameId: 1501, name: "Ciudad Juárez", adminName1: "CHH", adminName2: "Juárez" },
+        { geonameId: 1502, name: "Chihuahua", adminName1: "CHH", adminName2: "Chihuahua" },
+        { geonameId: 1503, name: "Cuauhtémoc", adminName1: "CHH", adminName2: "Cuauhtémoc" },
+        { geonameId: 1504, name: "Delicias", adminName1: "CHH", adminName2: "Delicias" },
+        { geonameId: 1505, name: "Hidalgo del Parral", adminName1: "CHH", adminName2: "Hidalgo del Parral" },
+      ],
+      "Sonora": [
+        { geonameId: 1601, name: "Hermosillo", adminName1: "SON", adminName2: "Hermosillo" },
+        { geonameId: 1602, name: "Ciudad Obregón", adminName1: "SON", adminName2: "Cajeme" },
+        { geonameId: 1603, name: "Nogales", adminName1: "SON", adminName2: "Nogales" },
+        { geonameId: 1604, name: "San Luis Río Colorado", adminName1: "SON", adminName2: "San Luis Río Colorado" },
+        { geonameId: 1605, name: "Puerto Peñasco", adminName1: "SON", adminName2: "Puerto Peñasco" },
+      ],
     };
     return cityMap[stateName] || [];
   };
@@ -320,6 +425,7 @@ const AddressForm: React.FC<AddressFormProps> = ({ value, onChange, className = 
     { name: "Australia", cca2: "AU", cca3: "AUS", flag: "🇦🇺" },
     { name: "Japan", cca2: "JP", cca3: "JPN", flag: "🇯🇵" },
     { name: "India", cca2: "IN", cca3: "IND", flag: "🇮🇳" },
+    { name: "Mexico", cca2: "MX", cca3: "MEX", flag: "🇲🇽" },
   ];
 
   const handleFieldChange = (field: keyof AddressFormData, fieldValue: string) => {
@@ -343,6 +449,7 @@ const AddressForm: React.FC<AddressFormProps> = ({ value, onChange, className = 
       "Australia": /^\d{4}$/,
       "Japan": /^\d{3}-\d{4}$/,
       "India": /^\d{6}$/,
+      "Mexico": /^\d{5}$/,
     };
 
     const pattern = patterns[country];
@@ -369,6 +476,7 @@ const AddressForm: React.FC<AddressFormProps> = ({ value, onChange, className = 
       "Australia": "1234",
       "Japan": "123-4567",
       "India": "123456",
+      "Mexico": "12345",
     };
     return placeholders[country] || "Enter postal code";
   };
