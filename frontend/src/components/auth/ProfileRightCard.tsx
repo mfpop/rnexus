@@ -13,6 +13,7 @@ import {
   Camera,
 } from "lucide-react";
 import { Button, Input } from "../ui/bits";
+import AddressForm from "../shared/AddressForm";
 import AuthService from "../../lib/authService";
 
 // API configuration
@@ -94,7 +95,6 @@ const ProfileRightCard: React.FC = () => {
     position: "",
     department: "",
     phone: "",
-  location: "",
     street_address: "",
     apartment_suite: "",
     city: "",
@@ -112,6 +112,29 @@ const ProfileRightCard: React.FC = () => {
       bio: true
     },
   });
+
+  // Helper function to get address data for AddressForm
+  const getAddressData = () => ({
+    street_address: profileData.street_address || "",
+    apartment_suite: profileData.apartment_suite || "",
+    country: profileData.country || "",
+    state_province: profileData.state_province || "",
+    city: profileData.city || "",
+    zip_code: profileData.zip_code || "",
+  });
+
+  // Helper function to update profile data from address form
+  const handleAddressChange = (addressData: any) => {
+    setProfileData(prev => ({
+      ...prev,
+      street_address: addressData.street_address,
+      apartment_suite: addressData.apartment_suite,
+      country: addressData.country,
+      state_province: addressData.state_province,
+      city: addressData.city,
+      zip_code: addressData.zip_code,
+    }));
+  };
 
   const [passwordData, setPasswordData] = useState<PasswordData>({
     current_password: "",
@@ -532,80 +555,10 @@ const ProfileRightCard: React.FC = () => {
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Street Address
-                </label>
-                <Input
-                  type="text"
-                  value={profileData.street_address || ""}
-                  onChange={(e) => handleProfileChange("street_address", e.target.value)}
-                  className="w-full"
-                  placeholder="123 Main Street"
-                />
-              </div>
-
-              <div className="md:col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Apartment/Suite
-                </label>
-                <Input
-                  type="text"
-                  value={profileData.apartment_suite || ""}
-                  onChange={(e) => handleProfileChange("apartment_suite", e.target.value)}
-                  className="w-full"
-                  placeholder="Apt 4B"
-                />
-              </div>
-
-              <div className="md:col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  City
-                </label>
-                <Input
-                  type="text"
-                  value={profileData.city || ""}
-                  onChange={(e) => handleProfileChange("city", e.target.value)}
-                  className="w-full"
-                  placeholder="New York"
-                />
-              </div>
-
-              <div className="md:col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  State/Province
-                </label>
-                <Input
-                  type="text"
-                  value={profileData.state_province || ""}
-                  onChange={(e) => handleProfileChange("state_province", e.target.value)}
-                  className="w-full"
-                  placeholder="NY"
-                />
-              </div>
-
-              <div className="md:col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  ZIP/Postal Code
-                </label>
-                <Input
-                  type="text"
-                  value={profileData.zip_code || ""}
-                  onChange={(e) => handleProfileChange("zip_code", e.target.value)}
-                  className="w-full"
-                  placeholder="10001"
-                />
-              </div>
-
-              <div className="md:col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Country
-                </label>
-                <Input
-                  type="text"
-                  value={profileData.country || ""}
-                  onChange={(e) => handleProfileChange("country", e.target.value)}
-                  className="w-full"
-                  placeholder="United States"
+                <AddressForm
+                  value={getAddressData()}
+                  onChange={handleAddressChange}
+                  className="space-y-4"
                 />
               </div>
 

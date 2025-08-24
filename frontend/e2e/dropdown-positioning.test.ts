@@ -132,10 +132,16 @@ test.describe("Dropdown Menu Positioning", () => {
     // Click the more options button to open dropdown
     await moreOptionsButton.click();
 
-  // Wait for dropdown to appear
-  const dropdownContent = page.locator('[data-testid="dropdown-content"]').first();
-  await expect(dropdownContent).toBeAttached();
-  await page.waitForTimeout(100);
+    // Wait for dropdown to appear with a small retry if needed
+    let dropdownContent = page.locator('[data-testid="dropdown-content"]').first();
+    try {
+      await expect(dropdownContent).toBeAttached({ timeout: 1000 });
+    } catch {
+      await moreOptionsButton.click();
+      dropdownContent = page.locator('[data-testid="dropdown-content"]').first();
+      await expect(dropdownContent).toBeAttached({ timeout: 2000 });
+    }
+    await page.waitForTimeout(100);
 
   // Get the button position
   const buttonRect = await moreOptionsButton.boundingBox();
