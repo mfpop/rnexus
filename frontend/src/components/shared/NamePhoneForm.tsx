@@ -352,9 +352,9 @@ const NamePhoneForm: React.FC<NamePhoneFormProps> = ({ value, onChange, classNam
           Contact Information
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="space-y-3">
           {/* Primary Phone */}
-          <div className="md:col-span-2">
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Primary Phone Number *
             </label>
@@ -406,7 +406,7 @@ const NamePhoneForm: React.FC<NamePhoneFormProps> = ({ value, onChange, classNam
           </div>
 
           {/* Secondary Phone */}
-          <div className="md:col-span-2">
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Secondary Phone Number
             </label>
@@ -435,7 +435,7 @@ const NamePhoneForm: React.FC<NamePhoneFormProps> = ({ value, onChange, classNam
               </div>
             </div>
             {secondaryPhoneError && (
-              <p className="text-sm text-red-500 mt-1">{secondaryPhoneError}</p>
+              <p className="text-xs text-red-500 mt-1">{secondaryPhoneError}</p>
             )}
           </div>
         </div>

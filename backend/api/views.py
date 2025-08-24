@@ -33,6 +33,24 @@ from .models import (
     UserProfile,
 )
 
+
+def healthcheck_view(request: HttpRequest) -> JsonResponse:
+    """Lightweight healthcheck for uptime and CI smoke tests."""
+    return JsonResponse({"status": "ok"})
+
+
+def version_view(request: HttpRequest) -> JsonResponse:
+    """Expose backend version/build info if needed."""
+    return JsonResponse(
+        {
+            "name": "rnexus-backend",
+            "version": "0.1.0",
+            "django": settings.VERSION if hasattr(settings, "VERSION") else None,
+            "debug": settings.DEBUG,
+        }
+    )
+
+
 # Type alias for Django User to help with type checking
 DjangoUser: TypeAlias = User
 

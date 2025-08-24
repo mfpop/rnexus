@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "rest_framework",
     "corsheaders",
     "graphene_django",
     "api",
@@ -172,6 +173,12 @@ STATICFILES_DIRS = [
 ]
 
 GRAPHENE = {"SCHEMA": "api.schema.schema"}
+
+# Django REST framework (basic defaults; JWT handled via custom permission)
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 25,
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
