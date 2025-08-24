@@ -43,7 +43,15 @@ class UserProfile(models.Model):
     position = models.CharField(max_length=100, blank=True, null=True)
     department = models.CharField(max_length=100, blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
-    location = models.CharField(max_length=100, blank=True, null=True)
+
+    # Address information
+    street_address = models.CharField(max_length=255, blank=True, null=True)
+    apartment_suite = models.CharField(max_length=100, blank=True, null=True)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    state_province = models.CharField(max_length=100, blank=True, null=True)
+    zip_code = models.CharField(max_length=20, blank=True, null=True)
+    country = models.CharField(max_length=100, blank=True, null=True)
+
     bio = models.TextField(blank=True, null=True)
 
     # Extended data stored as JSON

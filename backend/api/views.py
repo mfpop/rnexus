@@ -317,7 +317,12 @@ def profile_view(request: HttpRequest) -> JsonResponse:
                     "position": user_profile.position or "",
                     "department": user_profile.department or "",
                     "phone": user_profile.phone or "",
-                    "location": user_profile.location or "",
+                    "street_address": user_profile.street_address or "",
+                    "apartment_suite": user_profile.apartment_suite or "",
+                    "city": user_profile.city or "",
+                    "state_province": user_profile.state_province or "",
+                    "zip_code": user_profile.zip_code or "",
+                    "country": user_profile.country or "",
                     "bio": user_profile.bio or "",
                     "education": user_profile.education or [],
                     "work_history": user_profile.work_history or [],
@@ -366,8 +371,18 @@ def profile_view(request: HttpRequest) -> JsonResponse:
                 user_profile.department = data["department"]
             if "phone" in data:
                 user_profile.phone = data["phone"]
-            if "location" in data:
-                user_profile.location = data["location"]
+            if "street_address" in data:
+                user_profile.street_address = data["street_address"]
+            if "apartment_suite" in data:
+                user_profile.apartment_suite = data["apartment_suite"]
+            if "city" in data:
+                user_profile.city = data["city"]
+            if "state_province" in data:
+                user_profile.state_province = data["state_province"]
+            if "zip_code" in data:
+                user_profile.zip_code = data["zip_code"]
+            if "country" in data:
+                user_profile.country = data["country"]
             if "bio" in data:
                 user_profile.bio = data["bio"]
             if "education" in data:
@@ -397,7 +412,12 @@ def profile_view(request: HttpRequest) -> JsonResponse:
                         "position": user_profile.position or "",
                         "department": user_profile.department or "",
                         "phone": user_profile.phone or "",
-                        "location": user_profile.location or "",
+                        "street_address": user_profile.street_address or "",
+                        "apartment_suite": user_profile.apartment_suite or "",
+                        "city": user_profile.city or "",
+                        "state_province": user_profile.state_province or "",
+                        "zip_code": user_profile.zip_code or "",
+                        "country": user_profile.country or "",
                         "bio": user_profile.bio or "",
                         "education": user_profile.education or [],
                         "work_history": user_profile.work_history or [],
@@ -481,7 +501,12 @@ def profile_update_view(request: HttpRequest) -> JsonResponse:
                     "position": "",
                     "department": "",
                     "phone": "",
-                    "location": "",
+                    "street_address": "",
+                    "apartment_suite": "",
+                    "city": "",
+                    "state_province": "",
+                    "zip_code": "",
+                    "country": "",
                     "bio": "",
                     "education": [],
                     "work_history": [],
@@ -582,8 +607,24 @@ def download_cv_view(request: HttpRequest) -> HttpResponse:
                 contact_info.append(f"Email: {user.email}")
             if profile.phone:
                 contact_info.append(f"Phone: {profile.phone}")
-            if profile.location:
-                contact_info.append(f"Location: {profile.location}")
+            # Address information
+            address_parts = []
+            if profile.street_address:
+                address_parts.append(profile.street_address)
+            if profile.apartment_suite:
+                address_parts.append(profile.apartment_suite)
+            if profile.city:
+                address_parts.append(profile.city)
+            if profile.state_province:
+                address_parts.append(profile.state_province)
+            if profile.zip_code:
+                address_parts.append(profile.zip_code)
+            if profile.country:
+                address_parts.append(profile.country)
+
+            if address_parts:
+                full_address = ", ".join(address_parts)
+                contact_info.append(f"Address: {full_address}")
             if profile.department:
                 contact_info.append(f"Department: {profile.department}")
 

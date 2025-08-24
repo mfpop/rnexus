@@ -33,6 +33,15 @@ interface ProfileData {
   department?: string;
   phone?: string;
   location?: string;
+
+  // Address fields
+  street_address?: string;
+  apartment_suite?: string;
+  city?: string;
+  state_province?: string;
+  zip_code?: string;
+  country?: string;
+
   bio?: string;
   education?: Array<{
     id: string;
@@ -85,7 +94,13 @@ const ProfileRightCard: React.FC = () => {
     position: "",
     department: "",
     phone: "",
-    location: "",
+  location: "",
+    street_address: "",
+    apartment_suite: "",
+    city: "",
+    state_province: "",
+    zip_code: "",
+    country: "",
     bio: "",
     education: [],
     work_history: [],
@@ -126,7 +141,12 @@ const ProfileRightCard: React.FC = () => {
       position: data.position,
       department: data.department,
       phone: data.phone,
-      location: data.location,
+      street_address: data.street_address,
+      apartment_suite: data.apartment_suite,
+      city: data.city,
+      state_province: data.state_province,
+      zip_code: data.zip_code,
+      country: data.country,
       bio: data.bio,
       education: data.education,
       work_history: data.work_history,
@@ -513,13 +533,79 @@ const ProfileRightCard: React.FC = () => {
 
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Location
+                  Street Address
                 </label>
                 <Input
                   type="text"
-                  value={profileData.location || ""}
-                  onChange={(e) => handleProfileChange("location", e.target.value)}
+                  value={profileData.street_address || ""}
+                  onChange={(e) => handleProfileChange("street_address", e.target.value)}
                   className="w-full"
+                  placeholder="123 Main Street"
+                />
+              </div>
+
+              <div className="md:col-span-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Apartment/Suite
+                </label>
+                <Input
+                  type="text"
+                  value={profileData.apartment_suite || ""}
+                  onChange={(e) => handleProfileChange("apartment_suite", e.target.value)}
+                  className="w-full"
+                  placeholder="Apt 4B"
+                />
+              </div>
+
+              <div className="md:col-span-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  City
+                </label>
+                <Input
+                  type="text"
+                  value={profileData.city || ""}
+                  onChange={(e) => handleProfileChange("city", e.target.value)}
+                  className="w-full"
+                  placeholder="New York"
+                />
+              </div>
+
+              <div className="md:col-span-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  State/Province
+                </label>
+                <Input
+                  type="text"
+                  value={profileData.state_province || ""}
+                  onChange={(e) => handleProfileChange("state_province", e.target.value)}
+                  className="w-full"
+                  placeholder="NY"
+                />
+              </div>
+
+              <div className="md:col-span-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  ZIP/Postal Code
+                </label>
+                <Input
+                  type="text"
+                  value={profileData.zip_code || ""}
+                  onChange={(e) => handleProfileChange("zip_code", e.target.value)}
+                  className="w-full"
+                  placeholder="10001"
+                />
+              </div>
+
+              <div className="md:col-span-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Country
+                </label>
+                <Input
+                  type="text"
+                  value={profileData.country || ""}
+                  onChange={(e) => handleProfileChange("country", e.target.value)}
+                  className="w-full"
+                  placeholder="United States"
                 />
               </div>
 
