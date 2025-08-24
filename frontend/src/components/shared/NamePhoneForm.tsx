@@ -352,7 +352,7 @@ const NamePhoneForm: React.FC<NamePhoneFormProps> = ({ value, onChange, classNam
           Contact Information
         </h3>
 
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Primary Phone */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
