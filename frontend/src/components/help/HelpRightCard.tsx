@@ -913,9 +913,8 @@ const HelpRightCard: React.FC = () => {
               <div className="relative">
                 <iframe
                   src="/help-images/activities/activity-dashboard-mockup.html"
-                  className="w-full h-64 rounded-xl border border-gray-200"
+                  className="w-full h-64 rounded-xl border-0"
                   title="Activity Management Dashboard"
-                  style={{ border: 'none' }}
                 />
                 <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
                   Screenshot
@@ -1075,9 +1074,8 @@ const HelpRightCard: React.FC = () => {
                   <div className="relative">
                     <iframe
                       src="/help-images/activities/activity-list-view.html"
-                      className="w-full h-48 rounded-lg border border-gray-200"
+                      className="w-full h-48 rounded-lg border-0"
                       title="Activity List View"
-                      style={{ border: 'none' }}
                     />
                     <div className="absolute top-2 right-2 bg-green-600 text-white text-xs px-2 py-1 rounded-full">
                       Screenshot
@@ -1221,9 +1219,8 @@ const HelpRightCard: React.FC = () => {
                   <div className="relative">
                     <iframe
                       src="/help-images/activities/activity-details-view.html"
-                      className="w-full h-48 rounded-lg border border-gray-200"
+                      className="w-full h-48 rounded-lg border-0"
                       title="Activity Details View"
-                      style={{ border: 'none' }}
                     />
                     <div className="absolute top-2 right-2 bg-purple-600 text-white text-xs px-2 py-1 rounded-full">
                       Screenshot
@@ -1421,9 +1418,8 @@ const HelpRightCard: React.FC = () => {
                   <div className="relative">
                     <iframe
                       src="/help-images/activities/creating-activities-form.html"
-                      className="w-full h-40 rounded-lg border border-gray-200"
+                      className="w-full h-40 rounded-lg border-0"
                       title="Creating Activities Form"
-                      style={{ border: 'none' }}
                     />
                     <div className="absolute top-2 right-2 bg-green-600 text-white text-xs px-2 py-1 rounded-full">
                       Screenshot

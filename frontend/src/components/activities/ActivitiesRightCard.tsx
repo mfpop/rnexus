@@ -727,7 +727,7 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
       </div>
 
       {/* Content */}
-      <div className="overflow-y-auto p-6 bg-gray-50" style={{ maxHeight: '60vh' }}>
+      <div className="overflow-y-auto p-6 bg-gray-50 max-h-[60vh]">
         {activeSection === "participants" && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">

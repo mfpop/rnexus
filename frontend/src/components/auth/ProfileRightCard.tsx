@@ -203,6 +203,8 @@ const ProfileRightCard: React.FC = () => {
         if (result.success) {
           setSuccessMessage("Profile saved automatically");
           setTimeout(() => setSuccessMessage(""), 3000);
+          // Dispatch profile update event for left card to refresh
+          (window as any).dispatchEvent(new CustomEvent('profile-updated'));
         }
         return;
       }
@@ -576,6 +578,8 @@ const ProfileRightCard: React.FC = () => {
           setSuccessMessage("Profile updated successfully!");
           setProfileData(data.profile);
           setErrors({});
+          // Dispatch profile update event for left card to refresh
+          (window as any).dispatchEvent(new CustomEvent('profile-updated'));
           return;
         }
         setErrors({ submit: data.error || "Failed to update profile" });
@@ -662,7 +666,7 @@ const ProfileRightCard: React.FC = () => {
                         type="text"
                         value={profileData.first_name || ""}
                         onChange={(e) => handleProfileChange("first_name", e.target.value)}
-                        className="w-full h-8 text-sm"
+                        className="w-full h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                         placeholder="Enter first name"
                       />
                     </div>
@@ -670,25 +674,25 @@ const ProfileRightCard: React.FC = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="text-sm font-medium text-gray-600">Middle Name:</div>
                     <div className="text-sm">
-                      <Input
-                        type="text"
-                        value={profileData.middle_name || ""}
-                        onChange={(e) => handleProfileChange("middle_name", e.target.value)}
-                        className="w-full h-8 text-sm"
-                        placeholder="Enter middle name"
-                      />
+                                             <Input
+                         type="text"
+                         value={profileData.middle_name || ""}
+                         onChange={(e) => handleProfileChange("middle_name", e.target.value)}
+                         className="w-full h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                         placeholder="Enter middle name"
+                       />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="text-sm font-medium text-gray-600">Last Name:</div>
                     <div className="text-sm">
-                      <Input
-                        type="text"
-                        value={profileData.last_name || ""}
-                        onChange={(e) => handleProfileChange("last_name", e.target.value)}
-                        className="w-full h-8 text-sm"
-                        placeholder="Enter last name"
-                      />
+                                             <Input
+                         type="text"
+                         value={profileData.last_name || ""}
+                         onChange={(e) => handleProfileChange("last_name", e.target.value)}
+                         className="w-full h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                         placeholder="Enter last name"
+                       />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -698,7 +702,7 @@ const ProfileRightCard: React.FC = () => {
                         type="text"
                         value={profileData.maternal_last_name || ""}
                         onChange={(e) => handleProfileChange("maternal_last_name", e.target.value)}
-                        className="w-full h-8 text-sm"
+                        className="w-full h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                         placeholder="Enter maternal last name"
                       />
                     </div>
@@ -710,7 +714,7 @@ const ProfileRightCard: React.FC = () => {
                         type="text"
                         value={profileData.preferred_name || ""}
                         onChange={(e) => handleProfileChange("preferred_name", e.target.value)}
-                        className="w-full h-8 text-sm"
+                        className="w-full h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                         placeholder="Enter nickname"
                       />
                     </div>
@@ -731,7 +735,7 @@ const ProfileRightCard: React.FC = () => {
                         type="email"
                         value={profileData.email || ""}
                         onChange={(e) => handleProfileChange("email", e.target.value)}
-                        className="w-full h-8 text-sm"
+                        className="w-full h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                         placeholder="Enter email address"
                       />
                     </div>
@@ -742,7 +746,7 @@ const ProfileRightCard: React.FC = () => {
                       <select
                         value={profileData.phone_country_code || "+1"}
                         onChange={(e) => handleProfileChange("phone_country_code", e.target.value)}
-                        className="w-20 h-8 px-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-24 h-8 px-3 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
                       >
                         <option value="+1">🇺🇸 +1</option>
                         <option value="+52">🇲🇽 +52</option>
@@ -817,7 +821,7 @@ const ProfileRightCard: React.FC = () => {
                         type="tel"
                         value={profileData.phone || ""}
                         onChange={(e) => handleProfileChange("phone", e.target.value)}
-                        className="flex-1 h-8 text-sm"
+                        className="flex-1 h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                         placeholder="Phone number"
                       />
                       <PhoneTypeDropdown
@@ -833,7 +837,7 @@ const ProfileRightCard: React.FC = () => {
                       <select
                         value={profileData.phone_country_code || "+1"}
                         onChange={(e) => handleProfileChange("phone_country_code", e.target.value)}
-                        className="w-20 h-8 px-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-24 h-8 px-3 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
                       >
                         <option value="+1">🇺🇸 +1</option>
                         <option value="+52">🇲🇽 +52</option>
@@ -908,7 +912,7 @@ const ProfileRightCard: React.FC = () => {
                         type="tel"
                         value={profileData.secondary_phone || ""}
                         onChange={(e) => handleProfileChange("secondary_phone", e.target.value)}
-                        className="flex-1 h-8 text-sm"
+                        className="flex-1 h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                         placeholder="Phone number"
                       />
                       <PhoneTypeDropdown
@@ -935,7 +939,7 @@ const ProfileRightCard: React.FC = () => {
                           type="text"
                           value={profileData.street_address || ""}
                           onChange={(e) => handleProfileChange("street_address", e.target.value)}
-                          className="w-full h-7 text-sm"
+                          className="w-full h-7 text-sm border border-gray-300 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                           placeholder="123 Tech Street"
                         />
                       </div>
@@ -947,7 +951,7 @@ const ProfileRightCard: React.FC = () => {
                           type="text"
                           value={profileData.apartment_suite || ""}
                           onChange={(e) => handleProfileChange("apartment_suite", e.target.value)}
-                          className="w-full h-7 text-sm"
+                          className="w-full h-7 text-sm border border-gray-300 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                           placeholder="Enter apartment/suite"
                         />
                       </div>
@@ -995,7 +999,7 @@ const ProfileRightCard: React.FC = () => {
                           type="text"
                           value={profileData.zip_code || ""}
                           onChange={(e) => handleProfileChange("zip_code", e.target.value)}
-                          className="w-full h-7 text-sm"
+                          className="w-full h-7 text-sm border border-gray-300 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                           placeholder="Enter ZIP/postal code"
                         />
                       </div>
@@ -1080,7 +1084,7 @@ const ProfileRightCard: React.FC = () => {
                           type="text"
                           value={profileData.position || ""}
                           onChange={(e) => handleProfileChange("position", e.target.value)}
-                          className="w-full"
+                          className="w-full border border-gray-300 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                           placeholder="e.g. Production Manager, Quality Engineer, Line Supervisor, Machine Operator"
                         />
                       </div>
@@ -1093,7 +1097,7 @@ const ProfileRightCard: React.FC = () => {
                           type="text"
                           value={profileData.department || ""}
                           onChange={(e) => handleProfileChange("department", e.target.value)}
-                          className="w-full"
+                          className="w-full border border-gray-300 bg-white text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                           placeholder="e.g. Production, Quality, Maintenance, Engineering, IT, Logistics"
                         />
                       </div>
