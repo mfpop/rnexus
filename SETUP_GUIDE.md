@@ -1,494 +1,455 @@
-# RNexus Platform Setup Guide
+# Nexus Setup Guide
 
-## Quick Start
+## 🚀 Complete Development Environment Setup
 
-### Prerequisites
-- **Node.js**: 18.0.0 or higher
-- **npm**: 9.0.0 or higher
-- **Python**: 3.13.0 or higher (for backend)
+This guide provides comprehensive instructions for setting up the Nexus manufacturing operations management system on your local development machine.
+
+## 📋 Prerequisites
+
+### System Requirements
+- **Operating System**: macOS 12+, Ubuntu 20.04+, Windows 10+
+- **Python**: 3.11+ (3.13 recommended)
+- **Node.js**: 18+ (20 LTS recommended)
+- **PostgreSQL**: 13+ (15 recommended)
+- **Redis**: 6+ (7 recommended)
 - **Git**: Latest version
 
-### 1. Clone and Install
+### Required Software
+- **Python**: [Download from python.org](https://python.org)
+- **Node.js**: [Download from nodejs.org](https://nodejs.org)
+- **PostgreSQL**: [Download from postgresql.org](https://postgresql.org)
+- **Redis**: [Download from redis.io](https://redis.io)
+- **Git**: [Download from git-scm.com](https://git-scm.com)
 
+## 🏗️ Project Setup
+
+### 1. Clone the Repository
 ```bash
-# Clone the repository
-git clone <repository-url>
+git clone <your-repository-url>
 cd rnexus
+```
 
-# Install frontend dependencies
-cd frontend
-npm install
+### 2. Environment Setup
+Create a `.env` file in the root directory:
+```bash
+# Backend Environment Variables
+DJANGO_SECRET_KEY=your-secret-key-here
+DJANGO_DEBUG=True
+DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
 
-# Install backend dependencies
-cd ../backend
+# Database Configuration
+DATABASE_URL=postgresql://nexus_user:nexus_password@localhost:5432/nexus_db
+
+# Redis Configuration
+REDIS_URL=redis://localhost:6379
+
+# Frontend Environment Variables
+VITE_API_URL=http://localhost:8000
+VITE_WS_URL=ws://localhost:8000
+```
+
+## 🐍 Backend Setup
+
+### 1. Python Virtual Environment
+```bash
+cd backend
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Activate virtual environment
+# On macOS/Linux:
+source venv/bin/activate
+
+# On Windows:
+venv\Scripts\activate
+```
+
+### 2. Install Dependencies
+```bash
+pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### 2. Start Development Servers
-
+### 3. Database Setup
 ```bash
-# Terminal 1: Start frontend (from project root)
-cd frontend
-npm run dev
+# Create PostgreSQL database and user
+sudo -u postgres psql
 
-# Terminal 2: Start backend (from project root)
-cd backend
-source venv/bin/activate
-python manage.py runserver
+CREATE DATABASE nexus_db;
+CREATE USER nexus_user WITH PASSWORD 'nexus_password';
+GRANT ALL PRIVILEGES ON DATABASE nexus_db TO nexus_user;
+ALTER USER nexus_user CREATEDB;
+\q
 
-# Or use the provided script (from project root)
-./start_servers.sh
-```
-
-### 3. Access the Application
-- **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:8000
-- **Admin Panel**: http://localhost:8000/admin
-
-## Platform Modules
-
-### 📢 News, Alerts, and Communication
-This module is a centralized tool for disseminating important information, managing alerts, and broadcasting official communications to the entire organization or specific departments.
-
-**Core Functions:**
-- **News Publishing**: Empowers every department to publish official news and updates to a designated news feed
-- **Alerts Management**: Designed to create and manage time-sensitive alerts, ensuring critical information reaches the right people immediately
-- **Official Communications**: Serves as a platform for sending formal communications and memos to targeted groups or the entire company
-
-**Technical Implementation:**
-- Uses `NewsContext` for state management
-- Master-detail pattern with article list and detailed view
-- Real-time updates and notification system
-- Department-based publishing permissions
-
-### 🏭 Production Management
-Real-time monitoring and management of manufacturing lines with efficiency tracking and alerts.
-
-### 📊 Business Intelligence
-Comprehensive analytics dashboard with KPI visualization, trend analysis, and reporting.
-
-### 👥 Team Collaboration
-Project monitoring, task management, and collaboration tools with real-time communication.
-
-## Detailed Setup
-
-### Frontend Setup
-
-#### Dependencies Overview
-```json
-{
-  "dependencies": {
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1",
-    "react-router-dom": "^7.8.0",
-    "lucide-react": "^0.539.0",
-    "tailwindcss": "^4.1.11",
-    "clsx": "^2.1.1",
-    "tailwind-merge": "^3.3.1"
-  },
-  "devDependencies": {
-    "vite": "^7.0.6",
-    "typescript": "^5.9.2",
-    "eslint": "^9.32.0",
-    "prettier": "^3.6.2",
-    "vitest": "^3.2.4",
-    "playwright": "^1.54.2"
-  }
-}
-```
-
-#### Build Commands
-```bash
-# Development server
-npm run dev
-
-# Production build
-npm run build
-
-# Preview production build
-npm run preview
-
-# Lint code
-npm run lint
-
-# Format code
-npm run format
-
-# Run tests
-npm run test
-
-# Run e2e tests
-npm run test:e2e
-```
-
-### Backend Setup
-
-#### Dependencies Overview
-```txt
-Django==5.2.5
-djangorestframework==3.16.1
-django-cors-headers==4.7.0
-graphene-django==3.2.3
-psycopg2-binary==2.9.10
-pillow==11.3.0
-```
-
-#### Django Commands
-```bash
-# Create and apply migrations
-python manage.py makemigrations
+# Run migrations
 python manage.py migrate
 
 # Create superuser
 python manage.py createsuperuser
+```
 
-# Collect static files
-python manage.py collectstatic
+### 4. Data Population
+```bash
+# Populate database with sample data
+python setup_database.py
+python manage.py populate_all
+```
 
-# Run development server
+### 5. Start Backend Server
+```bash
 python manage.py runserver
-
-# Run tests
-python manage.py test
 ```
 
-## Development Environment
+**Backend will be available at**: http://localhost:8000
 
-### VS Code Setup
-Recommended extensions:
-```json
-{
-  "recommendations": [
-    "bradlc.vscode-tailwindcss",
-    "esbenp.prettier-vscode",
-    "ms-vscode.vscode-typescript-next",
-    "ms-python.python",
-    "ms-python.pylint"
-  ]
-}
+## ⚛️ Frontend Setup
+
+### 1. Install Dependencies
+```bash
+cd frontend
+npm install
 ```
 
-### Environment Variables
-
-#### Frontend (.env)
-```env
+### 2. Environment Configuration
+Create a `.env.local` file in the frontend directory:
+```bash
 VITE_API_URL=http://localhost:8000
-VITE_APP_NAME=Nexus LMD
-VITE_APP_VERSION=1.0.0
+VITE_WS_URL=ws://localhost:8000
+VITE_APP_TITLE=Nexus Manufacturing
 ```
 
-#### Backend (.env)
-```env
-DEBUG=True
-SECRET_KEY=your-secret-key-here
-DATABASE_URL=sqlite:///db.sqlite3
-CORS_ALLOWED_ORIGINS=http://localhost:5173
-```
-
-## Project Structure Deep Dive
-
-### Frontend Architecture
-```
-frontend/
-├── public/                 # Static assets
-│   ├── Nexus.svg          # Application logo
-│   └── vite.svg           # Vite logo
-├── src/
-│   ├── components/        # React components
-│   │   ├── templates/     # Layout templates
-│   │   ├── ui/           # Base UI components
-│   │   ├── [feature]/    # Feature modules
-│   │   └── StableLayout.tsx
-│   ├── pages/            # Page components
-│   ├── lib/              # Utilities
-│   ├── App.tsx           # Root component
-│   └── main.tsx          # Entry point
-├── tailwind.config.ts    # Tailwind configuration
-├── vite.config.ts        # Vite configuration
-└── tsconfig.json         # TypeScript configuration
-```
-
-### Backend Architecture
-```
-backend/
-├── api/                  # Main API app
-│   ├── models.py        # Data models
-│   ├── views.py         # API views
-│   ├── schema.py        # GraphQL schema
-│   └── migrations/      # Database migrations
-├── core/                # Django project settings
-│   ├── settings.py      # Configuration
-│   ├── urls.py          # URL routing
-│   └── wsgi.py          # WSGI application
-├── manage.py            # Django management
-├── requirements.txt     # Python dependencies
-└── venv/                # Virtual environment
-```
-
-## Component Development
-
-### Creating a New Feature
-
-1. **Create the feature directory:**
+### 3. Start Development Server
 ```bash
-mkdir frontend/src/components/[feature]
+npm run dev
 ```
 
-2. **Create context file:**
+**Frontend will be available at**: http://localhost:5173
+
+## 🔐 Authentication Setup
+
+### JWT Configuration
+The system now includes a robust JWT authentication system with the following features:
+
+#### Backend JWT Settings
+```python
+# backend/core/settings.py
+JWT_AUTH = {
+    'JWT_SECRET_KEY': 'your-secret-key',
+    'JWT_ALGORITHM': 'HS256',
+    'JWT_EXPIRATION_DELTA': timedelta(hours=24),
+    'JWT_REFRESH_EXPIRATION_DELTA': timedelta(days=7),
+}
+```
+
+#### JWT Middleware Configuration
+```python
+# backend/api/middleware.py
+MIDDLEWARE = [
+    # ... other middleware
+    'api.middleware.JWTAuthenticationMiddleware',  # Must come before Django's auth middleware
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    # ... other middleware
+]
+```
+
+#### Frontend Authentication
 ```typescript
-// [Feature]Context.tsx
-import React, { createContext, useContext, useState } from 'react'
-
-export interface FeatureItem {
-  id: string
-  name: string
-  // ... other properties
-}
-
-interface FeatureContextType {
-  selectedItem: FeatureItem | null
-  setSelectedItem: (item: FeatureItem | null) => void
-}
-
-const FeatureContext = createContext<FeatureContextType | undefined>(undefined)
-
-export const FeatureProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [selectedItem, setSelectedItem] = useState<FeatureItem | null>(null)
-
-  return (
-    <FeatureContext.Provider value={{ selectedItem, setSelectedItem }}>
-      {children}
-    </FeatureContext.Provider>
-  )
-}
-
-export const useFeatureContext = () => {
-  const context = useContext(FeatureContext)
-  if (!context) {
-    throw new Error('useFeatureContext must be used within FeatureProvider')
+// frontend/src/lib/authService.ts
+const authService = {
+  login: async (credentials) => {
+    const response = await fetch('/api/auth/login/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials)
+    });
+    const data = await response.json();
+    if (data.success) {
+      localStorage.setItem('token', data.token);
+      return data.user;
+    }
+    throw new Error(data.error);
   }
-  return context
-}
+};
 ```
 
-3. **Create left card component:**
-```typescript
-// [Feature]LeftCard.tsx
-import React from 'react'
-import { useFeatureContext } from './FeatureContext'
+## 🗄️ Database Configuration
 
-const FeatureLeftCard: React.FC = () => {
-  const { selectedItem, setSelectedItem } = useFeatureContext()
-
-  // Sample data and component logic
-  return (
-    <div className="space-y-4 p-4">
-      {/* List items with click handlers */}
-    </div>
-  )
-}
-
-export default FeatureLeftCard
-```
-
-4. **Create right card component:**
-```typescript
-// [Feature]RightCard.tsx
-import React from 'react'
-import { useFeatureContext } from './FeatureContext'
-
-const FeatureRightCard: React.FC = () => {
-  const { selectedItem } = useFeatureContext()
-
-  if (!selectedItem) {
-    return <div>Select an item to view details</div>
-  }
-
-  return (
-    <div className="space-y-6 p-4">
-      {/* Detail view content */}
-    </div>
-  )
-}
-
-export default FeatureRightCard
-```
-
-5. **Create index file:**
-```typescript
-// index.ts
-export { default as FeatureLeftCard } from './FeatureLeftCard'
-export { default as FeatureRightCard } from './FeatureRightCard'
-export { FeatureProvider, useFeatureContext } from './FeatureContext'
-export type { FeatureItem } from './FeatureContext'
-```
-
-6. **Create page component:**
-```typescript
-// pages/FeaturePage.tsx
-import React from 'react'
-import { FeatureRightCard } from '../components/feature'
-
-const FeaturePage: React.FC = () => {
-  return <FeatureRightCard />
-}
-
-export default FeaturePage
-```
-
-7. **Add to StableLayout:**
-```typescript
-// In StableLayout.tsx
-import { FeatureLeftCard, FeatureProvider } from './components/feature'
-
-// Add to getPageConfig
-case '/feature':
-  return {
-    leftTitle: 'Feature Navigation',
-    rightTitle: 'Feature Details',
-    // ... other config
-  }
-
-// Add to conditional rendering
-{location.pathname === '/feature' ? (
-  <FeatureProvider>
-    <MainContainerTemplate
-      leftContent={<FeatureLeftCard />}
-      rightContent={<Outlet />}
-      // ... other props
-    />
-  </FeatureProvider>
-) : (
-  // ... other conditions
-)}
-```
-
-8. **Add route to App.tsx:**
-```typescript
-<Route path="/feature" element={<StableLayout />}>
-  <Route index element={<FeaturePage />} />
-</Route>
-```
-
-## Testing
-
-### Unit Testing
+### PostgreSQL Setup
 ```bash
+# Install PostgreSQL (Ubuntu/Debian)
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+
+# Start PostgreSQL service
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+
+# Create database and user
+sudo -u postgres createuser --interactive
+sudo -u postgres createdb nexus_db
+```
+
+### Redis Setup
+```bash
+# Install Redis (Ubuntu/Debian)
+sudo apt install redis-server
+
+# Start Redis service
+sudo systemctl start redis-server
+sudo systemctl enable redis-server
+
+# Test Redis connection
+redis-cli ping
+```
+
+## 🧪 Testing Setup
+
+### Backend Testing
+```bash
+cd backend
+source venv/bin/activate
+
 # Run all tests
+python manage.py test
+
+# Run specific test files
+python manage.py test api.tests.test_views
+python manage.py test api.tests.test_models
+
+# Run with coverage
+pip install coverage
+coverage run --source='.' manage.py test
+coverage report
+coverage html
+```
+
+### Frontend Testing
+```bash
+cd frontend
+
+# Run unit tests
 npm run test
 
 # Run tests in watch mode
 npm run test:watch
 
+# Run end-to-end tests
+npm run test:e2e
+
 # Run tests with coverage
 npm run test:coverage
 ```
 
-### E2E Testing
+## 🛠️ Development Tools
+
+### Code Quality Tools
 ```bash
-# Install Playwright browsers
-npx playwright install
+# Backend (Python)
+cd backend
+source venv/bin/activate
 
-# Run e2e tests
-npm run test:e2e
+# Install pre-commit hooks
+pip install pre-commit
+pre-commit install
 
-# Run e2e tests in UI mode
-npx playwright test --ui
-```
+# Manual formatting
+black .
+isort .
+mypy .
 
-### Test Structure
-```
-frontend/
-├── src/
-│   └── __tests__/        # Unit tests
-└── e2e/                  # E2E tests
-    └── demo.test.ts
-```
-
-## Deployment
-
-### Production Build
-```bash
-# Frontend
+# Frontend (JavaScript/TypeScript)
 cd frontend
-npm run build
-# Output: frontend/dist/
 
-# Backend
+# Install pre-commit hooks
+npm install -g husky
+npx husky install
+
+# Manual formatting
+npm run lint
+npm run format
+```
+
+### Pre-commit Hooks Configuration
+```yaml
+# .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/psf/black
+    rev: 23.12.1
+    hooks:
+      - id: black
+        language_version: python3
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+      - id: mypy
+        additional_dependencies: [types-requests]
+```
+
+## 🚀 Production Setup
+
+### Environment Variables
+```bash
+# Production environment variables
+DJANGO_SECRET_KEY=your-production-secret-key
+DJANGO_DEBUG=False
+DJANGO_ALLOWED_HOSTS=your-domain.com,www.your-domain.com
+
+# Database (production)
+DATABASE_URL=postgresql://user:password@host:port/database
+
+# Redis (production)
+REDIS_URL=redis://host:port
+
+# Security
+DJANGO_CSRF_TRUSTED_ORIGINS=https://your-domain.com
+DJANGO_SECURE_SSL_REDIRECT=True
+DJANGO_SESSION_COOKIE_SECURE=True
+```
+
+### Static Files
+```bash
 cd backend
 python manage.py collectstatic
-python manage.py migrate
+python manage.py compress
 ```
 
-### Environment Setup
-- Configure production environment variables
-- Set up database (PostgreSQL recommended)
-- Configure web server (Nginx + Gunicorn)
-- Set up SSL certificates
+### Database Optimization
+```bash
+# Create database indexes
+python manage.py dbshell
+CREATE INDEX CONCURRENTLY idx_activities_status ON api_activity(status);
+CREATE INDEX CONCURRENTLY idx_activities_type ON api_activity(type);
+CREATE INDEX CONCURRENTLY idx_activities_assigned_to ON api_activity(assigned_to_id);
+```
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
 ### Common Issues
 
-#### Port Conflicts
+#### JWT Authentication Problems
 ```bash
-# Change frontend port
-npm run dev -- --port 3000
+# Check JWT middleware logs
+tail -f backend/django.log
 
-# Change backend port
-python manage.py runserver 8080
+# Verify token expiration
+python backend/decode_token.py
+
+# Check middleware order in settings.py
+MIDDLEWARE = [
+    'api.middleware.JWTAuthenticationMiddleware',  # Must be first
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    # ... other middleware
+]
 ```
 
-#### Node Version Issues
+#### Database Connection Issues
 ```bash
-# Check Node version
-node --version
+# Check PostgreSQL status
+sudo systemctl status postgresql
 
-# Use Node Version Manager
-nvm install 18
-nvm use 18
+# Test database connection
+psql -h localhost -U nexus_user -d nexus_db
+
+# Check database logs
+sudo tail -f /var/log/postgresql/postgresql-*.log
 ```
 
-#### Python Virtual Environment Issues
+#### Frontend Build Issues
 ```bash
-# Recreate virtual environment
-rm -rf venv
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+# Clear node_modules and reinstall
+rm -rf node_modules package-lock.json
+npm install
+
+# Clear Vite cache
+rm -rf node_modules/.vite
+npm run dev
+
+# Check for TypeScript errors
+npm run type-check
 ```
 
-#### Database Issues
+#### WebSocket Connection Issues
 ```bash
-# Reset database
-rm backend/db.sqlite3
+# Check Redis status
+sudo systemctl status redis-server
+
+# Test Redis connection
+redis-cli ping
+
+# Check Django Channels configuration
+python manage.py shell
+from channels.layers import get_channel_layer
+channel_layer = get_channel_layer()
+```
+
+### Performance Optimization
+
+#### Database Optimization
+```bash
+# Analyze query performance
+python manage.py shell
+from django.db import connection
+from django.db import reset_queries
+import time
+
+reset_queries()
+# ... your code ...
+print(f"Number of queries: {len(connection.queries)}")
+for query in connection.queries:
+    print(f"Time: {query['time']}")
+```
+
+#### Frontend Optimization
+```bash
+# Build analysis
+npm run build
+npm run analyze
+
+# Bundle size optimization
+npm run build:analyze
+```
+
+## 📚 Additional Resources
+
+### Documentation
+- **[PROJECT_ARCHITECTURE.md](PROJECT_ARCHITECTURE.md)** - System architecture details
+- **[DATABASE_STRUCTURE.md](DATABASE_STRUCTURE.md)** - Database schema documentation
+- **[DEVELOPMENT_TOOLS_SUMMARY.md](DEVELOPMENT_TOOLS_SUMMARY.md)** - Development tools guide
+
+### API Documentation
+- **REST API**: http://localhost:8000/api/
+- **GraphQL**: http://localhost:8000/graphql/
+- **Admin Panel**: http://localhost:8000/admin/
+
+### Development Commands
+```bash
+# Start all services
+./start_servers.sh
+
+# Database operations
+python manage.py makemigrations
 python manage.py migrate
+python manage.py showmigrations
+
+# User management
 python manage.py createsuperuser
+python manage.py changepassword <username>
+
+# Static files
+python manage.py collectstatic
+python manage.py compress
+
+# Development utilities
+python manage.py shell
+python manage.py dbshell
+python manage.py check
 ```
-
-### Performance Issues
-- Clear browser cache
-- Restart development servers
-- Check for memory leaks in React DevTools
-- Optimize bundle size with `npm run build -- --analyze`
-
-## Contributing
-
-### Code Style
-- Use TypeScript for all new code
-- Follow ESLint and Prettier configurations
-- Use conventional commit messages
-- Write tests for new features
-
-### Pull Request Process
-1. Create feature branch from main
-2. Make changes with tests
-3. Run linting and tests
-4. Submit pull request with description
-5. Address review feedback
 
 ---
 
-This setup guide provides everything needed to get the RNexus platform running and to contribute effectively to the project.
+**This setup guide provides everything needed to get the Nexus system running in development and production environments.**

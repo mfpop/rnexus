@@ -41,13 +41,7 @@ const HomeMainContainer: React.FC<HomeMainContainerProps> = ({
       leftSubtitle={homePageConfig.subtitle}
       leftFooter={homePageConfig.footer}
       leftContent={
-        <HomeLeftCard
-          leftTitle={homePageConfig.title}
-          leftSubtitle={homePageConfig.subtitle}
-          footer={homePageConfig.footer}
-          expandedCard={expandedCard}
-          onExpandClick={onExpandClick}
-        />
+        <HomeLeftCard />
       }
       // Right Card Configuration
       rightTitle={homePageConfig.rightTitle}

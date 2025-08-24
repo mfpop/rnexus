@@ -1,250 +1,286 @@
-# RNexus Platform Architecture
+# Nexus Project Architecture
 
-## Overview
-RNexus is a comprehensive production management platform built with React 19 and TypeScript, featuring a modern master-detail architecture with stable layout templates.
+## 🏗️ System Overview
 
-## Platform Modules
+Nexus is a modern manufacturing operations management system built with a microservices-inspired architecture, featuring a Django backend with REST/GraphQL APIs and a React frontend with real-time WebSocket capabilities.
 
-### 📢 News, Alerts, and Communication
-This module is a centralized tool for disseminating important information, managing alerts, and broadcasting official communications to the entire organization or specific departments.
+## 🔐 Authentication & Security Architecture
 
-**Core Functions:**
-- **News Publishing**: Empowers every department to publish official news and updates to a designated news feed
-- **Alerts Management**: Designed to create and manage time-sensitive alerts, ensuring critical information reaches the right people immediately
-- **Official Communications**: Serves as a platform for sending formal communications and memos to targeted groups or the entire company
+### JWT Authentication System
+- **Token-based authentication** using JSON Web Tokens
+- **Secure middleware implementation** with conflict resolution
+- **Automatic token refresh** and validation
+- **Role-based access control** (Admin, Staff, User)
 
-**Technical Implementation:**
-- Uses `NewsContext` for state management
-- Master-detail pattern with article list and detailed view
-- Real-time updates and notification system
-- Department-based publishing permissions
+#### JWT Middleware Implementation
+```python
+class JWTAuthenticationMiddleware(MiddlewareMixin):
+    def process_request(self, request):
+        # Handle JWT authentication in process_request
+        auth_header = request.META.get("HTTP_AUTHORIZATION", "")
+        if auth_header.startswith("Bearer "):
+            user = get_user_jwt(request)
+            request.user = user
 
-### 🏭 Production Management
-Real-time monitoring and management of manufacturing lines with efficiency tracking and alerts.
-
-### 📊 Business Intelligence
-Comprehensive analytics dashboard with KPI visualization, trend analysis, and reporting.
-
-### 👥 Team Collaboration
-Project monitoring, task management, and collaboration tools with real-time communication.
-
-## Architecture Principles
-
-### 1. Stable Layout Pattern
-- **StableLayout** serves as the root layout component that never changes
-- All main application pages are rendered within this stable framework
-- Consistent navigation and sidebar functionality across all pages
-
-### 2. Master-Detail Architecture
-- Two-card layout pattern for efficient data browsing and management
-- Left card displays lists/navigation (master)
-- Right card shows detailed content (detail)
-- Context API manages communication between master and detail components
-
-### 3. Template-Based Design
-- Reusable template components for consistent UI patterns
-- `LayoutTemplate`, `MainContainerTemplate`, `LeftSidebarTemplate`, `RightSidebarTemplate`
-- Standardized props and interfaces across templates
-
-## Directory Structure
-
+    def process_view(self, request, view_func, view_args, view_kwargs):
+        # Re-ensure user authentication before view execution
+        # Resolves conflicts with Django's AuthenticationMiddleware
+        auth_header = request.META.get("HTTP_AUTHORIZATION", "")
+        if auth_header.startswith("Bearer "):
+            user = get_user_jwt(request)
+            if user and not isinstance(user, AnonymousUser):
+                request.user = user
 ```
-frontend/src/
+
+#### Security Features
+- **CSRF protection** on all forms and API endpoints
+- **Input validation** and sanitization
+- **Rate limiting** on authentication endpoints
+- **Secure headers** (HSTS, XSS protection)
+- **Session management** with secure cookies
+
+## 🗄️ Database Architecture
+
+### Core Models
+- **User Management**: Custom user model with role-based permissions
+- **Activities System**: Comprehensive manufacturing activity tracking
+- **Projects**: Project management with team collaboration
+- **Updates**: Real-time system updates and notifications
+- **Chat System**: Team communication with message persistence
+
+### Database Schema
+```sql
+-- Core user management
+users (id, username, email, role, created_at, updated_at)
+
+-- Activities system
+activities (id, title, description, type, status, priority,
+           start_time, end_time, assigned_to, created_by)
+
+-- Project management
+projects (id, name, description, status, start_date, end_date,
+         manager_id, team_members)
+
+-- Real-time updates
+updates (id, title, content, type, priority, created_by,
+        created_at, updated_at)
+
+-- Chat system
+chat_messages (id, sender_id, receiver_id, content,
+              message_type, created_at)
+```
+
+### Data Relationships
+- **One-to-Many**: User → Activities, User → Projects
+- **Many-to-Many**: Users ↔ Projects (team members)
+- **One-to-One**: User ↔ UserProfile (extended information)
+
+## 🌐 API Architecture
+
+### REST API Endpoints
+```
+/api/auth/
+├── login/          # User authentication
+├── logout/         # User logout
+├── register/       # User registration
+├── user/           # Current user info
+└── password/       # Password management
+
+/api/activities/
+├── /               # List/Create activities
+├── <id>/           # Retrieve/Update/Delete activity
+├── types/          # Activity type definitions
+└── statuses/       # Status definitions
+
+/api/projects/
+├── /               # List/Create projects
+├── <id>/           # Project details
+├── <id>/team/      # Team management
+└── <id>/activities/ # Project activities
+
+/api/updates/
+├── /               # System updates
+├── <id>/           # Update details
+└── notifications/  # User notifications
+```
+
+### GraphQL Integration
+- **Flexible data querying** with Graphene-Django
+- **Real-time subscriptions** for live updates
+- **Optimized queries** with field selection
+- **Type-safe schema** with automatic validation
+
+### WebSocket Architecture
+- **Channels 4.x** for WebSocket support
+- **Redis backend** for channel layers
+- **Authentication middleware** for secure connections
+- **Real-time notifications** and updates
+
+## 🎨 Frontend Architecture
+
+### Component Architecture
+```
+src/
 ├── components/
-│   ├── templates/           # Layout templates (stable, reusable)
+│   ├── templates/           # Layout templates
 │   │   ├── LayoutTemplate.tsx
-│   │   ├── LeftSidebarTemplate.tsx
-│   │   ├── MainContainerTemplate.tsx
-│   │   └── RightSidebarTemplate.tsx
+│   │   ├── LeftCardTemplate.tsx
+│   │   └── RightCardTemplate.tsx
 │   ├── ui/                  # Base UI components
 │   │   ├── Button.tsx
 │   │   ├── Card.tsx
-│   │   ├── Avatar.tsx
-│   │   └── ScrollArea.tsx
-│   ├── [feature]/          # Feature-specific components
-│   │   ├── [Feature]Context.tsx      # React Context for state
-│   │   ├── [Feature]LeftCard.tsx     # Master list component
-│   │   ├── [Feature]RightCard.tsx    # Detail view component
-│   │   └── index.ts                  # Module exports
-│   └── StableLayout.tsx     # Root layout orchestrator
-├── pages/                   # Page components (minimal, routing only)
-│   ├── [Feature]Page.tsx    # Feature pages (render RightCard only)
-│   ├── MainPage.tsx         # Home page
-│   └── index.ts
-├── lib/                     # Utilities and helpers
-│   └── utils.ts
-└── main.tsx                # Application entry point
+│   │   └── bits/           # Advanced components
+│   └── [feature]/          # Feature-specific components
+│       ├── [Feature]Context.tsx
+│       ├── [Feature]LeftCard.tsx
+│       └── [Feature]RightCard.tsx
+├── contexts/                # React contexts
+├── lib/                     # API clients and utilities
+└── pages/                   # Route components
 ```
 
-## Component Patterns
+### State Management
+- **React Context API** for global state
+- **Local component state** for UI interactions
+- **Custom hooks** for reusable logic
+- **Optimistic updates** for better UX
 
-### Feature Module Structure
-Each feature follows a consistent structure:
+### Routing System
+- **React Router 7** for client-side routing
+- **Protected routes** with authentication guards
+- **Dynamic routing** for dynamic content
+- **Route-based code splitting** for performance
 
-```typescript
-// Context for state management
-export interface FeatureContextType {
-  selectedItem: ItemType | null
-  setSelectedItem: (item: ItemType | null) => void
-}
+## 🔄 Data Flow Architecture
 
-// Left card (master) - renders list, manages selection
-const FeatureLeftCard: React.FC = () => {
-  const { selectedItem, setSelectedItem } = useFeatureContext()
-  // Render list with click handlers
-}
-
-// Right card (detail) - displays selected item details
-const FeatureRightCard: React.FC = () => {
-  const { selectedItem } = useFeatureContext()
-  // Render detailed view
-}
-
-// Page component - minimal wrapper
-const FeaturePage: React.FC = () => {
-  return <FeatureRightCard />
-}
+### Authentication Flow
+```
+1. User Login → JWT Token Generation
+2. Token Storage → localStorage/sessionStorage
+3. API Requests → Token in Authorization Header
+4. Middleware Processing → User Authentication
+5. Response → User Data + Updated Token
 ```
 
-### StableLayout Integration
-The StableLayout component dynamically renders appropriate components based on the current route:
-
-```typescript
-// StableLayout determines which components to render
-const getPageConfig = (pathname: string) => {
-  switch (pathname) {
-    case '/feature':
-      return {
-        leftTitle: 'Feature Navigation',
-        rightTitle: 'Feature Details',
-        // ... other config
-      }
-  }
-}
-
-// Conditional rendering based on route
-{location.pathname === '/feature' ? (
-  <FeatureProvider>
-    <MainContainerTemplate
-      leftContent={<FeatureLeftCard />}
-      rightContent={<Outlet />}
-      // ... other props
-    />
-  </FeatureProvider>
-) : (
-  // Other route handling
-)}
+### Real-time Data Flow
+```
+1. Database Change → Django Signal
+2. Signal Handler → WebSocket Message
+3. Channel Layer → Redis
+4. Consumer → Frontend Update
+5. UI Update → Real-time Display
 ```
 
-## State Management
+### Activity Management Flow
+```
+1. Create Activity → Frontend Form
+2. API Request → Django Backend
+3. Validation → Model Validation + Business Logic
+4. Database Save → ORM Operations
+5. Response → Success/Error + Updated Data
+6. Real-time Update → WebSocket Notification
+```
 
-### Context API Pattern
-- Each feature has its own React Context for state management
-- Contexts manage communication between left and right cards
-- No global state management - keeps features isolated
+## 🛠️ Development Architecture
 
-### Data Flow
-1. User clicks item in left card (master)
-2. Left card calls `setSelectedItem` from context
-3. Context updates state
-4. Right card (detail) receives updated `selectedItem`
-5. Right card re-renders with new data
+### Code Quality Tools
+- **Pre-commit hooks** for automated quality checks
+- **Black** for Python code formatting
+- **ESLint + Prettier** for JavaScript/TypeScript
+- **MyPy** for Python type checking
+- **Testing frameworks** (pytest, Vitest, Playwright)
 
-## Styling and Theming
-
-### Tailwind CSS
-- Utility-first CSS framework
-- Consistent design tokens across components
-- Responsive design with mobile-first approach
-
-### Color Scheme
-- **Primary**: Teal (`teal-600`, `teal-700`) for main actions
-- **Secondary**: Gray (`gray-50` to `gray-900`) for backgrounds and text
-- **Accent**: Blue for links and highlights
-- **Status**: Standard semantic colors (green, yellow, red)
-
-### Spacing System
-- **Sidebar buttons**: `space-y-1.5` for compact layout
-- **Card content**: `space-y-4` to `space-y-6` for readability
-- **Form elements**: `space-y-3` for forms
-
-## Performance Optimizations
-
-### Code Splitting
-- Route-based code splitting with React Router
-- Lazy loading of components where appropriate
-
-### Context Optimization
-- Feature-specific contexts prevent unnecessary re-renders
-- Contexts only manage minimal state required for master-detail communication
-
-### Bundle Optimization
-- Vite for fast development and optimized builds
-- Tree shaking to eliminate unused code
-- Modern ES modules for better performance
-
-## Testing Strategy
-
-### Component Testing
-- Unit tests for individual components
-- Integration tests for context providers
-- End-to-end tests for complete user flows
-
-### Testing Tools
-- **Vitest** for unit and integration testing
-- **Playwright** for end-to-end testing
-- **React Testing Library** for component testing
-
-## Security Considerations
-
-### Authentication
-- Secure login with multi-factor authentication
-- Role-based access control (admin, staff, user)
-- Session management with secure tokens
-
-### Data Protection
-- Input validation and sanitization
-- XSS protection through React's built-in escaping
-- CSRF protection for state-changing operations
-
-## Deployment and DevOps
-
-### Build Process
-- TypeScript compilation with strict type checking
-- ESLint for code quality and consistency
-- Prettier for code formatting
+### Build System
+- **Vite** for frontend development and building
+- **Django** for backend development
+- **PostgreSQL** for production database
+- **Redis** for caching and WebSocket support
 
 ### Development Workflow
-- Hot module replacement for fast development
-- Automatic type checking and linting
-- Pre-commit hooks for code quality
+```
+1. Feature Development → Feature Branch
+2. Code Quality → Pre-commit Hooks
+3. Testing → Unit + Integration Tests
+4. Code Review → Pull Request
+5. Deployment → Staging → Production
+```
 
-## Browser Support
+## 🚀 Performance Architecture
 
-### Target Browsers
-- Chrome 88+ (main target)
-- Firefox 85+
-- Safari 14+
-- Edge 88+
+### Frontend Optimization
+- **Code splitting** by routes and components
+- **Lazy loading** for non-critical components
+- **Memoization** for expensive computations
+- **Virtual scrolling** for large lists
+- **Image optimization** and lazy loading
 
-### Progressive Enhancement
-- Core functionality works in all supported browsers
-- Enhanced features for modern browsers
-- Graceful degradation for older browsers
+### Backend Optimization
+- **Database query optimization** with select_related/prefetch_related
+- **Caching strategies** with Redis
+- **Connection pooling** for database connections
+- **Async operations** for I/O intensive tasks
+- **Background tasks** with Celery (planned)
 
-## Accessibility
+### Database Optimization
+- **Indexed queries** for common operations
+- **Connection pooling** for high concurrency
+- **Query optimization** with Django ORM
+- **Database partitioning** for large datasets (planned)
 
-### WCAG Compliance
-- ARIA labels and semantic HTML
-- Keyboard navigation support
-- Screen reader compatibility
-- Color contrast compliance
+## 🔒 Security Architecture
 
-### Responsive Design
-- Mobile-first responsive layout
-- Touch-friendly interface elements
-- Adaptive content for different screen sizes
+### Authentication Security
+- **JWT token expiration** and refresh mechanisms
+- **Secure token storage** in HTTP-only cookies
+- **Rate limiting** on authentication endpoints
+- **Account lockout** after failed attempts
+
+### Data Security
+- **Input validation** and sanitization
+- **SQL injection prevention** with ORM
+- **XSS protection** with content security policies
+- **CSRF protection** on all forms
+
+### API Security
+- **CORS configuration** for cross-origin requests
+- **API rate limiting** for abuse prevention
+- **Request validation** with serializers
+- **Audit logging** for security events
+
+## 📊 Monitoring & Observability
+
+### Application Monitoring
+- **Django logging** with structured logging
+- **Performance metrics** with custom middleware
+- **Error tracking** with detailed error reports
+- **Health checks** for system components
+
+### Infrastructure Monitoring
+- **Database performance** monitoring
+- **WebSocket connection** tracking
+- **API response times** and error rates
+- **Resource utilization** monitoring
+
+## 🔮 Future Architecture Plans
+
+### Scalability Improvements
+- **Microservices architecture** for specific domains
+- **Event-driven architecture** with message queues
+- **Distributed caching** with Redis clusters
+- **Load balancing** for high availability
+
+### Advanced Features
+- **Machine learning** integration for predictive analytics
+- **IoT device integration** for real-time monitoring
+- **Mobile app** with React Native
+- **Multi-tenant architecture** for SaaS deployment
+
+### DevOps Integration
+- **Container orchestration** with Kubernetes
+- **CI/CD pipelines** with automated testing
+- **Infrastructure as Code** with Terraform
+- **Monitoring stack** with Prometheus + Grafana
 
 ---
 
-This architecture provides a scalable, maintainable foundation for the RNexus platform while ensuring consistent user experience and developer productivity.
+**This architecture provides a solid foundation for a scalable, maintainable, and secure manufacturing operations management system.**

@@ -1,160 +1,181 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Shield,
   User,
   Lock,
-  Calendar,
   CheckCircle,
-  AlertTriangle,
-  Info,
+  Home,
+  Lightbulb,
+  FileText,
 } from "lucide-react";
 
+// API configuration
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+
 const ProfileLeftCard: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleReturnToDashboard = () => {
+    navigate('/');
+  };
+
+  const handleDownloadCV = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/user/profile/download-cv/`, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        // Get the filename from the response headers
+        const contentDisposition = response.headers.get('Content-Disposition');
+        let filename = 'CV.pdf';
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+          if (filenameMatch && filenameMatch[1]) {
+            filename = filenameMatch[1];
+          }
+        }
+
+        // Create blob and download
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        const error = await response.json();
+        console.error('CV download failed:', error);
+        alert('Failed to download CV. Please try again.');
+      }
+    } catch (error) {
+      console.error('CV download error:', error);
+      alert('Error downloading CV. Please try again.');
+    }
+  };
+
   return (
-    <div className="p-6 h-full flex flex-col">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-          <Shield className="h-8 w-8 text-white" />
-        </div>
-        <h3 className="text-xl font-bold text-gray-800 mb-2">
-          Account Security
-        </h3>
-        <p className="text-gray-600">
-          Protect your account with strong security practices
-        </p>
-      </div>
-
-      {/* Security Status */}
-      <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-4 mb-6 border border-green-200">
-        <div className="flex items-center gap-3 mb-3">
-          <CheckCircle className="h-5 w-5 text-green-600" />
-          <h4 className="font-semibold text-green-800">
-            Security Status: Good
+    <div className="h-full bg-white flex flex-col overflow-hidden">
+      {/* Content - grows to fill available space with overflow scroll */}
+      <div className="flex-1 p-6 space-y-8 overflow-y-auto">
+        {/* Quick Actions */}
+        <div>
+          <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center gap-2">
+            <Shield className="h-4 w-4 text-blue-500" />
+            Quick Actions
           </h4>
-        </div>
-        <p className="text-sm text-green-700">
-          Your account is protected with strong security measures.
-        </p>
-      </div>
-
-      {/* Security Tips */}
-      <div className="space-y-4 mb-6">
-        <h4 className="font-semibold text-gray-800 flex items-center gap-2">
-          <Lock className="h-4 w-4 text-blue-500" />
-          Security Best Practices
-        </h4>
-
-        <div className="space-y-3">
-          <div className="flex items-start gap-3">
-            <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-            <p className="text-sm text-gray-600">
-              Use a strong, unique password with at least 8 characters
-            </p>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-            <p className="text-sm text-gray-600">
-              Never share your login credentials with anyone
-            </p>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-            <p className="text-sm text-gray-600">
-              Log out when using shared or public computers
-            </p>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-            <p className="text-sm text-gray-600">
-              Keep your email address up to date for account recovery
-            </p>
+          <div className="space-y-2">
+            <button
+              onClick={handleDownloadCV}
+              className="w-full flex items-center justify-between p-3 border border-gray-200 hover:border-gray-300 hover:bg-gray-50 rounded-lg transition-colors text-left"
+            >
+              <div className="flex items-center gap-3">
+                <FileText className="h-4 w-4 text-gray-600" />
+                <span className="text-sm font-medium text-gray-900">Download CV</span>
+              </div>
+              <div className="text-xs text-gray-500">PDF</div>
+            </button>
+            <button
+              onClick={handleReturnToDashboard}
+              className="w-full flex items-center justify-between p-3 border border-gray-200 hover:border-gray-300 hover:bg-gray-50 rounded-lg transition-colors text-left"
+            >
+              <div className="flex items-center gap-3">
+                <Home className="h-4 w-4 text-gray-600" />
+                <span className="text-sm font-medium text-gray-900">Return to Dashboard</span>
+              </div>
+            </button>
           </div>
         </div>
-      </div>
 
-      {/* Account Information */}
-      <div className="space-y-4 mb-6">
-        <h4 className="font-semibold text-gray-800 flex items-center gap-2">
-          <User className="h-4 w-4 text-purple-500" />
-          Account Details
-        </h4>
-
-        <div className="space-y-3">
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-            <p className="text-sm text-gray-600">
-              Profile information is visible to you only
-            </p>
+        {/* Security Status */}
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <CheckCircle className="h-4 w-4 text-green-600" />
+            <h4 className="text-sm font-medium text-gray-900">Security Status</h4>
+            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium">Good</span>
           </div>
-
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-            <p className="text-sm text-gray-600">
-              Username cannot be changed after creation
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-            <p className="text-sm text-gray-600">
-              Email changes require verification
-            </p>
-          </div>
+          <p className="text-sm text-gray-600">
+            Your account is protected with strong security measures.
+          </p>
         </div>
-      </div>
 
-      {/* Password Guidelines */}
-      <div className="space-y-4 mb-6">
-        <h4 className="font-semibold text-gray-800 flex items-center gap-2">
-          <Lock className="h-4 w-4 text-red-500" />
-          Password Requirements
-        </h4>
-
-        <div className="space-y-3">
-          <div className="flex items-start gap-3">
-            <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
-            <p className="text-sm text-gray-600">Minimum 8 characters long</p>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
-            <p className="text-sm text-gray-600">
-              Include uppercase and lowercase letters
-            </p>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
-            <p className="text-sm text-gray-600">
-              Add numbers and special characters
-            </p>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
-            <p className="text-sm text-gray-600">
-              Avoid common words and patterns
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Important Notice */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-auto">
-        <div className="flex items-start gap-3">
-          <AlertTriangle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-          <div>
-            <h4 className="font-semibold text-yellow-800 mb-1">
-              Important Notice
+        {/* Profile Completion */}
+        <div>
+          <div className="flex justify-between items-center mb-3">
+            <h4 className="text-sm font-medium text-gray-900 flex items-center gap-2">
+              <User className="h-4 w-4 text-purple-500" />
+              Profile Completion
             </h4>
-            <p className="text-sm text-yellow-700">
-              After changing your password, you'll need to log in again with
-              your new credentials. Make sure to remember your new password!
-            </p>
+            <span className="text-sm font-medium text-gray-900">85%</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
+            <div className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full" style={{ width: '85%' }}></div>
+          </div>
+          <div className="space-y-1 text-xs text-gray-500">
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+              <span>Basic information completed</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+              <span>Contact details added</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full"></div>
+              <span>Add more education details</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Profile Tips */}
+        <div>
+          <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center gap-2">
+            <Lightbulb className="h-4 w-4 text-yellow-500" />
+            Profile Tips
+          </h4>
+          <div className="space-y-3 text-xs text-gray-600">
+            <div className="p-3 bg-gray-50 rounded-lg border-l-4 border-gray-300">
+              <p className="font-medium text-gray-800 mb-1">Complete Your Education</p>
+              <p>Add detailed information about your educational background to improve your profile visibility.</p>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-lg border-l-4 border-gray-300">
+              <p className="font-medium text-gray-800 mb-1">Professional Bio</p>
+              <p>Write a compelling bio that highlights your expertise and career achievements.</p>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-lg border-l-4 border-gray-300">
+              <p className="font-medium text-gray-800 mb-1">Work Experience</p>
+              <p>Document your work history with detailed descriptions to showcase your career progression.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Privacy Settings */}
+        <div>
+          <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center gap-2">
+            <Lock className="h-4 w-4 text-gray-500" />
+            Privacy & Visibility
+          </h4>
+          <div className="text-xs text-gray-600 space-y-2">
+            <p>Control who can see your profile information using the visibility toggles in each section.</p>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span>Visible to colleagues</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                <span>Partially visible</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                <span>Private</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

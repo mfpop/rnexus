@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { HomeLeftCard } from "./home";
 import { ContactLeftCard } from "./contact";
@@ -17,7 +17,7 @@ import { MetricsLeftCard, MetricsProvider } from "./metrics";
 import { ProjectsLeftCard, ProjectsProvider } from "./projects";
 import { ActivitiesLeftCard, ActivitiesProvider } from "./activities";
 import { AboutLeftCard, AboutProvider } from "./about";
-import { ChatLeftCard, ChatProvider, useChatContext } from "./chat";
+import { ChatLeftCardSimple, ChatProvider } from "./chat";
 import LeftSidebarTemplate from "./templates/LeftSidebarTemplate";
 import RightSidebarTemplate from "./templates/RightSidebarTemplate";
 import MainContainerTemplate from "./templates/MainContainerTemplate";
@@ -25,6 +25,8 @@ import NotificationBell from "./shared/NotificationBell";
 import NotificationCenter from "./shared/NotificationCenter";
 import { NotificationProvider } from "../contexts/NotificationContext";
 import { useAuth } from "../contexts/AuthContext";
+import { PaginationProvider } from "../contexts/PaginationContext";
+import PaginationFooterWrapper from "./shared/PaginationFooterWrapper";
 
 // Import all page components
 import MainPage from "../pages/MainPage";
@@ -67,68 +69,11 @@ import {
   Trash2,
   Newspaper,
   ClipboardList,
-  ChevronsLeft,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsRight,
 } from "lucide-react";
 
 type ExpandedCardState = "left" | "right" | "left-full" | "right-full" | null;
 
-// Custom Pagination Footer Component for Chat
-const ChatPaginationFooter: React.FC = () => {
-  const { currentPage, setCurrentPage, totalPages } = useChatContext();
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  if (totalPages <= 1) return null;
-
-  return (
-    <div className="flex items-center justify-center gap-2">
-      {/* First Page Button */}
-      <button
-        onClick={() => handlePageChange(1)}
-        disabled={currentPage === 1}
-        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
-      >
-        <ChevronsLeft className="h-4 w-4" />
-      </button>
-
-      {/* Previous Button */}
-      <button
-        onClick={() => handlePageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
-      >
-        <ChevronLeft className="h-4 w-4" />
-      </button>
-
-      <span className="text-sm font-medium text-gray-700">
-        {currentPage} of {totalPages}
-      </span>
-
-      {/* Next Button */}
-      <button
-        onClick={() => handlePageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
-      >
-        <ChevronRight className="h-4 w-4" />
-      </button>
-
-      {/* Last Page Button */}
-      <button
-        onClick={() => handlePageChange(totalPages)}
-        disabled={currentPage === totalPages}
-        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
-      >
-        <ChevronsRight className="h-4 w-4" />
-      </button>
-    </div>
-  );
-};
 
 /**
  * StableLayout - A template that provides consistent structure
@@ -155,7 +100,7 @@ export default function StableLayout() {
       // Redirect to home page
       forceNavigate("/");
     } catch (error) {
-      console.error("Error during logout:", error);
+  console.error("Error during logout:", error);
     }
   };
 
@@ -295,7 +240,7 @@ export default function StableLayout() {
         return {
           leftTitle: "News & Updates",
           leftSubtitle: "Latest company and industry news",
-          leftFooter: "Stay informed with the latest updates",
+          leftFooter: <PaginationFooterWrapper />,
           rightTitle: "Article Reader",
           rightSubtitle: "Select an article to start reading",
           rightFooter: "Engage with news and updates",
@@ -322,7 +267,7 @@ export default function StableLayout() {
         return {
           leftTitle: "Project Portfolio",
           leftSubtitle: "Project management and tracking",
-          leftFooter: "Manage all projects across the organization",
+          leftFooter: <PaginationFooterWrapper />,
           rightTitle: "Project Dashboard",
           rightSubtitle: "Select a project to view detailed dashboard",
           rightFooter: "Comprehensive project management and tracking",
@@ -330,8 +275,8 @@ export default function StableLayout() {
       case "/activities":
         return {
           leftTitle: "Activities Management",
-                      leftSubtitle: "Activities management and scheduling",
-            leftFooter: "Manage all activities and tasks across the organization",
+          leftSubtitle: "Activities management and scheduling",
+          leftFooter: <PaginationFooterWrapper />,
           rightTitle: "Activity Dashboard",
           rightSubtitle: "Select an activity to view detailed information",
           rightFooter: "© 2024 Nexus LMD. All rights reserved.",
@@ -340,7 +285,7 @@ export default function StableLayout() {
         return {
           leftTitle: "Team Communications",
           leftSubtitle: "Manage contacts, groups, and conversations",
-          leftFooter: <ChatPaginationFooter />,
+          leftFooter: <PaginationFooterWrapper />,
           rightTitle: "Chat Interface",
           rightSubtitle: "Real-time communication with your team",
           rightFooter:
@@ -354,6 +299,15 @@ export default function StableLayout() {
           rightTitle: "Company Information",
           rightSubtitle: "Select a section to learn more about RNexus",
           rightFooter: "Discover our story, values, and achievements",
+        };
+      case "/profile":
+        return {
+          leftTitle: "Account Overview",
+          leftSubtitle: "Your profile summary and quick actions",
+          leftFooter: "Keep your profile updated for better experience",
+          rightTitle: "Profile Details",
+          rightSubtitle: "View and edit your profile information",
+          rightFooter: "All changes are saved automatically",
         };
       default:
         return {
@@ -621,22 +575,24 @@ export default function StableLayout() {
 
         {/* Main Content Area - Conditional Layout */}
         {location.pathname === "/chat" ? (
-          // Chat page uses ChatProvider for left-right card communication
+          // Chat page uses ChatProvider and PaginationProvider for left-right card communication
           <ChatProvider>
-            <MainContainerTemplate
-              key={location.pathname}
-              leftTitle={pageConfig.leftTitle}
-              leftSubtitle={pageConfig.leftSubtitle}
-              leftFooter={pageConfig.leftFooter}
-              leftContent={<ChatLeftCard />}
-              rightTitle={pageConfig.rightTitle}
-              rightSubtitle={pageConfig.rightSubtitle}
-              rightFooter={pageConfig.rightFooter}
-              rightContent={getCurrentPage}
-              expandedCard={expandedCard}
-              onExpandClick={handleExpandClick}
-              gridProportions="1fr 3fr"
-            />
+            <PaginationProvider>
+              <MainContainerTemplate
+                key={location.pathname}
+                leftTitle={pageConfig.leftTitle}
+                leftSubtitle={pageConfig.leftSubtitle}
+                leftFooter={pageConfig.leftFooter}
+                leftContent={<ChatLeftCardSimple />}
+                rightTitle={pageConfig.rightTitle}
+                rightSubtitle={pageConfig.rightSubtitle}
+                rightFooter={pageConfig.rightFooter}
+                rightContent={getCurrentPage}
+                expandedCard={expandedCard}
+                onExpandClick={handleExpandClick}
+                gridProportions="1fr 3fr"
+              />
+            </PaginationProvider>
           </ChatProvider>
         ) : location.pathname === "/help" ? (
           // Help page uses HelpProvider for left-right card communication
@@ -684,22 +640,24 @@ export default function StableLayout() {
             />
           </SystemProvider>
         ) : location.pathname === "/news" ? (
-          // News page uses NewsProvider for left-right card communication
+          // News page uses NewsProvider and PaginationProvider for left-right card communication
           <NewsProvider>
-            <MainContainerTemplate
-              key={location.pathname}
-              leftTitle={pageConfig.leftTitle}
-              leftSubtitle={pageConfig.leftSubtitle}
-              leftFooter={pageConfig.leftFooter}
-              leftContent={
-                <NewsLeftCardWrapper />
-              }
-              rightTitle={pageConfig.rightTitle}
-              rightSubtitle={pageConfig.rightSubtitle}
-              rightFooter={pageConfig.rightFooter}
-              rightContent={<NewsRightCard />}
-              gridProportions="1fr 3fr"
-            />
+            <PaginationProvider>
+              <MainContainerTemplate
+                key={location.pathname}
+                leftTitle={pageConfig.leftTitle}
+                leftSubtitle={pageConfig.leftSubtitle}
+                leftFooter={pageConfig.leftFooter}
+                leftContent={
+                  <NewsLeftCardWrapper />
+                }
+                rightTitle={pageConfig.rightTitle}
+                rightSubtitle={pageConfig.rightSubtitle}
+                rightFooter={pageConfig.rightFooter}
+                rightContent={<NewsRightCard />}
+                gridProportions="1fr 3fr"
+              />
+            </PaginationProvider>
           </NewsProvider>
         ) : location.pathname === "/production" ? (
           // Production page uses ProductionProvider for left-right card communication
@@ -738,40 +696,44 @@ export default function StableLayout() {
             />
           </MetricsProvider>
         ) : location.pathname === "/projects" ? (
-          // Projects page uses ProjectsProvider for left-right card communication
+          // Projects page uses ProjectsProvider and PaginationProvider for left-right card communication
           <ProjectsProvider>
-            <MainContainerTemplate
-              key={location.pathname}
-              leftTitle={pageConfig.leftTitle}
-              leftSubtitle={pageConfig.leftSubtitle}
-              leftFooter={pageConfig.leftFooter}
-              leftContent={<ProjectsLeftCard />}
-              rightTitle={pageConfig.rightTitle}
-              rightSubtitle={pageConfig.rightSubtitle}
-              rightFooter={pageConfig.rightFooter}
-              rightContent={getCurrentPage}
-              expandedCard={expandedCard}
-              onExpandClick={handleExpandClick}
-              gridProportions="1fr 3fr"
-            />
+            <PaginationProvider>
+              <MainContainerTemplate
+                key={location.pathname}
+                leftTitle={pageConfig.leftTitle}
+                leftSubtitle={pageConfig.leftSubtitle}
+                leftFooter={pageConfig.leftFooter}
+                leftContent={<ProjectsLeftCard />}
+                rightTitle={pageConfig.rightTitle}
+                rightSubtitle={pageConfig.rightSubtitle}
+                rightFooter={pageConfig.rightFooter}
+                rightContent={getCurrentPage}
+                expandedCard={expandedCard}
+                onExpandClick={handleExpandClick}
+                gridProportions="1fr 3fr"
+              />
+            </PaginationProvider>
           </ProjectsProvider>
         ) : location.pathname === "/activities" ? (
-          // Activities page uses ActivitiesProvider for left-right card communication
+          // Activities page uses ActivitiesProvider and PaginationProvider for left-right card communication
           <ActivitiesProvider>
-            <MainContainerTemplate
-              key={location.pathname}
-              leftTitle={pageConfig.leftTitle}
-              leftSubtitle={pageConfig.leftSubtitle}
-              leftFooter={pageConfig.leftFooter}
-              leftContent={<ActivitiesLeftCard />}
-              rightTitle={pageConfig.rightTitle}
-              rightSubtitle={pageConfig.rightSubtitle}
-              rightFooter={pageConfig.rightFooter}
-              rightContent={getCurrentPage}
-              expandedCard={expandedCard}
-              onExpandClick={handleExpandClick}
-              gridProportions="1fr 3fr"
-            />
+            <PaginationProvider>
+              <MainContainerTemplate
+                key={location.pathname}
+                leftTitle={pageConfig.leftTitle}
+                leftSubtitle={pageConfig.leftSubtitle}
+                leftFooter={pageConfig.leftFooter}
+                leftContent={<ActivitiesLeftCard />}
+                rightTitle={pageConfig.rightTitle}
+                rightSubtitle={pageConfig.rightSubtitle}
+                rightFooter={pageConfig.rightFooter}
+                rightContent={getCurrentPage}
+                expandedCard={expandedCard}
+                onExpandClick={handleExpandClick}
+                gridProportions="1fr 3fr"
+              />
+            </PaginationProvider>
           </ActivitiesProvider>
         ) : location.pathname === "/about" ? (
           // About page uses AboutProvider for left-right card communication

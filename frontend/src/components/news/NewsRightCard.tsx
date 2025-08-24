@@ -376,13 +376,13 @@ const NewsRightCard: React.FC = () => {
   const getTypeColor = (type: string) => {
     switch (type) {
       case "alert":
-        return "bg-red-100 text-red-800 border-red-200";
+        return "text-gray-800";
       case "news":
-        return "bg-blue-100 text-blue-800 border-blue-200";
+        return "text-gray-700";
       case "communication":
-        return "bg-green-100 text-green-800 border-green-200";
+        return "text-gray-600";
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
+        return "text-gray-700";
     }
   };
 
@@ -639,7 +639,7 @@ const NewsRightCard: React.FC = () => {
               <span className={`inline-block w-3 h-3 rounded-full ${getStatusColor(selectedUpdate.status)}`}></span>
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-600">
-              <span className={`px-2 py-1 rounded-full text-xs border ${getTypeColor(selectedUpdate.type)}`}>
+              <span className={`text-xs font-medium ${getTypeColor(selectedUpdate.type)}`}>
                 {selectedUpdate.type}
               </span>
               <span>•</span>

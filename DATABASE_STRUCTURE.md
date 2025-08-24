@@ -1,520 +1,561 @@
-# Database Structure for Activities Management System
+# Nexus Database Structure
 
-## Overview
-This document outlines the optimized, normalized database structure for the Activities Management System. The database is designed to efficiently store and manage activities, tasks, milestones, checklists, and related data while maintaining data integrity and performance.
+## 🗄️ Database Overview
 
-## Database Normalization
-The database follows 3NF (Third Normal Form) principles:
-- **1NF**: All attributes contain atomic values
-- **2NF**: No partial dependencies on composite keys
-- **3NF**: No transitive dependencies
+The Nexus system uses PostgreSQL as its primary database, with Django ORM for data modeling and management. The database is designed to support comprehensive manufacturing operations management with real-time updates and user collaboration.
 
-## Core Tables
+## 🏗️ Core Models
 
-### 1. Users Table
-```sql
-CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    username VARCHAR(50) UNIQUE NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    first_name VARCHAR(100) NOT NULL,
-    last_name VARCHAR(100) NOT NULL,
-    avatar_url TEXT,
-    is_active BOOLEAN DEFAULT true,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
+### User Management
 
--- Indexes
-CREATE INDEX idx_users_username ON users(username);
-CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_users_active ON users(is_active);
+#### User Model
+```python
+class User(AbstractUser):
+    """Extended user model with role-based permissions"""
+    ROLE_CHOICES = [
+        ('admin', 'Administrator'),
+        ('staff', 'Staff Member'),
+        ('user', 'Regular User'),
+    ]
+
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='user')
+    email = models.EmailField(unique=True)
+    is_active = models.BooleanField(default=True)
+    date_joined = models.DateTimeField(auto_now_add=True)
+    last_login = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'auth_user'
+        verbose_name = 'User'
+        verbose_name_plural = 'Users'
 ```
 
-### 2. Projects Table
-```sql
-CREATE TABLE projects (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(255) NOT NULL,
-    description TEXT,
-    status VARCHAR(50) DEFAULT 'active',
-    start_date DATE,
-    end_date DATE,
-    budget DECIMAL(15,2),
-    owner_id UUID REFERENCES users(id) ON DELETE SET NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
+#### UserProfile Model
+```python
+class UserProfile(models.Model):
+    """Extended user profile information"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    phone = models.CharField(max_length=20, blank=True)
+    department = models.CharField(max_length=100, blank=True)
+    position = models.CharField(max_length=100, blank=True)
+    avatar = models.ImageField(upload_to='avatars/', blank=True)
 
--- Indexes
-CREATE INDEX idx_projects_owner ON projects(owner_id);
-CREATE INDEX idx_projects_status ON projects(status);
-CREATE INDEX idx_projects_dates ON projects(start_date, end_date);
+    class Meta:
+        db_table = 'api_userprofile'
 ```
 
-### 3. Activities Table (Main Table)
-```sql
-CREATE TABLE activities (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    title VARCHAR(255) NOT NULL,
-    description TEXT,
-    type VARCHAR(100) NOT NULL,
-    status VARCHAR(50) DEFAULT 'planned',
-    priority VARCHAR(50) DEFAULT 'medium',
-    category VARCHAR(100),
-    risk_level VARCHAR(50),
-    cost DECIMAL(15,2),
+### Activities System
 
-    -- Dates
-    start_date TIMESTAMP WITH TIME ZONE,
-    due_date TIMESTAMP WITH TIME ZONE,
-    completed_date TIMESTAMP WITH TIME ZONE,
+#### Activity Model
+```python
+class Activity(models.Model):
+    """Core manufacturing activity model"""
+    STATUS_CHOICES = [
+        ('planned', 'Planned'),
+        ('in-progress', 'In Progress'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+        ('overdue', 'Overdue'),
+    ]
 
-    -- Relationships
-    owner_id UUID REFERENCES users(id) ON DELETE SET NULL,
-    created_by_id UUID REFERENCES users(id) ON DELETE SET NULL,
-    project_id UUID REFERENCES projects(id) ON DELETE SET NULL,
+    PRIORITY_CHOICES = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+        ('urgent', 'Urgent'),
+    ]
 
-    -- Metadata
-    tags TEXT[], -- Array of tags
-    estimated_hours INTEGER,
-    actual_hours INTEGER,
+    TYPE_CHOICES = [
+        ('Production', 'Production'),
+        ('Maintenance', 'Maintenance'),
+        ('Inspection & Audit', 'Inspection & Audit'),
+        ('Engineering', 'Engineering'),
+        ('Logistics', 'Logistics'),
+        ('Quality', 'Quality'),
+        ('Meetings', 'Meetings'),
+        ('Projects', 'Projects'),
+        ('Training', 'Training'),
+        ('Admin & Systems', 'Admin & Systems'),
+    ]
 
-    -- Timestamps
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    type = models.CharField(max_length=50, choices=TYPE_CHOICES)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='planned')
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
 
--- Indexes
-CREATE INDEX idx_activities_owner ON activities(owner_id);
-CREATE INDEX idx_activities_project ON activities(project_id);
-CREATE INDEX idx_activities_status ON activities(status);
-CREATE INDEX idx_activities_type ON activities(type);
-CREATE INDEX idx_activities_priority ON activities(priority);
-CREATE INDEX idx_activities_dates ON activities(start_date, due_date);
-CREATE INDEX idx_activities_tags ON activities USING GIN(tags);
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+
+    assigned_to = models.ForeignKey(User, on_delete=models.CASCADE, related_name='assigned_activities')
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_activities')
+
+    tags = models.ManyToManyField('Tag', blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'api_activity'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status']),
+            models.Index(fields=['type']),
+            models.Index(fields=['assigned_to']),
+            models.Index(fields=['start_time']),
+            models.Index(fields=['priority']),
+        ]
 ```
 
-### 4. Tasks Table
-```sql
-CREATE TABLE tasks (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    title VARCHAR(255) NOT NULL,
-    description TEXT,
-    status VARCHAR(50) DEFAULT 'pending',
-    priority VARCHAR(50) DEFAULT 'medium',
-    completed BOOLEAN DEFAULT false,
+#### ActivityStatus Model
+```python
+class ActivityStatus(models.Model):
+    """Activity status tracking and history"""
+    activity = models.ForeignKey(Activity, on_delete=models.CASCADE, related_name='status_history')
+    status = models.CharField(max_length=20, choices=Activity.STATUS_CHOICES)
+    changed_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    changed_at = models.DateTimeField(auto_now_add=True)
+    notes = models.TextField(blank=True)
 
-    -- Dates
-    start_date TIMESTAMP WITH TIME ZONE,
-    due_date TIMESTAMP WITH TIME ZONE,
-    completed_date TIMESTAMP WITH TIME ZONE,
-
-    -- Relationships
-    activity_id UUID REFERENCES activities(id) ON DELETE CASCADE,
-    assignee_id UUID REFERENCES users(id) ON DELETE SET NULL,
-    depends_on_task_id UUID REFERENCES tasks(id) ON DELETE SET NULL,
-
-    -- Time tracking
-    estimated_hours INTEGER,
-    actual_hours INTEGER,
-
-    -- Metadata
-    tags TEXT[],
-
-    -- Timestamps
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- Indexes
-CREATE INDEX idx_tasks_activity ON tasks(activity_id);
-CREATE INDEX idx_tasks_assignee ON tasks(assignee_id);
-CREATE INDEX idx_tasks_status ON tasks(status);
-CREATE INDEX idx_tasks_completed ON tasks(completed);
-CREATE INDEX idx_tasks_dates ON tasks(start_date, due_date);
-CREATE INDEX idx_tasks_dependencies ON tasks(depends_on_task_id);
+    class Meta:
+        db_table = 'api_activitystatus'
+        ordering = ['-changed_at']
 ```
 
-### 5. Milestones Table
-```sql
-CREATE TABLE milestones (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    title VARCHAR(255) NOT NULL,
-    description TEXT,
-    status VARCHAR(50) DEFAULT 'pending',
-    completed BOOLEAN DEFAULT false,
+#### ActivityPriority Model
+```python
+class ActivityPriority(models.Model):
+    """Activity priority tracking and history"""
+    activity = models.ForeignKey(Activity, on_delete=models.CASCADE, related_name='priority_history')
+    priority = models.CharField(max_length=20, choices=Activity.PRIORITY_CHOICES)
+    changed_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    changed_at = models.DateTimeField(auto_now_add=True)
+    reason = models.TextField(blank=True)
 
-    -- Dates
-    due_date TIMESTAMP WITH TIME ZONE,
-    completed_date TIMESTAMP WITH TIME ZONE,
-
-    -- Relationships
-    activity_id UUID REFERENCES activities(id) ON DELETE CASCADE,
-    assignee_id UUID REFERENCES users(id) ON DELETE SET NULL,
-
-    -- Metadata
-    tags TEXT[],
-
-    -- Timestamps
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- Indexes
-CREATE INDEX idx_milestones_activity ON milestones(activity_id);
-CREATE INDEX idx_milestones_assignee ON milestones(assignee_id);
-CREATE INDEX idx_milestones_status ON milestones(status);
-CREATE INDEX idx_milestones_completed ON milestones(completed);
-CREATE INDEX idx_milestones_due_date ON milestones(due_date);
+    class Meta:
+        db_table = 'api_activitypriority'
+        ordering = ['-changed_at']
 ```
 
-### 6. Checklists Table
-```sql
-CREATE TABLE checklists (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    title VARCHAR(255) NOT NULL,
-    description TEXT,
+### Tag System
 
-    -- Relationships
-    activity_id UUID REFERENCES activities(id) ON DELETE CASCADE,
-    assignee_id UUID REFERENCES users(id) ON DELETE SET NULL,
+#### Tag Model
+```python
+class Tag(models.Model):
+    """Flexible tagging system for activities and other entities"""
+    name = models.CharField(max_length=50, unique=True)
+    description = models.TextField(blank=True)
+    color = models.CharField(max_length=7, default='#3B82F6')  # Hex color
+    category = models.CharField(max_length=50, blank=True)
 
-    -- Metadata
-    tags TEXT[],
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
-    -- Timestamps
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- Indexes
-CREATE INDEX idx_checklists_activity ON checklists(activity_id);
-CREATE INDEX idx_checklists_assignee ON checklists(assignee_id);
+    class Meta:
+        db_table = 'api_tag'
+        ordering = ['name']
 ```
 
-### 7. Checklist Items Table
-```sql
-CREATE TABLE checklist_items (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    description TEXT NOT NULL,
-    completed BOOLEAN DEFAULT false,
-    completed_date TIMESTAMP WITH TIME ZONE,
+### Project Management
 
-    -- Relationships
-    checklist_id UUID REFERENCES checklists(id) ON DELETE CASCADE,
-    assignee_id UUID REFERENCES users(id) ON DELETE SET NULL,
+#### Project Model
+```python
+class Project(models.Model):
+    """Project management and organization"""
+    STATUS_CHOICES = [
+        ('planning', 'Planning'),
+        ('active', 'Active'),
+        ('on-hold', 'On Hold'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
 
-    -- Order
-    sort_order INTEGER DEFAULT 0,
+    name = models.CharField(max_length=200)
+    description = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='planning')
 
-    -- Timestamps
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
+    start_date = models.DateField()
+    end_date = models.DateField()
 
--- Indexes
-CREATE INDEX idx_checklist_items_checklist ON checklist_items(checklist_id);
-CREATE INDEX idx_checklist_items_assignee ON checklist_items(assignee_id);
-CREATE INDEX idx_checklist_items_completed ON checklist_items(completed);
-CREATE INDEX idx_checklist_items_order ON checklist_items(checklist_id, sort_order);
+    manager = models.ForeignKey(User, on_delete=models.CASCADE, related_name='managed_projects')
+    team_members = models.ManyToManyField(User, related_name='project_assignments')
+
+    activities = models.ManyToManyField(Activity, blank=True, related_name='projects')
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'api_project'
+        ordering = ['-created_at']
 ```
 
-### 8. Time Logs Table
-```sql
-CREATE TABLE time_logs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    description TEXT,
+### Real-time Updates System
 
-    -- Time tracking
-    start_time TIMESTAMP WITH TIME ZONE NOT NULL,
-    end_time TIMESTAMP WITH TIME ZONE,
-    duration_minutes INTEGER,
+#### Update Model
+```python
+class Update(models.Model):
+    """System updates and notifications"""
+    TYPE_CHOICES = [
+        ('announcement', 'Announcement'),
+        ('alert', 'Alert'),
+        ('maintenance', 'Maintenance'),
+        ('update', 'System Update'),
+        ('news', 'News'),
+    ]
 
-    -- Relationships
-    activity_id UUID REFERENCES activities(id) ON DELETE CASCADE,
-    task_id UUID REFERENCES tasks(id) ON DELETE SET NULL,
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    PRIORITY_CHOICES = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+        ('critical', 'Critical'),
+    ]
 
-    -- Timestamps
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
+    title = models.CharField(max_length=200)
+    content = models.TextField()
+    type = models.CharField(max_length=20, choices=TYPE_CHOICES)
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
 
--- Indexes
-CREATE INDEX idx_time_logs_activity ON time_logs(activity_id);
-CREATE INDEX idx_time_logs_task ON time_logs(task_id);
-CREATE INDEX idx_time_logs_user ON time_logs(user_id);
-CREATE INDEX idx_time_logs_dates ON time_logs(start_time, end_time);
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    target_users = models.ManyToManyField(User, blank=True, related_name='targeted_updates')
+
+    is_published = models.BooleanField(default=False)
+    published_at = models.DateTimeField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'api_update'
+        ordering = ['-created_at']
 ```
 
-### 9. Attachments Table
-```sql
-CREATE TABLE attachments (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(255) NOT NULL,
-    file_path TEXT NOT NULL,
-    file_size BIGINT,
-    mime_type VARCHAR(100),
+#### UpdateAttachment Model
+```python
+class UpdateAttachment(models.Model):
+    """File attachments for updates"""
+    update = models.ForeignKey(Update, on_delete=models.CASCADE, related_name='attachments')
+    file = models.FileField(upload_to='update_attachments/')
+    filename = models.CharField(max_length=255)
+    file_size = models.IntegerField()
+    mime_type = models.CharField(max_length=100)
 
-    -- Relationships
-    activity_id UUID REFERENCES activities(id) ON DELETE CASCADE,
-    task_id UUID REFERENCES tasks(id) ON DELETE SET NULL,
-    uploaded_by_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    uploaded_at = models.DateTimeField(auto_now_add=True)
 
-    -- Metadata
-    description TEXT,
-
-    -- Timestamps
-    uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- Indexes
-CREATE INDEX idx_attachments_activity ON attachments(activity_id);
-CREATE INDEX idx_attachments_task ON attachments(task_id);
-CREATE INDEX idx_attachments_user ON attachments(uploaded_by_id);
-CREATE INDEX idx_attachments_type ON attachments(mime_type);
+    class Meta:
+        db_table = 'api_updateattachment'
 ```
 
-### 10. Comments Table
-```sql
-CREATE TABLE comments (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    content TEXT NOT NULL,
+#### UpdateMedia Model
+```python
+class UpdateMedia(models.Model):
+    """Media content for updates (images, videos)"""
+    update = models.ForeignKey(Update, on_delete=models.CASCADE, related_name='media')
+    media_file = models.FileField(upload_to='update_media/')
+    media_type = models.CharField(max_length=20)  # image, video, audio
+    caption = models.TextField(blank=True)
 
-    -- Relationships
-    activity_id UUID REFERENCES activities(id) ON DELETE CASCADE,
-    task_id UUID REFERENCES tasks(id) ON DELETE SET NULL,
-    parent_comment_id UUID REFERENCES comments(id) ON DELETE CASCADE,
-    author_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    uploaded_at = models.DateTimeField(auto_now_add=True)
 
-    -- Timestamps
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- Indexes
-CREATE INDEX idx_comments_activity ON comments(activity_id);
-CREATE INDEX idx_comments_task ON comments(task_id);
-CREATE INDEX idx_comments_author ON comments(author_id);
-CREATE INDEX idx_comments_parent ON comments(parent_comment_id);
-CREATE INDEX idx_comments_created ON comments(created_at);
+    class Meta:
+        db_table = 'api_updatemedia'
 ```
 
-## Junction Tables for Many-to-Many Relationships
+### Chat System
 
-### 11. Project Team Members
-```sql
-CREATE TABLE project_team_members (
-    project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    role VARCHAR(100) DEFAULT 'member',
-    joined_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+#### ChatMessage Model
+```python
+class ChatMessage(models.Model):
+    """Real-time chat messages between users"""
+    MESSAGE_TYPES = [
+        ('text', 'Text'),
+        ('file', 'File'),
+        ('image', 'Image'),
+        ('system', 'System Message'),
+    ]
 
-    PRIMARY KEY (project_id, user_id)
-);
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
 
--- Indexes
-CREATE INDEX idx_project_team_members_project ON project_team_members(project_id);
-CREATE INDEX idx_project_team_members_user ON project_team_members(user_id);
-CREATE INDEX idx_project_team_members_role ON project_team_members(role);
+    content = models.TextField()
+    message_type = models.CharField(max_length=20, choices=MESSAGE_TYPES, default='text')
+
+    is_read = models.BooleanField(default=False)
+    read_at = models.DateTimeField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'api_chatmessage'
+        ordering = ['created_at']
+        indexes = [
+            models.Index(fields=['sender', 'receiver']),
+            models.Index(fields=['created_at']),
+        ]
 ```
 
-### 12. Activity Participants
-```sql
-CREATE TABLE activity_participants (
-    activity_id UUID REFERENCES activities(id) ON DELETE CASCADE,
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    role VARCHAR(100) DEFAULT 'participant',
-    joined_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+### System Messages
 
-    PRIMARY KEY (activity_id, user_id)
-);
+#### SystemMessage Model
+```python
+class SystemMessage(models.Model):
+    """System-generated messages and notifications"""
+    MESSAGE_TYPES = [
+        ('info', 'Information'),
+        ('warning', 'Warning'),
+        ('error', 'Error'),
+        ('success', 'Success'),
+    ]
 
--- Indexes
-CREATE INDEX idx_activity_participants_activity ON activity_participants(activity_id);
-CREATE INDEX idx_activity_participants_user ON activity_participants(user_id);
-CREATE INDEX idx_activity_participants_role ON activity_participants(role);
+    title = models.CharField(max_length=200)
+    content = models.TextField()
+    message_type = models.CharField(max_length=20, choices=MESSAGE_TYPES, default='info')
+
+    target_users = models.ManyToManyField(User, blank=True, related_name='system_messages')
+    is_broadcast = models.BooleanField(default=False)
+
+    expires_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'api_systemmessage'
+        ordering = ['-created_at']
 ```
 
-## Database Constraints and Triggers
+## 🔗 Database Relationships
 
-### Foreign Key Constraints
-All foreign key relationships are properly defined with appropriate ON DELETE actions:
-- **CASCADE**: For child records that should be deleted when parent is deleted
-- **SET NULL**: For optional relationships that should be cleared
-- **RESTRICT**: For critical relationships that should prevent deletion
+### One-to-One Relationships
+- **User ↔ UserProfile**: Extended user information
+- **Activity ↔ ActivityStatus**: Current status tracking
+- **Activity ↔ ActivityPriority**: Current priority tracking
 
-### Unique Constraints
+### One-to-Many Relationships
+- **User → Activities**: User can create multiple activities
+- **User → Assigned Activities**: User can be assigned to multiple activities
+- **User → Projects**: User can manage multiple projects
+- **User → Updates**: User can create multiple updates
+- **User → Chat Messages**: User can send multiple messages
+
+### Many-to-Many Relationships
+- **Users ↔ Projects**: Team members can work on multiple projects
+- **Activities ↔ Tags**: Activities can have multiple tags
+- **Activities ↔ Projects**: Activities can belong to multiple projects
+- **Updates ↔ Users**: Updates can target multiple users
+- **System Messages ↔ Users**: Messages can target multiple users
+
+## 📊 Database Indexes
+
+### Performance Indexes
 ```sql
--- Ensure unique usernames and emails
-ALTER TABLE users ADD CONSTRAINT unique_username UNIQUE (username);
-ALTER TABLE users ADD CONSTRAINT unique_email UNIQUE (email);
+-- User indexes
+CREATE INDEX idx_user_email ON auth_user(email);
+CREATE INDEX idx_user_role ON auth_user(role);
+CREATE INDEX idx_user_is_active ON auth_user(is_active);
 
--- Ensure unique project names per owner
-ALTER TABLE projects ADD CONSTRAINT unique_project_name_per_owner UNIQUE (owner_id, name);
+-- Activity indexes
+CREATE INDEX idx_activity_status ON api_activity(status);
+CREATE INDEX idx_activity_type ON api_activity(type);
+CREATE INDEX idx_activity_assigned_to ON api_activity(assigned_to_id);
+CREATE INDEX idx_activity_start_time ON api_activity(start_time);
+CREATE INDEX idx_activity_priority ON api_activity(priority);
+CREATE INDEX idx_activity_created_by ON api_activity(created_by_id);
+
+-- Project indexes
+CREATE INDEX idx_project_status ON api_project(status);
+CREATE INDEX idx_project_manager ON api_project(manager_id);
+CREATE INDEX idx_project_start_date ON api_project(start_date);
+
+-- Update indexes
+CREATE INDEX idx_update_type ON api_update(type);
+CREATE INDEX idx_update_priority ON api_update(priority);
+CREATE INDEX idx_update_created_by ON api_update(created_by_id);
+CREATE INDEX idx_update_published ON api_update(is_published, published_at);
+
+-- Chat indexes
+CREATE INDEX idx_chat_sender_receiver ON api_chatmessage(sender_id, receiver_id);
+CREATE INDEX idx_chat_created_at ON api_chatmessage(created_at);
+CREATE INDEX idx_chat_is_read ON api_chatmessage(is_read);
 ```
-
-### Check Constraints
-```sql
--- Valid status values
-ALTER TABLE activities ADD CONSTRAINT check_activity_status
-    CHECK (status IN ('planned', 'in-progress', 'completed', 'cancelled', 'overdue', 'on-hold', 'pending-approval'));
-
-ALTER TABLE tasks ADD CONSTRAINT check_task_status
-    CHECK (status IN ('pending', 'in-progress', 'completed', 'cancelled', 'overdue'));
-
--- Valid priority values
-ALTER TABLE activities ADD CONSTRAINT check_activity_priority
-    CHECK (priority IN ('low', 'medium', 'high', 'urgent', 'critical'));
-
--- Valid risk levels
-ALTER TABLE activities ADD CONSTRAINT check_risk_level
-    CHECK (risk_level IN ('low', 'medium', 'high', 'critical'));
-```
-
-## Performance Optimizations
 
 ### Composite Indexes
 ```sql
--- Activity queries by status and dates
-CREATE INDEX idx_activities_status_dates ON activities(status, start_date, due_date);
+-- Activity status and priority for filtering
+CREATE INDEX idx_activity_status_priority ON api_activity(status, priority);
 
--- Task queries by activity and status
-CREATE INDEX idx_tasks_activity_status ON tasks(activity_id, status, completed);
+-- Activity type and status for reporting
+CREATE INDEX idx_activity_type_status ON api_activity(type, status);
 
--- Time tracking queries
-CREATE INDEX idx_time_logs_user_dates ON time_logs(user_id, start_time, end_time);
+-- Update type and priority for notifications
+CREATE INDEX idx_update_type_priority ON api_update(type, priority);
+
+-- Project status and dates for timeline views
+CREATE INDEX idx_project_status_dates ON api_project(status, start_date, end_date);
 ```
 
-### Partial Indexes
-```sql
--- Only index active users
-CREATE INDEX idx_users_active_partial ON users(id, username, email) WHERE is_active = true;
+## 🗃️ Data Population
 
--- Only index incomplete tasks
-CREATE INDEX idx_tasks_incomplete ON tasks(id, title, due_date) WHERE completed = false;
+### Sample Data Scripts
+The system includes comprehensive data population scripts:
 
--- Only index overdue activities
-CREATE INDEX idx_activities_overdue ON activities(id, title, owner_id) WHERE due_date < CURRENT_TIMESTAMP AND status != 'completed';
+#### Management Commands
+```bash
+# Populate all data
+python manage.py populate_all
+
+# Populate specific data types
+python manage.py populate_users
+python manage.py populate_activities
+python manage.py populate_projects
+python manage.py populate_updates
+python manage.py populate_chats
+python manage.py populate_system_messages
+python manage.py populate_tags
 ```
 
-## Data Integrity Features
+#### Sample Data Structure
+```python
+# Sample activity data
+SAMPLE_ACTIVITIES = [
+    {
+        'title': 'Production Line Setup',
+        'type': 'Production',
+        'status': 'planned',
+        'priority': 'high',
+        'description': 'Setup production line for new product launch',
+        'start_time': '2025-08-24 08:00:00',
+        'end_time': '2025-08-24 16:00:00',
+    },
+    {
+        'title': 'Equipment Maintenance',
+        'type': 'Maintenance',
+        'status': 'in-progress',
+        'priority': 'medium',
+        'description': 'Routine maintenance on production equipment',
+        'start_time': '2025-08-23 14:00:00',
+        'end_time': '2025-08-23 18:00:00',
+    }
+]
 
-### Automatic Timestamps
-```sql
--- Function to update updated_at timestamp
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = CURRENT_TIMESTAMP;
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
-
--- Apply trigger to all tables with updated_at
-CREATE TRIGGER update_activities_updated_at BEFORE UPDATE ON activities FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_tasks_updated_at BEFORE UPDATE ON tasks FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
--- ... apply to all other tables
+# Sample tag data
+SAMPLE_TAGS = [
+    {'name': 'Kaizen', 'description': 'Continuous improvement initiative'},
+    {'name': 'RCA', 'description': 'Root cause analysis required'},
+    {'name': 'CAPA', 'description': 'Corrective/preventive action'},
+    {'name': 'Blocked', 'description': 'Activity is waiting on input or dependency'},
+    {'name': 'Recurring', 'description': 'Happens regularly (daily, weekly, etc.)'},
+]
 ```
 
-### Soft Delete Support
-```sql
--- Add deleted_at column to main tables
-ALTER TABLE activities ADD COLUMN deleted_at TIMESTAMP WITH TIME ZONE;
-ALTER TABLE tasks ADD COLUMN deleted_at TIMESTAMP WITH TIME ZONE;
-ALTER TABLE milestones ADD COLUMN deleted_at TIMESTAMP WITH TIME ZONE;
+## 🔄 Database Migrations
 
--- Create indexes for soft delete queries
-CREATE INDEX idx_activities_deleted ON activities(deleted_at) WHERE deleted_at IS NULL;
-CREATE INDEX idx_tasks_deleted ON tasks(deleted_at) WHERE deleted_at IS NULL;
+### Migration History
+```bash
+# View migration status
+python manage.py showmigrations
+
+# Apply migrations
+python manage.py migrate
+
+# Create new migrations
+python manage.py makemigrations
+
+# Rollback migrations
+python manage.py migrate api 0008  # Rollback to migration 0008
 ```
 
-## API Integration Points
+### Key Migrations
+- **0001_initial**: Core user and basic models
+- **0002_systemmessage**: System message functionality
+- **0003_chat_message_caption**: Enhanced chat system
+- **0004_update_models**: Real-time update system
+- **0005_remove_old_indexes**: Cleanup old database indexes
+- **0006_updatecomment_updatelike**: Social features for updates
+- **0007_tag**: Tagging system
+- **0008_rename_indexes**: Index optimization
+- **0009_activity_models**: Comprehensive activities system
 
-### RESTful Endpoints
-The database structure supports the following API endpoints:
-- `/api/activities` - CRUD operations for activities
-- `/api/activities/{id}/tasks` - Task management
-- `/api/activities/{id}/milestones` - Milestone management
-- `/api/activities/{id}/checklists` - Checklist management
-- `/api/activities/{id}/time-logs` - Time tracking
-- `/api/activities/{id}/attachments` - File management
-- `/api/activities/{id}/comments` - Comment system
+## 🛡️ Data Security
 
-### GraphQL Schema
-The normalized structure easily maps to GraphQL types:
-```graphql
-type Activity {
-  id: ID!
-  title: String!
-  description: String
-  type: String!
-  status: String!
-  priority: String!
-  tasks: [Task!]!
-  milestones: [Milestone!]!
-  checklists: [Checklist!]!
-  timeLogs: [TimeLog!]!
-  attachments: [Attachment!]!
-  comments: [Comment!]!
-}
+### Access Control
+- **Row-level security** with Django ORM
+- **User-based filtering** for data access
+- **Role-based permissions** for administrative functions
+- **Audit logging** for sensitive operations
+
+### Data Validation
+- **Model validation** with Django validators
+- **Custom field validation** for business logic
+- **Database constraints** for data integrity
+- **Input sanitization** for security
+
+### Backup and Recovery
+```bash
+# Database backup
+pg_dump -h localhost -U nexus_user nexus_db > backup_$(date +%Y%m%d_%H%M%S).sql
+
+# Database restore
+psql -h localhost -U nexus_user nexus_db < backup_file.sql
+
+# Automated backup script
+python manage.py backup_database
 ```
 
-## Security Considerations
+## 📈 Performance Optimization
 
-### Row Level Security (RLS)
-```sql
--- Enable RLS on sensitive tables
-ALTER TABLE activities ENABLE ROW LEVEL SECURITY;
-ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
-ALTER TABLE time_logs ENABLE ROW LEVEL SECURITY;
+### Query Optimization
+```python
+# Use select_related for foreign keys
+activities = Activity.objects.select_related('assigned_to', 'created_by').all()
 
--- Policies for user access
-CREATE POLICY user_activities ON activities FOR ALL USING (owner_id = current_user_id());
-CREATE POLICY user_tasks ON tasks FOR ALL USING (assignee_id = current_user_id());
+# Use prefetch_related for many-to-many
+activities = Activity.objects.prefetch_related('tags', 'projects').all()
+
+# Use only() for specific fields
+activities = Activity.objects.only('id', 'title', 'status', 'assigned_to__username').all()
+
+# Use defer() to exclude heavy fields
+activities = Activity.objects.defer('description', 'content').all()
 ```
 
-### Data Encryption
-- Sensitive fields (passwords, API keys) are encrypted at rest
-- Database connections use TLS encryption
-- Audit logging for all data modifications
+### Caching Strategy
+```python
+# Model-level caching
+from django.core.cache import cache
 
-## Backup and Recovery
+def get_activity(activity_id):
+    cache_key = f'activity_{activity_id}'
+    activity = cache.get(cache_key)
+    if not activity:
+        activity = Activity.objects.get(id=activity_id)
+        cache.set(cache_key, activity, timeout=3600)  # 1 hour
+    return activity
 
-### Automated Backups
-- Daily full backups with point-in-time recovery
-- Transaction log backups every 15 minutes
-- Automated backup verification and testing
+# Query result caching
+def get_activities_by_status(status):
+    cache_key = f'activities_status_{status}'
+    activities = cache.get(cache_key)
+    if not activities:
+        activities = list(Activity.objects.filter(status=status))
+        cache.set(cache_key, activities, timeout=1800)  # 30 minutes
+    return activities
+```
 
-### Disaster Recovery
-- Cross-region replication for critical data
-- Automated failover procedures
-- Regular disaster recovery testing
+## 🔮 Future Database Plans
 
-## Monitoring and Maintenance
+### Planned Enhancements
+- **Time-series data** for performance metrics
+- **Geospatial data** for location-based features
+- **Document storage** for file management
+- **Audit trails** for compliance tracking
+- **Data archiving** for historical analysis
 
-### Performance Monitoring
-- Query performance tracking
-- Index usage monitoring
-- Slow query analysis
-- Connection pool monitoring
+### Scalability Improvements
+- **Database partitioning** for large datasets
+- **Read replicas** for query performance
+- **Connection pooling** for high concurrency
+- **Data compression** for storage optimization
+- **Automated maintenance** for database health
 
-### Maintenance Tasks
-- Regular VACUUM and ANALYZE operations
-- Index maintenance and optimization
-- Statistics updates
-- Log rotation and cleanup
+---
 
-## Conclusion
-
-This database structure provides:
-- **Optimal Performance**: Proper indexing and normalization
-- **Data Integrity**: Constraints, triggers, and validation
-- **Scalability**: Efficient query patterns and relationships
-- **Security**: Row-level security and encryption
-- **Maintainability**: Clear structure and documentation
-- **Flexibility**: Easy to extend and modify
-
-The structure follows database best practices and is designed to handle high-volume activity management while maintaining performance and data integrity.
+**This database structure provides a robust foundation for the Nexus manufacturing operations management system with comprehensive data modeling, performance optimization, and security features.**

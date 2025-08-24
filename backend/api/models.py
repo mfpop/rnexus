@@ -34,6 +34,36 @@ from django.utils import timezone
 #         return self.username
 
 
+class UserProfile(models.Model):
+    """Extended user profile information"""
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+
+    # Professional information
+    position = models.CharField(max_length=100, blank=True, null=True)
+    department = models.CharField(max_length=100, blank=True, null=True)
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    location = models.CharField(max_length=100, blank=True, null=True)
+    bio = models.TextField(blank=True, null=True)
+
+    # Extended data stored as JSON
+    education = models.JSONField(default=list, blank=True)
+    work_history = models.JSONField(default=list, blank=True)
+    profile_visibility = models.JSONField(default=dict, blank=True)
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "user_profiles"
+        verbose_name = "User Profile"
+        verbose_name_plural = "User Profiles"
+
+    def __str__(self):
+        return f"{self.user.username}'s Profile"
+
+
 class Item(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import LeftSidebarTemplate from "./LeftSidebarTemplate";
 import RightSidebarTemplate from "./RightSidebarTemplate";
 import MainContainerTemplate from "./MainContainerTemplate";
@@ -145,7 +145,6 @@ const LayoutTemplate: React.FC<LayoutTemplateProps> = ({
   const [expandedCard, setExpandedCard] = useState<ExpandedCardState>(null);
 
   // Navigation hooks
-  const location = useLocation();
   const navigate = useNavigate();
 
   // Expansion handler

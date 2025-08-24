@@ -2434,6 +2434,18 @@ const HelpRightCard: React.FC = () => {
                   <li>• <strong>Privacy Settings:</strong> Control what information is visible to other users</li>
                   <li>• <strong>Account Status:</strong> View and manage your account status and permissions</li>
                 </ul>
+                <div className="mt-4">
+                  <h5 className="font-semibold text-gray-800 mb-2">Profile Page — Extended Information</h5>
+                  <p className="text-sm text-gray-600 mb-2">
+                    The Profile page now includes additional fields so you can provide a complete professional profile: position, department, education entries and work history. Each section has a visibility toggle so you can choose whether education, work history or position are visible to other users.
+                  </p>
+                  <ul className="text-sm text-gray-600 space-y-1">
+                    <li>• <strong>Position & Department:</strong> Add your current role and department.</li>
+                    <li>• <strong>Education:</strong> Add schools, degrees and years; you can mark each entry as visible or hidden.</li>
+                    <li>• <strong>Work History:</strong> Add companies and titles with years; toggle visibility per entry or for the whole section.</li>
+                    <li>• <strong>Visibility Toggles:</strong> Use the checkboxes on your profile to control whether sections are publicly visible.</li>
+                  </ul>
+                </div>
               </div>
 
               <div className="border-l-4 border-green-500 pl-4">

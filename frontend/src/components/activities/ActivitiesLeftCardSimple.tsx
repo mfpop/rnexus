@@ -1,10 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Search,
   RefreshCw,
+  Filter,
+  ArrowUpDown,
 } from "lucide-react";
+import CreateActivityModal from "./CreateActivityModal";
 
 import { useActivitiesContext } from "./ActivitiesContext";
+import { usePagination } from "../../contexts/PaginationContext";
 
 /**
  * ActivitiesLeftCardSimple - Simple activities list for StableLayout integration
@@ -15,8 +19,7 @@ const ActivitiesLeftCardSimple: React.FC = () => {
     selectedActivity,
     setSelectedActivity = () => {},
     loading = false,
-    error,
-    refreshActivities = () => {}
+    error
   } = useActivitiesContext();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<
@@ -33,6 +36,74 @@ const ActivitiesLeftCardSimple: React.FC = () => {
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [showTagsDropdown, setShowTagsDropdown] = useState(false);
+  const { setPaginationData } = usePagination();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [recordsPerPage, setRecordsPerPage] = useState(10);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const debugRef = useRef<{ lastAvailable?: number; lastCardHeight?: number }>({});
+  const [debug, setDebug] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+
+  // Dynamically calculate optimal records per page based on actual DOM measurements
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    let ro: ResizeObserver | null = null;
+    let rafId: number | null = null;
+
+    const DEFAULT_CARD_HEIGHT = 64;
+
+    const calculate = () => {
+      if (!containerRef.current) return;
+      const container = containerRef.current;
+      const listEl = listRef.current;
+
+      let available = container.clientHeight;
+      if (listEl) {
+        const listTop = listEl.offsetTop - container.offsetTop;
+        available = Math.max(0, container.clientHeight - listTop - 8);
+      }
+
+      const sample = container.querySelector('.activity-card') as HTMLElement | null;
+      const cardHeight = sample ? sample.offsetHeight : DEFAULT_CARD_HEIGHT;
+
+      const computed = Math.max(1, Math.floor(available / cardHeight));
+
+      debugRef.current.lastAvailable = available;
+      debugRef.current.lastCardHeight = cardHeight;
+
+      setRecordsPerPage((prev) => (prev !== computed ? computed : prev));
+    };
+
+    const scheduleCalc = () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        calculate();
+        rafId = null;
+      });
+    };
+
+    if (window.ResizeObserver) {
+      ro = new ResizeObserver(() => scheduleCalc());
+      ro.observe(containerRef.current);
+      if (listRef.current) ro.observe(listRef.current);
+    }
+
+    window.addEventListener('resize', scheduleCalc);
+    scheduleCalc();
+    const t = setTimeout(scheduleCalc, 300);
+
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener('resize', scheduleCalc);
+      if (ro) {
+        ro.disconnect();
+        ro = null;
+      }
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, []);
 
   // Manufacturing activity types from the JSON file
   const manufacturingActivityTypes = [
@@ -144,6 +215,29 @@ const ActivitiesLeftCardSimple: React.FC = () => {
 
     return filtered;
   }, [activities, searchQuery, activeTab, selectedType, selectedStatus, selectedPriority, sortBy, sortOrder]);
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredAndSortedActivities.length / recordsPerPage);
+  const startIndex = (currentPage - 1) * recordsPerPage;
+  const endIndex = startIndex + recordsPerPage;
+  const paginatedActivities = filteredAndSortedActivities.slice(startIndex, endIndex);
+
+  // Update pagination context when data changes
+  React.useEffect(() => {
+    setPaginationData({
+      currentPage,
+      totalPages,
+      totalRecords: filteredAndSortedActivities.length,
+      recordsPerPage,
+    });
+  }, [currentPage, totalPages, filteredAndSortedActivities.length, recordsPerPage, setPaginationData]);
+
+  // Reset to first page when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, activeTab, selectedType, selectedStatus, selectedPriority]);
+
+
 
 
   const getStatusBulletColor = (status: string) => {
@@ -257,96 +351,62 @@ const ActivitiesLeftCardSimple: React.FC = () => {
   }, [showFilterDropdown, showSortDropdown, showTagsDropdown]);
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Search */}
-      <div className="p-4 border-b border-gray-200">
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-4 w-4 text-gray-400" />
-          </div>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
-            placeholder="Search activities..."
-          />
-        </div>
-      </div>
-
-      {/* Filter and Action Buttons */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
-        <div className="flex items-center gap-2">
-          {/* Filter Button with Dropdown */}
+    <div ref={containerRef} className="h-full flex flex-col relative">
+      {/* Search with Filter and Sort Icons */}
+      <div className="p-3 border-b border-gray-200 bg-white">
+        <div className="flex items-center gap-3">
+          {/* Filter Icon Button */}
           <div className="relative filter-dropdown">
             <button
               onClick={handleFilterClick}
-              className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 border ${
+              className={`p-1.5 rounded-lg transition-all duration-200 border ${
                 getActiveFiltersCount() > 0
                   ? 'bg-blue-50 text-blue-700 border-blue-200 shadow-sm'
-                  : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                  : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-gray-300'
               }`}
+              title={`Filter${getActiveFiltersCount() > 0 ? ` (${getActiveFiltersCount()} active)` : ''}`}
             >
-              <div className="flex items-center gap-2">
-                <span>Filter</span>
+              <div className="relative">
+                <Filter className="h-4 w-4" />
                 {getActiveFiltersCount() > 0 && (
-                  <span className="px-2 py-0.5 text-xs bg-blue-100 text-blue-700 rounded-full font-medium">
+                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full text-xs text-white flex items-center justify-center">
                     {getActiveFiltersCount()}
                   </span>
                 )}
-                <svg className={`w-4 h-4 transition-transform ${showFilterDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
               </div>
             </button>
 
-            {/* Selected Tags Display */}
-            {selectedTags.length > 0 && (
-              <div className="absolute top-full left-0 mt-1 flex flex-wrap gap-1 max-w-xs">
-                {selectedTags.slice(0, 3).map((tag) => (
-                  <span key={tag} className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full border border-blue-200">
-                    {tag}
-                  </span>
-                ))}
-                {selectedTags.length > 3 && (
-                  <span className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full border border-blue-200">
-                    +{selectedTags.length - 3}
-                  </span>
-                )}
-              </div>
-            )}
-
             {/* Filter Dropdown */}
             {showFilterDropdown && (
-              <div className="filter-dropdown absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+              <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
                 <div className="p-4 space-y-4">
                   {/* Type Filter */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
-                                                              <select
-                       value={selectedType || ''}
-                       onChange={(e) => setSelectedType(e.target.value || null)}
-                       onClick={(e) => e.stopPropagation()}
-                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                     >
-                       <option value="">All Types</option>
-                       {manufacturingActivityTypes.map((activityType) => (
-                         <option key={activityType.type} value={activityType.type}>
-                           {activityType.type}
-                         </option>
-                       ))}
-                     </select>
+                    <select
+                      value={selectedType || ''}
+                      onChange={(e) => setSelectedType(e.target.value || null)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="">All Types</option>
+                      {manufacturingActivityTypes.map((activityType) => (
+                        <option key={activityType.type} value={activityType.type}>
+                          {activityType.type}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   {/* Status Filter */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                                         <select
-                       value={selectedStatus || ''}
-                       onChange={(e) => setSelectedStatus(e.target.value || null)}
-                       onClick={(e) => e.stopPropagation()}
-                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                     >
+                    <select
+                      value={selectedStatus || ''}
+                      onChange={(e) => setSelectedStatus(e.target.value || null)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
                       <option value="">All Statuses</option>
                       <option value="planned">Planned</option>
                       <option value="in-progress">In Progress</option>
@@ -358,12 +418,12 @@ const ActivitiesLeftCardSimple: React.FC = () => {
                   {/* Priority Filter */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
-                                         <select
-                       value={selectedPriority || ''}
-                       onChange={(e) => setSelectedPriority(e.target.value || null)}
-                       onClick={(e) => e.stopPropagation()}
-                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                     >
+                    <select
+                      value={selectedPriority || ''}
+                      onChange={(e) => setSelectedPriority(e.target.value || null)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
                       <option value="">All Priorities</option>
                       <option value="low">Low</option>
                       <option value="medium">Medium</option>
@@ -372,7 +432,7 @@ const ActivitiesLeftCardSimple: React.FC = () => {
                     </select>
                   </div>
 
-                  {/* Tags Filter Dropdown */}
+                  {/* Tags Filter */}
                   <div className="relative tags-dropdown">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Tags</label>
                     <button
@@ -460,38 +520,34 @@ const ActivitiesLeftCardSimple: React.FC = () => {
 
                   {/* Clear Filters */}
                   {getActiveFiltersCount() > 0 && (
-                                         <button
-                       onClick={(e) => {
-                         e.stopPropagation();
-                         clearFilters();
-                       }}
-                       className="w-full px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-md transition-colors"
-                     >
-                       Clear All Filters
-                     </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        clearFilters();
+                      }}
+                      className="w-full px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-md transition-colors"
+                    >
+                      Clear All Filters
+                    </button>
                   )}
                 </div>
               </div>
             )}
           </div>
 
-          {/* Sort Button with Dropdown */}
+          {/* Sort Icon Button */}
           <div className="relative sort-dropdown">
             <button
               onClick={handleSortClick}
-              className="px-4 py-2 text-sm font-medium bg-white text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all duration-200"
+              className="p-1.5 rounded-lg bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
+              title={`Sort by ${sortBy} (${sortOrder === 'asc' ? 'ascending' : 'descending'})`}
             >
-              <div className="flex items-center gap-2">
-                <span>Sort by {sortBy}</span>
-                <svg className={`w-4 h-4 transition-transform ${showSortDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
+              <ArrowUpDown className="h-4 w-4" />
             </button>
 
             {/* Sort Dropdown */}
             {showSortDropdown && (
-              <div className="sort-dropdown absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+              <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
                 <div className="p-2 space-y-1">
                   {[
                     { key: "startTime", label: "Start Time" },
@@ -529,29 +585,74 @@ const ActivitiesLeftCardSimple: React.FC = () => {
               </div>
             )}
           </div>
+
+          {/* Search Input */}
+          <div className="flex-1 relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-4 w-4 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm placeholder-gray-500"
+              placeholder="Search activities..."
+            />
+          </div>
+
+          {/* Create Activity button */}
+          <div>
+            <button
+              data-testid="leftcard-create-activity"
+              onClick={() => setShowCreateModal(true)}
+              className="ml-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+            >
+              Create Activity
+            </button>
+          </div>
         </div>
+      </div>
+      {/* Create Activity Modal */}
+      <CreateActivityModal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} />
+
+      {/* Debug toggle */}
+      <div className={`absolute top-3 right-3 z-30 ${debug ? '' : 'pointer-events-none'}`}>
+        <button onClick={() => setDebug((d) => !d)} className="text-xs px-2 py-1 bg-white border rounded shadow-sm">
+          {debug ? 'Hide debug' : 'Show debug'}
+        </button>
+        {debug && (
+          <div className="mt-2 w-44 p-2 text-xs bg-white border rounded shadow">
+            <div>available: {debugRef.current.lastAvailable ?? '—'}</div>
+            <div>cardH: {debugRef.current.lastCardHeight ?? '—'}</div>
+            <div>recordsPerPage: {recordsPerPage}</div>
+          </div>
+        )}
       </div>
 
       {/* Time-based Tabs */}
       <div className="flex border-b border-gray-200 overflow-x-auto bg-gray-50">
         {[
-          { key: "all", label: "All", count: activities.length },
-          { key: "today", label: "Today", count: activities.filter(a => isToday(a.startTime)).length },
-          { key: "upcoming", label: "Upcoming", count: activities.filter(a => isUpcoming(a.startTime)).length },
-          { key: "overdue", label: "Overdue", count: activities.filter(a => a.status === "overdue").length },
+          { key: "all", label: "All", count: filteredAndSortedActivities.length },
+          { key: "today", label: "Today", count: filteredAndSortedActivities.filter(a => isToday(a.startTime)).length },
+          { key: "upcoming", label: "Upcoming", count: filteredAndSortedActivities.filter(a => isUpcoming(a.startTime)).length },
+          { key: "overdue", label: "Overdue", count: filteredAndSortedActivities.filter(a => a.status === "overdue").length },
         ].map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key as any)}
-            className={`flex-shrink-0 px-4 py-3 text-sm font-medium transition-colors border-b-2 flex items-center gap-2 ${
+            className={`flex-shrink-0 px-3 py-1.5 text-xs font-medium transition-all duration-200 border-b-2 flex items-center gap-1.5 ${
               activeTab === tab.key
-                ? "text-gray-800 border-gray-600 bg-white"
-                : "text-gray-600 hover:text-gray-800 border-transparent hover:bg-gray-100"
+                ? "text-gray-900 border-blue-500 bg-white shadow-sm"
+                : "text-gray-600 hover:text-gray-800 border-transparent hover:bg-gray-100 hover:border-gray-300"
             }`}
           >
             <span>{tab.label}</span>
             {tab.count > 0 && (
-              <span className="ml-1 px-2 py-0.5 text-xs bg-gray-200 text-gray-600 rounded-full">
+              <span className={`px-1.5 py-0.5 text-xs bg-gray-200 text-gray-600 rounded-full font-medium ${
+                activeTab === tab.key
+                  ? "bg-blue-100 text-blue-700"
+                  : "bg-gray-200 text-gray-600"
+              }`}>
                 {tab.count}
               </span>
             )}
@@ -559,57 +660,85 @@ const ActivitiesLeftCardSimple: React.FC = () => {
         ))}
       </div>
 
-      {/* Activities List */}
-      <div className="flex-1 overflow-y-auto">
+  {/* Activities List */}
+  <div ref={(el) => { listRef.current = el; }} className="flex-1 overflow-y-auto">
         {loading ? (
-          <div className="p-8 text-center text-gray-500">
-            <RefreshCw className="h-12 w-12 text-blue-500 mb-4 animate-spin" />
-            Loading activities...
+          <div className="p-6 text-center text-gray-500">
+            <RefreshCw className="h-8 w-8 text-blue-500 mb-3 animate-spin" />
+            <p className="text-sm font-medium text-gray-700">Loading activities...</p>
           </div>
         ) : error ? (
-          <div className="p-8 text-center text-red-500">Error: {error}</div>
-        ) : filteredAndSortedActivities.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">No activities found matching your criteria.</div>
+          <div className="p-6 text-center text-red-500">
+            <div className="h-8 w-8 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <svg className="h-4 w-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <p className="text-sm font-medium text-red-700">Error: {error}</p>
+          </div>
+        ) : paginatedActivities.length === 0 ? (
+          <div className="p-6 text-center text-gray-500">
+            <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <svg className="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <p className="text-sm font-medium text-gray-700">No activities found matching your criteria.</p>
+          </div>
         ) : (
-          filteredAndSortedActivities.map((activity) => (
+          <div className="flex flex-col space-y-2 px-1 py-3 flex-1 overflow-y-auto">
+            {paginatedActivities.map((activity) => (
             <div
               key={activity.id}
               onClick={() => setSelectedActivity(activity)}
-              className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-100 ${
+              className={`activity-card p-3 hover:bg-gray-50 cursor-pointer transition-all duration-200 border-b border-gray-100 flex flex-col justify-center ${
                 selectedActivity?.id === activity.id
-                  ? "bg-blue-50 border-blue-200"
-                  : ""
+                  ? "bg-blue-50 border-l-4 border-l-blue-500 shadow-sm"
+                  : "hover:border-l-4 hover:border-l-gray-300"
               }`}
             >
-              {/* Line 1: Title */}
-              <div className="flex items-start mb-2">
-                <div className="flex items-center gap-2 flex-1">
-                  {/* Status-colored bullet */}
+              {/* Status indicator and title row */}
+              <div className="flex items-start gap-2 mb-2">
+                {/* Compact status indicator */}
+                <div className="flex-shrink-0 mt-0.5">
                   <div
-                    className={`w-3 h-3 rounded-full flex-shrink-0 ${getStatusBulletColor(activity.status)}`}
+                    className={`w-2.5 h-2.5 rounded-full ${getStatusBulletColor(activity.status)}`}
                     title={`Status: ${activity.status}`}
                   />
-                  <h3 className="font-semibold text-gray-900 line-clamp-1">
+                </div>
+
+                {/* Title with compact typography */}
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-semibold text-gray-900 leading-tight line-clamp-2">
                     {activity.title}
                   </h3>
                 </div>
               </div>
 
-              {/* Line 2: Type and Assigned to */}
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">
-                  Assigned to: <span className="font-medium">{activity.assignedTo}</span>
-                </span>
-                <span
-                  className={`text-xs font-medium flex-shrink-0 ${getTypeColor(activity.type)}`}
-                >
-                  {activity.type.charAt(0).toUpperCase() + activity.type.slice(1)}
-                </span>
+              {/* Assignment and category row with compact typography */}
+              <div className="flex items-center justify-between">
+                {/* Assignment info with compact hierarchy */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1 text-xs text-gray-600">
+                    <span className="font-medium text-gray-700">Assigned to:</span>
+                    <span className="font-semibold text-gray-800 truncate">
+                      {activity.assignedTo}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Category badge with compact styling */}
+                <div className="flex-shrink-0 ml-2">
+                  <span
+                    className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full ${getTypeColor(activity.type)}`}
+                  >
+                    {activity.type.charAt(0).toUpperCase() + activity.type.slice(1)}
+                  </span>
+                </div>
               </div>
-
-
             </div>
-          ))
+          ))}
+          </div>
         )}
       </div>
 

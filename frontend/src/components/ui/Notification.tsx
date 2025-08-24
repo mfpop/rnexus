@@ -1,22 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  CheckCircle,
-  XCircle,
-  Info,
-  AlertTriangle,
-  X,
-  Bell,
-  MessageSquare,
-  User,
-  FileText,
-  Download,
-  Share2,
-  Heart,
-  Pin,
-  Archive,
-  Trash2,
-  Shield,
-} from "lucide-react";
+import { CheckCircle, XCircle, Info, AlertTriangle, X, Bell } from "lucide-react";
 
 export type NotificationType = "success" | "error" | "info" | "warning";
 
@@ -45,13 +28,18 @@ const Notification: React.FC<NotificationProps> = ({
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | null = null;
     if (duration > 0) {
-      const timer = setTimeout(() => {
+      timer = setTimeout(() => {
         setIsVisible(false);
         setTimeout(() => onClose?.(id), 300); // Wait for fade out animation
       }, duration);
-      return () => clearTimeout(timer);
     }
+
+    // Always return a cleanup function
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, [duration, id, onClose]);
 
   const handleClose = () => {

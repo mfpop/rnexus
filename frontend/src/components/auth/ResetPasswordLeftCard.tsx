@@ -143,20 +143,6 @@ const ResetPasswordLeftCard: React.FC = () => {
           ))}
         </div>
       </div>
-
-      {/* Footer Info */}
-      <div className="pt-3 border-t border-gray-200">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            <CheckCircle2 className="h-3 w-3 text-green-500" />
-            <span>24/7 security monitoring and protection</span>
-          </div>
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            <Mail className="h-3 w-3 text-blue-500" />
-            <span>Need help? Contact support@nexuslmd.com</span>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

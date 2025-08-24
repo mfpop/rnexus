@@ -1,26 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Monitor,
-  Cpu,
-  HardDrive,
-  Wifi,
-  Activity,
-  Database,
-  Users,
-  AlertTriangle,
-  TrendingUp,
-  BarChart3,
-  Zap,
-  Clock,
-  CheckCircle,
-  XCircle,
-  RefreshCw,
-  Download,
-  Upload,
-  Server,
-  MemoryStick,
-  Globe,
-} from "lucide-react";
+import { Cpu, HardDrive, Wifi, Database, Users, AlertTriangle, TrendingUp, Zap, CheckCircle, XCircle, RefreshCw, Download, Upload, Server, MemoryStick, Globe } from "lucide-react";
 import { useSystemContext } from "./SystemContext";
 
 const SystemRightCard: React.FC = () => {

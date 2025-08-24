@@ -4,10 +4,21 @@ import AuthService from './authService';
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 // API Response types
-interface ApiResponse<T> {
-  data: T;
+// Backend API Response types (matches actual backend response structure)
+interface BackendApiResponse<T> {
   success: boolean;
+  activities?: T[];
+  count?: number;
   message?: string;
+  error?: string;
+}
+
+// Backend API Response for single activity actions (start, pause, complete)
+interface BackendActivityActionResponse {
+  success: boolean;
+  activity: any;
+  message: string;
+  error?: string;
 }
 
 // API Client class
@@ -21,8 +32,9 @@ class ActivitiesApiClient {
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}
-  ): Promise<ApiResponse<T>> {
+  ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
+    console.log('🔍 ActivitiesApi - Making request to:', url);
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -44,9 +56,15 @@ class ActivitiesApiClient {
     }
 
     const token = AuthService.getToken();
+    console.log('🔍 ActivitiesApi - Token exists:', !!token);
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
+      console.log('🔍 ActivitiesApi - Authorization header set');
+    } else {
+      console.log('🔍 ActivitiesApi - No token available');
     }
+
+    console.log('🔍 ActivitiesApi - Request headers:', headers);
 
     try {
       const response = await fetch(url, {
@@ -54,65 +72,65 @@ class ActivitiesApiClient {
         headers,
       });
 
+      console.log('🔍 ActivitiesApi - Response status:', response.status);
+      console.log('🔍 ActivitiesApi - Response headers:', Object.fromEntries(response.headers.entries()));
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      return { data, success: true };
+      console.log('🔍 ActivitiesApi - Response data:', data);
+      return data;
     } catch (error) {
-      console.error('API request failed:', error);
-      return {
-        data: null as any,
-        success: false,
-        message: error instanceof Error ? error.message : 'Unknown error',
-      };
+      console.error('ActivitiesApi - Request failed:', error);
+      throw error;
     }
   }
 
   // Activities API
-  async getActivities(): Promise<ApiResponse<Activity[]>> {
-    return this.request<Activity[]>('/activities/');
+  async getActivities(): Promise<BackendApiResponse<Activity>> {
+    return this.request<BackendApiResponse<Activity>>('/activities/');
   }
 
-  async getActivity(id: string): Promise<ApiResponse<Activity>> {
+  async getActivity(id: string): Promise<Activity> {
     return this.request<Activity>(`/activities/${id}/`);
   }
 
-  async createActivity(activityData: Partial<Activity>): Promise<ApiResponse<Activity>> {
+  async createActivity(activityData: Partial<Activity>): Promise<Activity> {
     return this.request<Activity>('/activities/', {
       method: 'POST',
       body: JSON.stringify(activityData),
     });
   }
 
-  async updateActivity(id: string, activityData: Partial<Activity>): Promise<ApiResponse<Activity>> {
+  async updateActivity(id: string, activityData: Partial<Activity>): Promise<Activity> {
     return this.request<Activity>(`/activities/${id}/`, {
       method: 'PUT',
       body: JSON.stringify(activityData),
     });
   }
 
-  async deleteActivity(id: string): Promise<ApiResponse<boolean>> {
-    return this.request<boolean>(`/activities/${id}/`, {
+  async deleteActivity(id: string): Promise<{ success: boolean; message?: string }> {
+    return this.request<{ success: boolean; message?: string }>(`/activities/${id}/`, {
       method: 'DELETE',
     });
   }
 
-  async startActivity(id: string): Promise<ApiResponse<Activity>> {
-    return this.request<Activity>(`/activities/${id}/start/`, {
+  async startActivity(id: string): Promise<BackendActivityActionResponse> {
+    return this.request<BackendActivityActionResponse>(`/activities/${id}/start/`, {
       method: 'POST',
     });
   }
 
-  async pauseActivity(id: string): Promise<ApiResponse<Activity>> {
-    return this.request<Activity>(`/activities/${id}/pause/`, {
+  async pauseActivity(id: string): Promise<BackendActivityActionResponse> {
+    return this.request<BackendActivityActionResponse>(`/activities/${id}/pause/`, {
       method: 'POST',
     });
   }
 
-  async completeActivity(id: string): Promise<ApiResponse<Activity>> {
-    return this.request<Activity>(`/activities/${id}/complete/`, {
+  async completeActivity(id: string): Promise<BackendActivityActionResponse> {
+    return this.request<BackendActivityActionResponse>(`/activities/${id}/complete/`, {
       method: 'POST',
     });
   }
@@ -143,4 +161,4 @@ class ActivitiesApiClient {
 export const activitiesApi = new ActivitiesApiClient(API_BASE_URL);
 
 // Export types for use in components
-export type { ApiResponse };
+export type { BackendApiResponse, BackendActivityActionResponse };

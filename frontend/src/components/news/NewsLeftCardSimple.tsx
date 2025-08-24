@@ -1,13 +1,16 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Search, RefreshCw, ChevronDown, Newspaper, MessageSquare, AlertTriangle, Filter, Clock, CheckCircle, AlertCircle, Trash2, ThumbsUp, ThumbsDown, MessageCircle, FileText, ImageIcon } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Search, Newspaper, MessageSquare, AlertTriangle, Filter, Clock, ArrowUpDown } from "lucide-react";
 import { useNewsContext } from "./NewsContext";
 import { useAuth } from "../../contexts/AuthContext";
+import { usePagination } from "../../contexts/PaginationContext";
 
 /**
  * NewsLeftCardSimple - Simple news updates list for StableLayout integration
  * This is the left card content that appears in StableLayout for the news page
  */
 const NewsLeftCardSimple: React.FC = () => {
+  console.log('NewsLeftCardSimple component rendering');
+
   const {
     selectedUpdate,
     setSelectedUpdate,
@@ -19,18 +22,29 @@ const NewsLeftCardSimple: React.FC = () => {
     deleteUpdate
   } = useNewsContext();
   const { isAuthenticated } = useAuth();
+  const { currentPage, setPaginationData, onPageChange } = usePagination();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [activeType, setActiveType] = useState<string>("all");
   const [activeStatus, setActiveStatus] = useState<string>("all");
-  const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
+  const [sortBy, setSortBy] = useState<"date" | "type" | "priority" | "title">("date");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [recordsPerPage, setRecordsPerPage] = useState(10);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const debugRef = useRef<{ lastAvailable?: number; lastCardHeight?: number }>({});
+  const [debug, setDebug] = useState(false);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setStatusDropdownOpen(false);
+      // Close filter and sort dropdowns when clicking outside
+      const target = event.target as Element;
+      if (!target.closest('.filter-dropdown') && !target.closest('.sort-dropdown')) {
+        setShowFilterDropdown(false);
+        setShowSortDropdown(false);
       }
     };
 
@@ -74,30 +88,108 @@ const NewsLeftCardSimple: React.FC = () => {
     };
   }, [selectedUpdate, deleteUpdate]);
 
-  const handleDeleteUpdate = async (updateId: string) => {
-    if (!confirm('Are you sure you want to delete this update?')) return;
+  // Dynamically calculate optimal records per page based on actual DOM measurements
+  useEffect(() => {
+    if (!containerRef.current) return;
 
-    try {
-      await deleteUpdate(updateId);
-      if (selectedUpdate?.id === updateId) {
-        setSelectedUpdate(null);
+    let ro: ResizeObserver | null = null;
+    let rafId: number | null = null;
+
+    const DEFAULT_CARD_HEIGHT = 84; // fallback when there are no rendered cards yet
+
+    const calculate = () => {
+      if (!containerRef.current) return;
+
+      const container = containerRef.current;
+      const listEl = listRef.current;
+
+      // Use bounding client rects for robust measurements across positioned elements
+      let available = container.clientHeight;
+      if (listEl) {
+        const containerRect = container.getBoundingClientRect();
+        const listRect = listEl.getBoundingClientRect();
+        const listTop = Math.max(0, listRect.top - containerRect.top);
+
+        // Try to measure tabs height if present (keep tabs outside scroll area ideally)
+        const tabsEl = container.querySelector('.news-tabs') as HTMLElement | null;
+        const tabsHeight = tabsEl ? tabsEl.getBoundingClientRect().height : 0;
+
+        // Subtract listTop (distance from top of container to list), tabsHeight and extra bottom padding
+        available = Math.max(0, container.clientHeight - listTop - tabsHeight - 12);
       }
-    } catch (error) {
-      console.error('Error deleting update:', error);
-      alert('Failed to delete update');
+
+      // Try to measure a rendered card height
+      const sample = container.querySelector('.news-card') as HTMLElement | null;
+      const cardHeight = sample ? sample.offsetHeight : DEFAULT_CARD_HEIGHT;
+
+      // Compute how many can fit
+      const computed = Math.max(1, Math.floor(available / cardHeight));
+
+      debugRef.current.lastAvailable = available;
+      debugRef.current.lastCardHeight = cardHeight;
+
+      // Only update when it actually changes to avoid rerenders
+      setRecordsPerPage((prev) => (prev !== computed ? computed : prev));
+    };
+
+    const scheduleCalc = () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        calculate();
+        rafId = null;
+      });
+    };
+
+    // Use ResizeObserver to watch the container size and recalculate
+    if (window.ResizeObserver) {
+      ro = new ResizeObserver(() => scheduleCalc());
+      ro.observe(containerRef.current);
+      if (listRef.current) ro.observe(listRef.current);
     }
-  };
+
+    // Also listen to window resize as fallback
+    window.addEventListener('resize', scheduleCalc);
+
+    // Run once after mount and after a short delay to allow content to render
+    scheduleCalc();
+    const t = setTimeout(scheduleCalc, 300);
+
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener('resize', scheduleCalc);
+      if (ro) {
+        ro.disconnect();
+        ro = null;
+      }
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, []);
+
+  console.log('After useEffect, recordsPerPage:', recordsPerPage);
 
   const getTypeColor = (type: string) => {
     switch (type) {
       case "alert":
-        return "bg-red-100 text-red-800 border-red-200";
+        return "text-gray-800";
       case "news":
-        return "bg-blue-100 text-blue-800 border-blue-200";
+        return "text-gray-700";
       case "communication":
-        return "bg-green-100 text-green-800 border-green-200";
+        return "text-gray-600";
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
+        return "text-gray-700";
+    }
+  };
+
+  const getTypeBulletColor = (type: string) => {
+    switch (type) {
+      case "alert":
+        return "bg-red-500";
+      case "news":
+        return "bg-blue-500";
+      case "communication":
+        return "bg-green-500";
+      default:
+        return "bg-gray-500";
     }
   };
 
@@ -114,19 +206,7 @@ const NewsLeftCardSimple: React.FC = () => {
     }
   };
 
-  // Get status icon for the dropdown button
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "new":
-        return Clock;
-      case "read":
-        return CheckCircle;
-      case "urgent":
-        return AlertCircle;
-      default:
-        return Filter;
-    }
-  };
+
 
   const formatTimeAgo = (timestamp: string) => {
     const now = new Date();
@@ -144,145 +224,279 @@ const NewsLeftCardSimple: React.FC = () => {
   const handleTypeFilter = async (type: string) => {
     setActiveType(type);
     await filterUpdates(type, activeStatus, searchQuery);
+    // Reset to first page when filter changes
+    onPageChange(1);
   };
 
   const handleStatusFilter = async (status: string) => {
     setActiveStatus(status);
     await filterUpdates(activeType, status, searchQuery);
+    // Reset to first page when filter changes
+    onPageChange(1);
   };
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
     await filterUpdates(activeType, activeStatus, query);
+    // Reset to first page when search changes
+    onPageChange(1);
   };
 
-  return (
-    <div className="h-full flex flex-col bg-white">
-      {/* Header */}
-      <div className="p-4 border-b border-gray-200 bg-gray-50">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold text-gray-900">News Updates</h2>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={refreshUpdates}
-              disabled={loading}
-              className="flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm disabled:opacity-50"
-            >
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-              <span>Refresh</span>
-            </button>
-          </div>
-        </div>
+  // Filter and sort handlers
+  const handleFilterClick = () => {
+    setShowFilterDropdown(!showFilterDropdown);
+    setShowSortDropdown(false);
+  };
 
-        {/* Search Bar */}
-        <div className="flex items-center gap-2 mb-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+  const handleSortClick = () => {
+    setShowSortDropdown(!showSortDropdown);
+    setShowFilterDropdown(false);
+  };
+
+  const handleSortChange = (newSortBy: "date" | "type" | "priority" | "title") => {
+    setSortBy(newSortBy);
+    setShowSortDropdown(false);
+    // Apply sorting logic here
+  };
+
+  const handleSortOrderToggle = () => {
+    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    // Apply sorting logic here
+  };
+
+  // Filter updates based on search and filters
+  const filteredUpdates = updates.filter((update) => {
+    const matchesSearch = searchQuery === "" ||
+      update.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      update.author.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesType = activeType === "all" || update.type === activeType;
+    const matchesStatus = activeStatus === "all" || update.status === activeStatus;
+
+    return matchesSearch && matchesType && matchesStatus;
+  });
+
+  // Debug data for tabs
+  console.log('NewsLeftCardSimple - updates:', updates.length, 'filteredUpdates:', filteredUpdates.length);
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredUpdates.length / recordsPerPage);
+
+  // Calculate start and end indices for current page
+  const startIndex = (currentPage - 1) * recordsPerPage;
+  const endIndex = startIndex + recordsPerPage;
+  const paginatedUpdates = filteredUpdates.slice(startIndex, endIndex);
+
+  // Update pagination context when data changes
+  useEffect(() => {
+    setPaginationData({
+      currentPage: currentPage > totalPages ? 1 : currentPage, // Reset to page 1 if current page exceeds total pages
+      totalPages,
+      totalRecords: filteredUpdates.length,
+      recordsPerPage,
+    });
+  }, [totalPages, filteredUpdates.length, recordsPerPage, setPaginationData, currentPage]);
+
+  return (
+    <div ref={containerRef} className="flex flex-col h-full relative">
+      {/* Search with Filter and Sort Icons */}
+      <div className="p-3 border-b border-gray-200 bg-white">
+        <div className="flex items-center gap-3">
+          {/* Filter Icon Button */}
+          <div className="relative filter-dropdown">
+            <button
+              onClick={handleFilterClick}
+              className={`p-1.5 rounded-lg transition-all duration-200 border ${
+                activeType !== "all" || activeStatus !== "all"
+                  ? 'bg-blue-50 text-blue-700 border-blue-200 shadow-sm'
+                  : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+              }`}
+              title={`Filter${activeType !== "all" || activeStatus !== "all" ? ` (active)` : ''}`}
+            >
+              <div className="relative">
+                <Filter className="h-4 w-4" />
+                {(activeType !== "all" || activeStatus !== "all") && (
+                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full text-xs text-white flex items-center justify-center">
+                    •
+                  </span>
+                )}
+              </div>
+            </button>
+
+            {/* Filter Dropdown */}
+            {showFilterDropdown && (
+              <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                <div className="p-3 space-y-3">
+                  {/* Type Filter */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-2">Type</label>
+                    <div className="space-y-1">
+                      {[
+                        { key: "all", icon: Filter, label: "All Types" },
+                        { key: "news", icon: Newspaper, label: "News" },
+                        { key: "communication", icon: MessageSquare, label: "Communication" },
+                        { key: "alert", icon: AlertTriangle, label: "Alerts" }
+                      ].map(({ key, icon: Icon, label }) => (
+                        <button
+                          key={key}
+                          onClick={() => {
+                            handleTypeFilter(key);
+                            setShowFilterDropdown(false);
+                          }}
+                          className={`w-full text-left px-2 py-1.5 text-xs rounded-md transition-colors flex items-center gap-2 ${
+                            activeType === key
+                              ? 'bg-blue-50 text-blue-700'
+                              : 'text-gray-700 hover:bg-gray-50'
+                          }`}
+                        >
+                          <Icon className="h-3 w-3" />
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Status Filter */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-2">Status</label>
+                    <div className="space-y-1">
+                      {[
+                        { key: "all", label: "All Statuses" },
+                        { key: "published", label: "Published" },
+                        { key: "draft", label: "Draft" },
+                        { key: "archived", label: "Archived" }
+                      ].map(({ key, label }) => (
+                        <button
+                          key={key}
+                          onClick={() => {
+                            handleStatusFilter(key);
+                            setShowFilterDropdown(false);
+                          }}
+                          className={`w-full text-left px-2 py-1.5 text-xs rounded-md transition-colors ${
+                            activeStatus === key
+                              ? 'bg-blue-50 text-blue-700'
+                              : 'text-gray-700 hover:bg-gray-50'
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Sort Icon Button */}
+          <div className="relative sort-dropdown">
+            <button
+              onClick={handleSortClick}
+              className="p-1.5 rounded-lg bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
+              title={`Sort by ${sortBy} (${sortOrder === 'asc' ? 'ascending' : 'descending'})`}
+            >
+              <ArrowUpDown className="h-4 w-4" />
+            </button>
+
+            {/* Sort Dropdown */}
+            {showSortDropdown && (
+              <div className="absolute top-full left-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                <div className="p-2 space-y-1">
+                  {[
+                    { key: "date", label: "Date" },
+                    { key: "type", label: "Type" },
+                    { key: "priority", label: "Priority" },
+                    { key: "title", label: "Title" }
+                  ].map((option) => (
+                    <button
+                      key={option.key}
+                      onClick={() => handleSortChange(option.key as any)}
+                      className={`w-full text-left px-2 py-1.5 text-xs rounded-md transition-colors ${
+                        sortBy === option.key
+                          ? 'bg-blue-50 text-blue-700'
+                          : 'text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+
+                  {/* Sort Order Toggle */}
+                  <div className="border-t border-gray-100 pt-1 mt-1">
+                    <button
+                      onClick={handleSortOrderToggle}
+                      className="w-full text-left px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
+                    >
+                      {sortOrder === "asc" ? "↑ Ascending" : "↓ Descending"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Search Input */}
+          <div className="flex-1 relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-4 w-4 text-gray-400" />
+            </div>
             <input
               type="text"
               placeholder="Search updates..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSearch((e.target as HTMLInputElement).value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-9 pr-4 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             />
-          </div>
-        </div>
-
-        {/* Combined Type and Status Filters */}
-        <div className="flex items-center gap-3 mb-3">
-          {/* Type Filter Icons */}
-          <div className="flex gap-1">
-            {[
-              { key: "all", icon: Filter, label: "All Types" },
-              { key: "news", icon: Newspaper, label: "News" },
-              { key: "communication", icon: MessageSquare, label: "Communication" },
-              { key: "alert", icon: AlertTriangle, label: "Alerts" }
-            ].map(({ key, icon: Icon, label }) => (
-              <button
-                key={key}
-                onClick={() => handleTypeFilter(key)}
-                title={label}
-                className={`p-2 rounded-lg border transition-all duration-150 ${
-                  activeType === key
-                    ? "bg-blue-100 text-blue-700 border-blue-300 shadow-sm"
-                    : "bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200 hover:scale-105"
-                }`}
-              >
-                <Icon className="h-4 w-4" />
-              </button>
-            ))}
-          </div>
-
-          {/* Status Filter Dropdown */}
-          <div className="relative flex-1" ref={dropdownRef}>
-            <button
-              onClick={() => setStatusDropdownOpen(!statusDropdownOpen)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  setStatusDropdownOpen(!statusDropdownOpen);
-                }
-              }}
-              aria-haspopup="listbox"
-              aria-expanded={statusDropdownOpen}
-              aria-label="Filter by status"
-              className="flex items-center justify-between w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <div className="flex items-center gap-2">
-                {(() => {
-                  const StatusIcon = getStatusIcon(activeStatus);
-                  return <StatusIcon className="h-4 w-4 text-gray-500" />;
-                })()}
-                <span className="text-gray-700">
-                  {activeStatus.charAt(0).toUpperCase() + activeStatus.slice(1)}
-                </span>
-              </div>
-              <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform ${statusDropdownOpen ? 'rotate-180' : ''}`} />
-            </button>
-
-            {statusDropdownOpen && (
-              <div
-                className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg transform transition-all duration-200 ease-in-out origin-top"
-                role="listbox"
-                aria-label="Status options"
-              >
-                {["all", "new", "read", "urgent"].map((status) => (
-                  <button
-                    key={status}
-                    onClick={() => {
-                      handleStatusFilter(status);
-                      setStatusDropdownOpen(false);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        handleStatusFilter(status);
-                        setStatusDropdownOpen(false);
-                      }
-                    }}
-                    role="option"
-                    aria-selected={activeStatus === status}
-                    className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg transition-colors duration-150 ${
-                      activeStatus === status
-                        ? "bg-blue-50 text-blue-700 font-medium border-l-2 border-l-blue-500"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    {status.charAt(0).toUpperCase() + status.slice(1)}
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
         </div>
       </div>
 
+      {/* Debug toggle */}
+      <div className="absolute top-3 right-3 z-30">
+        <button
+          onClick={() => setDebug((d) => !d)}
+          className="text-xs px-2 py-1 bg-white border rounded shadow-sm"
+        >
+          {debug ? 'Hide debug' : 'Show debug'}
+        </button>
+        {debug && (
+          <div className="mt-2 w-44 p-2 text-xs bg-white border rounded shadow">
+            <div>available: {debugRef.current.lastAvailable ?? '—'}</div>
+            <div>cardH: {debugRef.current.lastCardHeight ?? '—'}</div>
+            <div>recordsPerPage: {recordsPerPage}</div>
+            <div className="mt-1 text-[10px] text-gray-500">Tip: Resize container to recalc</div>
+          </div>
+        )}
+      </div>
+
+      {/* Type-based Tabs */}
+      <div className="news-tabs border-b border-gray-200 bg-gray-50 min-h-[40px]">
+        <div className="flex overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 p-2">
+          {[
+            { key: "all", label: "All", count: filteredUpdates.length, type: "all" },
+            { key: "news", label: "News", count: filteredUpdates.filter(u => u.type === "news").length, type: "news" },
+            { key: "communication", label: "Comunicates", count: filteredUpdates.filter(u => u.type === "communication").length, type: "communication" },
+            { key: "alert", label: "Alerts", count: filteredUpdates.filter(u => u.type === "alert").length, type: "alert" },
+          ].map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => handleTypeFilter(tab.key)}
+            className={`flex-shrink-0 px-4 py-2 text-sm font-medium transition-all duration-300 ease-in-out border-b-2 flex items-center gap-2 relative overflow-hidden ${
+              activeType === tab.key
+                ? "text-gray-900 border-blue-500 bg-white shadow-md"
+                : "text-gray-600 hover:text-gray-900 border-transparent hover:bg-white/80 hover:border-gray-300 hover:shadow-sm"
+            }`}
+          >
+            <span>{tab.label}</span>
+          </button>
+        ))}
+        </div>
+      </div>
 
 
       {/* Error Display */}
       {error && (
-        <div className="p-4 bg-red-50 border-l-4 border-red-400">
+        <div className="p-3 bg-red-50 border-l-4 border-red-400">
           <div className="flex">
             <div className="ml-3">
               <p className="text-sm text-red-700">{error}</p>
@@ -291,128 +505,107 @@ const NewsLeftCardSimple: React.FC = () => {
         </div>
       )}
 
-      {/* Updates List */}
-      <div className="flex-1 overflow-y-auto">
+      {/* Updates List - Modified for better space usage */}
+      <div className="overflow-visible flex-1 flex flex-col">
         {loading ? (
-          <div className="p-4 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="text-gray-500 mt-2">Loading updates...</p>
+          <div className="p-6 text-center text-gray-500 flex-1 flex flex-col justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-3"></div>
+            <p className="text-sm text-gray-700">Loading updates...</p>
           </div>
-        ) : updates.length === 0 ? (
-          <div className="p-4 text-center text-gray-500">
-            {searchQuery || activeType !== 'all' || activeStatus !== 'all'
-              ? 'No updates found matching your filters.'
-              : 'No updates available.'
-            }
+        ) : paginatedUpdates.length === 0 ? (
+          <div className="p-6 text-center text-gray-500 flex-1 flex flex-col justify-center">
+            <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <svg className="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <p className="text-sm text-gray-700">
+              {searchQuery || activeType !== 'all' || activeStatus !== 'all'
+                ? 'No updates found matching your filters.'
+                : 'No updates available.'
+              }
+            </p>
           </div>
         ) : (
-          updates.map((update) => (
-            <div
-              key={update.id}
-              onClick={() => setSelectedUpdate(update)}
-              className={`p-4 border-b border-gray-100 cursor-pointer transition-colors hover:bg-gray-50 ${
-                selectedUpdate?.id === update.id ? "bg-blue-50 border-l-4 border-l-blue-500" : ""
-              }`}
-            >
-              {/* Update Header */}
-              <div className="flex items-start gap-3 mb-2">
-                <div className="text-2xl">{update.icon}</div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-medium text-gray-900 truncate">
-                      {update.title}
-                    </span>
-                    <span className={`inline-block w-2 h-2 rounded-full ${getStatusColor(update.status)}`}></span>
+          <div className="flex flex-col h-full">
+            <div ref={(el) => { listRef.current = el; }} className="flex flex-col space-y-2 px-1 py-3 flex-1 overflow-y-auto">
+              {paginatedUpdates.map((update) => (
+                <div
+                  key={update.id}
+                  onClick={() => setSelectedUpdate(update)}
+                  className={`news-card p-3 hover:bg-gray-50 cursor-pointer transition-all duration-200 border-b border-gray-100 flex flex-col justify-center ${
+                    selectedUpdate?.id === update.id
+                      ? "bg-blue-50 border-l-4 border-l-blue-500 shadow-sm"
+                      : "hover:border-l-4 hover:border-l-gray-300"
+                  }`}
+                >
+                  {/* Type indicator and title row */}
+                  <div className="flex items-start gap-2 mb-2">
+                    {/* Compact type indicator */}
+                    <div className="flex-shrink-0 mt-0.5">
+                      <div
+                        className={`w-2.5 h-2.5 rounded-full ${getTypeBulletColor(update.type)}`}
+                        title={`Type: ${update.type}`}
+                      />
+                    </div>
+
+                    {/* Title with compact typography */}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-semibold text-gray-900 leading-tight line-clamp-2">
+                        {update.title}
+                      </h3>
+                    </div>
                   </div>
-                  <p className="text-sm text-gray-600 line-clamp-2">
-                    {update.summary}
-                  </p>
-                </div>
-              </div>
 
-              {/* Update Meta */}
-              <div className="flex items-center justify-between text-xs text-gray-500">
-                <div className="flex items-center gap-2">
-                  <span>{update.author}</span>
-                  <span>•</span>
-                  <span>{formatTimeAgo(update.timestamp)}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className={`px-2 py-1 rounded-full text-xs border ${getTypeColor(update.type)}`}>
-                    {update.type}
-                  </span>
-                </div>
-              </div>
+                  {/* Author, type, status, and timestamp row with compact typography */}
+                  <div className="flex items-center justify-between">
+                    {/* Author info with compact hierarchy */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1 text-xs text-gray-600">
+                        <span className="font-medium text-gray-700">Author:</span>
+                        <span className="font-semibold text-gray-800 truncate">
+                          {update.author}
+                        </span>
+                      </div>
+                    </div>
 
-              {/* CRUD Operations - Only for author and staff/admin */}
-              {update.can_delete && (
-                <div className="flex items-center gap-1 mt-2 pt-2 border-t border-gray-100">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteUpdate(update.id);
-                    }}
-                    className="flex items-center gap-1 px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                    Delete
-                  </button>
-                </div>
-              )}
+                    {/* Right side: Type badge, status, and timestamp */}
+                    <div className="flex-shrink-0 ml-2 flex items-center gap-2">
+                      {/* Type badge with compact styling */}
+                      <span
+                        className={`inline-flex items-center text-xs font-medium ${getTypeColor(update.type)}`}
+                      >
+                        {update.type.charAt(0).toUpperCase() + update.type.slice(1)}
+                      </span>
 
-              {/* Tags */}
-              {update.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {update.tags.slice(0, 3).map((tag, index) => (
-                    <span
-                      key={index}
-                      className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                  {update.tags.length > 3 && (
-                    <span className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
-                      +{update.tags.length - 3}
-                    </span>
-                  )}
-                </div>
-              )}
+                      {/* Status indicator */}
+                      {update.status && (
+                        <div className="flex items-center gap-1">
+                          <div className={`w-2 h-2 rounded-full ${getStatusColor(update.status)}`} title={`Status: ${update.status}`} />
+                          <span className="text-xs text-gray-600 capitalize">{update.status}</span>
+                        </div>
+                      )}
 
-              {/* Metadata: Likes, Comments, Attachments */}
-              <div className="flex items-center gap-3 mt-2 pt-2 border-t border-gray-100 text-xs text-gray-500">
-                {/* Likes */}
-                <div className="flex items-center gap-1">
-                  <ThumbsUp className="h-3 w-3" />
-                  <span>{update.likes_count || 0}</span>
-                  <ThumbsDown className="h-3 w-3" />
-                  <span>{update.dislikes_count || 0}</span>
-                </div>
-
-                {/* Comments */}
-                <div className="flex items-center gap-1">
-                  <MessageCircle className="h-3 w-3" />
-                  <span>{update.comments_count || 0}</span>
-                </div>
-
-                {/* Attachments */}
-                {update.content?.attachments?.length > 0 && (
-                  <div className="flex items-center gap-1">
-                    <FileText className="h-3 w-3" />
-                    <span>{update.content.attachments.length}</span>
+                      {/* Timestamp */}
+                      {update.timestamp && (
+                        <div className="flex items-center gap-1 text-xs text-gray-500">
+                          <Clock className="h-3 w-3" />
+                          <span>{formatTimeAgo(update.timestamp)}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
+                </div>
+              ))}
+            </div>
 
-                {/* Media */}
-                {update.content?.media?.length > 0 && (
-                  <div className="flex items-center gap-1">
-                    <ImageIcon className="h-3 w-3" />
-                    <span>{update.content.media.length}</span>
-                  </div>
-                )}
+            {/* Pagination Footer */}
+            <div className="mt-auto">
+              <div className="text-xs text-center text-gray-500 py-2">
+                Page {currentPage} of {totalPages} • {filteredUpdates.length} total records
               </div>
             </div>
-          ))
+          </div>
         )}
       </div>
     </div>

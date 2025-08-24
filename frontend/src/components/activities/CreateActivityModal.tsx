@@ -1,20 +1,16 @@
 import React, { useState } from "react";
 import {
   X,
-  Calendar,
-  Clock,
   User,
-  MapPin,
-  Tag,
-  AlertTriangle,
-  DollarSign,
   Target,
   CheckSquare,
   Plus,
   Trash2,
   Settings,
+  AlertTriangle,
 } from "lucide-react";
 import { useActivitiesContext, Activity } from "./ActivitiesContext";
+import { activitiesApi } from "../../lib/activitiesApi";
 
 interface CreateActivityModalProps {
   isOpen: boolean;
@@ -46,12 +42,12 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const { addActivity } = useActivitiesContext();
+  const { refreshActivities } = useActivitiesContext();
 
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    type: "standalone" as Activity["type"],
+  type: "Projects",
     priority: "medium" as Activity["priority"],
     start_date: new Date(),
     due_date: new Date(Date.now() + 3600000), // 1 hour from now
@@ -61,7 +57,7 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
     tags: [""],
     category: "",
     cost: 0,
-    risk_level: "low" as Activity["risk_level"],
+  risk_level: "low",
     completion_criteria: [""],
     milestones: [],
     checklists: [],
@@ -74,10 +70,11 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
   const [checklists, setChecklists] = useState<Checklist[]>([]);
   const [activeTab, setActiveTab] = useState<"basic" | "advanced" | "milestones" | "checklists">("basic");
 
+  // Map to the Activity.type union defined in ActivitiesContext
   const activityTypes: { value: Activity["type"]; label: string; icon: React.ReactNode }[] = [
-    { value: "standalone", label: "Standalone", icon: <Target className="h-4 w-4" /> },
-    { value: "project-related", label: "Project Related", icon: <User className="h-4 w-4" /> },
-    { value: "production-related", label: "Production Related", icon: <AlertTriangle className="h-4 w-4" /> },
+    { value: "Projects", label: "Standalone", icon: <Target className="h-4 w-4" /> },
+    { value: "Projects", label: "Project Related", icon: <User className="h-4 w-4" /> },
+    { value: "Production", label: "Production Related", icon: <AlertTriangle className="h-4 w-4" /> },
   ];
 
   const priorityLevels: { value: Activity["priority"]; label: string; color: string }[] = [
@@ -87,7 +84,8 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
     { value: "critical", label: "Critical", color: "bg-red-100 text-red-800" },
   ];
 
-  const riskLevels: { value: Activity["risk_level"]; label: string; color: string }[] = [
+  // risk levels are application-defined strings; use a generic string type here
+  const riskLevels: { value: string; label: string; color: string }[] = [
     { value: "low", label: "Low", color: "bg-green-100 text-green-800" },
     { value: "medium", label: "Medium", color: "bg-yellow-100 text-yellow-800" },
     { value: "high", label: "High", color: "bg-orange-100 text-orange-800" },
@@ -134,7 +132,8 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
 
   const updateMilestone = (index: number, field: keyof Milestone, value: any) => {
     const updatedMilestones = [...milestones];
-    updatedMilestones[index] = { ...updatedMilestones[index], [field]: value };
+    // ensure we keep a valid Milestone shape when updating a single field
+    updatedMilestones[index] = ({ ...updatedMilestones[index], [field]: value } as Milestone);
     setMilestones(updatedMilestones);
   };
 
@@ -153,33 +152,37 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
 
   const updateChecklist = (checklistIndex: number, field: keyof Checklist, value: any) => {
     const updatedChecklists = [...checklists];
-    updatedChecklists[checklistIndex] = { ...updatedChecklists[checklistIndex], [field]: value };
+    updatedChecklists[checklistIndex] = ({ ...updatedChecklists[checklistIndex], [field]: value } as Checklist);
     setChecklists(updatedChecklists);
   };
 
   const addChecklistItem = (checklistIndex: number) => {
     const updatedChecklists = [...checklists];
+    const checklist = updatedChecklists[checklistIndex];
+    if (!checklist) return;
+    if (!checklist.items) checklist.items = [];
     const newItem: ChecklistItem = {
       id: `item-${Date.now()}`,
       description: "",
       completed: false,
     };
-    updatedChecklists[checklistIndex].items.push(newItem);
+    checklist.items.push(newItem);
     setChecklists(updatedChecklists);
   };
 
   const updateChecklistItem = (checklistIndex: number, itemIndex: number, field: keyof ChecklistItem, value: any) => {
     const updatedChecklists = [...checklists];
-    updatedChecklists[checklistIndex].items[itemIndex] = {
-      ...updatedChecklists[checklistIndex].items[itemIndex],
-      [field]: value
-    };
+    const checklist = updatedChecklists[checklistIndex];
+    if (!checklist || !checklist.items) return;
+    checklist.items[itemIndex] = ({ ...checklist.items[itemIndex], [field]: value } as ChecklistItem);
     setChecklists(updatedChecklists);
   };
 
   const removeChecklistItem = (checklistIndex: number, itemIndex: number) => {
     const updatedChecklists = [...checklists];
-    updatedChecklists[checklistIndex].items = updatedChecklists[checklistIndex].items.filter((_, i) => i !== itemIndex);
+    const checklist = updatedChecklists[checklistIndex];
+    if (!checklist || !checklist.items) return;
+    checklist.items = checklist.items.filter((_, i) => i !== itemIndex);
     setChecklists(updatedChecklists);
   };
 
@@ -187,7 +190,7 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
     setChecklists(checklists.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Filter out empty values from arrays
@@ -201,31 +204,40 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
     const cleanMilestones = milestones.filter(m => m.title.trim() !== "" && m.description.trim() !== "");
     const cleanChecklists = checklists.filter(c => c.title.trim() !== "" && c.items.some(item => item.description.trim() !== ""));
 
-    const newActivity: Omit<Activity, 'id' | 'created_at' | 'updated_at' | 'tasks'> = {
-      ...cleanFormData,
+    // The ActivitiesContext Activity type is narrower than the UI payload.
+    // Create a backend-friendly payload and call the API directly, then refresh context.
+    const newActivity: any = {
+      title: cleanFormData.title,
+      description: cleanFormData.description,
+      type: cleanFormData.type,
       status: "planned",
-      milestones: cleanMilestones.map(m => ({
-        id: m.id,
-        title: m.title,
-        description: m.description,
-        due_date: m.due_date,
-        completed: m.completed
-      })),
-      checklists: cleanChecklists.map(c => ({
-        id: c.id,
-        title: c.title,
-        items: c.items.map(item => ({
-          id: item.id,
-          description: item.description,
-          completed: item.completed,
-          assignee: item.assignee
-        }))
-      })),
+      priority: cleanFormData.priority,
+      startTime: cleanFormData.start_date,
+      endTime: cleanFormData.due_date,
+      assignedTo: cleanFormData.owner?.id,
+      assignedBy: cleanFormData.created_by?.id,
+      location: cleanFormData.production_reference || cleanFormData.project,
+      notes: cleanFormData.notes,
+      tags: cleanFormData.tags,
+      cost: cleanFormData.cost,
+      risk_level: cleanFormData.risk_level,
+      milestones: cleanMilestones,
+      checklists: cleanChecklists,
       time_logs: [],
       attachments: [],
     };
 
-    addActivity(newActivity);
+    // create via API and refresh context
+    try {
+      await activitiesApi.createActivity(newActivity as any);
+      // refreshActivities may be provided by context; call defensively
+      if (typeof refreshActivities === "function") {
+        await refreshActivities();
+      }
+    } catch (err) {
+      console.error('Failed to create activity', err);
+    }
+
     onClose();
     resetForm();
   };
@@ -260,7 +272,7 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div data-testid="create-activity-modal" className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">

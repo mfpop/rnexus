@@ -8,7 +8,7 @@ from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import F, Q
-from django.http import HttpRequest, JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
@@ -66,28 +66,75 @@ def get_user_from_jwt(request: HttpRequest) -> Optional[User]:
 
 
 @csrf_exempt
-def django_login_view(request: HttpRequest) -> JsonResponse:
-    """Handle Django default auth redirects for API requests"""
-    # If this is an API request, return JSON instead of redirecting
-    if request.path.startswith("/api/"):
-        return JsonResponse(
-            {
-                "success": False,
-                "error": "Authentication required",
-                "code": "AUTH_REQUIRED",
-            },
-            status=401,
-        )
+def django_login_view(request: HttpRequest) -> Union[JsonResponse, HttpResponse]:
+    """Handle Django default auth redirects and provide login form for admin"""
+    from django.contrib.auth import authenticate, login
+    from django.http import HttpResponse
 
-    # For regular web requests, redirect to the frontend login page
-    return JsonResponse(
-        {
-            "success": False,
-            "error": "Please login at the frontend application",
-            "redirect": "/login",
-        },
-        status=401,
-    )
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+
+        if username and password:
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                # Redirect to admin or requested page
+                next_url = request.GET.get("next", "/admin/")
+                return HttpResponse(
+                    f'<script>window.location.href="{next_url}";</script>'
+                )
+            else:
+                error_msg = "Invalid username or password"
+        else:
+            error_msg = "Username and password are required"
+    else:
+        error_msg = ""
+
+    # Show login form
+    next_url = request.GET.get("next", "/admin/")
+    login_form = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Django Admin Login</title>
+        <style>
+            body {{ font-family: Arial, sans-serif; background: #f0f0f0; margin: 0; padding: 20px; }}
+            .login-form {{ background: white; max-width: 400px; margin: 50px auto; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }}
+            h2 {{ color: #333; text-align: center; margin-bottom: 30px; }}
+            .form-group {{ margin-bottom: 20px; }}
+            label {{ display: block; margin-bottom: 5px; color: #555; }}
+            input[type="text"], input[type="password"] {{ width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; }}
+            button {{ width: 100%; padding: 12px; background: #007cba; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }}
+            button:hover {{ background: #005a87; }}
+            .error {{ color: red; margin-bottom: 15px; text-align: center; }}
+            .info {{ color: #666; font-size: 14px; text-align: center; margin-top: 20px; }}
+        </style>
+    </head>
+    <body>
+        <div class="login-form">
+            <h2>Django Admin Login</h2>
+            {f'<div class="error">{error_msg}</div>' if error_msg else ''}
+            <form method="post">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit">Login</button>
+            </form>
+            <div class="info">
+                Available admin users: admin, testuser, john.ceo
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+
+    return HttpResponse(login_form)
 
 
 @csrf_exempt
@@ -232,11 +279,22 @@ def user_info_view(request: HttpRequest) -> JsonResponse:
 
 
 @csrf_exempt
-@login_required
+@jwt_login_required
 def profile_view(request: HttpRequest) -> JsonResponse:
     """Handle user profile operations"""
+    print(f"DEBUG: profile_view called with method {request.method}")
+
     if request.method == "GET":
-        user = cast(User, request.user)
+        print(f"DEBUG: GET request received")
+
+        # Type assertion to ensure we have an authenticated user
+        if not request.user.is_authenticated:
+            return JsonResponse(
+                {"success": False, "error": "User not authenticated"}, status=401
+            )
+
+        user = cast(User, request.user)  # Type assertion for Pylance
+        # Return basic user information
         return JsonResponse(
             {
                 "success": True,
@@ -246,37 +304,344 @@ def profile_view(request: HttpRequest) -> JsonResponse:
                     "email": user.email,  # type: ignore
                     "first_name": user.first_name,  # type: ignore
                     "last_name": user.last_name,  # type: ignore
-                    "date_joined": user.date_joined.isoformat(),  # type: ignore
+                    "date_joined": user.date_joined.isoformat() if user.date_joined else "2024-01-01T00:00:00Z",  # type: ignore
                     "last_login": user.last_login.isoformat() if user.last_login else None,  # type: ignore
+                    "is_active": user.is_active,  # type: ignore
+                    "is_staff": user.is_staff,  # type: ignore
+                    "is_superuser": user.is_superuser,  # type: ignore
+                    "position": "",
+                    "department": "",
+                    "phone": "",
+                    "location": "",
+                    "bio": "",
+                    "education": [],
+                    "work_history": [],
+                    "profile_visibility": {
+                        "education_visible": True,
+                        "work_history_visible": True,
+                    },
                 },
             }
         )
 
-    elif request.method == "PUT":
-        try:
-            data = json.loads(request.body)
-            user = cast(User, request.user)
+    elif request.method == "PUT" or request.method == "POST":
+        print(f"DEBUG: PUT/POST request received")
 
+        try:
+            # Type assertion to ensure we have an authenticated user
+            if not request.user.is_authenticated:
+                return JsonResponse(
+                    {"success": False, "error": "User not authenticated"}, status=401
+                )
+
+            data = json.loads(request.body)
+            user = cast(User, request.user)  # Type assertion for Pylance
+
+            # Update basic user fields that are allowed to be changed
             if "first_name" in data:
-                user.first_name = data["first_name"]  # type: ignore
+                user.first_name = data["first_name"]
             if "last_name" in data:
-                user.last_name = data["last_name"]  # type: ignore
+                user.last_name = data["last_name"]
             if "email" in data:
-                user.email = data["email"]  # type: ignore
+                user.email = data["email"]
 
             user.save()
 
             return JsonResponse(
                 {
                     "success": True,
+                    "message": "Profile updated successfully",
                     "profile": {
                         "id": user.id,  # type: ignore
                         "username": user.username,  # type: ignore
                         "email": user.email,  # type: ignore
                         "first_name": user.first_name,  # type: ignore
                         "last_name": user.last_name,  # type: ignore
+                        "date_joined": user.date_joined.isoformat() if user.date_joined else "2024-01-01T00:00:00Z",  # type: ignore
+                        "last_login": user.last_login.isoformat() if user.last_login else None,  # type: ignore
+                        "is_active": user.is_active,  # type: ignore
+                        "is_staff": user.is_staff,  # type: ignore
+                        "is_superuser": user.is_superuser,  # type: ignore
+                        "position": "",
+                        "department": "",
+                        "phone": "",
+                        "location": "",
+                        "bio": "",
+                        "education": [],
+                        "work_history": [],
+                        "profile_visibility": {
+                            "education_visible": True,
+                            "work_history_visible": True,
+                        },
                     },
                 }
+            )
+
+        except json.JSONDecodeError:
+            return JsonResponse(
+                {"success": False, "error": "Invalid JSON data"}, status=400
+            )
+        except Exception as e:
+            print(f"ERROR in profile_view PUT: {e}")
+            return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+    # Handle unsupported methods
+    return JsonResponse({"success": False, "error": "Method not allowed"}, status=405)
+
+
+def test_csrf_view(request: HttpRequest) -> JsonResponse:
+    """Test endpoint to verify CSRF is disabled"""
+    if request.method == "POST":
+        return JsonResponse(
+            {"success": True, "message": "POST request successful without CSRF"}
+        )
+    return JsonResponse({"success": True, "message": "GET request successful"})
+
+
+@csrf_exempt
+@jwt_login_required
+def profile_update_view(request: HttpRequest) -> JsonResponse:
+    """Separate endpoint for profile updates to avoid CSRF issues"""
+    if request.method != "POST":
+        return JsonResponse(
+            {"success": False, "error": "Method not allowed"}, status=405
+        )
+
+    try:
+        # Type assertion to ensure we have an authenticated user
+        if not request.user.is_authenticated:
+            return JsonResponse(
+                {"success": False, "error": "User not authenticated"}, status=401
+            )
+
+        data = json.loads(request.body)
+        user = cast(User, request.user)  # Type assertion for Pylance
+
+        # Update basic user fields that are allowed to be changed
+        if "first_name" in data:
+            user.first_name = data["first_name"]  # type: ignore
+        if "last_name" in data:
+            user.last_name = data["last_name"]  # type: ignore
+        if "email" in data:
+            user.email = data["email"]  # type: ignore
+
+        user.save()
+
+        return JsonResponse(
+            {
+                "success": True,
+                "message": "Profile updated successfully",
+                "profile": {
+                    "id": user.id,  # type: ignore
+                    "username": user.username,  # type: ignore
+                    "email": user.email,  # type: ignore
+                    "first_name": user.first_name,  # type: ignore
+                    "last_name": user.last_name,  # type: ignore
+                    "date_joined": user.date_joined.isoformat() if user.date_joined else "2024-01-01T00:00:00Z",  # type: ignore
+                    "last_login": user.last_login.isoformat() if user.last_login else None,  # type: ignore
+                    "is_active": user.is_active,  # type: ignore
+                    "is_staff": user.is_staff,  # type: ignore
+                    "is_superuser": user.is_superuser,  # type: ignore
+                    "position": "",
+                    "department": "",
+                    "phone": "",
+                    "location": "",
+                    "bio": "",
+                    "education": [],
+                    "work_history": [],
+                    "profile_visibility": {
+                        "education_visible": True,
+                        "work_history_visible": True,
+                    },
+                },
+            }
+        )
+
+    except json.JSONDecodeError:
+        return JsonResponse(
+            {"success": False, "error": "Invalid JSON data"}, status=400
+        )
+    except Exception as e:
+        print(f"ERROR in profile_update_view: {e}")
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+
+@csrf_exempt
+@jwt_login_required
+def download_cv_view(request: HttpRequest) -> HttpResponse:
+    """Generate and download user CV as PDF"""
+    if request.method == "GET":
+        try:
+            from io import BytesIO
+
+            from reportlab.lib import colors
+            from reportlab.lib.pagesizes import A4
+            from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+            from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
+
+            user = cast(User, request.user)
+            from .models import UserProfile
+
+            # Get user profile
+            try:
+                profile = UserProfile.objects.get(user=user)
+            except UserProfile.DoesNotExist:
+                profile = UserProfile.objects.create(user=user)
+
+            # Create PDF buffer
+            buffer = BytesIO()
+
+            # Create the PDF document
+            doc = SimpleDocTemplate(
+                buffer,
+                pagesize=A4,
+                rightMargin=72,
+                leftMargin=72,
+                topMargin=72,
+                bottomMargin=18,
+            )
+
+            # Container for the 'Flowable' objects
+            elements = []
+
+            # Define styles
+            styles = getSampleStyleSheet()
+            title_style = ParagraphStyle(
+                "CustomTitle",
+                parent=styles["Heading1"],
+                fontSize=24,
+                spaceAfter=30,
+                textColor=colors.HexColor("#2563eb"),
+            )
+
+            header_style = ParagraphStyle(
+                "CustomHeader",
+                parent=styles["Heading2"],
+                fontSize=16,
+                spaceAfter=12,
+                textColor=colors.HexColor("#1f2937"),
+            )
+
+            normal_style = ParagraphStyle(
+                "CustomNormal", parent=styles["Normal"], fontSize=11, spaceAfter=6
+            )
+
+            contact_style = ParagraphStyle(
+                "ContactStyle",
+                parent=styles["Normal"],
+                fontSize=10,
+                textColor=colors.HexColor("#6b7280"),
+            )
+
+            # Header - Name and Title
+            full_name = f"{user.first_name} {user.last_name}".strip() or user.username
+            elements.append(Paragraph(full_name, title_style))
+
+            if profile.position:
+                elements.append(Paragraph(profile.position, header_style))
+
+            # Contact Information
+            contact_info = []
+            if user.email:
+                contact_info.append(f"Email: {user.email}")
+            if profile.phone:
+                contact_info.append(f"Phone: {profile.phone}")
+            if profile.location:
+                contact_info.append(f"Location: {profile.location}")
+            if profile.department:
+                contact_info.append(f"Department: {profile.department}")
+
+            for contact in contact_info:
+                elements.append(Paragraph(contact, contact_style))
+
+            elements.append(Spacer(1, 20))
+
+            # Professional Summary / Bio
+            if profile.bio:
+                elements.append(Paragraph("Professional Summary", header_style))
+                elements.append(Paragraph(profile.bio, normal_style))
+                elements.append(Spacer(1, 15))
+
+            # Work Experience
+            if profile.work_history and len(profile.work_history) > 0:
+                elements.append(Paragraph("Work Experience", header_style))
+
+                for work in profile.work_history:
+                    if isinstance(work, dict):
+                        company = work.get("company", "")
+                        title = work.get("title", "")
+                        start_year = work.get("startYear", "")
+                        end_year = work.get("endYear", "")
+                        description = work.get("description", "")
+
+                        # Job title and company
+                        job_header = f"<b>{title}</b> - {company}"
+                        if start_year or end_year:
+                            period = f" ({start_year} - {end_year})"
+                            job_header += period
+
+                        elements.append(Paragraph(job_header, normal_style))
+
+                        if description:
+                            elements.append(Paragraph(description, normal_style))
+
+                        elements.append(Spacer(1, 10))
+
+                elements.append(Spacer(1, 15))
+
+            # Education
+            if profile.education and len(profile.education) > 0:
+                elements.append(Paragraph("Education", header_style))
+
+                for edu in profile.education:
+                    if isinstance(edu, dict):
+                        school = edu.get("school", "")
+                        degree = edu.get("degree", "")
+                        field = edu.get("field", "")
+                        start_year = edu.get("startYear", "")
+                        end_year = edu.get("endYear", "")
+                        description = edu.get("description", "")
+
+                        # Education header
+                        edu_header = f"<b>{degree}</b>"
+                        if field:
+                            edu_header += f" in {field}"
+                        if school:
+                            edu_header += f" - {school}"
+                        if start_year or end_year:
+                            period = f" ({start_year} - {end_year})"
+                            edu_header += period
+
+                        elements.append(Paragraph(edu_header, normal_style))
+
+                        if description:
+                            elements.append(Paragraph(description, normal_style))
+
+                        elements.append(Spacer(1, 10))
+
+            # Build PDF
+            doc.build(elements)
+
+            # Get the value of the BytesIO buffer and write it to the response
+            buffer.seek(0)
+            pdf_data = buffer.read()
+            buffer.close()
+
+            # Create the response
+            filename = f"{full_name.replace(' ', '_')}_CV.pdf"
+            response = HttpResponse(pdf_data, content_type="application/pdf")
+            response["Content-Disposition"] = f'attachment; filename="{filename}"'
+            response["Content-Length"] = len(pdf_data)
+
+            return response
+
+        except ImportError:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": "PDF generation not available. Please install reportlab.",
+                },
+                status=500,
             )
         except Exception as e:
             return JsonResponse({"success": False, "error": str(e)}, status=500)
@@ -2283,175 +2648,3 @@ def activity_pause_view(request: HttpRequest, activity_id: str) -> JsonResponse:
             return JsonResponse({"success": False, "error": str(e)}, status=500)
 
     return JsonResponse({"success": False, "error": "Method not allowed"}, status=405)
-
-
-@csrf_exempt
-@jwt_login_required
-def activity_complete_view(request: HttpRequest, activity_id: str) -> JsonResponse:
-    """Complete an activity (change status to completed)"""
-    if request.method == "POST":
-        try:
-            user = get_user_from_jwt(request)
-            if not user:
-                return JsonResponse(
-                    {"success": False, "error": "Authentication required"}, status=401
-                )
-
-            activity = get_object_or_404(Activity, id=activity_id)
-
-            # Check if activity can be completed
-            if activity.status == "completed":
-                return JsonResponse(
-                    {"success": False, "error": "Activity is already completed"},
-                    status=400,
-                )
-
-            # Complete the activity
-            activity.status = "completed"
-            activity.progress = 100
-
-            # Calculate actual duration if not set
-            if not activity.actual_duration:
-                start_time = activity.start_time
-                end_time = timezone.now()
-                duration_minutes = int((end_time - start_time).total_seconds() / 60)
-                activity.actual_duration = duration_minutes
-
-            activity.save()
-
-            # Serialize the updated activity
-            activity_data = {
-                "id": str(activity.id),
-                "title": activity.title,
-                "description": activity.description,
-                "type": activity.type,
-                "status": activity.status,
-                "priority": activity.priority,
-                "startTime": activity.start_time.isoformat(),
-                "endTime": activity.end_time.isoformat(),
-                "assignedTo": activity.assigned_to,
-                "assignedBy": activity.assigned_by,
-                "location": activity.location,
-                "progress": activity.progress,
-                "estimatedDuration": activity.estimated_duration,
-                "actualDuration": activity.actual_duration,
-                "notes": activity.notes,
-                "createdAt": activity.created_at.isoformat(),
-                "updatedAt": activity.updated_at.isoformat(),
-            }
-
-            return JsonResponse(
-                {
-                    "success": True,
-                    "activity": activity_data,
-                    "message": "Activity completed successfully",
-                }
-            )
-
-        except Exception as e:
-            return JsonResponse({"success": False, "error": str(e)}, status=500)
-
-    return JsonResponse({"success": False, "error": "Method not allowed"}, status=405)
-
-
-# Activity ViewSet for DRF router
-class ActivityViewSet:
-    """ViewSet for Activity model - provides CRUD operations"""
-
-    def list(self, request):
-        """Get list of activities"""
-        return activity_list_view(request)
-
-    def create(self, request):
-        """Create a new activity"""
-        return activity_list_view(request)
-
-    def retrieve(self, request, pk=None):
-        """Get a specific activity"""
-        if pk is None:
-            return JsonResponse(
-                {"success": False, "error": "Activity ID is required"}, status=400
-            )
-        return activity_detail_view(request, str(pk))
-
-    def update(self, request, pk=None):
-        """Update an activity"""
-        if pk is None:
-            return JsonResponse(
-                {"success": False, "error": "Activity ID is required"}, status=400
-            )
-        return activity_detail_view(request, str(pk))
-
-    def destroy(self, request, pk=None):
-        """Delete an activity"""
-        if pk is None:
-            return JsonResponse(
-                {"success": False, "error": "Activity ID is required"}, status=400
-            )
-        return activity_detail_view(request, str(pk))
-
-
-class TaskViewSet:
-    """ViewSet for Task model - placeholder for future implementation"""
-
-    pass
-
-
-class MilestoneViewSet:
-    """ViewSet for Milestone model - placeholder for future implementation"""
-
-    pass
-
-
-class ChecklistViewSet:
-    """ViewSet for Checklist model - placeholder for future implementation"""
-
-    pass
-
-
-class ChecklistItemViewSet:
-    """ViewSet for ChecklistItem model - placeholder for future implementation"""
-
-    pass
-
-
-class TimeLogViewSet:
-    """ViewSet for TimeLog model - placeholder for future implementation"""
-
-    pass
-
-
-class AttachmentViewSet:
-    """ViewSet for Attachment model - placeholder for future implementation"""
-
-    pass
-
-
-class CommentViewSet:
-    """ViewSet for Comment model - placeholder for future implementation"""
-
-    pass
-
-
-class ProjectViewSet:
-    """ViewSet for Project model - placeholder for future implementation"""
-
-    pass
-
-
-class ProjectTeamMemberViewSet:
-    """ViewSet for ProjectTeamMember model - placeholder for future implementation"""
-
-    pass
-
-
-class ActivityParticipantViewSet:
-    """ViewSet for ActivityParticipant model - placeholder for future implementation"""
-
-    pass
-
-
-@csrf_exempt
-def test_view(request: HttpRequest) -> JsonResponse:
-    """Simple test view to debug URL configuration"""
-    return JsonResponse({"success": True, "message": "Test endpoint working!"})

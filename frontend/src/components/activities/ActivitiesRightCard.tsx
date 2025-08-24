@@ -46,7 +46,7 @@ interface Toast {
 const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
   selectedActivity,
 }) => {
-  const { selectedActivity: contextActivity, setSelectedActivity } = useActivitiesContext();
+  const { selectedActivity: contextActivity, setSelectedActivity, refreshActivities } = useActivitiesContext();
   const [activeSection, setActiveSection] = useState<
     "participants" | "tasks" | "equipment" | "dependencies" | "notes" | "attachments" | "history"
   >("participants");
@@ -74,7 +74,21 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
   ]);
 
   // Use the activity from context if available, otherwise use the prop
+  // Prioritize contextActivity as it's the most up-to-date
   const currentActivity = contextActivity || selectedActivity;
+
+  // Debug logging to understand the synchronization issue
+  console.debug('ActivitiesRightCard - contextActivity:', contextActivity?.id);
+  console.debug('ActivitiesRightCard - selectedActivity (prop):', selectedActivity?.id);
+  console.debug('ActivitiesRightCard - currentActivity (resolved):', currentActivity?.id);
+
+  // Effect to handle context activity changes
+  React.useEffect(() => {
+    // Keep silent in production; use debug in dev
+    console.debug('ActivitiesRightCard - contextActivity changed');
+  }, [contextActivity]);
+
+
 
   // Toast notification functions
   const addToast = (type: Toast['type'], message: string) => {
@@ -92,21 +106,61 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
     setToasts(prev => prev.filter(toast => toast.id !== id));
   };
 
-  // Activity action handlers
+  // Helper function to convert backend activity response to frontend format
+  const convertBackendActivity = (backendActivity: any) => ({
+    id: backendActivity.id,
+    title: backendActivity.title,
+    description: backendActivity.description,
+    type: backendActivity.type,
+    status: backendActivity.status,
+    priority: backendActivity.priority,
+    startTime: backendActivity.startTime ? new Date(backendActivity.startTime) : new Date(),
+    endTime: backendActivity.endTime ? new Date(backendActivity.endTime) : new Date(),
+    assignedTo: backendActivity.assignedTo,
+    assignedBy: backendActivity.assignedBy,
+    location: backendActivity.location,
+    progress: backendActivity.progress ?? 0,
+    estimatedDuration: backendActivity.estimatedDuration ?? 0,
+    actualDuration: backendActivity.actualDuration,
+    notes: backendActivity.notes,
+    attachments: backendActivity.attachments || [],
+    dependencies: backendActivity.dependencies || [],
+    equipment: backendActivity.equipment || [],
+  });
+
   const handleStartActivity = async (activityId: string) => {
-    if (!currentActivity) return;
+    if (!currentActivity || !currentActivity.id || !currentActivity.status) return;
+
+    // Additional safety check: only allow starting activities that are planned
+    if (currentActivity.status !== 'planned') {
+      addToast('error', `Cannot start activity: Activity must be planned (current status: ${currentActivity.status})`);
+      console.warn('Attempted to start activity with invalid status:', currentActivity.status);
+      return;
+    }
 
     setIsLoading(true);
     try {
       const response = await activitiesApi.startActivity(activityId);
-      if (response.success && response.data) {
-        // Update the context with the updated activity
-        setSelectedActivity(response.data);
+
+      // The backend returns { success: true, activity: {...}, message: "..." }
+      if (response && response.success && response.activity) {
+        console.debug('Start activity - Before update - currentActivity:', currentActivity?.id);
+        console.debug('Start activity - API response data:', response.activity.id);
+
+        // Convert backend response to frontend format and update the selected activity
+        const convertedActivity = convertBackendActivity(response.activity);
+        setSelectedActivity(convertedActivity);
+        console.debug('Start activity - After setSelectedActivity');
+
+        // Refresh the activities list to update the left card
+        // This will also rehydrate the selected activity to keep it in sync
+        await refreshActivities();
+
         addToast('success', 'Activity started successfully!');
-        console.log('Activity started successfully:', response.data);
+        console.debug('Activity started successfully');
       } else {
-        addToast('error', `Failed to start activity: ${response.message || 'Unknown error'}`);
-        console.error('Failed to start activity:', response.message);
+        addToast('error', `Failed to start activity: ${response.error || 'Invalid response format'}`);
+        console.error('Failed to start activity:', response);
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
@@ -118,19 +172,34 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
   };
 
   const handlePauseActivity = async (activityId: string) => {
-    if (!currentActivity) return;
+    if (!currentActivity || !currentActivity.id || !currentActivity.status) return;
+
+    // Additional safety check: only allow pausing activities that are in-progress
+    if (currentActivity.status !== 'in-progress') {
+      addToast('error', `Cannot pause activity: Activity must be in progress (current status: ${currentActivity.status})`);
+      console.warn('Attempted to pause activity with invalid status:', currentActivity.status);
+      return;
+    }
 
     setIsLoading(true);
     try {
       const response = await activitiesApi.pauseActivity(activityId);
-      if (response.success && response.data) {
-        // Update the context with the updated activity
-        setSelectedActivity(response.data);
+
+      // The backend returns { success: true, activity: {...}, message: "..." }
+      if (response && response.success && response.activity) {
+        // Convert backend response to frontend format and update the selected activity
+        const convertedActivity = convertBackendActivity(response.activity);
+        setSelectedActivity(convertedActivity);
+
+        // Refresh the activities list to update the left card
+        // This will also rehydrate the selected activity to keep it in sync
+        await refreshActivities();
+
         addToast('success', 'Activity paused successfully!');
-        console.log('Activity paused successfully:', response.data);
+        console.log('Activity paused successfully:', convertedActivity);
       } else {
-        addToast('error', `Failed to pause activity: ${response.message || 'Unknown error'}`);
-        console.error('Failed to pause activity:', response.message);
+        addToast('error', `Failed to pause activity: ${response.error || 'Invalid response format'}`);
+        console.error('Failed to pause activity:', response);
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
@@ -142,20 +211,35 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
   };
 
   const handleCompleteActivity = async (activityId: string) => {
-    if (!currentActivity) return;
+    if (!currentActivity || !currentActivity.id || !currentActivity.status) return;
+
+    // Additional safety check: only allow completing activities that are not already completed
+    if (currentActivity.status === 'completed') {
+      addToast('error', `Cannot complete activity: Activity is already completed`);
+      console.warn('Attempted to complete already completed activity');
+      return;
+    }
 
     setIsLoading(true);
     try {
       const response = await activitiesApi.completeActivity(activityId);
-      if (response.success && response.data) {
-        // Update the context with the updated activity
-        setSelectedActivity(response.data);
+
+      // The backend returns { success: true, activity: {...}, message: "..." }
+      if (response && response.success && response.activity) {
+        // Convert backend response to frontend format and update the selected activity
+        const convertedActivity = convertBackendActivity(response.activity);
+        setSelectedActivity(convertedActivity);
+
+        // Refresh the activities list to update the left card
+        // This will also rehydrate the selected activity to keep it in sync
+        await refreshActivities();
+
         addToast('success', 'Activity completed successfully!');
-        console.log('Activity completed successfully:', response.data);
+        console.log('Activity completed successfully:', convertedActivity);
         setShowCompleteConfirm(false); // Close confirmation dialog
       } else {
-        addToast('error', `Failed to complete activity: ${response.message || 'Unknown error'}`);
-        console.error('Failed to complete activity:', response.message);
+        addToast('error', `Failed to complete activity: ${response.error || 'Invalid response format'}`);
+        console.error('Failed to complete activity:', response);
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
@@ -167,17 +251,18 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
   };
 
   const handleCompleteClick = () => {
+    if (!currentActivity || !currentActivity.id || !currentActivity.status) return;
     setShowCompleteConfirm(true);
   };
 
   const handleCompleteConfirm = () => {
-    if (currentActivity) {
+    if (currentActivity && currentActivity.id && currentActivity.status) {
       handleCompleteActivity(currentActivity.id);
     }
   };
 
   const handleExportActivity = async () => {
-    if (!currentActivity) return;
+    if (!currentActivity || !currentActivity.id || !currentActivity.status) return;
 
     setIsLoading(true);
     try {
@@ -284,6 +369,25 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
     );
   }
 
+  // Additional safety check for critical properties
+  if (!currentActivity.status || !currentActivity.title || !currentActivity.id) {
+    return (
+      <div className="h-full flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Calendar className="h-12 w-12 text-gray-400" />
+          </div>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">
+            Invalid Activity Data
+          </h2>
+          <p className="text-gray-600">
+            The selected activity is missing required information
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -311,27 +415,32 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
                     ? 'bg-red-100 text-red-800 border-red-200'
                     : 'bg-yellow-100 text-yellow-800 border-yellow-200'
                 }`}>
-                  {currentActivity.status.charAt(0).toUpperCase() + currentActivity.status.slice(1).replace('-', ' ')}
+                  {currentActivity.status ? currentActivity.status.charAt(0).toUpperCase() + currentActivity.status.slice(1).replace('-', ' ') : 'Unknown'}
                 </span>
               </div>
 
               {/* Activity Action Buttons - moved to same line */}
               <div className="flex items-center gap-2 ml-auto">
                 <button
-                  onClick={() => handleStartActivity(currentActivity.id)}
-                  disabled={currentActivity.status === 'completed' || currentActivity.status === 'in-progress' || isLoading}
+                  onClick={() => {
+                    // Double-check the status before allowing the action
+                    if (currentActivity?.status === 'planned' && !isLoading) {
+                      handleStartActivity(currentActivity.id);
+                    } else {
+                      console.warn('Start button clicked but activity cannot be started:', currentActivity?.status);
+                    }
+                  }}
+                  disabled={!currentActivity.status || currentActivity.status !== 'planned' || isLoading}
                   className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors border flex items-center gap-2 ${
-                    currentActivity.status === 'completed' || currentActivity.status === 'in-progress' || isLoading
+                    !currentActivity.status || currentActivity.status !== 'planned' || isLoading
                       ? 'bg-gray-50 text-gray-400 border-gray-100 cursor-not-allowed'
-                      : currentActivity.status === 'planned'
-                      ? 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200'
                       : 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200'
                   }`}
                   title={
-                    currentActivity.status === 'completed'
-                      ? 'Activity already completed'
-                      : currentActivity.status === 'in-progress'
-                      ? 'Activity already in progress'
+                    !currentActivity.status
+                      ? 'Activity status unknown'
+                      : currentActivity.status !== 'planned'
+                      ? 'Can only start planned activities'
                       : 'Start this activity'
                   }
                 >
@@ -343,15 +452,24 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
                   Start
                 </button>
                 <button
-                  onClick={() => handlePauseActivity(currentActivity.id)}
-                  disabled={currentActivity.status !== 'in-progress' || isLoading}
+                  onClick={() => {
+                    // Double-check the status before allowing the action
+                    if (currentActivity?.status === 'in-progress' && !isLoading) {
+                      handlePauseActivity(currentActivity.id);
+                    } else {
+                      console.warn('Pause button clicked but activity cannot be paused:', currentActivity?.status);
+                    }
+                  }}
+                  disabled={!currentActivity.status || currentActivity.status !== 'in-progress' || isLoading}
                   className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors border flex items-center gap-2 ${
-                    currentActivity.status !== 'in-progress' || isLoading
+                    !currentActivity.status || currentActivity.status !== 'in-progress' || isLoading
                       ? 'bg-gray-50 text-gray-400 border-gray-100 cursor-not-allowed'
                       : 'bg-yellow-100 text-yellow-700 border-yellow-200 hover:bg-yellow-200'
                   }`}
                   title={
-                    currentActivity.status !== 'in-progress'
+                    !currentActivity.status
+                      ? 'Activity status unknown'
+                      : currentActivity.status !== 'in-progress'
                       ? 'Can only pause activities in progress'
                       : 'Pause this activity'
                   }
@@ -364,15 +482,24 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
                   Pause
                 </button>
                 <button
-                  onClick={handleCompleteClick}
-                  disabled={currentActivity.status === 'completed' || isLoading}
+                  onClick={() => {
+                    // Double-check the status before allowing the action
+                    if (currentActivity?.status !== 'completed' && !isLoading) {
+                      handleCompleteClick();
+                    } else {
+                      console.warn('Complete button clicked but activity cannot be completed:', currentActivity?.status);
+                    }
+                  }}
+                  disabled={!currentActivity.status || currentActivity.status === 'completed' || isLoading}
                   className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors border flex items-center gap-2 ${
-                    currentActivity.status === 'completed' || isLoading
+                    !currentActivity.status || currentActivity.status === 'completed' || isLoading
                       ? 'bg-gray-50 text-gray-400 border-gray-100 cursor-not-allowed'
                       : 'bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200'
                   }`}
                   title={
-                    currentActivity.status === 'completed'
+                    !currentActivity.status
+                      ? 'Activity status unknown'
+                      : currentActivity.status === 'completed'
                       ? 'Activity already completed'
                       : 'Mark this activity as completed'
                   }
@@ -405,7 +532,7 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
             </div>
 
             {/* Side by Side Cards with 60/40 proportion */}
-            <div className="grid grid-cols-5 gap-16 mb-4">
+            <div className="grid grid-cols-5 gap-8 mb-4">
               {/* Activity Overview Card - 60% width (3/5 columns) - LEFT SIDE */}
               <div className="col-span-3 h-full">
                 {/* Card Content */}
@@ -618,13 +745,12 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-gray-500 rounded-full flex items-center justify-center text-white font-medium">
                     {currentActivity.assignedTo
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
+                      ? currentActivity.assignedTo.split(" ").map((n) => n[0]).join("")
+                      : "NA"}
                   </div>
                   <div className="flex-1">
                     <div className="font-medium text-gray-900">
-                      {currentActivity.assignedTo}
+                      {currentActivity.assignedTo || 'Not assigned'}
                     </div>
                     <div className="text-sm text-gray-600">
                       Primary Assignee
@@ -637,13 +763,12 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-gray-500 rounded-full flex items-center justify-center text-white font-medium">
                     {currentActivity.assignedBy
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
+                      ? currentActivity.assignedBy.split(" ").map((n) => n[0]).join("")
+                      : "NA"}
                   </div>
                   <div className="flex-1">
                     <div className="font-medium text-gray-900">
-                      {currentActivity.assignedBy}
+                      {currentActivity.assignedBy || 'Not specified'}
                     </div>
                     <div className="text-sm text-gray-600">Assigned By</div>
                   </div>

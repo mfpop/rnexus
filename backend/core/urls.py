@@ -41,7 +41,16 @@ urlpatterns = [
     path(
         "api/user/info/", views.user_info_view, name="api_user_info"
     ),  # Keep for backward compatibility
-    path("api/user/profile/", views.profile_view, name="api_profile"),
+    path("api/user/profile/", csrf_exempt(views.profile_view), name="api_profile"),
+    path(
+        "api/user/profile/update/",
+        csrf_exempt(views.profile_update_view),
+        name="api_profile_update",
+    ),
+    path("api/test-csrf/", views.test_csrf_view, name="test_csrf"),
+    path(
+        "api/user/profile/download-cv/", views.download_cv_view, name="api_download_cv"
+    ),
     path(
         "api/user/change-password/",
         views.change_password_view,
@@ -124,8 +133,6 @@ urlpatterns = [
     ),
     # WebSocket endpoints
     path("ws/test/", views.websocket_test_view, name="websocket_test"),
-    # Test endpoint
-    path("api/test/", views.test_view, name="api_test"),
     # Activities API endpoints
     path("api/activities/", views.activity_list_view, name="api_activities_list"),
     path(
@@ -142,11 +149,6 @@ urlpatterns = [
         "api/activities/<str:activity_id>/pause/",
         views.activity_pause_view,
         name="api_activity_pause",
-    ),
-    path(
-        "api/activities/<str:activity_id>/complete/",
-        views.activity_complete_view,
-        name="api_activity_complete",
     ),
 ]
 

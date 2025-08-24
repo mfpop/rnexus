@@ -74,6 +74,16 @@ class JWTAuthenticationMiddleware(MiddlewareMixin):
         print(f"DEBUG: JWT Middleware - process_request called for {request.path}")
         print(f"DEBUG: JWT Middleware - request.META keys: {list(request.META.keys())}")
 
+        # Skip JWT processing for admin URLs to allow Django session auth
+        if request.path.startswith("/admin/") or request.path.startswith("/accounts/"):
+            print(
+                f"DEBUG: JWT Middleware - Skipping JWT for admin/accounts path: {request.path}"
+            )
+            print(
+                f"DEBUG: JWT Middleware - process_request completed for {request.path}"
+            )
+            return
+
         # Check if there's a JWT token in the Authorization header
         auth_header = request.META.get("HTTP_AUTHORIZATION", "")
         if auth_header.startswith("Bearer "):
@@ -95,6 +105,14 @@ class JWTAuthenticationMiddleware(MiddlewareMixin):
         print(f"DEBUG: JWT Middleware - process_view called for {request.path}")
         print(f"DEBUG: JWT Middleware - request.user before view: {request.user}")
         print(f"DEBUG: JWT Middleware - request.user type: {type(request.user)}")
+
+        # Skip JWT processing for admin URLs to allow Django session auth
+        if request.path.startswith("/admin/") or request.path.startswith("/accounts/"):
+            print(
+                f"DEBUG: JWT Middleware - Skipping JWT view processing for admin/accounts path: {request.path}"
+            )
+            print(f"DEBUG: JWT Middleware - process_view completed for {request.path}")
+            return None
 
         # Check if there's a JWT token and ensure the user is set
         auth_header = request.META.get("HTTP_AUTHORIZATION", "")

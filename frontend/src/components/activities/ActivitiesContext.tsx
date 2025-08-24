@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { activitiesApi } from "../../lib/activitiesApi";
+import AuthService from "../../lib/authService";
 
 interface Activity {
   id: string;
@@ -33,8 +34,8 @@ interface ActivitiesContextType {
   setSelectedActivity: (activity: Activity | null) => void;
   loading: boolean;
   error: string | null;
-  fetchActivities: () => Promise<void>;
-  refreshActivities: () => Promise<void>;
+  fetchActivities: () => Promise<Activity[] | void>;
+  refreshActivities: () => Promise<Activity[] | void>;
 }
 
 const ActivitiesContext = createContext<ActivitiesContextType>({
@@ -71,47 +72,96 @@ export const ActivitiesProvider: React.FC<ActivitiesProviderProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchActivities = async () => {
+  const fetchActivities = async (): Promise<Activity[] | void> => {
     setLoading(true);
     setError(null);
+
+    console.log('🔍 ActivitiesContext - Starting fetchActivities');
+    console.log('🔍 ActivitiesContext - AuthService.isAuthenticated():', AuthService.isAuthenticated());
+    console.log('🔍 ActivitiesContext - AuthService.getToken():', AuthService.getToken() ? 'Token exists' : 'No token');
+
     try {
+      console.log('🔍 ActivitiesContext - Calling activitiesApi.getActivities()');
       const response = await activitiesApi.getActivities();
-      if (response.success && response.data && response.data.activities) {
+      console.log('🔍 ActivitiesContext - API response received:', response);
+
+      // Check if the response has the expected structure
+      if (response.success && response.activities) {
+        const apiActivities = response.activities;
+
+        if (!Array.isArray(apiActivities)) {
+          console.warn('API response activities is not an array:', response);
+          setActivities([]);
+          return [];
+        }
+
+        if (apiActivities.length === 0) {
+          console.log('No activities found in API response');
+          setActivities([]);
+          return [];
+        }
+
         // Convert the API response to match our Activity interface
-        const convertedActivities = response.data.activities.map((apiActivity: any) => ({
-          id: apiActivity.id,
-          title: apiActivity.title,
-          description: apiActivity.description,
-          type: apiActivity.type,
-          status: apiActivity.status,
-          priority: apiActivity.priority,
-          startTime: new Date(apiActivity.startTime),
-          endTime: new Date(apiActivity.endTime),
-          assignedTo: apiActivity.assignedTo,
-          assignedBy: apiActivity.assignedBy,
-          location: apiActivity.location,
-          progress: apiActivity.progress,
-          estimatedDuration: apiActivity.estimatedDuration,
-          actualDuration: apiActivity.actualDuration,
-          notes: apiActivity.notes,
-          attachments: apiActivity.attachments || [],
-          dependencies: apiActivity.dependencies || [],
-          equipment: apiActivity.equipment || [],
-        }));
+        const convertedActivities = apiActivities.map((apiActivity: any) => convertApiActivity(apiActivity));
         setActivities(convertedActivities);
+
+        // If a selected activity exists, try to rehydrate it from the fresh list
+        setSelectedActivity((prev) => {
+          if (!prev) return prev;
+          const rehydrated = convertedActivities.find((a: any) => a.id === prev.id);
+          if (rehydrated) {
+            console.debug('ActivitiesContext - Rehydrated selected activity:', rehydrated.id);
+            return rehydrated;
+          } else {
+            console.warn('ActivitiesContext - Could not find selected activity in refreshed list:', prev.id);
+            return prev; // Keep the previous selection if not found
+          }
+        });
+
+        return convertedActivities as Activity[];
       } else {
-        setError(response.message || 'Failed to fetch activities');
+        // Handle error response from backend
+        const errorMessage = response.error || 'Failed to fetch activities';
+        setError(errorMessage);
+        console.error('API error response:', response);
+        return [];
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred while fetching activities');
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred while fetching activities';
+      setError(errorMessage);
+      console.error('Error fetching activities:', err);
+      return [];
     } finally {
       setLoading(false);
     }
   };
 
-  const refreshActivities = async () => {
-    await fetchActivities();
+  const refreshActivities = async (): Promise<Activity[] | void> => {
+    // Return the fresh, converted activities so callers can act on them immediately
+    return await fetchActivities();
   };
+
+  // Helper to normalize an API activity object into our Activity shape
+  const convertApiActivity = (apiActivity: any) => ({
+    id: apiActivity.id,
+    title: apiActivity.title,
+    description: apiActivity.description,
+    type: apiActivity.type,
+    status: apiActivity.status,
+    priority: apiActivity.priority,
+    startTime: apiActivity.startTime ? new Date(apiActivity.startTime) : new Date(),
+    endTime: apiActivity.endTime ? new Date(apiActivity.endTime) : new Date(),
+    assignedTo: apiActivity.assignedTo,
+    assignedBy: apiActivity.assignedBy,
+    location: apiActivity.location,
+    progress: apiActivity.progress ?? 0,
+    estimatedDuration: apiActivity.estimatedDuration ?? 0,
+    actualDuration: apiActivity.actualDuration,
+    notes: apiActivity.notes,
+    attachments: apiActivity.attachments || [],
+    dependencies: apiActivity.dependencies || [],
+    equipment: apiActivity.equipment || [],
+  });
 
   // Fetch activities on component mount
   useEffect(() => {

@@ -7,8 +7,8 @@ import NewsLeftCardSimple from "./NewsLeftCardSimple";
  * This component acts as a bridge to ensure the NewsProvider is available
  */
 const NewsLeftCardWrapper: React.FC = () => {
-  // This will throw an error if NewsProvider is not available
-  const context = useNewsContext();
+  // Ensure NewsProvider is available; we intentionally call the hook for validation.
+  useNewsContext();
 
   // If we get here, the NewsProvider is available
   return <NewsLeftCardSimple />;

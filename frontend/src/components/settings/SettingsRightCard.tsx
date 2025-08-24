@@ -1,28 +1,5 @@
 import React, { useState } from "react";
-import {
-  Settings,
-  User,
-  Shield,
-  Bell,
-  Palette,
-  Globe,
-  Database,
-  Wifi,
-  Monitor,
-  Key,
-  Save,
-  RefreshCw,
-  Check,
-  AlertCircle,
-  Info,
-  Moon,
-  Sun,
-  Eye,
-  EyeOff,
-  Clock,
-  Mail,
-  Smartphone,
-} from "lucide-react";
+import { Settings, User, Shield, Bell, Palette, Save, RefreshCw, AlertCircle, Moon, Sun, Eye, EyeOff, Mail, Smartphone, Monitor } from "lucide-react";
 import { useSettingsContext } from "./SettingsContext";
 
 const SettingsRightCard: React.FC = () => {

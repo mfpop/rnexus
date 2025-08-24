@@ -262,7 +262,7 @@ const MessageList: React.FC<MessageListProps> = ({
                   {!isSelectionMode && (
                     <DropdownMenu open={messageOptionsOpen === msg.id} onOpenChange={(open) => setMessageOptionsOpen(open ? msg.id : null)}>
                       <DropdownMenuTrigger asChild>
-                        <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-black/10 rounded transition-all">
+                        <button data-testid="message-more-options" className="opacity-0 group-hover:opacity-100 p-1 hover:bg-black/10 rounded transition-all">
                           <MoreVertical className="w-4 h-4" />
                         </button>
                       </DropdownMenuTrigger>

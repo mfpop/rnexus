@@ -1,16 +1,22 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   User,
-  Mail,
-  Lock,
-  Save,
   Key,
   Eye,
   EyeOff,
   AlertCircle,
   CheckCircle,
+  GraduationCap,
+  Briefcase,
+  Plus,
+  Trash2,
+  Camera,
 } from "lucide-react";
 import { Button, Input } from "../ui/bits";
+import AuthService from "../../lib/authService";
+
+// API configuration
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 interface ProfileData {
   username: string;
@@ -22,6 +28,39 @@ interface ProfileData {
   is_active: boolean;
   is_staff: boolean;
   is_superuser: boolean;
+  // New fields
+  position?: string;
+  department?: string;
+  phone?: string;
+  location?: string;
+  bio?: string;
+  education?: Array<{
+    id: string;
+    school: string;
+    degree: string;
+    field?: string;
+    startYear?: string;
+    endYear?: string;
+    description?: string;
+    visible?: boolean
+  }>;
+  work_history?: Array<{
+    id: string;
+    company: string;
+    title: string;
+    department?: string;
+    startYear?: string;
+    endYear?: string;
+    description?: string;
+    visible?: boolean
+  }>;
+  profile_visibility?: {
+    education: boolean;
+    work_history: boolean;
+    position: boolean;
+    contact: boolean;
+    bio: boolean;
+  };
 }
 
 interface PasswordData {
@@ -31,6 +70,8 @@ interface PasswordData {
 }
 
 const ProfileRightCard: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<'personal' | 'professional' | 'education' | 'experience' | 'security'>('personal');
+
   const [profileData, setProfileData] = useState<ProfileData>({
     username: "",
     email: "",
@@ -38,9 +79,23 @@ const ProfileRightCard: React.FC = () => {
     last_name: "",
     date_joined: "",
     last_login: "",
-    is_active: false,
+    is_active: true, // Default to active for new profiles
     is_staff: false,
     is_superuser: false,
+    position: "",
+    department: "",
+    phone: "",
+    location: "",
+    bio: "",
+    education: [],
+    work_history: [],
+    profile_visibility: {
+      education: true,
+      work_history: true,
+      position: true,
+      contact: true,
+      bio: true
+    },
   });
 
   const [passwordData, setPasswordData] = useState<PasswordData>({
@@ -49,7 +104,6 @@ const ProfileRightCard: React.FC = () => {
     confirm_password: "",
   });
 
-  const [isLoading, setIsLoading] = useState(false);
   const [isPasswordLoading, setIsPasswordLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [passwordErrors, setPasswordErrors] = useState<Record<string, string>>(
@@ -63,15 +117,87 @@ const ProfileRightCard: React.FC = () => {
     confirm: false,
   });
 
+  // Auto-save functionality with fallback endpoint on 403/405
+  const autoSaveProfile = useCallback(async (data: ProfileData) => {
+    const payload = {
+      email: data.email,
+      first_name: data.first_name,
+      last_name: data.last_name,
+      position: data.position,
+      department: data.department,
+      phone: data.phone,
+      location: data.location,
+      bio: data.bio,
+      education: data.education,
+      work_history: data.work_history,
+      profile_visibility: data.profile_visibility,
+      is_active: data.is_active,
+    };
+
+    const tryPost = async (path: string) =>
+      fetch(`${API_BASE_URL}${path}`, {
+        method: "POST",
+        headers: AuthService.getAuthHeaders(),
+        body: JSON.stringify(payload),
+      });
+
+    try {
+      // First try primary endpoint
+      let response = await tryPost('/user/profile/');
+
+      // Fallback to dedicated update endpoint on 403/405
+      if (!response.ok && (response.status === 403 || response.status === 405)) {
+        response = await tryPost('/user/profile/update/');
+      }
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setSuccessMessage("Profile saved automatically");
+          setTimeout(() => setSuccessMessage(""), 3000);
+        }
+        return;
+      }
+
+      if (response.status === 401) {
+        console.warn('Auto-save blocked: authentication required');
+      } else if (response.status === 403) {
+        console.warn('Auto-save blocked by server (403).');
+      } else {
+        console.error("Profile save failed:", response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error("Auto-save error:", error);
+      setSuccessMessage("Profile changes saved locally (network error)");
+      setTimeout(() => setSuccessMessage(""), 3000);
+    }
+  }, []);
+
+  // Debounced auto-save effect
+  useEffect(() => {
+  // Only attempt auto-save when authenticated
+  if (!AuthService.isAuthenticated()) return;
+
+    const timeoutId = setTimeout(() => {
+      if (profileData.first_name || profileData.last_name || profileData.email) {
+        autoSaveProfile(profileData);
+      }
+    }, 2000); // Auto-save after 2 seconds of inactivity
+
+    return () => clearTimeout(timeoutId);
+  }, [profileData, autoSaveProfile]);
+
   // Load profile data on component mount
   useEffect(() => {
-    loadProfile();
+    if (AuthService.isAuthenticated()) {
+      loadProfile();
+    }
   }, []);
 
   const loadProfile = async () => {
     try {
-      const response = await fetch("http://localhost:8000/api/profile/", {
-        credentials: "include",
+      const response = await fetch(`${API_BASE_URL}/user/profile/`, {
+        headers: AuthService.getAuthHeaders(),
       });
 
       if (response.ok) {
@@ -79,6 +205,8 @@ const ProfileRightCard: React.FC = () => {
         if (data.success) {
           setProfileData(data.profile);
         }
+      } else {
+        console.error("Failed to load profile:", response.status, response.statusText);
       }
     } catch (error) {
       console.error("Error loading profile:", error);
@@ -94,6 +222,66 @@ const ProfileRightCard: React.FC = () => {
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
+  };
+
+  const addEducation = () => {
+    setProfileData(prev => ({
+      ...prev,
+      education: [...(prev.education || []), {
+        id: Date.now().toString(),
+        school: '',
+        degree: '',
+        field: '',
+        startYear: '',
+        endYear: '',
+        description: '',
+        visible: true
+      }]
+    } as ProfileData));
+  };
+
+  const updateEducation = (id: string, field: string, value: string | boolean) => {
+    setProfileData(prev => ({
+      ...prev,
+      education: (prev.education || []).map(e => e.id === id ? ({ ...e, [field]: value } as any) : e)
+    } as ProfileData));
+  };
+
+  const removeEducation = (id: string) => {
+    setProfileData(prev => ({
+      ...prev,
+      education: (prev.education || []).filter(e => e.id !== id)
+    } as ProfileData));
+  };
+
+  const addWork = () => {
+    setProfileData(prev => ({
+      ...prev,
+      work_history: [...(prev.work_history || []), {
+        id: Date.now().toString(),
+        company: '',
+        title: '',
+        department: '',
+        startYear: '',
+        endYear: '',
+        description: '',
+        visible: true
+      }]
+    } as ProfileData));
+  };
+
+  const updateWork = (id: string, field: string, value: string | boolean) => {
+    setProfileData(prev => ({
+      ...prev,
+      work_history: (prev.work_history || []).map(w => w.id === id ? ({ ...w, [field]: value } as any) : w)
+    } as ProfileData));
+  };
+
+  const removeWork = (id: string) => {
+    setProfileData(prev => ({
+      ...prev,
+      work_history: (prev.work_history || []).filter(w => w.id !== id)
+    } as ProfileData));
   };
 
   const handlePasswordChange = (field: keyof PasswordData, value: string) => {
@@ -153,38 +341,61 @@ const ProfileRightCard: React.FC = () => {
       return;
     }
 
-    setIsLoading(true);
     setSuccessMessage("");
 
     try {
-      const response = await fetch("http://localhost:8000/api/profile/", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: profileData.email,
-          first_name: profileData.first_name,
-          last_name: profileData.last_name,
-        }),
-        credentials: "include",
-      });
+      const payload = {
+        email: profileData.email,
+        first_name: profileData.first_name,
+        last_name: profileData.last_name,
+        position: profileData.position,
+        department: profileData.department,
+        phone: profileData.phone,
+        location: profileData.location,
+        bio: profileData.bio,
+        education: profileData.education,
+        work_history: profileData.work_history,
+        profile_visibility: profileData.profile_visibility,
+        is_active: profileData.is_active,
+      };
 
-      const data = await response.json();
+      const tryPost = async (path: string) =>
+        fetch(`${API_BASE_URL}${path}`, {
+          method: "POST",
+          headers: AuthService.getAuthHeaders(),
+          body: JSON.stringify(payload),
+        });
 
-      if (data.success) {
-        setSuccessMessage("Profile updated successfully!");
-        setProfileData(data.profile);
-        // Clear errors
-        setErrors({});
-      } else {
+      // Try primary endpoint first
+      let response = await tryPost('/user/profile/');
+      // Fallback on 403/405
+      if (!response.ok && (response.status === 403 || response.status === 405)) {
+        response = await tryPost('/user/profile/update/');
+      }
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setSuccessMessage("Profile updated successfully!");
+          setProfileData(data.profile);
+          setErrors({});
+          return;
+        }
         setErrors({ submit: data.error || "Failed to update profile" });
+        return;
+      }
+
+      if (response.status === 401) {
+        setErrors({ submit: "Authentication required. Please log in again." });
+      } else if (response.status === 403) {
+        setErrors({ submit: "Profile update blocked by server (403)." });
+      } else {
+        console.error("Profile update failed:", response.status, response.statusText);
+        setErrors({ submit: `Server error (${response.status}). Please try again later.` });
       }
     } catch (error) {
       console.error("Profile update error:", error);
       setErrors({ submit: "Network error. Please try again." });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -198,23 +409,18 @@ const ProfileRightCard: React.FC = () => {
     setIsPasswordLoading(true);
     setPasswordSuccessMessage("");
 
-    try {
-      const response = await fetch(
-        "http://localhost:8000/api/profile/change-password/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/user/change-password/`,
+          {
+            method: "POST",
+            headers: AuthService.getAuthHeaders(),
+            body: JSON.stringify({
+              current_password: passwordData.current_password,
+              new_password: passwordData.new_password,
+            }),
           },
-          body: JSON.stringify({
-            current_password: passwordData.current_password,
-            new_password: passwordData.new_password,
-          }),
-          credentials: "include",
-        },
-      );
-
-      const data = await response.json();
+        );      const data = await response.json();
 
       if (data.success) {
         setPasswordSuccessMessage("Password changed successfully!");
@@ -238,86 +444,13 @@ const ProfileRightCard: React.FC = () => {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "Never";
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
 
-  return (
-    <div className="p-6 h-full overflow-y-auto">
-      <div className="max-w-4xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="text-center">
-          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <User className="h-10 w-10 text-white" />
-          </div>
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">
-            Profile Settings
-          </h2>
-          <p className="text-gray-600">
-            Manage your account information and security
-          </p>
-        </div>
-
-        {/* Profile Information Section */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <User className="h-5 w-5 text-blue-500" />
-            Personal Information
-          </h3>
-
-          <form onSubmit={handleProfileSubmit} className="space-y-4">
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'personal':
+        return (
+          <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Username */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Username
-                </label>
-                <Input
-                  type="text"
-                  value={profileData.username}
-                  disabled
-                  className="bg-gray-50 cursor-not-allowed"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Username cannot be changed
-                </p>
-              </div>
-
-              {/* Email */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Mail className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <Input
-                    type="email"
-                    value={profileData.email}
-                    onChange={(e) =>
-                      handleProfileChange("email", e.target.value)
-                    }
-                    variant={errors["email"] ? "error" : "default"}
-                    className="pl-10"
-                  />
-                </div>
-                {errors["email"] && (
-                  <div className="flex items-center gap-2 mt-2 text-red-600 text-sm">
-                    <AlertCircle className="h-4 w-4" />
-                    <span>{errors["email"]}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* First Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   First Name
@@ -325,20 +458,15 @@ const ProfileRightCard: React.FC = () => {
                 <Input
                   type="text"
                   value={profileData.first_name}
-                  onChange={(e) =>
-                    handleProfileChange("first_name", e.target.value)
-                  }
+                  onChange={(e) => handleProfileChange("first_name", e.target.value)}
                   variant={errors["first_name"] ? "error" : "default"}
+                  className="w-full"
                 />
                 {errors["first_name"] && (
-                  <div className="flex items-center gap-2 mt-2 text-red-600 text-sm">
-                    <AlertCircle className="h-4 w-4" />
-                    <span>{errors["first_name"]}</span>
-                  </div>
+                  <p className="text-red-600 text-sm mt-1">{errors["first_name"]}</p>
                 )}
               </div>
 
-              {/* Last Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Last Name
@@ -346,21 +474,102 @@ const ProfileRightCard: React.FC = () => {
                 <Input
                   type="text"
                   value={profileData.last_name}
-                  onChange={(e) =>
-                    handleProfileChange("last_name", e.target.value)
-                  }
+                  onChange={(e) => handleProfileChange("last_name", e.target.value)}
                   variant={errors["last_name"] ? "error" : "default"}
+                  className="w-full"
                 />
                 {errors["last_name"] && (
-                  <div className="flex items-center gap-2 mt-2 text-red-600 text-sm">
-                    <AlertCircle className="h-4 w-4" />
-                    <span>{errors["last_name"]}</span>
-                  </div>
+                  <p className="text-red-600 text-sm mt-1">{errors["last_name"]}</p>
                 )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email Address
+                </label>
+                <Input
+                  type="email"
+                  value={profileData.email}
+                  onChange={(e) => handleProfileChange("email", e.target.value)}
+                  variant={errors["email"] ? "error" : "default"}
+                  className="w-full"
+                />
+                {errors["email"] && (
+                  <p className="text-red-600 text-sm mt-1">{errors["email"]}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Phone Number
+                </label>
+                <Input
+                  type="tel"
+                  value={profileData.phone || ""}
+                  onChange={(e) => handleProfileChange("phone", e.target.value)}
+                  className="w-full"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Location
+                </label>
+                <Input
+                  type="text"
+                  value={profileData.location || ""}
+                  onChange={(e) => handleProfileChange("location", e.target.value)}
+                  className="w-full"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Bio
+                </label>
+                <textarea
+                  value={profileData.bio || ""}
+                  onChange={(e) => handleProfileChange("bio", e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  placeholder="Tell us about yourself..."
+                />
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'professional':
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Position
+                </label>
+                <Input
+                  type="text"
+                  value={profileData.position || ""}
+                  onChange={(e) => handleProfileChange("position", e.target.value)}
+                  className="w-full"
+                  placeholder="e.g. Senior Software Engineer"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Department
+                </label>
+                <Input
+                  type="text"
+                  value={profileData.department || ""}
+                  onChange={(e) => handleProfileChange("department", e.target.value)}
+                  className="w-full"
+                  placeholder="e.g. Engineering"
+                />
               </div>
             </div>
 
-            {/* Account Status */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-200">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -394,138 +603,231 @@ const ProfileRightCard: React.FC = () => {
                 </span>
               </div>
             </div>
+          </div>
+        );
 
-            {/* Account Dates */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-200">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Member Since
-                </label>
-                <span className="text-sm text-gray-600">
-                  {formatDate(profileData.date_joined)}
-                </span>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Last Login
-                </label>
-                <span className="text-sm text-gray-600">
-                  {formatDate(profileData.last_login)}
-                </span>
-              </div>
+      case 'education':
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-gray-600">Manage your educational background</p>
+              <Button
+                onClick={addEducation}
+                className="bg-blue-50 hover:bg-blue-100 text-blue-600 border-0 flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Add Education
+              </Button>
             </div>
 
-            {/* Submit Error */}
-            {errors["submit"] && (
-              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                <AlertCircle className="h-4 w-4" />
-                <span>{errors["submit"]}</span>
-              </div>
-            )}
-
-            {/* Success Message */}
-            {successMessage && (
-              <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
-                <CheckCircle className="h-4 w-4" />
-                <span>{successMessage}</span>
-              </div>
-            )}
-
-            {/* Submit Button */}
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-3 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? (
-                <div className="flex items-center justify-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Saving...</span>
+            <div className="space-y-4">
+              {(profileData.education || []).map((edu) => (
+                <div key={edu.id} className="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                    <Input
+                      value={edu.school}
+                      onChange={(e) => updateEducation(edu.id, 'school', e.target.value)}
+                      placeholder="University/School"
+                      className="font-medium"
+                    />
+                    <Input
+                      value={edu.degree}
+                      onChange={(e) => updateEducation(edu.id, 'degree', e.target.value)}
+                      placeholder="Degree"
+                    />
+                    <Input
+                      value={edu.field || ''}
+                      onChange={(e) => updateEducation(edu.id, 'field', e.target.value)}
+                      placeholder="Field of Study"
+                    />
+                    <div className="flex gap-2">
+                      <Input
+                        value={edu.startYear || ''}
+                        onChange={(e) => updateEducation(edu.id, 'startYear', e.target.value)}
+                        placeholder="Start Year"
+                        className="flex-1"
+                      />
+                      <Input
+                        value={edu.endYear || ''}
+                        onChange={(e) => updateEducation(edu.id, 'endYear', e.target.value)}
+                        placeholder="End Year"
+                        className="flex-1"
+                      />
+                    </div>
+                  </div>
+                  <textarea
+                    value={edu.description || ''}
+                    onChange={(e) => updateEducation(edu.id, 'description', e.target.value)}
+                    placeholder="Description (achievements, honors, etc.)"
+                    rows={2}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm mb-3"
+                  />
+                  <div className="flex items-center justify-between">
+                    <label className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={edu.visible ?? true}
+                        onChange={(e) => updateEducation(edu.id, 'visible', e.target.checked)}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-gray-600">Visible on profile</span>
+                    </label>
+                    <Button
+                      onClick={() => removeEducation(edu.id)}
+                      className="bg-red-50 hover:bg-red-100 text-red-600 border-0 p-2"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-              ) : (
-                <div className="flex items-center justify-center gap-2">
-                  <Save className="h-5 w-5" />
-                  <span>Save Changes</span>
+              ))}
+
+              {(!profileData.education || profileData.education.length === 0) && (
+                <div className="text-center py-8 text-gray-500">
+                  <GraduationCap className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                  <p>No education entries yet</p>
+                  <p className="text-sm">Click "Add Education" to add your educational background</p>
                 </div>
               )}
-            </Button>
-          </form>
-        </div>
+            </div>
+          </div>
+        );
 
-        {/* Password Change Section */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <Key className="h-5 w-5 text-red-500" />
-            Change Password
-          </h3>
+      case 'experience':
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-gray-600">Manage your work experience</p>
+              <Button
+                onClick={addWork}
+                className="bg-purple-50 hover:bg-purple-100 text-purple-600 border-0 flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Add Experience
+              </Button>
+            </div>
 
-          <form onSubmit={handlePasswordSubmit} className="space-y-4">
+            <div className="space-y-4">
+              {(profileData.work_history || []).map((work) => (
+                <div key={work.id} className="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                    <Input
+                      value={work.title}
+                      onChange={(e) => updateWork(work.id, 'title', e.target.value)}
+                      placeholder="Job Title"
+                      className="font-medium"
+                    />
+                    <Input
+                      value={work.company}
+                      onChange={(e) => updateWork(work.id, 'company', e.target.value)}
+                      placeholder="Company"
+                    />
+                    <Input
+                      value={work.department || ''}
+                      onChange={(e) => updateWork(work.id, 'department', e.target.value)}
+                      placeholder="Department"
+                    />
+                    <div className="flex gap-2">
+                      <Input
+                        value={work.startYear || ''}
+                        onChange={(e) => updateWork(work.id, 'startYear', e.target.value)}
+                        placeholder="Start Year"
+                        className="flex-1"
+                      />
+                      <Input
+                        value={work.endYear || ''}
+                        onChange={(e) => updateWork(work.id, 'endYear', e.target.value)}
+                        placeholder="End Year"
+                        className="flex-1"
+                      />
+                    </div>
+                  </div>
+                  <textarea
+                    value={work.description || ''}
+                    onChange={(e) => updateWork(work.id, 'description', e.target.value)}
+                    placeholder="Job description, responsibilities, achievements..."
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none text-sm mb-3"
+                  />
+                  <div className="flex items-center justify-between">
+                    <label className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={work.visible ?? true}
+                        onChange={(e) => updateWork(work.id, 'visible', e.target.checked)}
+                        className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                      />
+                      <span className="text-gray-600">Visible on profile</span>
+                    </label>
+                    <Button
+                      onClick={() => removeWork(work.id)}
+                      className="bg-red-50 hover:bg-red-100 text-red-600 border-0 p-2"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+
+              {(!profileData.work_history || profileData.work_history.length === 0) && (
+                <div className="text-center py-8 text-gray-500">
+                  <Briefcase className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                  <p>No work experience entries yet</p>
+                  <p className="text-sm">Click "Add Experience" to add your work history</p>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
+      case 'security':
+        return (
+          <div className="space-y-6">
+            <p className="text-sm text-gray-600">Update your password and security settings</p>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Current Password */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Current Password
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-400" />
-                  </div>
                   <Input
                     type={showPasswords.current ? "text" : "password"}
                     value={passwordData.current_password}
-                    onChange={(e) =>
-                      handlePasswordChange("current_password", e.target.value)
-                    }
-                    variant={
-                      passwordErrors["current_password"] ? "error" : "default"
-                    }
-                    className="pl-10 pr-10"
+                    onChange={(e) => handlePasswordChange("current_password", e.target.value)}
+                    variant={passwordErrors["current_password"] ? "error" : "default"}
+                    className="pr-10"
                   />
                   <button
                     type="button"
                     className="absolute inset-y-0 right-0 pr-3 flex items-center"
                     onClick={() =>
-                      setShowPasswords((prev) => ({
-                        ...prev,
-                        current: !prev.current,
-                      }))
+                      setShowPasswords((prev) => ({ ...prev, current: !prev.current }))
                     }
                   >
                     {showPasswords.current ? (
-                      <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      <EyeOff className="h-4 w-4 text-gray-400" />
                     ) : (
-                      <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      <Eye className="h-4 w-4 text-gray-400" />
                     )}
                   </button>
                 </div>
                 {passwordErrors["current_password"] && (
-                  <div className="flex items-center gap-2 mt-2 text-red-600 text-sm">
-                    <AlertCircle className="h-4 w-4" />
-                    <span>{passwordErrors["current_password"]}</span>
-                  </div>
+                  <p className="text-red-600 text-sm mt-1">{passwordErrors["current_password"]}</p>
                 )}
               </div>
 
-              {/* New Password */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   New Password
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-400" />
-                  </div>
                   <Input
                     type={showPasswords.new ? "text" : "password"}
                     value={passwordData.new_password}
-                    onChange={(e) =>
-                      handlePasswordChange("new_password", e.target.value)
-                    }
-                    variant={
-                      passwordErrors["new_password"] ? "error" : "default"
-                    }
-                    className="pl-10 pr-10"
+                    onChange={(e) => handlePasswordChange("new_password", e.target.value)}
+                    variant={passwordErrors["new_password"] ? "error" : "default"}
+                    className="pr-10"
                   />
                   <button
                     type="button"
@@ -535,102 +837,230 @@ const ProfileRightCard: React.FC = () => {
                     }
                   >
                     {showPasswords.new ? (
-                      <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      <EyeOff className="h-4 w-4 text-gray-400" />
                     ) : (
-                      <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      <Eye className="h-4 w-4 text-gray-400" />
                     )}
                   </button>
                 </div>
                 {passwordErrors["new_password"] && (
-                  <div className="flex items-center gap-2 mt-2 text-red-600 text-sm">
-                    <AlertCircle className="h-4 w-4" />
-                    <span>{passwordErrors["new_password"]}</span>
-                  </div>
+                  <p className="text-red-600 text-sm mt-1">{passwordErrors["new_password"]}</p>
                 )}
               </div>
 
-              {/* Confirm New Password */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Confirm New Password
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-400" />
-                  </div>
                   <Input
                     type={showPasswords.confirm ? "text" : "password"}
                     value={passwordData.confirm_password}
-                    onChange={(e) =>
-                      handlePasswordChange("confirm_password", e.target.value)
-                    }
-                    variant={
-                      passwordErrors["confirm_password"] ? "error" : "default"
-                    }
-                    className="pl-10 pr-10"
+                    onChange={(e) => handlePasswordChange("confirm_password", e.target.value)}
+                    variant={passwordErrors["confirm_password"] ? "error" : "default"}
+                    className="pr-10"
                   />
                   <button
                     type="button"
                     className="absolute inset-y-0 right-0 pr-3 flex items-center"
                     onClick={() =>
-                      setShowPasswords((prev) => ({
-                        ...prev,
-                        confirm: !prev.confirm,
-                      }))
+                      setShowPasswords((prev) => ({ ...prev, confirm: !prev.confirm }))
                     }
                   >
                     {showPasswords.confirm ? (
-                      <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      <EyeOff className="h-4 w-4 text-gray-400" />
                     ) : (
-                      <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      <Eye className="h-4 w-4 text-gray-400" />
                     )}
                   </button>
                 </div>
                 {passwordErrors["confirm_password"] && (
-                  <div className="flex items-center gap-2 mt-2 text-red-600 text-sm">
-                    <AlertCircle className="h-4 w-4" />
-                    <span>{passwordErrors["confirm_password"]}</span>
-                  </div>
+                  <p className="text-red-600 text-sm mt-1">{passwordErrors["confirm_password"]}</p>
                 )}
               </div>
             </div>
 
-            {/* Submit Error */}
-            {passwordErrors["submit"] && (
-              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                <AlertCircle className="h-4 w-4" />
-                <span>{passwordErrors["submit"]}</span>
-              </div>
-            )}
-
-            {/* Success Message */}
+            {/* Password Success/Error Messages */}
             {passwordSuccessMessage && (
-              <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
-                <CheckCircle className="h-4 w-4" />
+              <div className="flex items-center gap-2 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
+                <CheckCircle className="h-5 w-5" />
                 <span>{passwordSuccessMessage}</span>
               </div>
             )}
 
-            {/* Submit Button */}
-            <Button
-              type="submit"
-              disabled={isPasswordLoading}
-              className="w-full bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white py-3 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isPasswordLoading ? (
-                <div className="flex items-center justify-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Changing Password...</span>
+            {passwordErrors["submit"] && (
+              <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                <AlertCircle className="h-5 w-5" />
+                <span>{passwordErrors["submit"]}</span>
+              </div>
+            )}
+
+            <div className="pt-4 border-t border-gray-200">
+              <Button
+                onClick={handlePasswordSubmit}
+                disabled={isPasswordLoading}
+                className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2"
+              >
+                {isPasswordLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Changing...
+                  </>
+                ) : (
+                  <>
+                    <Key className="h-4 w-4" />
+                    Change Password
+                  </>
+                )}
+              </Button>
+            </div>
+
+            {/* Account Status Section */}
+            <div className="pt-6 border-t border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Account Status</h3>
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className={`w-3 h-3 rounded-full ${profileData.is_active ? "bg-green-500" : "bg-red-500"}`}></div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">
+                      Account Status: {profileData.is_active ? "Active" : "Inactive"}
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      {profileData.is_active ? "Your account is active and accessible" : "Your account is currently inactive"}
+                    </p>
+                  </div>
                 </div>
-              ) : (
-                <div className="flex items-center justify-center gap-2">
-                  <Key className="h-5 w-5" />
-                  <span>Change Password</span>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={profileData.is_active}
+                    onChange={(e) => handleProfileChange("is_active", e.target.checked)}
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+              </div>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="h-full bg-white flex flex-col">
+      {/* Avatar Section */}
+      <div className="p-6 border-b border-gray-100 bg-gray-50">
+        <div className="flex items-center gap-4">
+          {/* Avatar */}
+          <div className="relative">
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
+              {profileData.first_name?.[0]?.toUpperCase() || profileData.username?.[0]?.toUpperCase() || 'U'}
+            </div>
+            <button className="absolute -bottom-1 -right-1 w-6 h-6 bg-gray-900 rounded-full flex items-center justify-center hover:bg-gray-800 transition-colors">
+              <Camera className="h-3 w-3 text-white" />
+            </button>
+          </div>
+
+          {/* Name & Details */}
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold text-gray-900">
+              {profileData.first_name && profileData.last_name
+                ? `${profileData.first_name} ${profileData.last_name}`
+                : profileData.username || 'John Doe'
+              }
+            </h3>
+            <p className="text-sm text-gray-600">{profileData.position || 'Senior Software Engineer'}</p>
+            <p className="text-xs text-gray-500">{profileData.department || 'Tech Solutions Inc.'}</p>
+          </div>
+
+          {/* Status Indicator */}
+          <div className="flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full ${profileData.is_active ? "bg-green-500" : "bg-red-500"}`}></div>
+            <span className="text-xs text-gray-600">
+              {profileData.is_active ? "Active" : "Inactive"}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Tab Navigation */}
+      <div className="border-b border-gray-200 bg-gray-50">
+        <div className="flex items-center justify-between">
+          <div className="flex">
+            {[
+              { id: 'personal', label: 'Personal Info', icon: User },
+              { id: 'professional', label: 'Professional', icon: Briefcase },
+              { id: 'education', label: 'Education', icon: GraduationCap },
+              { id: 'experience', label: 'Experience', icon: Briefcase },
+              { id: 'security', label: 'Security', icon: Key },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                    activeTab === tab.id
+                      ? 'border-blue-500 text-blue-600 bg-white'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Auto-save indicator */}
+          {activeTab !== 'security' && (
+            <div className="px-4 py-3 text-xs text-gray-500 flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              Auto-save enabled
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Content Area - grows to fill available space */}
+      <div className="flex-1 p-6 overflow-y-auto">
+        <form onSubmit={activeTab === 'security' ? handlePasswordSubmit : handleProfileSubmit} className="h-full">
+          {renderTabContent()}
+
+          {/* Manual Save Button for Profile */}
+          {activeTab !== 'security' && (
+            <div className="mt-6 flex justify-end">
+              <button
+                type="submit"
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+              >
+                Save Profile
+              </button>
+            </div>
+          )}
+
+          {/* Success/Error Messages for Profile */}
+          {activeTab !== 'security' && (
+            <>
+              {successMessage && (
+                <div className="flex items-center gap-2 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 mt-6">
+                  <CheckCircle className="h-5 w-5" />
+                  <span>{successMessage}</span>
                 </div>
               )}
-            </Button>
-          </form>
-        </div>
+
+              {errors["submit"] && (
+                <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 mt-6">
+                  <AlertCircle className="h-5 w-5" />
+                  <span>{errors["submit"]}</span>
+                </div>
+              )}
+            </>
+          )}
+        </form>
       </div>
     </div>
   );

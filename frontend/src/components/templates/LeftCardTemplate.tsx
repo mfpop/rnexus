@@ -1,7 +1,6 @@
 import React from "react";
 import { Card, CardHeader, CardContent, CardFooter } from "../ui/Card";
 import Button from "../ui/Button";
-import ScrollArea from "../ui/ScrollArea";
 import { Maximize2, Minimize2 } from "lucide-react";
 
 interface LeftCardTemplateProps {
@@ -72,8 +71,9 @@ const LeftCardTemplate: React.FC<LeftCardTemplateProps> = ({
       </CardHeader>
 
       {/* Content Area - Template Structure NEVER changes, only content varies */}
-      <CardContent className="flex-grow p-0 overflow-hidden">
-        <ScrollArea className="h-full">
+      <CardContent className="flex-1 min-h-0 p-0 overflow-hidden relative">
+        {/* increased bottom padding so absolutely positioned footer doesn't cover last items */}
+        <div className="h-full overflow-y-auto pb-12">
           {content || (
             <div className="p-4">
               <p className="text-gray-600">
@@ -81,13 +81,13 @@ const LeftCardTemplate: React.FC<LeftCardTemplateProps> = ({
               </p>
             </div>
           )}
-        </ScrollArea>
+        </div>
       </CardContent>
 
       {/* Footer - Template Structure NEVER changes */}
-      <CardFooter className="h-12 border-t border-gray-200 bg-gray-50/90 backdrop-blur-md shadow-sm shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] flex items-center justify-center p-0">
+      <CardFooter className="absolute bottom-0 left-0 right-0 h-12 border-t border-gray-200 bg-gray-50/90 backdrop-blur-md shadow-sm shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] flex items-center justify-center p-0">
         {typeof footer === "string" ? (
-          <span className="text-sm text-teal-600 px-3 py-1 rounded">
+          <span className="text-sm text-teal-600 px-3 py-3 rounded">
             {footer}
           </span>
         ) : (

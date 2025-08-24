@@ -3,8 +3,7 @@ import {
   TrendingUp,
   TrendingDown,
   Target,
-  Calendar,
-  Clock,
+
   BarChart3,
   Activity,
   RefreshCw,
@@ -13,7 +12,7 @@ import {
   Settings,
   AlertTriangle,
   CheckCircle,
-  Zap,
+
   Eye,
   Filter,
 } from "lucide-react";
@@ -21,12 +20,6 @@ import { Metric } from "./MetricsContext";
 
 interface MetricsRightCardProps {
   selectedMetric: Metric | null;
-}
-
-interface ChartDataPoint {
-  date: Date;
-  value: number;
-  label?: string;
 }
 
 /**
@@ -42,25 +35,16 @@ const MetricsRightCard: React.FC<MetricsRightCardProps> = ({
   const [timeRange, setTimeRange] = useState<"1h" | "24h" | "7d" | "30d">(
     "24h",
   );
-  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
+  // const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
 
   // Simulate real-time data updates
-  useEffect(() => {
-    if (!selectedMetric || !isRealTime) return;
+    useEffect(() => {
+      if (!selectedMetric || !isRealTime) return;
 
-    const interval = setInterval(() => {
-      if (selectedMetric.historicalData) {
-        setChartData(
-          selectedMetric.historicalData.map((point) => ({
-            date: point.date,
-            value: point.value,
-          })),
-        );
-      }
-    }, 5000); // Update every 5 seconds
+      // Placeholder for real-time update logic if needed in the future
 
-    return () => clearInterval(interval);
-  }, [selectedMetric, isRealTime]);
+      return () => {};
+    }, [selectedMetric, isRealTime]);
 
   const formatValue = (value: number, unit: string) => {
     return `${value.toLocaleString()}${unit}`;

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   Search,
-  Filter,
   Factory,
   AlertTriangle,
   CheckCircle,

@@ -4,7 +4,6 @@ import {
   Target,
   Globe,
   Heart,
-  Users,
   Award,
   Phone,
   Mail,

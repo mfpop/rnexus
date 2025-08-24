@@ -207,7 +207,7 @@ const HomeRightCard: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 p-4 h-full w-full flex flex-col">
+    <div data-testid="home-rightcard" className="space-y-6 p-4 h-full w-full flex flex-col">
       {/* 1. Stats Grid - Exact structure from home.md */}
       <div className="grid grid-cols-4 gap-2 mb-6 w-full">
         {stats.map((stat) => (

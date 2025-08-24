@@ -9,7 +9,6 @@ import {
   TrendingUp,
   TrendingDown,
   Pause,
-  Play,
   Square,
   RefreshCw,
   Thermometer,
@@ -92,6 +91,9 @@ const ProductionRightCard: React.FC<ProductionRightCardProps> = ({
       minute: "2-digit",
     });
   };
+
+  // Safely get the latest real-time data point (may be undefined)
+  const lastData = realTimeData.length > 0 ? realTimeData[realTimeData.length - 1] : undefined;
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -422,36 +424,28 @@ const ProductionRightCard: React.FC<ProductionRightCardProps> = ({
                 <Thermometer className="h-6 w-6 text-orange-500 mx-auto mb-1" />
                 <div className="text-sm text-gray-600">Temperature</div>
                 <div className="text-lg font-semibold">
-                  {realTimeData.length > 0
-                    ? `${realTimeData[realTimeData.length - 1].temperature.toFixed(1)}°C`
-                    : "75.0°C"}
+                  {lastData ? `${lastData.temperature.toFixed(1)}°C` : "75.0°C"}
                 </div>
               </div>
               <div className="text-center p-3 bg-gray-50 rounded-lg">
                 <Zap className="h-6 w-6 text-blue-500 mx-auto mb-1" />
                 <div className="text-sm text-gray-600">Pressure</div>
                 <div className="text-lg font-semibold">
-                  {realTimeData.length > 0
-                    ? `${realTimeData[realTimeData.length - 1].pressure.toFixed(0)} PSI`
-                    : "150 PSI"}
+                  {lastData ? `${lastData.pressure.toFixed(0)} PSI` : "150 PSI"}
                 </div>
               </div>
               <div className="text-center p-3 bg-gray-50 rounded-lg">
                 <Activity className="h-6 w-6 text-green-500 mx-auto mb-1" />
                 <div className="text-sm text-gray-600">Speed</div>
                 <div className="text-lg font-semibold">
-                  {realTimeData.length > 0
-                    ? `${realTimeData[realTimeData.length - 1].speed.toFixed(0)} RPM`
-                    : "100 RPM"}
+                  {lastData ? `${lastData.speed.toFixed(0)} RPM` : "100 RPM"}
                 </div>
               </div>
               <div className="text-center p-3 bg-gray-50 rounded-lg">
                 <Activity className="h-6 w-6 text-purple-500 mx-auto mb-1" />
                 <div className="text-sm text-gray-600">Vibration</div>
                 <div className="text-lg font-semibold">
-                  {realTimeData.length > 0
-                    ? `${realTimeData[realTimeData.length - 1].vibration.toFixed(1)} mm/s`
-                    : "2.5 mm/s"}
+                  {lastData ? `${lastData.vibration.toFixed(1)} mm/s` : "2.5 mm/s"}
                 </div>
               </div>
             </div>

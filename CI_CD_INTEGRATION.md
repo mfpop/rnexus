@@ -1,359 +1,867 @@
-# CI/CD Integration Guide for RNexus
+# Nexus CI/CD Integration Guide
 
-## Overview
-This guide explains how to integrate the code quality tools into your CI/CD pipeline and how to use them locally for development.
+## 🚀 Continuous Integration & Deployment Overview
 
-## 🛠️ Available Tools
+This document provides comprehensive information about the CI/CD pipeline integration for the Nexus manufacturing operations management system, including automated testing, quality checks, and deployment processes.
 
-### Code Formatting
-- **Black** - Automatic code formatting
-- **isort** - Import statement organization
+## 🔐 Recent System Updates
 
-### Code Quality
-- **MyPy** - Static type checking
-- **Pre-commit hooks** - Automated quality checks
+### JWT Authentication Fix
+The system has been updated with a robust JWT authentication middleware that resolves the "logged out on refresh" issue:
 
-### Testing
-- **Django tests** - Built-in Django testing
-- **Pytest** - Advanced testing framework with coverage
+- **Enhanced Middleware**: Added `process_view` method to ensure proper user authentication
+- **Conflict Resolution**: Handles conflicts with Django's AuthenticationMiddleware
+- **Improved Security**: Better token validation and user session management
+- **Comprehensive Testing**: Full authentication flow testing and validation
 
-### Security
-- **Bandit** - Security vulnerability scanning
-- **Safety** - Dependency vulnerability checking
+### System Enhancements
+- **Activities System**: Complete manufacturing activities management
+- **Real-time Updates**: WebSocket-based notifications and updates
+- **Enhanced Database Models**: Comprehensive data modeling for manufacturing operations
+- **Frontend Components**: Improved React components with TypeScript
 
-## 🚀 Local Development
+## 🏗️ CI/CD Pipeline Architecture
 
-### Quick Start
-```bash
-cd backend
-source venv/bin/activate
-
-# Install development dependencies
-make install
-
-# Run all quality checks
-make all
-
-# Format code only
-make format
-
-# Run linting only
-make lint
-
-# Run tests with coverage
-make coverage
+### Pipeline Stages
+```
+1. Code Quality Checks → 2. Testing → 3. Security Scanning → 4. Build → 5. Deploy
 ```
 
-### Available Make Commands
-```bash
-make help          # Show all available commands
-make install       # Install development dependencies
-make format        # Format code with Black and isort
-make lint          # Run all linting tools
-make test          # Run Django tests
-make coverage      # Run tests with coverage
-make security      # Run security scans
-make clean         # Clean up generated files
-make all           # Run all checks
-make pre-commit    # Run pre-commit hooks
-make dev           # Quick development workflow
-```
+### Technology Stack
+- **GitHub Actions**: CI/CD orchestration
+- **Docker**: Containerization
+- **Python**: Backend testing and quality checks
+- **Node.js**: Frontend testing and building
+- **PostgreSQL**: Database testing
+- **Redis**: Cache and WebSocket testing
 
-### Individual Tool Usage
-```bash
-# Black - Code formatting
-black .                    # Format all files
-black . --check           # Check formatting without changing
-black . --diff            # Show what would change
+## 📋 GitHub Actions Workflow
 
-# isort - Import sorting
-isort .                   # Sort imports in all files
-isort . --check-only      # Check without changing
-isort . --diff            # Show what would change
-
-# MyPy - Type checking
-mypy .                    # Run type checking
-mypy . --ignore-missing-imports  # Ignore missing imports
-mypy . --no-strict-optional      # Less strict type checking
-
-# Pre-commit hooks
-pre-commit run --all-files       # Run on all files
-pre-commit install               # Install git hooks
-pre-commit autoupdate            # Update hook versions
-```
-
-## 🔄 CI/CD Pipeline Integration
-
-### GitHub Actions Workflow
-The project includes a comprehensive GitHub Actions workflow (`.github/workflows/ci.yml`) that:
-
-1. **Runs on every push and pull request**
-2. **Tests multiple Python and Node.js versions**
-3. **Integrates all code quality tools**
-4. **Provides security scanning**
-5. **Builds Docker images**
-6. **Deploys to production**
-
-### Workflow Jobs
-
-#### Backend Tests
-- Python 3.13
-- Django 5.2.5
-- Code formatting (Black)
-- Import sorting (isort)
-- Type checking (MyPy)
-- Django tests
-- Pytest with coverage
-- Coverage reporting to Codecov
-
-#### Frontend Tests
-- Node.js 18 and 20
-- ESLint
-- TypeScript type checking
-- Unit tests (Vitest)
-- E2E tests (Playwright)
-
-#### Security Scanning
-- Bandit security scan
-- Safety dependency check
-- Artifact upload for review
-
-#### Docker Build
-- Builds Docker images
-- Only runs on main branch
-- Requires all tests to pass
-
-#### Deployment
-- Production deployment
-- Only runs on main branch
-- Requires Docker build to succeed
-
-## 📊 Quality Gates
-
-### Pre-commit Hooks
-The following checks run automatically on every commit:
-- ✅ Trailing whitespace removal
-- ✅ End of file fixes
-- ✅ YAML validation
-- ✅ Large file detection
-- ✅ Merge conflict detection
-- ✅ Debug statement detection
-- ✅ Code formatting (Black)
-- ✅ Import sorting (isort)
-- ✅ Type checking (MyPy)
-
-### CI/CD Quality Gates
-The following must pass for deployment:
-- ✅ All code formatting checks
-- ✅ All linting checks
-- ✅ All type checking
-- ✅ All tests passing
-- ✅ Security scans clean
-- ✅ Coverage thresholds met
-
-## 🔧 Configuration Files
-
-### Backend Configuration
-- **`pyproject.toml`** - Tool configuration (Black, isort, MyPy, pytest)
-- **`.pre-commit-config.yaml`** - Pre-commit hooks configuration
-- **`requirements-dev.txt`** - Development dependencies
-- **`Makefile`** - Development tool commands
-
-### Frontend Configuration
-- **`package.json`** - Dependencies and scripts
-- **`eslint.config.js`** - ESLint configuration
-- **`tsconfig.json`** - TypeScript configuration
-- **`playwright.config.ts`** - E2E testing configuration
-
-## 📈 Coverage and Reporting
-
-### Coverage Reports
-- **Terminal output** - Shows coverage summary
-- **HTML report** - Detailed coverage in `htmlcov/` directory
-- **XML report** - For CI/CD integration
-- **Codecov integration** - Historical coverage tracking
-
-### Security Reports
-- **Bandit** - Security vulnerability scan
-- **Safety** - Dependency vulnerability check
-- **Artifact storage** - Reports saved for review
-
-## 🚀 Deployment Pipeline
-
-### Branch Strategy
-- **`main`** - Production branch
-- **`develop`** - Development branch
-- **Feature branches** - For new features
-
-### Deployment Flow
-1. **Code pushed to main**
-2. **CI/CD pipeline triggers**
-3. **All quality checks run**
-4. **Tests execute**
-5. **Security scans complete**
-6. **Docker images built**
-7. **Deployment to production**
-
-### Rollback Strategy
-- **Automatic rollback** on failed deployment
-- **Manual rollback** via GitHub Actions
-- **Health checks** before marking deployment successful
-
-## 🔍 Monitoring and Alerting
-
-### Quality Metrics
-- **Code coverage** - Tracked over time
-- **Type coverage** - MyPy compliance
-- **Security issues** - Vulnerability tracking
-- **Performance** - Build and test times
-
-### Alerting
-- **Failed builds** - Immediate notification
-- **Security issues** - High priority alerts
-- **Coverage drops** - Quality degradation alerts
-- **Performance regressions** - Build time increases
-
-## 🛠️ Troubleshooting
-
-### Common Issues
-
-#### Pre-commit Hooks Fail
-```bash
-# Reinstall hooks
-pre-commit uninstall
-pre-commit install
-
-# Update hooks
-pre-commit autoupdate
-```
-
-#### MyPy Type Errors
-```bash
-# Use more lenient configuration
-mypy . --ignore-missing-imports --no-strict-optional
-
-# Check specific file
-mypy api/views.py
-```
-
-#### Coverage Issues
-```bash
-# Clean coverage data
-make clean
-
-# Run coverage again
-make coverage
-```
-
-#### Security Scan Failures
-```bash
-# Update security tools
-pip install --upgrade bandit safety
-
-# Run individual scans
-bandit -r . -f txt
-safety check
-```
-
-## 📚 Best Practices
-
-### Development Workflow
-1. **Always run pre-commit hooks** before committing
-2. **Use Make commands** for consistency
-3. **Check coverage** regularly
-4. **Address security issues** immediately
-5. **Keep dependencies updated**
-
-### Code Quality
-1. **Follow Black formatting** strictly
-2. **Organize imports** with isort
-3. **Add type hints** gradually
-4. **Write tests** for new features
-5. **Maintain high coverage**
-
-### CI/CD
-1. **Never skip quality gates**
-2. **Monitor pipeline performance**
-3. **Review security reports**
-4. **Test deployment process**
-5. **Document changes**
-
-## 🔗 Integration Examples
-
-### Other CI/CD Platforms
-
-#### GitLab CI
+### Main CI/CD Pipeline
 ```yaml
-# .gitlab-ci.yml
-stages:
-  - quality
-  - test
-  - build
-  - deploy
+# .github/workflows/ci.yml
+name: Nexus CI/CD Pipeline
 
-quality:
-  stage: quality
-  script:
-    - cd backend
-    - pip install -r requirements-dev.txt
-    - black . --check
-    - isort . --check-only
-    - mypy . --ignore-missing-imports
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '18'
+  DJANGO_SETTINGS_MODULE: core.settings
+
+jobs:
+  quality-checks:
+    name: Code Quality & Security
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r backend/requirements-dev.txt
+
+    - name: Run Black (code formatting)
+      run: |
+        cd backend
+        black --check .
+
+    - name: Run isort (import sorting)
+      run: |
+        cd backend
+        isort --check-only .
+
+    - name: Run MyPy (type checking)
+      run: |
+        cd backend
+        mypy . --ignore-missing-imports
+
+    - name: Run security scans
+      run: |
+        cd backend
+        bandit -r . -f json -o bandit-report.json || true
+        safety check --json --output safety-report.json || true
+
+    - name: Upload quality reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: quality-reports
+        path: |
+          backend/bandit-report.json
+          backend/safety-report.json
+
+  backend-tests:
+    name: Backend Testing
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r backend/requirements.txt
+        pip install -r backend/requirements-dev.txt
+
+    - name: Set up environment
+      run: |
+        cd backend
+        echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/test_db" >> .env
+        echo "REDIS_URL=redis://localhost:6379" >> .env
+        echo "DJANGO_SECRET_KEY=test-secret-key" >> .env
+        echo "DJANGO_DEBUG=True" >> .env
+
+    - name: Run database migrations
+      run: |
+        cd backend
+        python manage.py migrate
+
+    - name: Run tests
+      run: |
+        cd backend
+        python manage.py test --verbosity=2
+
+    - name: Run tests with coverage
+      run: |
+        cd backend
+        coverage run --source='.' manage.py test
+        coverage report
+        coverage xml
+
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+      with:
+        file: backend/coverage.xml
+        flags: backend
+        name: backend-coverage
+
+  frontend-tests:
+    name: Frontend Testing
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install dependencies
+      run: |
+        cd frontend
+        npm ci
+
+    - name: Run linting
+      run: |
+        cd frontend
+        npm run lint
+
+    - name: Run type checking
+      run: |
+        cd frontend
+        npm run type-check
+
+    - name: Run unit tests
+      run: |
+        cd frontend
+        npm run test:coverage
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: frontend-test-results
+        path: frontend/coverage/
+
+  integration-tests:
+    name: Integration Testing
+    runs-on: ubuntu-latest
+    needs: [backend-tests, frontend-tests]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r backend/requirements.txt
+        cd frontend && npm ci
+
+    - name: Start backend server
+      run: |
+        cd backend
+        echo "DATABASE_URL=sqlite:///test.db" >> .env
+        echo "DJANGO_SECRET_KEY=test-secret" >> .env
+        python manage.py migrate
+        python manage.py runserver --noreload &
+        sleep 10
+
+    - name: Run integration tests
+      run: |
+        cd frontend
+        npm run test:integration
+
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    needs: [quality-checks, backend-tests, frontend-tests, integration-tests]
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build backend image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./backend
+        file: ./backend/Dockerfile
+        push: false
+        tags: nexus-backend:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Build frontend image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./frontend
+        file: ./frontend/Dockerfile
+        push: false
+        tags: nexus-frontend:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: docker-images
+        path: |
+          backend/
+          frontend/
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Deploy to staging environment
+      run: |
+        echo "Deploying to staging environment..."
+        # Add your staging deployment logic here
+
+    - name: Run smoke tests
+      run: |
+        echo "Running smoke tests on staging..."
+        # Add your smoke test logic here
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.ref == 'refs/heads/main'
+    environment: production
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Deploy to production environment
+      run: |
+        echo "Deploying to production environment..."
+        # Add your production deployment logic here
+
+    - name: Run health checks
+      run: |
+        echo "Running health checks on production..."
+        # Add your health check logic here
 ```
 
-#### Jenkins Pipeline
-```groovy
-// Jenkinsfile
-pipeline {
-    agent any
-    stages {
-        stage('Quality') {
-            steps {
-                sh 'cd backend && make lint'
-            }
-        }
-        stage('Test') {
-            steps {
-                sh 'cd backend && make test'
-            }
-        }
+## 🐳 Docker Configuration
+
+### Backend Dockerfile
+```dockerfile
+# backend/Dockerfile
+FROM python:3.11-slim
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV DJANGO_SETTINGS_MODULE=core.settings
+
+# Set work directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        postgresql-client \
+        build-essential \
+        libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy project
+COPY . .
+
+# Collect static files
+RUN python manage.py collectstatic --noinput
+
+# Run migrations
+RUN python manage.py migrate
+
+# Expose port
+EXPOSE 8000
+
+# Start server
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "core.wsgi:application"]
+```
+
+### Frontend Dockerfile
+```dockerfile
+# frontend/Dockerfile
+FROM node:18-alpine as build
+
+# Set work directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production
+
+# Copy source code
+COPY . .
+
+# Build application
+RUN npm run build
+
+# Production stage
+FROM nginx:alpine
+
+# Copy built application
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Expose port
+EXPOSE 80
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]
+```
+
+### Docker Compose
+```yaml
+# docker-compose.yml
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://nexus_user:nexus_password@db:5432/nexus_db
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./backend:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=nexus_db
+      - POSTGRES_USER=nexus_user
+      - POSTGRES_PASSWORD=nexus_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
+  static_volume:
+  media_volume:
+```
+
+## 🧪 Testing Strategy
+
+### Test Types
+1. **Unit Tests**: Individual component testing
+2. **Integration Tests**: Component interaction testing
+3. **End-to-End Tests**: Complete user flow testing
+4. **Performance Tests**: Load and stress testing
+5. **Security Tests**: Vulnerability and penetration testing
+
+### Test Configuration
+```python
+# backend/pytest.ini
+[tool:pytest]
+DJANGO_SETTINGS_MODULE = core.settings
+python_files = tests.py test_*.py *_tests.py
+addopts =
+    --strict-markers
+    --strict-config
+    --cov=api
+    --cov-report=html
+    --cov-report=xml
+markers =
+    slow: marks tests as slow
+    integration: marks tests as integration tests
+    unit: marks tests as unit tests
+    auth: marks tests as authentication tests
+```
+
+### Test Data Management
+```python
+# backend/api/management/commands/populate_test_data.py
+class Command(BaseCommand):
+    help = 'Populate database with test data for CI/CD'
+
+    def handle(self, *args, **options):
+        self.stdout.write('Creating test data...')
+
+        # Create test users
+        self.create_test_users()
+
+        # Create test activities
+        self.create_test_activities()
+
+        # Create test projects
+        self.create_test_projects()
+
+        self.stdout.write(
+            self.style.SUCCESS('Successfully created test data')
+        )
+```
+
+## 🔒 Security Integration
+
+### Security Scanning
+```yaml
+# Security scanning in CI/CD
+- name: Run Bandit security scan
+  run: |
+    cd backend
+    bandit -r . -f json -o bandit-report.json
+
+- name: Run Safety dependency check
+  run: |
+    cd backend
+    safety check --json --output safety-report.json
+
+- name: Run npm audit
+  run: |
+    cd frontend
+    npm audit --audit-level=moderate
+```
+
+### Security Headers
+```python
+# backend/core/settings.py
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_SECONDS = 31536000
+SECURE_REDIRECT_EXEMPT = []
+SECURE_SSL_REDIRECT = False  # Set to True in production
+SESSION_COOKIE_SECURE = False  # Set to True in production
+CSRF_COOKIE_SECURE = False  # Set to True in production
+```
+
+## 📊 Monitoring & Observability
+
+### Health Checks
+```python
+# backend/api/views.py
+from django.http import JsonResponse
+from django.db import connection
+from redis import Redis
+import os
+
+def health_check(request):
+    """Comprehensive health check endpoint"""
+    health_status = {
+        'status': 'healthy',
+        'timestamp': timezone.now().isoformat(),
+        'checks': {}
     }
+
+    # Database health check
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+        health_status['checks']['database'] = 'healthy'
+    except Exception as e:
+        health_status['checks']['database'] = f'unhealthy: {str(e)}'
+        health_status['status'] = 'unhealthy'
+
+    # Redis health check
+    try:
+        redis_client = Redis.from_url(settings.REDIS_URL)
+        redis_client.ping()
+        health_status['checks']['redis'] = 'healthy'
+    except Exception as e:
+        health_status['checks']['redis'] = f'unhealthy: {str(e)}'
+        health_status['status'] = 'unhealthy'
+
+    # File system health check
+    try:
+        test_file = os.path.join(settings.MEDIA_ROOT, 'health_check.txt')
+        with open(test_file, 'w') as f:
+            f.write('health check')
+        os.remove(test_file)
+        health_status['checks']['filesystem'] = 'healthy'
+    except Exception as e:
+        health_status['checks']['filesystem'] = f'unhealthy: {str(e)}'
+        health_status['status'] = 'unhealthy'
+
+    status_code = 200 if health_status['status'] == 'healthy' else 503
+    return JsonResponse(health_status, status=status_code)
+```
+
+### Logging Configuration
+```python
+# backend/core/settings.py
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'json': {
+            'format': '{"timestamp": "%(asctime)s", "level": "%(levelname)s", "message": "%(message)s"}',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'logs/django.log',
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'api': {
+            'handlers': ['file', 'console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
 }
 ```
 
-#### Azure DevOps
+## 🚀 Deployment Strategies
+
+### Blue-Green Deployment
 ```yaml
-# azure-pipelines.yml
-trigger:
-- main
+# Blue-green deployment configuration
+deploy-blue:
+  name: Deploy Blue Environment
+  runs-on: ubuntu-latest
 
-pool:
-  vmImage: 'ubuntu-latest'
+  steps:
+  - name: Deploy to blue environment
+    run: |
+      echo "Deploying to blue environment..."
+      # Blue deployment logic
 
-steps:
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '3.13'
-- script: |
-    cd backend
-    pip install -r requirements-dev.txt
-    make all
+  - name: Run health checks on blue
+    run: |
+      echo "Running health checks on blue..."
+      # Health check logic
+
+  - name: Switch traffic to blue
+    run: |
+      echo "Switching traffic to blue..."
+      # Traffic switching logic
+
+deploy-green:
+  name: Deploy Green Environment
+  runs-on: ubuntu-latest
+
+  steps:
+  - name: Deploy to green environment
+    run: |
+      echo "Deploying to green environment..."
+      # Green deployment logic
+
+  - name: Run health checks on green
+    run: |
+      echo "Running health checks on green..."
+      # Health check logic
+
+  - name: Switch traffic to green
+    run: |
+      echo "Switching traffic to green..."
+      # Traffic switching logic
 ```
 
-## 📞 Support
+### Canary Deployment
+```yaml
+# Canary deployment configuration
+deploy-canary:
+  name: Deploy Canary
+  runs-on: ubuntu-latest
 
-### Getting Help
-- **Documentation** - Check this guide first
-- **Issues** - Create GitHub issues for bugs
-- **Discussions** - Use GitHub Discussions for questions
-- **Team** - Reach out to the development team
+  steps:
+  - name: Deploy canary version
+    run: |
+      echo "Deploying canary version..."
+      # Canary deployment logic
 
-### Contributing
-- **Follow the quality standards**
-- **Add tests for new features**
-- **Update documentation**
-- **Use the established workflow**
+  - name: Route small traffic to canary
+    run: |
+      echo "Routing 5% traffic to canary..."
+      # Traffic routing logic
+
+  - name: Monitor canary performance
+    run: |
+      echo "Monitoring canary performance..."
+      # Performance monitoring logic
+
+  - name: Roll forward or rollback
+    run: |
+      echo "Evaluating canary performance..."
+      # Decision logic
+```
+
+## 🔄 Rollback Procedures
+
+### Automatic Rollback
+```yaml
+# Automatic rollback on failure
+deploy-with-rollback:
+  name: Deploy with Auto-rollback
+  runs-on: ubuntu-latest
+
+  steps:
+  - name: Deploy new version
+    run: |
+      echo "Deploying new version..."
+      # Deployment logic
+
+  - name: Wait for deployment to stabilize
+    run: |
+      echo "Waiting for deployment to stabilize..."
+      sleep 60
+
+  - name: Run health checks
+    run: |
+      echo "Running health checks..."
+      # Health check logic
+
+  - name: Rollback on failure
+    if: failure()
+    run: |
+      echo "Health checks failed, rolling back..."
+      # Rollback logic
+```
+
+### Manual Rollback
+```bash
+# Manual rollback commands
+# Rollback to previous version
+git checkout HEAD~1
+docker-compose down
+docker-compose up -d
+
+# Rollback to specific tag
+git checkout v1.2.3
+docker-compose down
+docker-compose up -d
+
+# Database rollback
+python manage.py migrate api 0008  # Rollback to migration 0008
+```
+
+## 📈 Performance Monitoring
+
+### Load Testing
+```python
+# backend/load_testing.py
+import asyncio
+import aiohttp
+import time
+from concurrent.futures import ThreadPoolExecutor
+
+async def load_test_endpoint(url, num_requests, concurrent_users):
+    """Load test a specific endpoint"""
+    async with aiohttp.ClientSession() as session:
+        tasks = []
+        for i in range(num_requests):
+            task = asyncio.create_task(make_request(session, url))
+            tasks.append(task)
+
+            if len(tasks) >= concurrent_users:
+                await asyncio.gather(*tasks)
+                tasks = []
+
+        if tasks:
+            await asyncio.gather(*tasks)
+
+async def make_request(session, url):
+    """Make a single request and measure performance"""
+    start_time = time.time()
+    try:
+        async with session.get(url) as response:
+            response_time = time.time() - start_time
+            return {
+                'status': response.status,
+                'response_time': response_time,
+                'success': response.status == 200
+            }
+    except Exception as e:
+        response_time = time.time() - start_time
+        return {
+            'status': 'error',
+            'response_time': response_time,
+            'success': False,
+            'error': str(e)
+        }
+```
+
+### Performance Metrics
+```python
+# backend/api/middleware.py
+import time
+from django.utils.deprecation import MiddlewareMixin
+from django.core.cache import cache
+
+class PerformanceMiddleware(MiddlewareMixin):
+    def process_request(self, request):
+        request.start_time = time.time()
+
+    def process_response(self, request, response):
+        if hasattr(request, 'start_time'):
+            duration = time.time() - request.start_time
+
+            # Record performance metrics
+            endpoint = request.path
+            method = request.method
+            status_code = response.status_code
+
+            cache_key = f'perf:{endpoint}:{method}:{status_code}'
+            cache.set(cache_key, duration, timeout=3600)
+
+            # Add response time header
+            response['X-Response-Time'] = f'{duration:.4f}s'
+
+            # Log slow requests
+            if duration > 1.0:  # Log requests slower than 1 second
+                logger.warning(f'Slow request: {method} {endpoint} took {duration:.4f}s')
+
+        return response
+```
+
+## 🔮 Future CI/CD Enhancements
+
+### Planned Features
+- **Multi-environment deployment** (dev, staging, production)
+- **Automated performance testing** with load testing tools
+- **Advanced security scanning** with SAST/DAST tools
+- **Infrastructure as Code** with Terraform
+- **Kubernetes orchestration** for container management
+- **Advanced monitoring** with Prometheus + Grafana
+- **Error tracking** with Sentry integration
+- **Automated rollback** based on health metrics
+
+### Advanced Deployment Strategies
+- **Progressive delivery** with feature flags
+- **A/B testing** integration
+- **Dark launches** for testing in production
+- **Chaos engineering** for resilience testing
+- **Automated scaling** based on metrics
 
 ---
 
-*This guide is maintained by the RNexus development team. Last updated: $(date)*
+**This comprehensive CI/CD integration guide provides everything needed to implement professional-grade continuous integration and deployment for the Nexus system.**

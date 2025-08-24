@@ -1,24 +1,11 @@
-from django.urls import include, path
-
-from rest_framework.routers import DefaultRouter
+from django.urls import path
 
 from . import views
 
-router = DefaultRouter()
-router.register(r"projects", views.ProjectViewSet)
-router.register(r"activities", views.ActivityViewSet)
-router.register(r"tasks", views.TaskViewSet)
-router.register(r"milestones", views.MilestoneViewSet)
-router.register(r"checklists", views.ChecklistViewSet)
-router.register(r"checklist-items", views.ChecklistItemViewSet)
-router.register(r"time-logs", views.TimeLogViewSet)
-router.register(r"attachments", views.AttachmentViewSet)
-router.register(r"comments", views.CommentViewSet)
-router.register(r"project-team-members", views.ProjectTeamMemberViewSet)
-router.register(r"activity-participants", views.ActivityParticipantViewSet)
-
 urlpatterns = [
-    path("", include(router.urls)),
+    path("profile/", views.profile_view, name="profile"),
+    path("profile/download-cv/", views.download_cv_view, name="download-cv"),
+    path("change-password/", views.change_password_view, name="change-password"),
     # Custom activity action URLs
     path(
         "activities/<str:activity_id>/start/",
@@ -29,10 +16,5 @@ urlpatterns = [
         "activities/<str:activity_id>/pause/",
         views.activity_pause_view,
         name="activity-pause",
-    ),
-    path(
-        "activities/<str:activity_id>/complete/",
-        views.activity_complete_view,
-        name="activity-complete",
     ),
 ]

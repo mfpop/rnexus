@@ -1,4 +1,5 @@
 import React from "react";
+import "./lib/consoleFilter";
 import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./app.css";

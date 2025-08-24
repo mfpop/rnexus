@@ -56,10 +56,15 @@ MIDDLEWARE = [
 ]
 
 # CORS Configuration
-CORS_ORIGIN_ALLOW_ALL = False
+# In development, be permissive to avoid CORS headaches; tighten in production
+CORS_ORIGIN_ALLOW_ALL = True if DEBUG else False
 CORS_ORIGIN_WHITELIST = [
+    # Localhost dev servers
     "http://localhost:5173",  # Vite dev server
     "http://localhost:3000",  # React dev server (fallback)
+    # 127.0.0.1 variants commonly used by browsers/tools
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:3000",
 ]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = [
@@ -175,3 +180,11 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Custom User Model - temporarily disabled
 # AUTH_USER_MODEL = 'api.user'
+
+# CSRF trusted origins for dev
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]

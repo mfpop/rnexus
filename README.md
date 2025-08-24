@@ -1,240 +1,216 @@
-# RNexus Platform
+# Nexus - Manufacturing Operations Management System
 
-A comprehensive production management platform built with React 19 and Django, featuring real-time monitoring, analytics, and team collaboration tools.
+## 🚀 Project Overview
+
+Nexus is a comprehensive manufacturing operations management system built with modern web technologies. It provides a unified platform for managing activities, projects, production processes, and team collaboration in manufacturing environments.
+
+## ✨ Recent Updates (August 2025)
+
+### 🔐 JWT Authentication Fix
+- **Resolved "logged out on refresh" issue** with improved JWT middleware
+- Added `process_view` method to ensure proper user authentication
+- Enhanced middleware to handle Django's AuthenticationMiddleware conflicts
+- Improved token validation and user session management
+
+### 🏗️ System Architecture Improvements
+- **Comprehensive activities system** with frontend components
+- **Enhanced database models** for manufacturing operations
+- **WebSocket integration** for real-time communication
+- **Improved error handling** and user experience
+
+### 📊 New Features
+- **Activities Management**: Full CRUD operations for manufacturing activities
+- **Real-time Updates**: WebSocket-based notifications and updates
+- **Advanced Filtering**: Search, sort, and filter capabilities
+- **Responsive Design**: Mobile-friendly interface with Tailwind CSS
+
+## 🛠️ Technology Stack
+
+### Backend
+- **Django 5.2.5** - Web framework
+- **PostgreSQL** - Database
+- **Channels** - WebSocket support
+- **JWT** - Authentication
+- **GraphQL** - API layer
+
+### Frontend
+- **React 18** - UI framework
+- **TypeScript** - Type safety
+- **Tailwind CSS** - Styling
+- **Vite** - Build tool
+- **Apollo Client** - GraphQL client
+
+### Development Tools
+- **Black** - Python code formatting
+- **ESLint** - JavaScript linting
+- **Prettier** - Code formatting
+- **MyPy** - Python type checking
+- **Pre-commit hooks** - Code quality
 
 ## 🚀 Quick Start
 
+### Prerequisites
+- Python 3.11+
+- Node.js 18+
+- PostgreSQL 13+
+- Redis (for WebSocket support)
+
+### Backend Setup
 ```bash
-# Clone and setup
-git clone <repository-url>
-cd rnexus
-
-# Install and start (requires Node.js 18+ and Python 3.13+)
-cd frontend && npm install
-cd ../backend && python -m venv venv && source venv/bin/activate && pip install -r requirements.txt
-
-# Start development servers
-./start_servers.sh
+cd backend
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
 ```
 
-**Access**: Frontend at http://localhost:5173 | Backend at http://localhost:8000
+### Frontend Setup
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-## 📋 Features
-
-### 🏭 Production Management
-- **Real-time Monitoring**: Live production line metrics and alerts
-- **Quality Control**: Compliance tracking and quality assurance
-- **Equipment Management**: Asset monitoring and maintenance scheduling
-- **Performance Analytics**: Efficiency metrics and trend analysis
-
-### 📊 Business Intelligence
-- **Interactive Dashboards**: Customizable KPI visualizations
-- **Advanced Analytics**: Trend analysis and predictive insights
-- **Reporting System**: Automated reports and data exports
-- **Metrics Tracking**: Comprehensive business performance monitoring
-
-### 📢 News, Alerts, and Communication
-- **Centralized Information Hub**: Disseminate important information across the organization
-- **News Publishing**: Empowers every department to publish official news and updates to a designated news feed
-- **Alerts Management**: Designed to create and manage time-sensitive alerts, ensuring critical information reaches the right people immediately
-- **Official Communications**: Serves as a platform for sending formal communications and memos to targeted groups or the entire company
-
-### 👥 Team Collaboration
-- **Project Management**: Task tracking and project portfolio management
-- **Activity Scheduling**: Resource planning and task assignments
-- **Real-time Chat**: Team communication with file sharing
-- **News & Updates**: Company announcements and industry updates
-
-### ⚙️ System Administration
-- **User Management**: Role-based access control (Admin/Staff/User)
-- **System Monitoring**: Performance metrics and health checks
-- **Settings Management**: Customizable preferences and configurations
-- **Help & Support**: Integrated knowledge base and tutorials
-
-## 🏗️ Architecture
-
-### Frontend (React 19 + TypeScript)
-- **Stable Layout Pattern**: Consistent UI framework across all pages
-- **Master-Detail Architecture**: Two-card layout for efficient data browsing
-- **Context-Based State**: React Context API for component communication
-- **Template System**: Reusable layout templates and components
-
-### Backend (Django 5.2 + DRF)
-- **RESTful API**: Comprehensive API with Django REST Framework
-- **GraphQL Integration**: Flexible data querying with Graphene
-- **Real-time Features**: WebSocket support for live updates
-- **Database**: PostgreSQL with Django ORM
-
-### Tech Stack
-```json
-{
-  "frontend": {
-    "framework": "React 19.1.1",
-    "routing": "React Router 7.8.0",
-    "styling": "Tailwind CSS 4.1.11",
-    "icons": "Lucide React 0.539.0",
-    "build": "Vite 7.0.6",
-    "testing": "Vitest + Playwright"
-  },
-  "backend": {
-    "framework": "Django 5.2.5",
-    "api": "Django REST Framework 3.16.1",
-    "graphql": "Graphene Django 3.2.3",
-    "database": "PostgreSQL + SQLite (dev)",
-    "cors": "django-cors-headers"
-  }
-}
+### Database Setup
+```bash
+cd backend
+python setup_database.py
+python manage.py populate_all
 ```
 
 ## 📁 Project Structure
 
 ```
 rnexus/
-├── frontend/                 # React application
-│   ├── src/
-│   │   ├── components/      # Feature components
-│   │   │   ├── templates/   # Layout templates
-│   │   │   ├── ui/         # Base UI components
-│   │   │   ├── [feature]/  # Feature modules (news, production, etc.)
-│   │   │   └── StableLayout.tsx
-│   │   ├── pages/          # Page components
-│   │   └── lib/            # Utilities
-│   ├── public/             # Static assets
-│   └── package.json
-├── backend/                 # Django application
-│   ├── api/                # Main API app
+├── backend/                 # Django backend
+│   ├── api/                # Main application
 │   ├── core/               # Django settings
-│   ├── requirements.txt
-│   └── manage.py
-├── docs/                   # Documentation
-│   ├── pages/             # Page-specific docs
-│   └── README.md
-├── PROJECT_ARCHITECTURE.md # Detailed architecture
-├── SETUP_GUIDE.md         # Complete setup guide
-└── start_servers.sh       # Development startup script
+│   ├── management/         # Custom commands
+│   └── migrations/         # Database migrations
+├── frontend/               # React frontend
+│   ├── src/
+│   │   ├── components/     # React components
+│   │   ├── contexts/       # React contexts
+│   │   ├── lib/           # API clients
+│   │   └── pages/         # Page components
+│   └── public/            # Static assets
+├── docs/                  # Documentation
+└── tools/                 # Development tools
 ```
 
-## 🔧 Development
+## 🔧 Key Features
 
-### Prerequisites
-- Node.js 18.0+ with npm 9.0+
-- Python 3.13+ with pip
-- Git latest version
+### Authentication & Security
+- **JWT-based authentication** with secure token handling
+- **Role-based access control** for different user types
+- **Secure WebSocket connections** with authentication
+- **CSRF protection** and security middleware
 
-### Development Commands
+### Activities Management
+- **Create, read, update, delete** manufacturing activities
+- **Status tracking** (planned, in-progress, completed, cancelled)
+- **Priority management** (low, medium, high, urgent)
+- **Type categorization** (Production, Maintenance, Quality, etc.)
+- **Assignment tracking** and team collaboration
 
-#### Frontend
-```bash
-cd frontend
-npm run dev          # Start development server
-npm run build        # Production build
-npm run test         # Run tests
-npm run lint         # Code linting
-npm run format       # Code formatting
-```
+### Real-time Communication
+- **WebSocket-based updates** for live data
+- **Notification system** for important events
+- **Chat functionality** for team communication
+- **Real-time activity status** updates
 
-#### Backend
+### Data Management
+- **Comprehensive database models** for manufacturing operations
+- **Data population scripts** for testing and development
+- **Migration management** for schema evolution
+- **Backup and restore** capabilities
+
+## 📚 Documentation
+
+- **[PROJECT_ARCHITECTURE.md](PROJECT_ARCHITECTURE.md)** - Detailed system architecture
+- **[SETUP_GUIDE.md](SETUP_GUIDE.md)** - Complete setup instructions
+- **[DATABASE_STRUCTURE.md](DATABASE_STRUCTURE.md)** - Database schema documentation
+- **[DEVELOPMENT_TOOLS_SUMMARY.md](DEVELOPMENT_TOOLS_SUMMARY.md)** - Development tools guide
+- **[CI_CD_INTEGRATION.md](CI_CD_INTEGRATION.md)** - CI/CD pipeline documentation
+
+## 🧪 Testing
+
+### Backend Testing
 ```bash
 cd backend
-source venv/bin/activate
-python manage.py runserver     # Start Django server
-python manage.py test          # Run tests
-python manage.py migrate       # Apply migrations
-python manage.py createsuperuser  # Create admin user
+python manage.py test
 ```
 
-### Creating New Features
+### Frontend Testing
+```bash
+cd frontend
+npm run test
+npm run test:e2e
+```
 
-The platform uses a standardized feature module pattern:
+## 🚀 Deployment
 
-1. **Context** (`FeatureContext.tsx`) - State management
-2. **Left Card** (`FeatureLeftCard.tsx`) - Master list component
-3. **Right Card** (`FeatureRightCard.tsx`) - Detail view component
-4. **Page** (`FeaturePage.tsx`) - Route component
-5. **Integration** - Add to StableLayout and App routing
+### Production Setup
+- **Environment variables** configuration
+- **Static file serving** with proper caching
+- **Database optimization** for production workloads
+- **Security hardening** and best practices
 
-See [SETUP_GUIDE.md](./SETUP_GUIDE.md) for detailed instructions.
+### Docker Support
+- **Multi-stage builds** for optimized images
+- **Environment-specific** configurations
+- **Health checks** and monitoring
+- **Resource optimization** for containers
 
-## 📖 Documentation
+## 🤝 Contributing
 
-### Complete Guides
-- **[Setup Guide](./SETUP_GUIDE.md)** - Development environment setup
-- **[Architecture Guide](./PROJECT_ARCHITECTURE.md)** - Technical architecture details
-- **[Page Documentation](./docs/)** - Individual page specifications
+1. **Fork the repository**
+2. **Create a feature branch** (`git checkout -b feature/amazing-feature`)
+3. **Commit your changes** (`git commit -m 'Add amazing feature'`)
+4. **Push to the branch** (`git push origin feature/amazing-feature`)
+5. **Open a Pull Request**
 
-### API Documentation
-- **REST API**: http://localhost:8000/api/
-- **GraphQL**: http://localhost:8000/graphql/
-- **Admin Panel**: http://localhost:8000/admin/
-
-## 🛡️ Security & Quality
-
-### Security Features
-- Multi-factor authentication
-- Role-based access control (Admin/Staff/User)
-- CSRF protection and input validation
-- Secure session management
-
-### Code Quality
-- TypeScript for type safety
-- ESLint + Prettier for code consistency
-- Comprehensive test coverage (Vitest + Playwright)
-- Automated linting and formatting
-
-### Performance
-- Route-based code splitting
-- Optimized bundle sizes
-- React 19 performance improvements
-- Efficient context-based state management
-
-## 🚦 Current Status
-
-### ✅ Completed Features
-- ✅ **Core Architecture**: Stable layout system with master-detail pattern
-- ✅ **Navigation**: Complete sidebar navigation with 20 buttons (B1-B20)
-- ✅ **Main Pages**: News, Production, Metrics, Projects, Activities, About
-- ✅ **Functional Pages**: Chat, Contact, Help, Settings, System
-- ✅ **Authentication**: Login, Registration, Password Reset
-- ✅ **Legal Pages**: Privacy Policy, Terms of Service
-- ✅ **Responsive Design**: Mobile-first responsive layouts
-- ✅ **Latest Dependencies**: All packages updated to latest stable versions
-
-### 🔄 In Development
-- Real-time WebSocket integration
-- Advanced analytics dashboards
-- File upload and management system
-- Enhanced mobile experience
-
-### 📋 Planned Features
-- Multi-tenant architecture
-- Advanced reporting system
-- Third-party integrations
-- Mobile native app
-
-## 📝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-### Code Standards
-- Follow TypeScript and ESLint configurations
-- Write tests for new features
-- Use conventional commit messages
-- Maintain documentation updates
+### Development Guidelines
+- **Follow coding standards** (Black, ESLint, Prettier)
+- **Write tests** for new features
+- **Update documentation** for changes
+- **Use conventional commits** for commit messages
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🤝 Support
+## 🆘 Support
 
-- **Documentation**: Check [docs/](./docs/) for detailed guides
-- **Issues**: GitHub Issues for bug reports and feature requests
-- **Discussions**: GitHub Discussions for questions and ideas
+### Common Issues
+- **JWT Authentication**: Check token expiration and middleware configuration
+- **Database Connection**: Verify PostgreSQL service and connection settings
+- **WebSocket Issues**: Ensure Redis is running and Channels is configured
+- **Build Errors**: Clear node_modules and reinstall dependencies
+
+### Getting Help
+- **Check the documentation** in the `docs/` folder
+- **Review recent commits** for recent changes
+- **Check server logs** for detailed error information
+- **Open an issue** with detailed problem description
+
+## 🔄 Changelog
+
+### v2.0.0 (August 2025)
+- ✅ **Fixed JWT authentication** middleware issues
+- ✅ **Added comprehensive activities system**
+- ✅ **Implemented real-time WebSocket updates**
+- ✅ **Enhanced database models** and relationships
+- ✅ **Improved frontend components** and user experience
+- ✅ **Added development tools** and quality checks
+
+### v1.0.0 (Initial Release)
+- ✅ **Basic authentication system**
+- ✅ **Core database models**
+- ✅ **Basic frontend interface**
+- ✅ **Project structure setup**
 
 ---
 
-**RNexus Platform** - Built with ❤️ for modern production management
+**Built with ❤️ for modern manufacturing operations**

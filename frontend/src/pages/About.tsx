@@ -1,5 +1,5 @@
 import React from "react";
-import { AboutRightCard, useAboutContext } from "../components/about";
+import { AboutRightCard } from "../components/about";
 
 /**
  * About - Company information page right-side content for StableLayout integration

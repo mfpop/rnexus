@@ -1,5 +1,5 @@
 import React from "react";
-import { Shield, CheckCircle2, User, Mail, Lock, Key } from "lucide-react";
+import { Shield, CheckCircle2, User, Mail, Lock } from "lucide-react";
 
 /**
  * RegisterLeftCard - Register page specific left card content component
@@ -77,37 +77,21 @@ const RegisterLeftCard: React.FC = () => {
             <User className="h-4 w-4 text-white" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-gray-800">
-              Account Creation
-            </h2>
+            <h2 className="text-base font-bold text-gray-800">Account Creation</h2>
             <p className="text-xs text-gray-600">Secure registration process</p>
           </div>
         </div>
-        <p className="text-xs text-gray-700 leading-relaxed">
-          Join Nexus LMD with confidence. Our secure process protects your
-          information.
-        </p>
+        <p className="text-xs text-gray-700 leading-relaxed">Join Nexus LMD with confidence. Our secure process protects your information.</p>
       </div>
 
       {/* Account Creation Process */}
       <div className="mb-3">
-        <h3 className="text-sm font-semibold text-gray-800 mb-2">
-          Registration Steps
-        </h3>
+        <h3 className="text-sm font-semibold text-gray-800 mb-2">Registration Steps</h3>
         <div className="space-y-1">
           {accountProcess.map((step) => (
-            <div
-              key={step.id}
-              className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-50 transition-colors"
-            >
-              <div
-                className={`p-1 rounded bg-gray-100 ${step.color} flex-shrink-0`}
-              >
-                {step.icon}
-              </div>
-              <h4 className="text-xs font-medium text-gray-800">
-                {step.title}
-              </h4>
+            <div key={step.id} className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-50 transition-colors">
+              <div className={`p-1 rounded bg-gray-100 ${step.color} flex-shrink-0`}>{step.icon}</div>
+              <h4 className="text-xs font-medium text-gray-800">{step.title}</h4>
             </div>
           ))}
         </div>
@@ -115,23 +99,12 @@ const RegisterLeftCard: React.FC = () => {
 
       {/* Account Security */}
       <div className="mb-3">
-        <h3 className="text-sm font-semibold text-gray-800 mb-2">
-          Security Features
-        </h3>
+        <h3 className="text-sm font-semibold text-gray-800 mb-2">Security Features</h3>
         <div className="space-y-1">
           {securityFeatures.map((feature) => (
-            <div
-              key={feature.id}
-              className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-50 transition-colors"
-            >
-              <div
-                className={`p-1 rounded bg-gray-100 ${feature.color} flex-shrink-0`}
-              >
-                {feature.icon}
-              </div>
-              <h4 className="text-xs font-medium text-gray-800">
-                {feature.title}
-              </h4>
+            <div key={feature.id} className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-50 transition-colors">
+              <div className={`p-1 rounded bg-gray-100 ${feature.color} flex-shrink-0`}>{feature.icon}</div>
+              <h4 className="text-xs font-medium text-gray-800">{feature.title}</h4>
             </div>
           ))}
         </div>
@@ -139,15 +112,10 @@ const RegisterLeftCard: React.FC = () => {
 
       {/* Password Requirements */}
       <div className="flex-1">
-        <h3 className="text-sm font-semibold text-gray-800 mb-2">
-          Password Standards
-        </h3>
+        <h3 className="text-sm font-semibold text-gray-800 mb-2">Password Standards</h3>
         <div className="space-y-1">
           {passwordRequirements.map((requirement, index) => (
-            <div
-              key={index}
-              className="flex items-start gap-2 p-1.5 bg-gray-50 rounded"
-            >
+            <div key={index} className="flex items-start gap-2 p-1.5 bg-gray-50 rounded">
               <CheckCircle2 className="h-3 w-3 text-green-500 flex-shrink-0 mt-0.5" />
               <p className="text-xs text-gray-700">{requirement}</p>
             </div>

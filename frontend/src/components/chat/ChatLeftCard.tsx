@@ -409,6 +409,7 @@ const ChatLeftCard: React.FC = () => {
               <DropdownMenuTrigger asChild>
                 <button
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 bg-blue-50 border border-blue-200"
+                  data-testid="chat-left-more-options"
                   title="Contact options (left)"
                   aria-label="Contact options menu (left)"
                 >

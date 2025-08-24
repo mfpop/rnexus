@@ -3,8 +3,7 @@ import React, {
   useContext,
   useState,
   useCallback,
-  useEffect,
-  useRef,
+
 } from "react";
 import { NotificationType } from "../components/ui/Notification";
 import {
@@ -12,7 +11,7 @@ import {
   useMarkSystemMessageAsRead,
 } from "../lib/systemMessageApi";
 import useSystemMessageWebSocket from "../lib/systemMessageWebsocket";
-import { ApolloClient, useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client";
 import { GET_SYSTEM_MESSAGES } from "../graphql/systemMessages";
 
 export interface NotificationData {
@@ -90,7 +89,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
   const client = useApolloClient(); // Get Apollo Client instance
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
 
-  const { systemMessages, refetchSystemMessages } = useSystemMessages(); // systemMessages is now directly from hook
+  const { systemMessages } = useSystemMessages(); // systemMessages is now directly from hook
   const { markSystemMessageAsRead: markSystemMessageAsReadMutation } =
     useMarkSystemMessageAsRead();
 
