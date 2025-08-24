@@ -4,15 +4,13 @@ import {
   Key,
   Eye,
   EyeOff,
-  AlertCircle,
-  CheckCircle,
   GraduationCap,
   Briefcase,
   Plus,
   Trash2,
   Camera,
 } from "lucide-react";
-import { Button, Input, PhoneTypeDropdown } from "../ui/bits";
+import { Button, Input, PhoneTypeDropdown, NotificationToast } from "../ui/bits";
 import AuthService from "../../lib/authService";
 
 // API configuration
@@ -1182,17 +1180,21 @@ const ProfileRightCard: React.FC = () => {
 
             {/* Password Success/Error Messages */}
             {passwordSuccessMessage && (
-              <div className="flex items-center gap-2 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
-                <CheckCircle className="h-5 w-5" />
-                <span>{passwordSuccessMessage}</span>
-              </div>
+              <NotificationToast
+                type="success"
+                message={passwordSuccessMessage}
+                isVisible={!!passwordSuccessMessage}
+                onClose={() => setPasswordSuccessMessage("")}
+              />
             )}
 
             {passwordErrors["submit"] && (
-              <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-                <AlertCircle className="h-5 w-5" />
-                <span>{passwordErrors["submit"]}</span>
-              </div>
+              <NotificationToast
+                type="error"
+                message={passwordErrors["submit"]}
+                isVisible={!!passwordErrors["submit"]}
+                onClose={() => setPasswordErrors((prev) => ({ ...prev, submit: "" }))}
+              />
             )}
 
             <div className="pt-4 border-t border-gray-200">
@@ -1326,17 +1328,21 @@ const ProfileRightCard: React.FC = () => {
           {activeTab !== 'security' && (
             <>
               {successMessage && (
-                <div className="flex items-center gap-2 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 mt-6">
-                  <CheckCircle className="h-5 w-5" />
-                  <span>{successMessage}</span>
-                </div>
+                <NotificationToast
+                  type="success"
+                  message={successMessage}
+                  isVisible={!!successMessage}
+                  onClose={() => setSuccessMessage("")}
+                />
               )}
 
               {errors["submit"] && (
-                <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 mt-6">
-                  <AlertCircle className="h-5 w-5" />
-                  <span>{errors["submit"]}</span>
-                </div>
+                <NotificationToast
+                  type="error"
+                  message={errors["submit"]}
+                  isVisible={!!errors["submit"]}
+                  onClose={() => setErrors((prev) => ({ ...prev, submit: "" }))}
+                />
               )}
             </>
           )}

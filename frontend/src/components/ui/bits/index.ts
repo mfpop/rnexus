@@ -12,3 +12,4 @@ export * from "./Dialog";
 export * from "./DropdownMenu";
 export * from "./SimpleSelect";
 export * from "./PhoneTypeDropdown";
+export * from "./NotificationToast";
