@@ -1054,31 +1054,137 @@ const ProfileRightCard: React.FC = () => {
       case 'professional':
         return (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Position
-                </label>
-                <Input
-                  type="text"
-                  value={profileData.position || ""}
-                  onChange={(e) => handleProfileChange("position", e.target.value)}
-                  className="w-full"
-                  placeholder="e.g. Senior Software Engineer"
-                />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Left Panel - Position and Department */}
+              <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                  <h3 className="text-lg font-medium text-gray-900">Position and Department</h3>
+                </div>
+                <div className="p-6">
+                  {/* Org Chart Style Display */}
+                  <div className="space-y-4">
+                    <div className="text-center">
+                      <div className="inline-block p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
+                        <div className="text-sm font-medium text-blue-600 mb-1">Current Position</div>
+                        <div className="text-xl font-semibold text-blue-800">
+                          {profileData.position || "Not specified"}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-center">
+                      <div className="w-px h-8 bg-gray-300"></div>
+                    </div>
+
+                    <div className="text-center">
+                      <div className="inline-block p-4 bg-gray-50 border-2 border-gray-200 rounded-lg">
+                        <div className="text-sm font-medium text-gray-600 mb-1">Department</div>
+                        <div className="text-lg font-semibold text-gray-800">
+                          {profileData.department || "Not specified"}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Edit Fields */}
+                  <div className="mt-6 space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Position
+                      </label>
+                      <Input
+                        type="text"
+                        value={profileData.position || ""}
+                        onChange={(e) => handleProfileChange("position", e.target.value)}
+                        className="w-full"
+                        placeholder="e.g. Senior Software Engineer"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Department
+                      </label>
+                      <Input
+                        type="text"
+                        value={profileData.department || ""}
+                        onChange={(e) => handleProfileChange("department", e.target.value)}
+                        className="w-full"
+                        placeholder="e.g. Technology & Innovation"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Department
-                </label>
-                <Input
-                  type="text"
-                  value={profileData.department || ""}
-                  onChange={(e) => handleProfileChange("department", e.target.value)}
-                  className="w-full"
-                  placeholder="e.g. Engineering"
-                />
+              {/* Right Panel - Professional Overview */}
+              <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                  <h3 className="text-lg font-medium text-gray-900">Professional Overview</h3>
+                </div>
+                <div className="p-6 space-y-6">
+                  {/* Daily Activities */}
+                  <div>
+                    <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      Daily Activities
+                    </h4>
+                    <div className="space-y-2">
+                      {[
+                        "Code review and debugging",
+                        "Team stand-up meetings",
+                        "Feature development",
+                        "Collaborating with product managers"
+                      ].map((activity, index) => (
+                        <div key={index} className="flex items-start gap-3">
+                          <div className="w-1.5 h-1.5 bg-green-400 rounded-full mt-2 flex-shrink-0"></div>
+                          <span className="text-sm text-gray-600">{activity}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Responsibilities */}
+                  <div>
+                    <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      Key Responsibilities
+                    </h4>
+                    <div className="space-y-2">
+                      {[
+                        "Maintain code quality",
+                        "Mentor junior developers",
+                        "Ensure timely delivery of features",
+                        "Participate in architectural decisions"
+                      ].map((responsibility, index) => (
+                        <div key={index} className="flex items-start gap-3">
+                          <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 flex-shrink-0"></div>
+                          <span className="text-sm text-gray-600">{responsibility}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Targets */}
+                  <div>
+                    <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                      Current Targets
+                    </h4>
+                    <div className="space-y-2">
+                      {[
+                        "Complete Q2 roadmap features",
+                        "Reduce bug count by 30%",
+                        "Improve CI/CD pipeline efficiency"
+                      ].map((target, index) => (
+                        <div key={index} className="flex items-start gap-3">
+                          <div className="w-1.5 h-1.5 bg-purple-400 rounded-full mt-2 flex-shrink-0"></div>
+                          <span className="text-sm text-gray-600">{target}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

@@ -10,6 +10,10 @@ This document describes the application data model: entities, fields, relationsh
 
 ## Entity Relationship Diagram
 
+![ER Diagram](./diagrams/erd.svg)
+
+Mermaid source: `docs/diagrams/erd.mmd`
+
 ```mermaid
 erDiagram
   User ||--|| UserProfile : has

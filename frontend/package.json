@@ -11,7 +11,8 @@
     "format": "prettier --write .",
     "test:unit": "vitest",
     "test": "npm run test:unit -- --run && npm run test:e2e",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "render:erd": "mmdc -i ../docs/diagrams/erd.mmd -o ../docs/diagrams/erd.svg"
   },
   "dependencies": {
     "@apollo/client": "^3.10.4",
@@ -35,6 +36,7 @@
     "@types/react": "^19.1.9",
     "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-react": "^5.0.1",
+    "@mermaid-js/mermaid-cli": "^10.9.1",
     "eslint": "9.34.0",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.14",
