@@ -1291,7 +1291,7 @@ const ProfileRightCard: React.FC = () => {
                           onChange={(e) => updateWork(work.id, 'description', e.target.value)}
                           placeholder="Job description, responsibilities, achievements..."
                           rows={5}
-                          className="w-full px-2 py-1 border-0 rounded-b-lg focus:outline-none focus:ring-0 !ring-0 focus-visible:ring-0 !focus-visible:ring-0 resize-none text-sm bg-transparent hover:bg-gray-100 focus:bg-blue-50"
+                          className="w-full px-2 py-3 border-0 rounded-b-lg focus:outline-none focus:ring-0 !ring-0 focus-visible:ring-0 !focus-visible:ring-0 resize-none text-sm bg-transparent hover:bg-gray-100 focus:bg-blue-50 align-middle"
                         />
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap text-center w-20">
