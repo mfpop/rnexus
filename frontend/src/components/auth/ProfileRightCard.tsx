@@ -11,10 +11,6 @@ import {
   Plus,
   Trash2,
   Camera,
-  Smartphone,
-  Home,
-  Building2,
-  Phone,
 } from "lucide-react";
 import { Button, Input } from "../ui/bits";
 import AuthService from "../../lib/authService";
@@ -678,12 +674,12 @@ const ProfileRightCard: React.FC = () => {
                       <select
                         value={profileData.phone_type || "mobile"}
                         onChange={(e) => handleProfileChange("phone_type", e.target.value)}
-                        className="w-24 h-8 px-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-24 h-8 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                       >
-                        <option value="mobile"><Smartphone className="inline w-4 h-4 mr-1" /> Mobile</option>
-                        <option value="home"><Home className="inline w-4 h-4 mr-1" /> Home</option>
-                        <option value="work"><Building2 className="inline w-4 h-4 mr-1" /> Work</option>
-                        <option value="other"><Phone className="inline w-4 h-4 mr-1" /> Other</option>
+                        <option value="mobile">📱 Mobile</option>
+                        <option value="home">🏠 Home</option>
+                        <option value="work">🏢 Work</option>
+                        <option value="other">📞 Other</option>
                       </select>
                     </div>
                   </div>
@@ -774,12 +770,12 @@ const ProfileRightCard: React.FC = () => {
                       <select
                         value={profileData.secondary_phone_type || "mobile"}
                         onChange={(e) => handleProfileChange("secondary_phone_type", e.target.value)}
-                        className="w-24 h-8 px-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-24 h-8 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                       >
-                        <option value="mobile"><Smartphone className="inline w-4 h-4 mr-1" /> Mobile</option>
-                        <option value="home"><Home className="inline w-4 h-4 mr-1" /> Home</option>
-                        <option value="work"><Building2 className="inline w-4 h-4 mr-1" /> Work</option>
-                        <option value="other"><Phone className="inline w-4 h-4 mr-1" /> Other</option>
+                        <option value="mobile">📱 Mobile</option>
+                        <option value="home">🏠 Home</option>
+                        <option value="work">🏢 Work</option>
+                        <option value="other">📞 Other</option>
                       </select>
                     </div>
                   </div>
