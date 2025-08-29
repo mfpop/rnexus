@@ -4,13 +4,17 @@ import graphene
 from graphene_django.types import DjangoObjectType
 
 from api.models import (
+    City,
+    Country,
     Department,
     Employee,
     Item,
     Message,
     Role,
+    State,
     SystemMessage,
     UserProfile,
+    ZipCode,
 )
 
 
@@ -59,6 +63,10 @@ class UserProfileType(DjangoObjectType):
             "created_at",
             "updated_at",
         )
+
+    # Explicitly define camelCase field names for JSON fields
+    workHistory = graphene.JSONString(source="work_history")
+    profileVisibility = graphene.JSONString(source="profile_visibility")
 
 
 class ItemType(DjangoObjectType):
@@ -109,6 +117,66 @@ class RoleType(DjangoObjectType):
         )
 
 
+class CountryType(DjangoObjectType):
+    class Meta:
+        model = Country
+        fields = (
+            "id",
+            "name",
+            "code",
+            "flag_emoji",
+            "phone_code",
+            "is_active",
+            "created_at",
+            "updated_at",
+        )
+
+
+class StateType(DjangoObjectType):
+    class Meta:
+        model = State
+        fields = (
+            "id",
+            "name",
+            "code",
+            "country",
+            "is_active",
+            "created_at",
+            "updated_at",
+        )
+
+
+class CityType(DjangoObjectType):
+    class Meta:
+        model = City
+        fields = (
+            "id",
+            "name",
+            "state",
+            "country",
+            "is_active",
+            "created_at",
+            "updated_at",
+        )
+
+
+class ZipCodeType(DjangoObjectType):
+    class Meta:
+        model = ZipCode
+        fields = (
+            "id",
+            "code",
+            "city",
+            "state",
+            "country",
+            "latitude",
+            "longitude",
+            "is_active",
+            "created_at",
+            "updated_at",
+        )
+
+
 class EmployeeType(DjangoObjectType):
     class Meta:
         model = Employee
@@ -142,6 +210,20 @@ class Query(graphene.ObjectType):
     employees_by_role = graphene.List(EmployeeType, role_id=graphene.ID())
     organizational_hierarchy = graphene.List(RoleType)
 
+    # Location queries
+    all_countries = graphene.List(CountryType)
+    country = graphene.Field(CountryType, id=graphene.ID(), code=graphene.String())
+    all_states = graphene.List(StateType, country_code=graphene.String())
+    state = graphene.Field(StateType, id=graphene.ID())
+    all_cities = graphene.List(
+        CityType, state_id=graphene.ID(), country_code=graphene.String()
+    )
+    city = graphene.Field(CityType, id=graphene.ID())
+    all_zipcodes = graphene.List(
+        ZipCodeType, city_id=graphene.ID(), state_id=graphene.ID()
+    )
+    zipcode = graphene.Field(ZipCodeType, id=graphene.ID(), code=graphene.String())
+
     def resolve_all_items(self, info, **kwargs):
         return Item.objects.all()
 
@@ -158,8 +240,32 @@ class Query(graphene.ObjectType):
         return messages.order_by("-created_at")
 
     def resolve_user_profile(self, info, **kwargs):
-        # For now, return the first user profile since we don't have user authentication
-        return UserProfile.objects.first()
+        # Check if user is authenticated
+        try:
+            user = info.context.user if info.context else None
+            if user and user.is_authenticated:
+                try:
+                    # Try to get existing profile
+                    return UserProfile.objects.get(user=user)
+                except UserProfile.DoesNotExist:
+                    # Create profile if it doesn't exist
+                    profile = UserProfile.objects.create(user=user)
+                    print(f"Created new profile for user: {user.username}")
+                    return profile
+            else:
+                # For development/testing, return first profile if available
+                # This allows testing without authentication
+                try:
+                    return UserProfile.objects.first()
+                except:
+                    return None
+        except Exception as e:
+            print(f"Error in resolve_user_profile: {e}")
+            # Fallback: return first profile for development
+            try:
+                return UserProfile.objects.first()
+            except:
+                return None
 
     # Organizational hierarchy resolvers
     def resolve_all_departments(self, info, **kwargs):
@@ -191,6 +297,63 @@ class Query(graphene.ObjectType):
         return Role.objects.filter(reports_to__isnull=True).order_by(
             "department__name", "title"
         )
+
+    # Location resolvers
+    def resolve_all_countries(self, info, **kwargs):
+        return Country.objects.filter(is_active=True).order_by("name")
+
+    def resolve_country(self, info, id=None, code=None, **kwargs):
+        if id:
+            return Country.objects.get(pk=id)
+        elif code:
+            return Country.objects.get(code=code)
+        return None
+
+    def resolve_all_states(self, info, country_code=None, **kwargs):
+        if country_code:
+            return State.objects.filter(
+                country__code=country_code, is_active=True
+            ).order_by("name")
+        return State.objects.filter(is_active=True).order_by("country__name", "name")
+
+    def resolve_state(self, info, id, **kwargs):
+        return State.objects.get(pk=id)
+
+    def resolve_all_cities(self, info, state_id=None, country_code=None, **kwargs):
+        if state_id:
+            return City.objects.filter(state_id=state_id, is_active=True).order_by(
+                "name"
+            )
+        elif country_code:
+            return City.objects.filter(
+                country__code=country_code, is_active=True
+            ).order_by("state__name", "name")
+        return City.objects.filter(is_active=True).order_by(
+            "country__name", "state__name", "name"
+        )
+
+    def resolve_city(self, info, id, **kwargs):
+        return City.objects.get(pk=id)
+
+    def resolve_all_zipcodes(self, info, city_id=None, state_id=None, **kwargs):
+        if city_id:
+            return ZipCode.objects.filter(city_id=city_id, is_active=True).order_by(
+                "code"
+            )
+        elif state_id:
+            return ZipCode.objects.filter(state_id=state_id, is_active=True).order_by(
+                "code"
+            )
+        return ZipCode.objects.filter(is_active=True).order_by(
+            "country__name", "state__name", "city__name", "code"
+        )
+
+    def resolve_zipcode(self, info, id=None, code=None, **kwargs):
+        if id:
+            return ZipCode.objects.get(pk=id)
+        elif code:
+            return ZipCode.objects.get(code=code)
+        return None
 
 
 class CreateItem(graphene.Mutation):
@@ -261,33 +424,33 @@ class UpdateUserProfile(graphene.Mutation):
     class Arguments:
         # User fields
         email = graphene.String()
-        first_name = graphene.String()
-        last_name = graphene.String()
+        firstName = graphene.String()
+        lastName = graphene.String()
 
         # Profile fields
-        middle_name = graphene.String()
-        maternal_last_name = graphene.String()
-        preferred_name = graphene.String()
+        middleName = graphene.String()
+        maternalLastName = graphene.String()
+        preferredName = graphene.String()
         position = graphene.String()
         department = graphene.String()
         phone = graphene.String()
-        phone_country_code = graphene.String()
-        phone_type = graphene.String()
-        secondary_phone = graphene.String()
-        street_address = graphene.String()
-        apartment_suite = graphene.String()
+        phoneCountryCode = graphene.String()
+        phoneType = graphene.String()
+        secondaryPhone = graphene.String()
+        streetAddress = graphene.String()
+        apartmentSuite = graphene.String()
         city = graphene.String()
-        state_province = graphene.String()
-        zip_code = graphene.String()
+        stateProvince = graphene.String()
+        zipCode = graphene.String()
         country = graphene.String()
         bio = graphene.String()
         education = graphene.String()  # JSON string
-        work_history = graphene.String()  # JSON string
-        profile_visibility = graphene.String()  # JSON string
-        is_active = graphene.Boolean()
+        workHistory = graphene.String()  # JSON string
+        profileVisibility = graphene.String()  # JSON string
+        isActive = graphene.Boolean()
 
     ok = graphene.Boolean()
-    user_profile = graphene.Field(UserProfileType)
+    userProfile = graphene.Field(UserProfileType)
     errors = graphene.List(graphene.String)
 
     @classmethod
@@ -301,14 +464,18 @@ class UpdateUserProfile(graphene.Mutation):
 
         try:
             # Update User fields
-            user_fields = ["email", "first_name", "last_name"]
+            user_fields = ["email", "firstName", "lastName"]
             for field in user_fields:
                 if field in kwargs and kwargs[field] is not None:
-                    setattr(user, field, kwargs[field])
+                    # Map camelCase to snake_case for Django model
+                    django_field = field.replace("firstName", "first_name").replace(
+                        "lastName", "last_name"
+                    )
+                    setattr(user, django_field, kwargs[field])
 
-            # Handle is_active field
-            if "is_active" in kwargs and kwargs["is_active"] is not None:
-                user.is_active = kwargs["is_active"]
+            # Handle isActive field
+            if "isActive" in kwargs and kwargs["isActive"] is not None:
+                user.is_active = kwargs["isActive"]
 
             user.save()
 
@@ -317,36 +484,58 @@ class UpdateUserProfile(graphene.Mutation):
 
             # Update Profile fields
             profile_fields = [
-                "middle_name",
-                "maternal_last_name",
-                "preferred_name",
+                "middleName",
+                "maternalLastName",
+                "preferredName",
                 "position",
                 "department",
                 "phone",
-                "phone_country_code",
-                "phone_type",
-                "secondary_phone",
-                "street_address",
-                "apartment_suite",
+                "phoneCountryCode",
+                "phoneType",
+                "secondaryPhone",
+                "streetAddress",
+                "apartmentSuite",
                 "city",
-                "state_province",
-                "zip_code",
+                "stateProvince",
+                "zipCode",
                 "country",
                 "bio",
+                "education",
+                "workHistory",
+                "profileVisibility",
             ]
 
             for field in profile_fields:
                 if field in kwargs and kwargs[field] is not None:
-                    setattr(profile, field, kwargs[field])
+                    # Map camelCase to snake_case for Django model
+                    django_field = (
+                        field.replace("middleName", "middle_name")
+                        .replace("maternalLastName", "maternal_last_name")
+                        .replace("preferredName", "preferred_name")
+                        .replace("phoneCountryCode", "phone_country_code")
+                        .replace("phoneType", "phone_type")
+                        .replace("secondaryPhone", "secondary_phone")
+                        .replace("streetAddress", "street_address")
+                        .replace("apartmentSuite", "apartment_suite")
+                        .replace("stateProvince", "state_province")
+                        .replace("zipCode", "zip_code")
+                        .replace("workHistory", "work_history")
+                        .replace("profileVisibility", "profile_visibility")
+                    )
+                    setattr(profile, django_field, kwargs[field])
 
             # Handle JSON fields
             import json
 
-            json_fields = ["education", "work_history", "profile_visibility"]
+            json_fields = ["education", "workHistory", "profileVisibility"]
             for field in json_fields:
                 if field in kwargs and kwargs[field] is not None:
                     try:
-                        setattr(profile, field, json.loads(kwargs[field]))
+                        # Map camelCase to snake_case for Django model
+                        django_field = field.replace(
+                            "workHistory", "work_history"
+                        ).replace("profileVisibility", "profile_visibility")
+                        setattr(profile, django_field, json.loads(kwargs[field]))
                     except json.JSONDecodeError:
                         result = cls()
                         result.ok = False
@@ -357,7 +546,7 @@ class UpdateUserProfile(graphene.Mutation):
 
             result = cls()
             result.ok = True
-            result.user_profile = profile
+            result.userProfile = profile
             result.errors = []
             return result
 

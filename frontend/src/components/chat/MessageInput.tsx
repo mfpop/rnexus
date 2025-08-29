@@ -133,7 +133,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
   }, []);
 
   return (
-    <div className="px-4 py-3 border-t border-gray-200 bg-white relative z-40">
+    <div className="px-4 py-3 border-t border-gray-200 bg-white relative z-40 shadow-lg">
       {/* Reply Preview */}
       {replyToMessage && (
         <div className="mb-3 p-3 bg-gray-50 border-l-4 border-[#25d366] rounded-r-lg">

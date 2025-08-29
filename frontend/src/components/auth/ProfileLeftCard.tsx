@@ -162,9 +162,12 @@ const ProfileLeftCard: React.FC = () => {
             </h4>
             <span className="text-sm font-medium text-gray-900">{loading ? '...' : `${percent}%`}</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
-            <div className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full" style={{ width: `${percent}%` }}></div>
-          </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
+          <div
+            className={`bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300 ease-in-out`}
+            style={{ width: `${percent}%` }}
+          ></div>
+        </div>
           <div className="space-y-1 text-xs text-gray-500">
             <div className="flex items-center gap-2">
               <div className={`w-1.5 h-1.5 rounded-full ${details.basicInfo ? 'bg-green-500' : 'bg-gray-300'}`}></div>

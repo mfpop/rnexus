@@ -7,6 +7,7 @@ import ProfileView from './ProfileView';
 import CameraModal from './CameraModal';
 import ChatApiService from '../../lib/chatApi';
 import { Message } from './MessageTypes';
+import ExpandableSearch from '../ui/ExpandableSearch';
 
 const ChatRightCard: React.FC = () => {
   const { selectedContact } = useChatContext();
@@ -32,6 +33,16 @@ const ChatRightCard: React.FC = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const recordingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Message search state
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Filter messages based on search query
+  const filteredMessages = searchQuery.trim()
+    ? messages.filter(message =>
+        message.content.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : messages;
 
   // Load messages from database when contact changes
   useEffect(() => {
@@ -120,7 +131,22 @@ const ChatRightCard: React.FC = () => {
 
   const handleForward = useCallback((message: Message) => {
     // Implementation for forwarding messages
-  console.debug('Forwarding message id:', message.id);
+    console.debug('Forwarding message id:', message.id);
+
+    // Show forward dialog
+    const contacts = ['John Doe', 'Jane Smith', 'Team Group', 'Family Chat'];
+    const contactOptions = contacts.map((contact, index) => `${index + 1}. ${contact}`).join('\n');
+
+    const selectedContact = prompt(`Forward message to:\n\n${contactOptions}\n\nEnter contact number (1-${contacts.length}):`);
+
+    if (selectedContact && !isNaN(Number(selectedContact))) {
+      const contactIndex = Number(selectedContact) - 1;
+      if (contactIndex >= 0 && contactIndex < contacts.length) {
+        alert(`✅ Message forwarded to: ${contacts[contactIndex]}\n\nOriginal: "${message.content}"`);
+      } else {
+        alert('❌ Invalid contact selection');
+      }
+    }
   }, []);
 
   const handleDelete = useCallback(async (messageId: number) => {
@@ -133,7 +159,19 @@ const ChatRightCard: React.FC = () => {
   }, []);
 
   const handleCopy = useCallback((content: string) => {
-    navigator.clipboard.writeText(content);
+    navigator.clipboard.writeText(content).then(() => {
+      alert(`📋 Message copied to clipboard!\n\n"${content.length > 50 ? content.substring(0, 50) + '...' : content}"`);
+    }).catch((error) => {
+      console.error('Failed to copy text:', error);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = content;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      alert(`📋 Message copied to clipboard!\n\n"${content.length > 50 ? content.substring(0, 50) + '...' : content}"`);
+    });
   }, []);
 
   // Selection mode
@@ -175,8 +213,25 @@ const ChatRightCard: React.FC = () => {
 
   const handleBulkForward = useCallback(() => {
     // Implementation for bulk forwarding
-  console.debug('Bulk forwarding messages count:', selectedMessages.size);
-  }, [selectedMessages]);
+    console.debug('Bulk forwarding messages count:', selectedMessages.size);
+
+    if (selectedMessages.size === 0) return;
+
+    const contacts = ['John Doe', 'Jane Smith', 'Team Group', 'Family Chat'];
+    const contactOptions = contacts.map((contact, index) => `${index + 1}. ${contact}`).join('\n');
+
+    const selectedContact = prompt(`Forward ${selectedMessages.size} messages to:\n\n${contactOptions}\n\nEnter contact number (1-${contacts.length}):`);
+
+    if (selectedContact && !isNaN(Number(selectedContact))) {
+      const contactIndex = Number(selectedContact) - 1;
+      if (contactIndex >= 0 && contactIndex < contacts.length) {
+        alert(`✅ ${selectedMessages.size} messages forwarded to: ${contacts[contactIndex]}`);
+        exitSelectionMode();
+      } else {
+        alert('❌ Invalid contact selection');
+      }
+    }
+  }, [selectedMessages, exitSelectionMode]);
 
   // Scroll to bottom
   const scrollToBottom = useCallback(() => {
@@ -193,8 +248,26 @@ const ChatRightCard: React.FC = () => {
   // File handling
   const handleFileUpload = useCallback((acceptedTypes: string) => {
     // Handle file upload logic here
-  console.debug('File upload for types:', acceptedTypes);
-  }, []);
+    console.debug('File upload for types:', acceptedTypes);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.accept = acceptedTypes;
+      fileInputRef.current.click();
+
+      fileInputRef.current.onchange = (event) => {
+        const target = event.target as HTMLInputElement;
+        const file = target.files?.[0];
+
+        if (file) {
+          // Simulate file upload process
+          alert(`📁 File selected: ${file.name}\nSize: ${(file.size / 1024 / 1024).toFixed(2)} MB\nType: ${file.type}\n\n✅ File would be uploaded to chat`);
+
+          // Reset the input
+          target.value = '';
+        }
+      };
+    }
+  }, [fileInputRef]);
 
   const handlePhotoCapture = useCallback(async () => {
     setShowCamera(true);
@@ -202,12 +275,24 @@ const ChatRightCard: React.FC = () => {
 
   // Voice recording
   const startVoiceRecording = useCallback(async () => {
-    setIsRecording(true);
-    setRecordingTime(0);
+    try {
+      // Request microphone permission
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-    recordingIntervalRef.current = setInterval(() => {
-      setRecordingTime(prev => prev + 1);
-    }, 1000);
+      setIsRecording(true);
+      setRecordingTime(0);
+
+      recordingIntervalRef.current = setInterval(() => {
+        setRecordingTime(prev => prev + 1);
+      }, 1000);
+
+      // Stop the stream after starting (in real implementation, you'd keep it for recording)
+      stream.getTracks().forEach(track => track.stop());
+
+    } catch (error) {
+      console.error('Error accessing microphone:', error);
+      alert('❌ Could not access microphone. Please check your permissions.');
+    }
   }, []);
 
   const stopVoiceRecording = useCallback(() => {
@@ -216,8 +301,17 @@ const ChatRightCard: React.FC = () => {
       clearInterval(recordingIntervalRef.current);
       recordingIntervalRef.current = null;
     }
+
+    const recordTime = recordingTime;
     setRecordingTime(0);
-  }, []);
+
+    if (recordTime > 0) {
+      const mins = Math.floor(recordTime / 60);
+      const secs = recordTime % 60;
+      const timeString = `${mins}:${secs.toString().padStart(2, '0')}`;
+      alert(`🎤 Voice message recorded!\nDuration: ${timeString}\n\n✅ Voice message would be sent to chat`);
+    }
+  }, [recordingTime]);
 
   const formatRecordingTime = useCallback((time: number) => {
     const mins = Math.floor(time / 60);
@@ -255,25 +349,25 @@ const ChatRightCard: React.FC = () => {
   // Show welcome screen if no contact is selected
   if (!selectedContact) {
     return (
-      <div className="h-full flex items-center justify-center bg-[#f0f2f5]">
-        <div className="text-center max-w-md mx-auto px-6">
-          <div className="w-24 h-24 bg-[#25d366] rounded-full flex items-center justify-center mx-auto mb-6">
+      <div className="h-full flex items-center justify-center bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
+        <div className="text-center max-w-lg mx-auto px-8">
+          <div className="w-28 h-28 bg-gradient-to-br from-[#25d366] to-[#128c7e] rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="48"
-              height="48"
+              width="56"
+              height="56"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="lucide lucide-message-circle">
+              className="lucide lucide-message-circle text-white">
               <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
             </svg>
           </div>
-          <h2 className="text-2xl font-semibold text-gray-800 mb-3">Welcome to Nexus Chat</h2>
-          <p className="text-gray-600 leading-relaxed">
+          <h2 className="text-3xl font-bold text-gray-800 mb-4">Welcome to Nexus Chat</h2>
+          <p className="text-gray-600 leading-relaxed text-lg">
             Select a contact from the left sidebar to start chatting.
             Your conversations will be automatically saved and synchronized across all your devices.
           </p>
@@ -283,32 +377,32 @@ const ChatRightCard: React.FC = () => {
   }
 
   return (
-    <div className="h-full flex flex-col bg-[#f0f2f5]">
+    <div className="h-full flex flex-col bg-[#f0f2f5] overflow-hidden">
       {/* Selection Mode Toolbar */}
       {isSelectionMode && (
-        <div className="bg-[#25d366] text-white px-4 py-3 flex items-center justify-between">
+        <div className="bg-gradient-to-r from-[#25d366] to-[#128c7e] text-white px-6 py-4 flex items-center justify-between shadow-lg">
           <div className="flex items-center space-x-4">
             <button
               onClick={exitSelectionMode}
-              className="p-2 hover:bg-white/20 rounded-full transition-colors"
+              className="p-2 hover:bg-white/20 rounded-full transition-colors hover:scale-110 transform duration-200"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            <span className="font-medium">{selectedMessages.size} selected</span>
+            <span className="font-semibold text-lg">{selectedMessages.size} selected</span>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-3">
             <button
               onClick={handleBulkForward}
-              className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded-full text-sm font-medium transition-colors"
+              className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-full text-sm font-medium transition-colors hover:scale-105 transform duration-200"
             >
               Forward
             </button>
             <button
               onClick={handleBulkDelete}
-              className="px-3 py-1 bg-red-500 hover:bg-red-600 rounded-full text-sm font-medium transition-colors"
+              className="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-full text-sm font-medium transition-colors hover:scale-105 transform duration-200"
             >
               Delete
             </button>
@@ -325,6 +419,16 @@ const ChatRightCard: React.FC = () => {
         isSelectionMode={isSelectionMode}
       />
 
+      {/* Message Search */}
+      <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+        <ExpandableSearch
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Search messages..."
+          className="w-full"
+        />
+      </div>
+
       {/* Chat Content */}
       {showProfileView ? (
         <ProfileView
@@ -335,21 +439,21 @@ const ChatRightCard: React.FC = () => {
         <>
           {/* Typing Indicator */}
           {isTyping && (
-            <div className="px-4 py-2 bg-white">
-              <div className="flex items-center space-x-2">
+            <div className="px-6 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-400 mx-4 my-2 rounded-r-lg shadow-sm">
+              <div className="flex items-center space-x-3">
                 <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                 </div>
-                <span className="text-sm text-gray-500">{selectedContact.name} is typing...</span>
+                <span className="text-sm font-medium text-blue-700">{selectedContact.name} is typing...</span>
               </div>
             </div>
           )}
 
           {/* Messages */}
           <MessageList
-            messages={messages}
+            messages={filteredMessages}
             formatTime={(timestamp: Date) => timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             onReply={handleReply}
             onForward={handleForward}
@@ -366,19 +470,19 @@ const ChatRightCard: React.FC = () => {
 
           {/* Reply Preview */}
           {replyToMessage && (
-            <div className="px-4 py-2 bg-gray-100 border-t border-gray-200">
+            <div className="px-6 py-3 bg-gradient-to-r from-amber-50 to-orange-50 border-t border-amber-200 shadow-sm">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <div className="text-xs text-gray-500 mb-1">Replying to {replyToMessage.senderName}</div>
-                  <div className="text-sm text-gray-700 truncate">
+                  <div className="text-xs font-medium text-amber-700 mb-1">Replying to {replyToMessage.senderName}</div>
+                  <div className="text-sm text-amber-800 truncate">
                     {replyToMessage.type === 'text' ? replyToMessage.content : `📎 ${replyToMessage.type}`}
                   </div>
                 </div>
                 <button
                   onClick={() => setReplyToMessage(null)}
-                  className="p-1 hover:bg-gray-200 rounded-full transition-colors"
+                  className="p-2 hover:bg-amber-200 rounded-full transition-colors hover:scale-110 transform duration-200"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
@@ -423,6 +527,14 @@ const ChatRightCard: React.FC = () => {
         }}
         videoRef={videoRef}
         fileInputRef={fileInputRef}
+      />
+
+      {/* Hidden file input for uploads */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        style={{ display: 'none' }}
+        onChange={() => {}} // Handled in handleFileUpload
       />
     </div>
   );

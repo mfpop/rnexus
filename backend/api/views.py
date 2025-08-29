@@ -60,11 +60,14 @@ DjangoUser: TypeAlias = User
 
 def create_jwt_token(user: Union[User, AbstractBaseUser]) -> str:
     """Create a JWT token for the user"""
+    now = timezone.now()
     payload = {
         "user_id": user.id,  # type: ignore
         "username": user.username,  # type: ignore
-        "exp": timezone.now() + timedelta(days=1),  # Token expires in 1 day
-        "iat": timezone.now(),
+        "exp": int(
+            (now + timedelta(days=1)).timestamp()
+        ),  # Token expires in 1 day (Unix timestamp)
+        "iat": int(now.timestamp()),  # Issued at (Unix timestamp)
     }
     return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 

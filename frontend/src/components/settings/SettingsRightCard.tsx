@@ -1,6 +1,110 @@
 import React, { useState } from "react";
-import { Settings, User, Shield, Bell, Palette, Save, RefreshCw, AlertCircle, Moon, Sun, Eye, EyeOff, Mail, Smartphone, Monitor } from "lucide-react";
+import { Settings, User, Shield, Bell, Palette, Save, RefreshCw, AlertCircle, Moon, Sun, Eye, EyeOff, Mail, Smartphone, Monitor, Database, Plus, Edit3, Trash2 } from "lucide-react";
 import { useSettingsContext } from "./SettingsContext";
+import { useAuth } from "../../contexts/AuthContext";
+
+// Simple local editor for dropdown tables (mock UI, no backend)
+const DropdownTableEditor: React.FC = () => {
+  const [items, setItems] = useState<Array<{ id: number; key: string; value: string }>>([
+    { id: 1, key: 'priority', value: 'High' },
+    { id: 2, key: 'priority', value: 'Medium' },
+    { id: 3, key: 'priority', value: 'Low' },
+  ]);
+  const [newValue, setNewValue] = useState('');
+  const [editingId, setEditingId] = useState<number | null>(null);
+
+  const handleAdd = () => {
+    if (!newValue.trim()) return;
+    const id = items.length ? Math.max(...items.map((i) => i.id)) + 1 : 1;
+    setItems([...items, { id, key: 'priority', value: newValue.trim() }]);
+    setNewValue('');
+  };
+
+  const handleDelete = (id: number) => {
+    setItems(items.filter((i) => i.id !== id));
+  };
+
+  const handleSaveEdit = (id: number, value: string) => {
+    setItems(items.map((i) => (i.id === id ? { ...i, value } : i)));
+    setEditingId(null);
+  };
+
+  return (
+    <div>
+      <div className="space-y-3">
+        {items.map((item) => (
+          <div key={item.id} className="flex items-center justify-between p-2 border rounded">
+            <div>
+              <div className="text-sm font-medium text-gray-800">{item.value}</div>
+              <div className="text-xs text-gray-500">{item.key}</div>
+            </div>
+            <div className="flex items-center gap-2">
+              {editingId === item.id ? (
+                <>
+                  <input defaultValue={item.value} className="px-2 py-1 border rounded" onBlur={(e) => handleSaveEdit(item.id, e.target.value)} />
+                  <button className="text-xs px-2 py-1 border rounded bg-gray-100" onClick={() => setEditingId(null)}>Cancel</button>
+                </>
+              ) : (
+                <>
+                  <button className="text-xs px-2 py-1 border rounded bg-white" onClick={() => setEditingId(item.id)}><Edit3 className="h-3 w-3 inline" /> Edit</button>
+                  <button className="text-xs px-2 py-1 border rounded bg-red-50 text-red-700" onClick={() => handleDelete(item.id)}><Trash2 className="h-3 w-3 inline" /> Delete</button>
+                </>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-4 flex gap-2">
+        <input value={newValue} onChange={(e) => setNewValue(e.target.value)} placeholder="New value" className="flex-1 px-3 py-2 border rounded" />
+        <button className="px-4 py-2 bg-emerald-600 text-white rounded" onClick={handleAdd}><Plus className="h-4 w-4 inline" /> Add</button>
+      </div>
+    </div>
+  );
+};
+
+// Simple mock editor to manage user roles (admin/staff only)
+const UserRolesEditor: React.FC = () => {
+  const [roles, setRoles] = useState<Array<{ id: number; name: string; permissions: string[] }>>([
+    { id: 1, name: 'Administrator', permissions: ['all'] },
+    { id: 2, name: 'Manager', permissions: ['edit', 'view'] },
+    { id: 3, name: 'Operator', permissions: ['view'] },
+  ]);
+  const [newRole, setNewRole] = useState('');
+
+  const addRole = () => {
+    if (!newRole.trim()) return;
+    const id = roles.length ? Math.max(...roles.map(r => r.id)) + 1 : 1;
+    setRoles([...roles, { id, name: newRole.trim(), permissions: ['view'] }]);
+    setNewRole('');
+  };
+
+  const deleteRole = (id: number) => setRoles(roles.filter(r => r.id !== id));
+
+  return (
+    <div>
+      <div className="grid gap-2">
+        {roles.map(r => (
+          <div key={r.id} className="flex items-center justify-between p-2 border rounded">
+            <div>
+              <div className="font-medium text-gray-800">{r.name}</div>
+              <div className="text-xs text-gray-500">Permissions: {r.permissions.join(', ')}</div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button className="text-xs px-2 py-1 border rounded bg-white text-gray-700">Edit</button>
+              <button className="text-xs px-2 py-1 border rounded bg-red-50 text-red-700" onClick={() => deleteRole(r.id)}>Delete</button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-3 flex gap-2">
+        <input value={newRole} onChange={e => setNewRole(e.target.value)} placeholder="New role name" className="flex-1 px-3 py-2 border rounded" />
+        <button className="px-4 py-2 bg-emerald-600 text-white rounded" onClick={addRole}>Add Role</button>
+      </div>
+    </div>
+  );
+};
 
 const SettingsRightCard: React.FC = () => {
   const { selectedSection } = useSettingsContext();
@@ -264,6 +368,71 @@ const SettingsRightCard: React.FC = () => {
                 </p>
               </div>
             </div>
+          </div>
+        </div>
+      ),
+
+      database: (
+        <div className="space-y-6">
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-full flex items-center justify-center">
+              <Database className="h-8 w-8 text-emerald-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Database</h2>
+            <p className="text-gray-600">Manage tables, dropdown data and user roles (admin/staff)</p>
+          </div>
+
+          {/* Tables list */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Available Tables</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Example table card */}
+              <div className="p-4 border rounded-lg">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <p className="font-medium text-gray-800">Dropdown Options</p>
+                    <p className="text-xs text-gray-500">Data shown in dropdown menus across the app</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button className="text-sm px-3 py-1 border rounded bg-blue-50 text-blue-700">View</button>
+                    <button className="text-sm px-3 py-1 border rounded bg-emerald-50 text-emerald-700">Manage</button>
+                  </div>
+                </div>
+                <div className="text-xs text-gray-600">Example entries: Priority (High, Medium, Low), Status (Open, Closed)</div>
+              </div>
+
+              <div className="p-4 border rounded-lg">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <p className="text-sm font-medium text-gray-800">User Roles</p>
+                    <p className="text-xs text-gray-500">Configure roles and default permissions</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button className="text-sm px-3 py-1 border rounded bg-blue-50 text-blue-700">View</button>
+                    <button className="text-sm px-3 py-1 border rounded bg-emerald-50 text-emerald-700">Manage</button>
+                  </div>
+                </div>
+                <div className="text-xs text-gray-600">Administrator, Manager, Operator, Viewer</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Management panel - simplified local UI for add/modify */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Manage Dropdown Data</h3>
+            <p className="text-sm text-gray-600 mb-4">Admins and staff can add or modify data used in dropdown menus.</p>
+
+            {user?.is_staff || user?.is_superuser ? (
+              <DropdownTableEditor />
+            ) : (
+              <div className="text-sm text-gray-600">You do not have permissions to manage dropdown data.</div>
+            )}
+          </div>
+
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">User Roles</h3>
+            <p className="text-sm text-gray-600 mb-4">Configure roles and default permissions for users.</p>
+            {user?.is_staff || user?.is_superuser ? <UserRolesEditor /> : <div className="text-sm text-gray-600">You do not have permissions to manage roles.</div>}
           </div>
         </div>
       ),

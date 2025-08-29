@@ -102,7 +102,7 @@ const ProfileRightCard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'personal' | 'professional' | 'education' | 'experience' | 'security'>('personal');
 
   // GraphQL hooks
-  const { data: profileQueryData } = useQuery<GetUserProfileData>(GET_USER_PROFILE);
+  const { data: profileQueryData, loading: profileLoading, error: profileError } = useQuery<GetUserProfileData>(GET_USER_PROFILE);
   const [updateUserProfile] = useMutation<UpdateUserProfileData, UpdateUserProfileVariables>(UPDATE_USER_PROFILE);
   const [changePassword] = useMutation<ChangePasswordData, ChangePasswordVariables>(CHANGE_PASSWORD);
 
@@ -137,8 +137,8 @@ const ProfileRightCard: React.FC = () => {
         zip_code: profile.zipCode || "",
         country: profile.country || "",
         bio: profile.bio || "",
-        education: profile.education || [],
-        work_history: profile.workHistory || [],
+        education: Array.isArray(profile.education) ? profile.education : (typeof profile.education === 'string' ? JSON.parse(profile.education || '[]') : []),
+        work_history: Array.isArray(profile.workHistory) ? profile.workHistory : (typeof profile.workHistory === 'string' ? JSON.parse(profile.workHistory || '[]') : []),
         profile_visibility: profile.profileVisibility || { email: true, phone: true },
       };
     }
@@ -187,10 +187,17 @@ const ProfileRightCard: React.FC = () => {
 
   // Update profile data when GraphQL data changes
   useEffect(() => {
+    console.log('Profile query data:', profileQueryData);
+    console.log('Profile loading:', profileLoading);
+    console.log('Profile error:', profileError);
+
     if (profileQueryData?.userProfile) {
+      console.log('Setting profile data:', profileQueryData.userProfile);
       setProfileData(initializeProfileData());
     }
-  }, [profileQueryData]);
+  }, [profileQueryData, profileLoading, profileError]);
+
+
 
   // OpenAddresses data state
   const [countries, setCountries] = useState<Array<{name: string, cca2: string, flag: string}>>([]);
@@ -218,44 +225,68 @@ const ProfileRightCard: React.FC = () => {
 
   // Auto-save functionality using GraphQL mutation
   const autoSaveProfile = useCallback(async (data: ProfileData) => {
+    // Only auto-save a small subset of fields to avoid sending very large payloads
+    // (education/work_history can be large and should be saved only on explicit save)
     try {
       const variables: UpdateUserProfileVariables = {
         email: data.email,
         firstName: data.first_name,
         lastName: data.last_name,
         middleName: data.middle_name,
-        maternalLastName: data.maternal_last_name,
         preferredName: data.preferred_name,
         position: data.position,
         department: data.department,
         phone: data.phone,
         phoneCountryCode: data.phone_country_code,
         phoneType: data.phone_type,
-        secondaryPhone: data.secondary_phone,
         streetAddress: data.street_address,
-        apartmentSuite: data.apartment_suite,
         city: data.city,
         stateProvince: data.state_province,
         zipCode: data.zip_code,
         country: data.country,
         bio: data.bio,
-        education: JSON.stringify(data.education),
-        workHistory: JSON.stringify(data.work_history),
-        profileVisibility: JSON.stringify(data.profile_visibility),
+        // Intentionally omit education, workHistory and profileVisibility here
         isActive: data.is_active,
       };
 
+      // Prevent overlapping autosave requests
+      if ((autoSaveProfile as any).isSaving) return;
+      (autoSaveProfile as any).isSaving = true;
+
+      // Skip autosave if payload is too large to avoid server 400 due to
+      // DATA_UPLOAD_MAX_MEMORY_SIZE (Django). Use a conservative threshold.
+      try {
+        const payload = JSON.stringify(variables || {});
+        const payloadSize = new Blob([payload]).size; // bytes
+        const MAX_AUTOSAVE_BYTES = 50 * 1024; // 50 KB
+        if (payloadSize > MAX_AUTOSAVE_BYTES) {
+          console.warn(`Autosave skipped: payload too large (${payloadSize} bytes)`);
+          (autoSaveProfile as any).isSaving = false;
+          return;
+        }
+      } catch (e) {
+        // If size estimation fails, continue but log
+        console.warn('Autosave: could not compute payload size, continuing', e);
+      }
+
       const result = await updateUserProfile({ variables });
+      (autoSaveProfile as any).isSaving = false;
 
       if (result.data?.updateUserProfile.ok) {
         console.log('Profile auto-saved successfully');
-        // Dispatch profile-updated event for ProfileLeftCard
         window.dispatchEvent(new CustomEvent('profile-updated'));
       } else {
         console.error('Profile auto-save failed:', result.data?.updateUserProfile.errors);
       }
-    } catch (error) {
-      console.error('Profile auto-save error:', error);
+    } catch (error: any) {
+      (autoSaveProfile as any).isSaving = false;
+      // Detect Django error for large request bodies and log a clearer message
+      const message = error?.message || String(error);
+      if (message.includes('DATA_UPLOAD_MAX_MEMORY_SIZE') || message.includes('Request body exceeded')) {
+        console.error('Profile auto-save failed: request body too large for server. Skipping autosave of large collections.');
+      } else {
+        console.error('Profile auto-save error:', error);
+      }
     }
   }, [updateUserProfile]);
 
@@ -265,8 +296,15 @@ const ProfileRightCard: React.FC = () => {
   if (!AuthService.isAuthenticated()) return;
 
     const timeoutId = setTimeout(() => {
-      // Trigger auto-save for any profile field changes, not just name/email
-      if (Object.keys(profileData).some(key => profileData[key as keyof ProfileData])) {
+      // Only autosave small-profile fields to avoid large uploads
+      const smallFields = [
+        'email', 'first_name', 'last_name', 'middle_name', 'preferred_name',
+        'position', 'department', 'phone', 'phone_country_code',
+        'street_address', 'city', 'state_province', 'zip_code', 'country', 'bio'
+      ];
+
+      const shouldAutoSave = smallFields.some(k => Boolean(profileData[k as keyof ProfileData]));
+      if (shouldAutoSave) {
         autoSaveProfile(profileData);
       }
     }, 2000); // Auto-save after 2 seconds of inactivity
@@ -532,6 +570,14 @@ const ProfileRightCard: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Helper functions for department/position matching
+  const normalize = (s?: string) => (s || "").toLowerCase().trim();
+  const isDept = (dept?: string, key?: string) => normalize(dept).includes((key || "").toLowerCase());
+  const posMatches = (pos = "", keywords: string[]) => {
+    const p = normalize(pos);
+    return keywords.some(k => p.includes(k.toLowerCase()));
+  };
+
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -624,6 +670,34 @@ const ProfileRightCard: React.FC = () => {
     }
   };
 
+  // Debug info display - must be after all hooks are declared
+  if (profileLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading profile data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (profileError) {
+    return (
+      <div className="p-8 text-center">
+        <div className="text-red-600 mb-4">
+          <p className="text-lg font-semibold">Error loading profile</p>
+          <p className="text-sm">{profileError.message}</p>
+        </div>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -912,42 +986,17 @@ const ProfileRightCard: React.FC = () => {
                 <div className="p-4 space-y-3">
                   <div className="p-3 space-y-2">
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="text-sm font-medium text-gray-600">Street Address:</div>
-                      <div className="text-sm">
-                        <Input
-                          type="text"
-                          value={profileData.street_address || ""}
-                          onChange={(e) => handleProfileChange("street_address", e.target.value)}
-                          className="w-full h-7 text-sm border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:ring-inset"
-                          placeholder="123 Tech Street"
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="text-sm font-medium text-gray-600">Apartment/Suite:</div>
-                      <div className="text-sm">
-                        <Input
-                          type="text"
-                          value={profileData.apartment_suite || ""}
-                          onChange={(e) => handleProfileChange("apartment_suite", e.target.value)}
-                          className="w-full h-7 text-sm border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:ring-inset"
-                          placeholder="Enter apartment/suite"
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="text-sm font-medium text-gray-600">City:</div>
+                      <div className="text-sm font-medium text-gray-600">Country:</div>
                       <div className="text-sm">
                         <select
-                          value={profileData.city || ""}
-                          onChange={(e) => handleProfileChange("city", e.target.value)}
+                          value={profileData.country || ""}
+                          onChange={(e) => handleProfileChange("country", e.target.value)}
                           className="w-full h-7 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                          disabled={!profileData.state_province}
                         >
-                          <option value="">Select city</option>
-                          {cities.map((city) => (
-                            <option key={city.geonameId} value={city.name}>
-                              {city.name}
+                          <option value="">Select country</option>
+                          {countries.map((country) => (
+                            <option key={country.cca2} value={country.name}>
+                              {country.flag} {country.name}
                             </option>
                           ))}
                         </select>
@@ -972,6 +1021,48 @@ const ProfileRightCard: React.FC = () => {
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
+                      <div className="text-sm font-medium text-gray-600">City:</div>
+                      <div className="text-sm">
+                        <select
+                          value={profileData.city || ""}
+                          onChange={(e) => handleProfileChange("city", e.target.value)}
+                          className="w-full h-7 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                          disabled={!profileData.state_province}
+                        >
+                          <option value="">Select city</option>
+                          {cities.map((city) => (
+                            <option key={city.geonameId} value={city.name}>
+                              {city.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="text-sm font-medium text-gray-600">Street Address:</div>
+                      <div className="text-sm">
+                        <Input
+                          type="text"
+                          value={profileData.street_address || ""}
+                          onChange={(e) => handleProfileChange("street_address", e.target.value)}
+                          className="w-full h-7 text-sm border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:ring-inset"
+                          placeholder="123 Tech Street"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="text-sm font-medium text-gray-600">Apartment/Suite:</div>
+                      <div className="text-sm">
+                        <Input
+                          type="text"
+                          value={profileData.apartment_suite || ""}
+                          onChange={(e) => handleProfileChange("apartment_suite", e.target.value)}
+                          className="w-full h-7 text-sm border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:ring-inset"
+                          placeholder="Enter apartment/suite"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
                       <div className="text-sm font-medium text-gray-600">ZIP Code:</div>
                       <div className="text-sm">
                         <Input
@@ -983,43 +1074,9 @@ const ProfileRightCard: React.FC = () => {
                         />
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="text-sm font-medium text-gray-600">Country:</div>
-                      <div className="text-sm">
-                        <select
-                          value={profileData.country || ""}
-                          onChange={(e) => handleProfileChange("country", e.target.value)}
-                          className="w-full h-7 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                        >
-                          <option value="">Select country</option>
-                          {countries.map((country) => (
-                            <option key={country.cca2} value={country.name}>
-                              {country.flag} {country.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
                   </div>
 
-                  {/* Address Card Footer - Saved Address Display */}
-                  <div className="px-3 py-2 border-t border-gray-200 bg-gray-50">
-                    <div className="text-sm text-gray-800">
-                      {profileData.street_address || profileData.apartment_suite || profileData.city || profileData.state_province || profileData.country ? (
-                        <div>
-                          {profileData.street_address && `${profileData.street_address}`}
-                          {profileData.apartment_suite && `, Apt/Suite: ${profileData.apartment_suite}`}
-                          {(profileData.city || profileData.state_province || profileData.zip_code) && `, `}
-                          {profileData.city && `${profileData.city}`}
-                          {profileData.state_province && `, ${profileData.state_province}`}
-                          {profileData.zip_code && ` ${profileData.zip_code}`}
-                          {profileData.country && `, ${profileData.country}`}
-                        </div>
-                      ) : (
-                        <div className="text-gray-400 italic">No address information saved yet</div>
-                      )}
-                    </div>
-                  </div>
+
                 </div>
               </div>
             </div>
@@ -1044,17 +1101,16 @@ const ProfileRightCard: React.FC = () => {
       case 'professional':
         return (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Left Panel - Position and Department */}
-              <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-                <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
-                  <h3 className="text-lg font-medium text-gray-900">Position and Department</h3>
-                </div>
-                <div className="p-6">
-                  {/* Lean Manufacturing Plant Hierarchy */}
-                  <div className="space-y-4">
-                    {/* Edit Fields - Moved to top */}
-                    <div className="space-y-4 mb-6">
+            <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
+              {/* Left Column - Position, Department & Professional Overview (30%) */}
+              <div className="lg:col-span-3 space-y-6">
+                {/* Position and Department Card */}
+                <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                  <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <h3 className="text-lg font-medium text-gray-900">Position and Department</h3>
+                  </div>
+                  <div className="p-4">
+                    <div className="space-y-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Position
@@ -1081,449 +1137,279 @@ const ProfileRightCard: React.FC = () => {
                         />
                       </div>
                     </div>
+                  </div>
+                </div>
 
+                {/* Professional Overview Card */}
+                <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                  <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <h3 className="text-lg font-medium text-gray-900">Professional Overview</h3>
+                  </div>
+                  <div className="p-4 space-y-4">
+                    {/* Daily Activities */}
+                    <div>
+                      <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        Daily Activities
+                      </h4>
+                      <div className="space-y-1">
+                        {[
+                          "Production line monitoring",
+                          "Team stand-up meetings",
+                          "Quality control checks",
+                          "Lean process improvement"
+                        ].map((activity, index) => (
+                          <div key={index} className="flex items-start gap-2">
+                            <div className="w-1 h-1 bg-green-400 rounded-full mt-2 flex-shrink-0"></div>
+                            <span className="text-xs text-gray-600">{activity}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Responsibilities */}
+                    <div>
+                      <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        Key Responsibilities
+                      </h4>
+                      <div className="space-y-1">
+                        {[
+                          "Ensure production targets",
+                          "Maintain safety standards",
+                          "Implement lean principles",
+                          "Lead continuous improvement"
+                        ].map((responsibility, index) => (
+                          <div key={index} className="flex items-start gap-2">
+                            <div className="w-1 h-1 bg-blue-400 rounded-full mt-2 flex-shrink-0"></div>
+                            <span className="text-xs text-gray-600">{responsibility}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Targets */}
+                    <div>
+                      <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                        <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                        Current Targets
+                      </h4>
+                      <div className="space-y-1">
+                        {[
+                          "Reduce cycle time by 15%",
+                          "Achieve 99.5% quality rate",
+                          "Implement 5S methodology",
+                          "Reduce waste by 25%"
+                        ].map((target, index) => (
+                          <div key={index} className="flex items-start gap-2">
+                            <div className="w-1 h-1 bg-purple-400 rounded-full mt-2 flex-shrink-0"></div>
+                            <span className="text-xs text-gray-600">{target}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column - Plant Organizational Structure (70%) */}
+              <div className="lg:col-span-7">
+                <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                  <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                    <h3 className="text-lg font-medium text-gray-900">Plant Organizational Structure</h3>
+                  </div>
+                  <div className="p-6">
                     <div className="text-center">
-                      <h4 className="text-sm font-medium text-gray-600 mb-4">Plant Organizational Structure</h4>
+                      <h4 className="text-lg font-bold text-gray-800 mb-6 flex items-center justify-center gap-3">
+                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                          <span className="text-white text-lg">🏭</span>
+                        </div>
+                        Plant Organizational Structure
+                      </h4>
 
-                      {/* Plant Manager Level */}
-                      <div className={`inline-block p-4 rounded-lg border-2 transition-all duration-300 ${
-                        profileData.position?.toLowerCase().includes('plant manager') ||
-                        profileData.position?.toLowerCase().includes('plant director') ||
-                        profileData.position?.toLowerCase().includes('general manager')
-                          ? 'bg-blue-200 border-blue-600 shadow-xl scale-110 ring-4 ring-blue-200'
-                          : 'bg-gray-100 border-gray-300'
-                      }`}>
-                        <div className="text-sm font-bold text-gray-800 mb-1">🏭 PLANT MANAGER</div>
-                        <div className="text-xs text-gray-600">Oversees all operations and departments</div>
-                        {profileData.position?.toLowerCase().includes('plant manager') ||
-                         profileData.position?.toLowerCase().includes('plant director') ||
-                         profileData.position?.toLowerCase().includes('general manager') ? (
-                          <div className="mt-2 text-xs bg-blue-600 text-white px-2 py-1 rounded-full">
-                            YOUR ROLE
+                      {/* Executive Level */}
+                      <div className="mb-8">
+                        <div className="text-sm font-semibold text-gray-600 mb-3 text-center">EXECUTIVE LEVEL</div>
+                        <div className={`inline-block p-4 rounded-xl border-2 transition-all duration-300 transform hover:scale-105 ${
+                          profileData.position?.toLowerCase().includes('plant manager') ||
+                          profileData.position?.toLowerCase().includes('plant director') ||
+                          profileData.position?.toLowerCase().includes('general manager') ||
+                          profileData.position?.toLowerCase().includes('operations director')
+                            ? 'bg-gradient-to-br from-blue-400 to-blue-600 border-blue-500 text-white shadow-lg scale-110 ring-2 ring-blue-300'
+                            : 'bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300 text-gray-800'
+                        }`}>
+                          <div className="text-lg font-bold mb-1">🏭 PLANT MANAGER</div>
+                          <div className="text-xs opacity-90">Strategic Leadership</div>
+
+                        </div>
+                      </div>
+
+                      {/* Department Leadership Level */}
+                      <div className="mb-8">
+                        <div className="text-sm font-semibold text-gray-600 mb-4 text-center">DEPARTMENT LEADERSHIP</div>
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                          {/* Production Leadership */}
+                          <div className={`p-3 rounded-lg border-2 transition-all duration-300 transform hover:scale-105 ${
+                            isDept(profileData.department, 'production') ||
+                            posMatches(profileData.position, ['production manager', 'production supervisor', 'operations manager'])
+                              ? 'bg-gradient-to-br from-green-400 to-green-600 border-green-500 shadow-lg scale-110 ring-2 ring-green-300 text-white'
+                              : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 text-gray-800'
+                          }`}>
+                            <div className="text-base font-bold mb-1">🏭 PRODUCTION</div>
+                            <div className="text-xs opacity-90">Manufacturing</div>
+
                           </div>
-                        ) : null}
-                      </div>
 
-                      {/* Connector */}
-                      <div className="flex justify-center my-3">
-                        <div className="w-1 h-6 bg-gray-400"></div>
-                      </div>
+                          {/* Quality Leadership */}
+                          <div className={`p-3 rounded-lg border-2 transition-all duration-300 transform hover:scale-105 ${
+                            isDept(profileData.department, 'quality') ||
+                            posMatches(profileData.position, ['quality manager', 'quality supervisor', 'qa manager'])
+                              ? 'bg-gradient-to-br from-purple-400 to-purple-600 border-purple-500 shadow-lg scale-110 ring-2 ring-purple-300 text-white'
+                              : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 text-gray-800'
+                          }`}>
+                            <div className="text-base font-bold mb-1">🔍 QUALITY</div>
+                            <div className="text-xs opacity-90">Standards</div>
 
-                      {/* Department Managers Level - 9 Departments */}
-                      <div className="grid grid-cols-3 gap-2 mb-4">
-                        {/* Production Manager */}
-                        <div className={`p-2 rounded-lg border-2 transition-all duration-300 ${
-                          profileData.department?.toLowerCase().includes('production') ||
-                          profileData.position?.toLowerCase().includes('production manager') ||
-                          profileData.position?.toLowerCase().includes('production supervisor')
-                            ? 'bg-green-200 border-green-600 shadow-lg scale-105 ring-4 ring-green-200'
-                            : 'bg-gray-100 border-gray-300'
-                        }`}>
-                          <div className="text-xs font-bold text-gray-800 mb-1">🏭 PRODUCTION</div>
-                          <div className="text-xs text-gray-600">Manufacturing Operations</div>
-                          {profileData.department?.toLowerCase().includes('production') ||
-                           profileData.position?.toLowerCase().includes('production manager') ||
-                           profileData.position?.toLowerCase().includes('production supervisor') ? (
-                            <div className="mt-1 text-xs bg-green-600 text-white px-1 py-0.5 rounded-full">
-                              YOUR DEPT
-                            </div>
-                          ) : null}
-                        </div>
+                          </div>
 
-                        {/* Quality Manager */}
-                        <div className={`p-2 rounded-lg border-2 transition-all duration-300 ${
-                          profileData.department?.toLowerCase().includes('quality') ||
-                          profileData.position?.toLowerCase().includes('quality manager') ||
-                          profileData.position?.toLowerCase().includes('quality supervisor')
-                            ? 'bg-purple-200 border-purple-600 shadow-lg scale-105 ring-4 ring-purple-200'
-                            : 'bg-gray-100 border-gray-300'
-                        }`}>
-                          <div className="text-xs font-bold text-gray-800 mb-1">🔍 QUALITY</div>
-                          <div className="text-xs text-gray-600">Standards & Compliance</div>
-                          {profileData.department?.toLowerCase().includes('quality') ||
-                           profileData.position?.toLowerCase().includes('quality manager') ||
-                           profileData.position?.toLowerCase().includes('quality supervisor') ? (
-                            <div className="mt-1 text-xs bg-purple-600 text-white px-1 py-0.5 rounded-full">
-                              YOUR DEPT
-                            </div>
-                          ) : null}
-                        </div>
+                          {/* Maintenance Leadership */}
+                          <div className={`p-3 rounded-lg border-2 transition-all duration-300 transform hover:scale-105 ${
+                            isDept(profileData.department, 'maintenance') ||
+                            posMatches(profileData.position, ['maintenance manager', 'maintenance supervisor', 'reliability manager'])
+                              ? 'bg-gradient-to-br from-blue-400 to-blue-600 border-blue-500 shadow-lg scale-110 ring-2 ring-blue-300 text-white'
+                              : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 text-gray-800'
+                          }`}>
+                            <div className="text-base font-bold mb-1">⚙️ MAINTENANCE</div>
+                            <div className="text-xs opacity-90">Equipment</div>
 
-                        {/* Maintenance Manager */}
-                        <div className={`p-2 rounded-lg border-2 transition-all duration-300 ${
-                          profileData.department?.toLowerCase().includes('maintenance') ||
-                          profileData.position?.toLowerCase().includes('maintenance manager') ||
-                          profileData.position?.toLowerCase().includes('maintenance supervisor')
-                            ? 'bg-blue-200 border-blue-600 shadow-lg scale-105 ring-4 ring-blue-200'
-                            : 'bg-gray-100 border-gray-300'
-                        }`}>
-                          <div className="text-xs font-bold text-gray-800 mb-1">⚙️ MAINTENANCE</div>
-                          <div className="text-xs text-gray-600">Equipment & Infrastructure</div>
-                          {profileData.department?.toLowerCase().includes('maintenance') ||
-                           profileData.position?.toLowerCase().includes('maintenance manager') ||
-                           profileData.position?.toLowerCase().includes('maintenance supervisor') ? (
-                            <div className="mt-1 text-xs bg-blue-600 text-white px-1 py-0.5 rounded-full">
-                              YOUR DEPT
-                            </div>
-                          ) : null}
-                        </div>
+                          </div>
 
-                        {/* Logistics Manager */}
-                        <div className={`p-2 rounded-lg border-2 transition-all duration-300 ${
-                          profileData.department?.toLowerCase().includes('logistics') ||
-                          profileData.position?.toLowerCase().includes('logistics manager') ||
-                          profileData.position?.toLowerCase().includes('logistics supervisor')
-                            ? 'bg-orange-200 border-orange-600 shadow-lg scale-105 ring-4 ring-orange-200'
-                            : 'bg-gray-100 border-gray-300'
-                        }`}>
-                          <div className="text-xs font-bold text-gray-800 mb-1">📦 LOGISTICS</div>
-                          <div className="text-xs text-gray-600">Material Flow & Shipping</div>
-                          {profileData.department?.toLowerCase().includes('logistics') ||
-                           profileData.position?.toLowerCase().includes('logistics manager') ||
-                           profileData.position?.toLowerCase().includes('logistics supervisor') ? (
-                            <div className="mt-1 text-xs bg-orange-600 text-white px-1 py-0.5 rounded-full">
-                              YOUR DEPT
-                            </div>
-                          ) : null}
-                        </div>
+                          {/* Engineering Leadership */}
+                          <div className={`p-3 rounded-lg border-2 transition-all duration-300 transform hover:scale-105 ${
+                            isDept(profileData.department, 'engineering') ||
+                            posMatches(profileData.position, ['engineering manager', 'process engineer', 'project engineer'])
+                              ? 'bg-gradient-to-br from-indigo-400 to-indigo-600 border-indigo-500 shadow-lg scale-110 ring-2 ring-indigo-300 text-white'
+                              : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 text-gray-800'
+                          }`}>
+                            <div className="text-base font-bold mb-1">🔧 ENGINEERING</div>
+                            <div className="text-xs opacity-90">Innovation</div>
 
-                        {/* Continuous Improvement Manager */}
-                        <div className={`p-2 rounded-lg border-2 transition-all duration-300 ${
-                          profileData.department?.toLowerCase().includes('continuous improvement') ||
-                          profileData.position?.toLowerCase().includes('ci manager') ||
-                          profileData.position?.toLowerCase().includes('lean coordinator')
-                            ? 'bg-teal-200 border-teal-600 shadow-lg scale-105 ring-4 ring-teal-200'
-                            : 'bg-gray-100 border-gray-300'
-                        }`}>
-                          <div className="text-xs font-bold text-gray-800 mb-1">📈 CI</div>
-                          <div className="text-xs text-gray-600">Lean & Process Optimization</div>
-                          {profileData.department?.toLowerCase().includes('continuous improvement') ||
-                           profileData.position?.toLowerCase().includes('ci manager') ||
-                           profileData.position?.toLowerCase().includes('lean coordinator') ? (
-                            <div className="mt-1 text-xs bg-teal-600 text-white px-1 py-0.5 rounded-full">
-                              YOUR DEPT
-                            </div>
-                          ) : null}
-                        </div>
-
-                        {/* HR Manager */}
-                        <div className={`p-2 rounded-lg border-2 transition-all duration-300 ${
-                          profileData.department?.toLowerCase().includes('hr') ||
-                          profileData.position?.toLowerCase().includes('hr manager') ||
-                          profileData.position?.toLowerCase().includes('hr generalist')
-                            ? 'bg-pink-200 border-pink-600 shadow-lg scale-105 ring-4 ring-pink-200'
-                            : 'bg-gray-100 border-gray-300'
-                        }`}>
-                          <div className="text-xs font-bold text-gray-800 mb-1">👥 HR</div>
-                          <div className="text-xs text-gray-600">People & Development</div>
-                          {profileData.department?.toLowerCase().includes('hr') ||
-                           profileData.position?.toLowerCase().includes('hr manager') ||
-                           profileData.position?.toLowerCase().includes('hr generalist') ? (
-                            <div className="mt-1 text-xs bg-pink-600 text-white px-1 py-0.5 rounded-full">
-                              YOUR DEPT
-                            </div>
-                          ) : null}
-                        </div>
-
-                        {/* Safety Manager */}
-                        <div className={`p-2 rounded-lg border-2 transition-all duration-300 ${
-                          profileData.department?.toLowerCase().includes('safety') ||
-                          profileData.position?.toLowerCase().includes('safety manager') ||
-                          profileData.position?.toLowerCase().includes('safety officer')
-                            ? 'bg-red-200 border-red-600 shadow-lg scale-105 ring-4 ring-red-200'
-                            : 'bg-gray-100 border-gray-300'
-                        }`}>
-                          <div className="text-xs font-bold text-gray-800 mb-1">🛡️ SAFETY</div>
-                          <div className="text-xs text-gray-600">Workplace Safety & Compliance</div>
-                          {profileData.department?.toLowerCase().includes('safety') ||
-                           profileData.position?.toLowerCase().includes('safety manager') ||
-                           profileData.position?.toLowerCase().includes('safety officer') ? (
-                            <div className="mt-1 text-xs bg-red-600 text-white px-1 py-0.5 rounded-full">
-                              YOUR DEPT
-                            </div>
-                          ) : null}
-                        </div>
-
-                        {/* Engineering Manager */}
-                        <div className={`p-2 rounded-lg border-2 transition-all duration-300 ${
-                          profileData.department?.toLowerCase().includes('engineering') ||
-                          profileData.position?.toLowerCase().includes('engineering manager') ||
-                          profileData.position?.toLowerCase().includes('process engineer')
-                            ? 'bg-indigo-200 border-indigo-600 shadow-lg scale-105 ring-4 ring-indigo-200'
-                            : 'bg-gray-100 border-gray-300'
-                        }`}>
-                          <div className="text-xs font-bold text-gray-800 mb-1">🔧 ENGINEERING</div>
-                          <div className="text-xs text-gray-600">Technical Expertise & Innovation</div>
-                          {profileData.department?.toLowerCase().includes('engineering') ||
-                           profileData.position?.toLowerCase().includes('engineering manager') ||
-                           profileData.position?.toLowerCase().includes('process engineer') ? (
-                            <div className="mt-1 text-xs bg-indigo-600 text-white px-1 py-0.5 rounded-full">
-                              YOUR DEPT
-                            </div>
-                          ) : null}
-                        </div>
-
-                        {/* IT Manager */}
-                        <div className={`p-2 rounded-lg border-2 transition-all duration-300 ${
-                          profileData.department?.toLowerCase().includes('it') ||
-                          profileData.position?.toLowerCase().includes('it manager') ||
-                          profileData.position?.toLowerCase().includes('system administrator')
-                            ? 'bg-cyan-200 border-cyan-600 shadow-lg scale-105 ring-4 ring-cyan-200'
-                            : 'bg-gray-100 border-gray-300'
-                        }`}>
-                          <div className="text-xs font-bold text-gray-800 mb-1">💻 IT</div>
-                          <div className="text-xs text-gray-600">Technology & Infrastructure</div>
-                          {profileData.department?.toLowerCase().includes('it') ||
-                           profileData.position?.toLowerCase().includes('it manager') ||
-                           profileData.position?.toLowerCase().includes('system administrator') ? (
-                            <div className="mt-1 text-xs bg-cyan-600 text-white px-1 py-0.5 rounded-full">
-                              YOUR DEPT
-                            </div>
-                          ) : null}
+                          </div>
                         </div>
                       </div>
 
-                      {/* Connector */}
-                      <div className="flex justify-center my-3">
-                        <div className="w-1 h-6 bg-gray-400"></div>
-                      </div>
+                      {/* Support Departments */}
+                      <div className="mb-8">
+                        <div className="text-sm font-semibold text-gray-600 mb-4 text-center">SUPPORT DEPARTMENTS</div>
+                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                          {/* Logistics */}
+                          <div className={`p-3 rounded-lg border-2 transition-all duration-300 transform hover:scale-105 ${
+                            isDept(profileData.department, 'logistics') ||
+                            posMatches(profileData.position, ['logistics manager', 'logistics supervisor', 'warehouse manager'])
+                              ? 'bg-gradient-to-br from-orange-400 to-orange-600 border-orange-500 shadow-lg scale-110 ring-2 ring-orange-300 text-white'
+                              : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 text-gray-800'
+                          }`}>
+                            <div className="text-base font-bold mb-1">📦 LOGISTICS</div>
+                            <div className="text-xs opacity-90">Material Flow</div>
 
-                      {/* Supervisor Level - Key Supervisory Roles */}
-                      <div className="grid grid-cols-4 gap-2 mb-4">
-                        {/* Production Supervisors */}
-                        <div className={`p-2 rounded-lg border transition-all duration-300 ${
-                          profileData.position?.toLowerCase().includes('production supervisor') ||
-                          profileData.position?.toLowerCase().includes('team leader')
-                            ? 'bg-green-200 border-green-600 shadow-md scale-105 ring-2 ring-green-200'
-                            : 'bg-gray-50 border-gray-200'
-                        }`}>
-                          <div className="text-xs font-bold text-gray-800 mb-1">🏭 PRODUCTION SUPERVISORS</div>
-                          <div className="text-xs text-gray-600">Line Supervision & Team Leadership</div>
-                          {profileData.position?.toLowerCase().includes('production supervisor') ||
-                           profileData.position?.toLowerCase().includes('team leader') ? (
-                            <div className="mt-1 text-xs bg-green-600 text-white px-1 py-0.5 rounded-full">
-                              YOUR ROLE
-                            </div>
-                          ) : null}
-                        </div>
+                          </div>
 
-                        {/* Quality Supervisors */}
-                        <div className={`p-2 rounded-lg border transition-all duration-300 ${
-                          profileData.position?.toLowerCase().includes('quality supervisor') ||
-                          profileData.position?.toLowerCase().includes('quality technician')
-                            ? 'bg-purple-200 border-purple-600 shadow-md scale-105 ring-2 ring-purple-200'
-                            : 'bg-gray-50 border-gray-200'
-                        }`}>
-                          <div className="text-xs font-bold text-gray-800 mb-1">🔍 QUALITY SUPERVISORS</div>
-                          <div className="text-xs text-gray-600">Quality Control & Audits</div>
-                          {profileData.position?.toLowerCase().includes('quality supervisor') ||
-                           profileData.position?.toLowerCase().includes('quality technician') ? (
-                            <div className="mt-1 text-xs bg-purple-600 text-white px-1 py-0.5 rounded-full">
-                              YOUR ROLE
-                            </div>
-                          ) : null}
-                        </div>
+                          {/* Continuous Improvement */}
+                          <div className={`p-2 rounded-lg border-2 transition-all duration-300 transform hover:scale-105 ${
+                            isDept(profileData.department, 'continuous improvement') ||
+                            posMatches(profileData.position, ['ci manager', 'lean coordinator', 'process improvement'])
+                              ? 'bg-gradient-to-br from-teal-400 to-teal-600 border-teal-500 shadow-lg scale-110 ring-2 ring-teal-300 text-white'
+                              : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 text-gray-800'
+                          }`}>
+                            <div className="text-sm font-bold mb-1">📈 CI</div>
+                            <div className="text-xs opacity-90">Lean</div>
 
-                        {/* Maintenance Supervisors */}
-                        <div className={`p-2 rounded-lg border transition-all duration-300 ${
-                          profileData.position?.toLowerCase().includes('maintenance supervisor') ||
-                          profileData.position?.toLowerCase().includes('maintenance technician')
-                            ? 'bg-blue-200 border-blue-600 shadow-md scale-105 ring-2 ring-blue-200'
-                            : 'bg-gray-50 border-gray-200'
-                        }`}>
-                          <div className="text-xs font-bold text-gray-800 mb-1">⚙️ MAINTENANCE SUPERVISORS</div>
-                          <div className="text-xs text-gray-600">Equipment Maintenance & Repairs</div>
-                          {profileData.position?.toLowerCase().includes('maintenance supervisor') ||
-                           profileData.position?.toLowerCase().includes('maintenance technician') ? (
-                            <div className="mt-1 text-xs bg-blue-600 text-white px-1 py-0.5 rounded-full">
-                              YOUR ROLE
-                            </div>
-                          ) : null}
-                        </div>
+                          </div>
 
-                        {/* Logistics Supervisors */}
-                        <div className={`p-2 rounded-lg border transition-all duration-300 ${
-                          profileData.position?.toLowerCase().includes('logistics supervisor') ||
-                          profileData.position?.toLowerCase().includes('warehouse clerk')
-                            ? 'bg-orange-200 border-orange-600 shadow-md scale-105 ring-2 ring-orange-200'
-                            : 'bg-gray-50 border-gray-200'
-                        }`}>
-                          <div className="text-xs font-bold text-gray-800 mb-1">📦 LOGISTICS SUPERVISORS</div>
-                          <div className="text-xs text-gray-600">Warehouse & Transportation</div>
-                          {profileData.position?.toLowerCase().includes('logistics supervisor') ||
-                           profileData.position?.toLowerCase().includes('warehouse clerk') ? (
-                            <div className="mt-1 text-xs bg-orange-600 text-white px-1 py-0.5 rounded-full">
-                              YOUR ROLE
-                            </div>
-                          ) : null}
+                          {/* HR */}
+                          <div className={`p-2 rounded-lg border-2 transition-all duration-300 transform hover:scale-105 ${
+                            isDept(profileData.department, 'hr') ||
+                            posMatches(profileData.position, ['hr manager', 'hr generalist', 'hr coordinator'])
+                              ? 'bg-gradient-to-br from-pink-400 to-pink-600 border-pink-500 shadow-lg scale-110 ring-2 ring-pink-300 text-white'
+                              : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 text-gray-800'
+                          }`}>
+                            <div className="text-sm font-bold mb-1">👥 HR</div>
+                            <div className="text-xs opacity-90">People</div>
+
+                          </div>
+
+                          {/* Safety */}
+                          <div className={`p-2 rounded-lg border-2 transition-all duration-300 transform hover:scale-105 ${
+                            isDept(profileData.department, 'safety') ||
+                            posMatches(profileData.position, ['safety manager', 'safety officer', 'ehs manager'])
+                              ? 'bg-gradient-to-br from-red-400 to-red-600 border-red-500 shadow-lg scale-110 ring-2 ring-red-300 text-white'
+                              : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 text-gray-800'
+                          }`}>
+                            <div className="text-sm font-bold mb-1">🛡️ SAFETY</div>
+                            <div className="text-xs opacity-90">Workplace</div>
+
+                          </div>
+
+                          {/* IT */}
+                          <div className={`p-2 rounded-lg border-2 transition-all duration-300 transform hover:scale-105 ${
+                            isDept(profileData.department, 'it') ||
+                            posMatches(profileData.position, ['it manager', 'system administrator', 'it coordinator'])
+                              ? 'bg-gradient-to-br from-cyan-400 to-cyan-600 border-cyan-500 shadow-lg scale-110 ring-2 ring-cyan-300 text-white'
+                              : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 text-gray-800'
+                          }`}>
+                            <div className="text-sm font-bold mb-1">💻 IT</div>
+                            <div className="text-xs opacity-90">Technology</div>
+
+                          </div>
                         </div>
                       </div>
 
-                      {/* Connector */}
-                      <div className="flex justify-center my-3">
-                        <div className="w-1 h-6 bg-gray-400"></div>
-                      </div>
+                      {/* Operational Level */}
+                      <div className="mb-6">
+                        <div className="text-sm font-semibold text-gray-600 mb-4 text-center">OPERATIONAL LEVEL</div>
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                          {/* Supervisors */}
+                          <div className={`p-3 rounded-lg border-2 transition-all duration-300 transform hover:scale-105 ${
+                            posMatches(profileData.position, ['supervisor', 'team leader', 'lead', 'foreman'])
+                              ? 'bg-gradient-to-br from-green-400 to-green-600 border-green-500 shadow-lg scale-110 ring-2 ring-green-300 text-white'
+                              : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 text-gray-800'
+                          }`}>
+                            <div className="text-base font-bold mb-1">👥 SUPERVISORS</div>
+                            <div className="text-xs opacity-90">Team Leadership</div>
 
-                      {/* Individual Roles Level - Key Operational Positions */}
-                      <div className="grid grid-cols-3 gap-2">
-                        {/* Production Operators */}
-                        <div className={`p-2 rounded-lg border transition-all duration-300 ${
-                          profileData.position?.toLowerCase().includes('machine operator') ||
-                          profileData.position?.toLowerCase().includes('assembler') ||
-                          profileData.position?.toLowerCase().includes('operator')
-                            ? 'bg-green-200 border-green-600 shadow-md scale-105 ring-2 ring-green-200'
-                            : 'bg-gray-50 border-gray-200'
-                        }`}>
-                          <div className="text-xs font-bold text-gray-800 mb-1">🏭 PRODUCTION OPERATORS</div>
-                          <div className="text-xs text-gray-600">Machine Operation & Assembly</div>
-                          {profileData.position?.toLowerCase().includes('machine operator') ||
-                           profileData.position?.toLowerCase().includes('assembler') ||
-                           profileData.position?.toLowerCase().includes('operator') ? (
-                            <div className="mt-1 text-xs bg-green-600 text-white px-1 py-0.5 rounded-full">
-                              YOUR ROLE
-                            </div>
-                          ) : null}
-                        </div>
+                          </div>
 
-                        {/* Technical Specialists */}
-                        <div className={`p-2 rounded-lg border transition-all duration-300 ${
-                          profileData.position?.toLowerCase().includes('engineer') ||
-                          profileData.position?.toLowerCase().includes('technician') ||
-                          profileData.position?.toLowerCase().includes('analyst') ||
-                          profileData.position?.toLowerCase().includes('coordinator')
-                            ? 'bg-blue-200 border-blue-600 shadow-md scale-105 ring-2 ring-blue-200'
-                            : 'bg-gray-50 border-gray-200'
-                        }`}>
-                          <div className="text-xs font-bold text-gray-800 mb-1">⚙️ TECHNICAL SPECIALISTS</div>
-                          <div className="text-xs text-gray-600">Engineers, Technicians & Analysts</div>
-                          {profileData.position?.toLowerCase().includes('engineer') ||
-                           profileData.position?.toLowerCase().includes('technician') ||
-                           profileData.position?.toLowerCase().includes('analyst') ||
-                           profileData.position?.toLowerCase().includes('coordinator') ? (
-                            <div className="mt-1 text-xs bg-blue-600 text-white px-1 py-0.5 rounded-full">
-                              YOUR ROLE
-                            </div>
-                          ) : null}
-                        </div>
+                          {/* Technical Specialists */}
+                          <div className={`p-3 rounded-lg border-2 transition-all duration-300 transform hover:scale-105 ${
+                            posMatches(profileData.position, ['engineer', 'technician', 'analyst', 'coordinator', 'specialist'])
+                              ? 'bg-gradient-to-br from-blue-400 to-blue-600 border-blue-500 shadow-lg scale-110 ring-2 ring-blue-300 text-white'
+                              : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 text-gray-800'
+                          }`}>
+                            <div className="text-base font-bold mb-1">⚙️ TECHNICAL SPECIALISTS</div>
+                            <div className="text-xs opacity-90">Expertise</div>
 
-                        {/* Support & Administrative */}
-                        <div className={`p-2 rounded-lg border transition-all duration-300 ${
-                          profileData.position?.toLowerCase().includes('generalist') ||
-                          profileData.position?.toLowerCase().includes('officer') ||
-                          profileData.position?.toLowerCase().includes('clerk') ||
-                          profileData.position?.toLowerCase().includes('assistant') ||
-                          profileData.position?.toLowerCase().includes('recruiter')
-                            ? 'bg-orange-200 border-orange-600 shadow-md scale-105 ring-2 ring-orange-200'
-                            : 'bg-gray-50 border-gray-200'
-                        }`}>
-                          <div className="text-xs font-bold text-gray-800 mb-1">📋 SUPPORT & ADMIN</div>
-                          <div className="text-xs text-gray-600">Generalists, Officers & Assistants</div>
-                          {profileData.position?.toLowerCase().includes('generalist') ||
-                           profileData.position?.toLowerCase().includes('officer') ||
-                           profileData.position?.toLowerCase().includes('clerk') ||
-                           profileData.position?.toLowerCase().includes('assistant') ||
-                           profileData.position?.toLowerCase().includes('recruiter') ? (
-                            <div className="mt-1 text-xs bg-orange-600 text-white px-1 py-0.5 rounded-full">
-                              YOUR ROLE
-                            </div>
-                          ) : null}
+                          </div>
+
+                          {/* Operators */}
+                          <div className={`p-3 rounded-lg border-2 transition-all duration-300 transform hover:scale-105 ${
+                            posMatches(profileData.position, ['operator', 'assembler', 'machinist', 'worker'])
+                              ? 'bg-gradient-to-br from-orange-400 to-orange-600 border-orange-500 shadow-lg scale-110 ring-2 ring-orange-300 text-white'
+                              : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 text-gray-800'
+                          }`}>
+                            <div className="text-base font-bold mb-1">🏭 OPERATORS</div>
+                            <div className="text-xs opacity-90">Production</div>
+
+                          </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* Position Indicator */}
-                    {profileData.position && (
-                      <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-lg">
-                        <div className="text-sm font-bold text-blue-800 mb-2 flex items-center gap-2">
-                          🎯 <span>Your Current Position</span>
-                        </div>
-                        <div className="text-lg font-bold text-blue-900 mb-2">
-                          {profileData.position}
-                        </div>
-                        {profileData.department && (
-                          <div className="text-sm text-blue-700">
-                            📍 Department: <span className="font-semibold">{profileData.department}</span>
-                          </div>
-                        )}
-                        <div className="mt-3 text-xs text-blue-600 bg-blue-100 px-3 py-2 rounded-lg">
-                          💡 <strong>Tip:</strong> Your position is automatically highlighted in the diagram above with colored borders, badges, and scaling effects
-                        </div>
-                      </div>
-                    )}
+
                   </div>
                 </div>
               </div>
 
-              {/* Right Panel - Professional Overview */}
-              <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-                <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
-                  <h3 className="text-lg font-medium text-gray-900">Professional Overview</h3>
-                </div>
-                <div className="p-6 space-y-6">
-                  {/* Daily Activities */}
-                  <div>
-                    <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      Daily Activities
-                    </h4>
-                    <div className="space-y-2">
-                      {[
-                        "Production line monitoring",
-                        "Team stand-up meetings",
-                        "Quality control checks",
-                        "Lean process improvement"
-                      ].map((activity, index) => (
-                        <div key={index} className="flex items-start gap-3">
-                          <div className="w-1.5 h-1.5 bg-green-400 rounded-full mt-2 flex-shrink-0"></div>
-                          <span className="text-sm text-gray-600">{activity}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
 
-                  {/* Responsibilities */}
-                  <div>
-                    <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      Key Responsibilities
-                    </h4>
-                    <div className="space-y-2">
-                      {[
-                        "Ensure production targets",
-                        "Maintain safety standards",
-                        "Implement lean principles",
-                        "Lead continuous improvement"
-                      ].map((responsibility, index) => (
-                        <div key={index} className="flex items-start gap-3">
-                          <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 flex-shrink-0"></div>
-                          <span className="text-sm text-gray-600">{responsibility}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Targets */}
-                  <div>
-                    <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                      Current Targets
-                    </h4>
-                    <div className="space-y-2">
-                      {[
-                        "Reduce cycle time by 15%",
-                        "Achieve 99.5% quality rate",
-                        "Implement 5S methodology",
-                        "Reduce waste by 25%"
-                      ].map((target, index) => (
-                        <div key={index} className="flex items-start gap-3">
-                          <div className="w-1.5 h-1.5 bg-purple-400 rounded-full mt-2 flex-shrink-0"></div>
-                          <span className="text-sm text-gray-600">{target}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         );
@@ -1570,7 +1456,7 @@ const ProfileRightCard: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {(profileData.education || []).map((edu) => (
+                    {Array.isArray(profileData.education) && profileData.education.length > 0 ? profileData.education.map((edu) => (
                       <tr key={edu.id} className="hover:bg-gray-50 transition-colors [&>td]:!p-0">
                         <td className="py-4 whitespace-nowrap">
                           <Input
@@ -1641,13 +1527,13 @@ const ProfileRightCard: React.FC = () => {
                           </Button>
                         </td>
                       </tr>
-                    ))}
+                    )) : null}
                   </tbody>
                 </table>
               </div>
 
               {/* Empty State */}
-              {(!profileData.education || profileData.education.length === 0) && (
+              {(!Array.isArray(profileData.education) || profileData.education.length === 0) && (
                 <div className="text-center py-12 text-gray-500">
                   <GraduationCap className="h-12 w-12 mx-auto mb-3 text-gray-300" />
                   <p className="text-sm font-medium">No education records yet</p>
@@ -1686,7 +1572,7 @@ const ProfileRightCard: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {(profileData.work_history || []).map((work) => (
+                  {Array.isArray(profileData.work_history) && profileData.work_history.length > 0 ? profileData.work_history.map((work) => (
                     <tr key={work.id} className="hover:bg-gray-50 transition-colors [&>td]:!p-0">
                       <td className="py-2 whitespace-nowrap">
                         <div className="space-y-2">
@@ -1755,14 +1641,14 @@ const ProfileRightCard: React.FC = () => {
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
-                      </td>
-                    </tr>
-                  ))}
+                                              </td>
+                      </tr>
+                    )) : null}
                 </tbody>
               </table>
 
               {/* Empty State */}
-              {(!profileData.work_history || profileData.work_history.length === 0) && (
+              {(!Array.isArray(profileData.work_history) || profileData.work_history.length === 0) && (
                 <div className="text-center py-12 text-gray-500">
                   <Briefcase className="h-12 w-12 mx-auto mb-3 text-gray-300" />
                   <p className="text-sm font-medium">No work experience records yet</p>

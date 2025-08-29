@@ -195,3 +195,12 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
+
+# File Upload Settings - Fix Profile page GraphQL error
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000  # Increase field limit for complex forms
+
+# Additional settings for handling large data
+MAX_UPLOAD_SIZE = 10 * 1024 * 1024  # 10MB
+CONTENT_TYPES = ["image/jpeg", "image/png", "image/gif", "application/pdf"]

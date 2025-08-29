@@ -81,7 +81,7 @@ const RightCardTemplate: React.FC<RightCardTemplateProps> = ({
 
       {/* Content Area - Template Structure NEVER changes, only content varies */}
       <CardContent className="flex-1 p-0 overflow-hidden relative">
-        <div className="h-full overflow-y-auto pb-4">
+        <div className="h-full overflow-y-auto pb-12">
           {content || (
             <div className="p-4">
               <p className="text-gray-600">Page content will appear here</p>

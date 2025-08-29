@@ -197,8 +197,8 @@ const MessageList: React.FC<MessageListProps> = ({
     if (!msg.replyTo) return null;
 
     return (
-      <div className="mb-2 p-2 bg-gray-100 rounded-lg border-l-3 border-[#25d366]">
-        <div className="text-xs text-gray-500 mb-1">
+      <div className="mb-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border-l-4 border-[#25d366] shadow-sm">
+        <div className="text-xs font-medium text-gray-600 mb-1">
           {msg.replyTo.senderName}
         </div>
         <div className="text-xs text-gray-700 truncate">
@@ -209,8 +209,8 @@ const MessageList: React.FC<MessageListProps> = ({
   };
 
   return (
-    <div className="flex-1 overflow-y-auto bg-[#f0f2f5] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-thumb-gray-400">
-      <div className="space-y-2 p-4">
+    <div className="flex-1 overflow-y-auto bg-gradient-to-b from-gray-50 to-gray-100 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-thumb-gray-400">
+      <div className="space-y-3 p-6">
         {messages.map((msg) => (
           <div
             key={msg.id}
@@ -241,10 +241,10 @@ const MessageList: React.FC<MessageListProps> = ({
 
               {/* Message Content */}
               <div
-                className={`px-4 py-2 rounded-lg shadow-sm ${
+                className={`px-4 py-3 rounded-2xl shadow-md transition-all duration-200 hover:shadow-lg ${
                   msg.senderId === 1
-                    ? 'bg-[#25d366] text-white'
-                    : 'bg-white text-gray-800 border border-gray-200'
+                    ? 'bg-gradient-to-r from-[#25d366] to-[#128c7e] text-white'
+                    : 'bg-white text-gray-800 border border-gray-200 hover:border-gray-300'
                 }`}>
 
                 {renderMessageContent(msg)}

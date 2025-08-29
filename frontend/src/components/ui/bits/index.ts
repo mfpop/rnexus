@@ -12,4 +12,6 @@ export * from "./Dialog";
 export * from "./DropdownMenu";
 export * from "./SimpleSelect";
 export * from "./PhoneTypeDropdown";
+export * from "./ZipCodeDropdown";
+export * from "./PhoneNumberInput";
 export * from "./NotificationToast";

@@ -656,7 +656,7 @@ const NewsRightCard: React.FC = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 mt-3">
           {/* Like/Dislike Buttons */}
           <div className="flex items-center gap-1">
             <button

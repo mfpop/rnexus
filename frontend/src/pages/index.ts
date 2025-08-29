@@ -17,6 +17,7 @@ export { default as ContactPage } from "./ContactPage";
 export { default as HelpPage } from "./HelpPage";
 export { default as SettingsPage } from "./SettingsPage";
 export { default as SystemPage } from "./SystemPage";
+export { default as TeamsPage } from "./TeamsPage";
 
 // Home page components
 export { default as MainPage } from "./MainPage";

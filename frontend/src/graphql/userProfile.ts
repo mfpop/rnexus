@@ -8,31 +8,31 @@ export const GET_USER_PROFILE = gql`
       user {
         id
         email
-        first_name
-        last_name
-        is_active
+        firstName
+        lastName
+        isActive
       }
-      middle_name
-      maternal_last_name
-      preferred_name
+      middleName
+      maternalLastName
+      preferredName
       position
       department
       phone
-      phone_country_code
-      phone_type
-      secondary_phone
-      street_address
-      apartment_suite
+      phoneCountryCode
+      phoneType
+      secondaryPhone
+      streetAddress
+      apartmentSuite
       city
-      state_province
-      zip_code
+      stateProvince
+      zipCode
       country
       bio
       education
-      work_history
-      profile_visibility
-      created_at
-      updated_at
+      workHistory
+      profileVisibility
+      createdAt
+      updatedAt
     }
   }
 `;
@@ -41,53 +41,53 @@ export const GET_USER_PROFILE = gql`
 export const UPDATE_USER_PROFILE = gql`
   mutation UpdateUserProfile(
     $email: String
-    $first_name: String
-    $last_name: String
-    $middle_name: String
-    $maternal_last_name: String
-    $preferred_name: String
+    $firstName: String
+    $lastName: String
+    $middleName: String
+    $maternalLastName: String
+    $preferredName: String
     $position: String
     $department: String
     $phone: String
-    $phone_country_code: String
-    $phone_type: String
-    $secondary_phone: String
-    $street_address: String
-    $apartment_suite: String
+    $phoneCountryCode: String
+    $phoneType: String
+    $secondaryPhone: String
+    $streetAddress: String
+    $apartmentSuite: String
     $city: String
-    $state_province: String
-    $zip_code: String
+    $stateProvince: String
+    $zipCode: String
     $country: String
     $bio: String
     $education: String
-    $work_history: String
-    $profile_visibility: String
-    $is_active: Boolean
+    $workHistory: String
+    $profileVisibility: String
+    $isActive: Boolean
   ) {
     updateUserProfile(
       email: $email
-      firstName: $first_name
-      lastName: $last_name
-      middleName: $middle_name
-      maternalLastName: $maternal_last_name
-      preferredName: $preferred_name
+      firstName: $firstName
+      lastName: $lastName
+      middleName: $middleName
+      maternalLastName: $maternalLastName
+      preferredName: $preferredName
       position: $position
       department: $department
       phone: $phone
-      phoneCountryCode: $phone_country_code
-      phoneType: $phone_type
-      secondaryPhone: $secondary_phone
-      streetAddress: $street_address
-      apartmentSuite: $apartment_suite
+      phoneCountryCode: $phoneCountryCode
+      phoneType: $phoneType
+      secondaryPhone: $secondaryPhone
+      streetAddress: $streetAddress
+      apartmentSuite: $apartmentSuite
       city: $city
-      stateProvince: $state_province
-      zipCode: $zip_code
+      stateProvince: $stateProvince
+      zipCode: $zipCode
       country: $country
       bio: $bio
       education: $education
-      workHistory: $work_history
-      profileVisibility: $profile_visibility
-      isActive: $is_active
+      workHistory: $workHistory
+      profileVisibility: $profileVisibility
+      isActive: $isActive
     ) {
       ok
       userProfile {
@@ -95,31 +95,31 @@ export const UPDATE_USER_PROFILE = gql`
         user {
           id
           email
-          first_name
-          last_name
-          is_active
+          firstName
+          lastName
+          isActive
         }
-        middle_name
-        maternal_last_name
-        preferred_name
+        middleName
+        maternalLastName
+        preferredName
         position
         department
         phone
-        phone_country_code
-        phone_type
-        secondary_phone
-        street_address
-        apartment_suite
+        phoneCountryCode
+        phoneType
+        secondaryPhone
+        streetAddress
+        apartmentSuite
         city
-        state_province
-        zip_code
+        stateProvince
+        zipCode
         country
         bio
         education
-        work_history
-        profile_visibility
-        created_at
-        updated_at
+        workHistory
+        profileVisibility
+        createdAt
+        updatedAt
       }
       errors
     }
@@ -136,39 +136,64 @@ export const CHANGE_PASSWORD = gql`
   }
 `;
 
+// Organizational structure queries
+export const GET_DEPARTMENTS_FOR_PROFILE = gql`
+  query GetDepartmentsForProfile {
+    allDepartments {
+      id
+      name
+      description
+    }
+  }
+`;
+
+export const GET_ROLES_FOR_PROFILE = gql`
+  query GetRolesForProfile {
+    allRoles {
+      id
+      title
+      description
+      department {
+        id
+        name
+      }
+    }
+  }
+`;
+
 // Types for TypeScript
 export interface User {
   id: string;
   email: string;
-  first_name: string;
-  last_name: string;
-  is_active: boolean;
+  firstName: string;
+  lastName: string;
+  isActive: boolean;
 }
 
 export interface UserProfile {
   id: string;
   user: User;
-  middle_name?: string;
-  maternal_last_name?: string;
-  preferred_name?: string;
+  middleName?: string;
+  maternalLastName?: string;
+  preferredName?: string;
   position?: string;
   department?: string;
   phone?: string;
-  phone_country_code?: string;
-  phone_type?: string;
-  secondary_phone?: string;
-  street_address?: string;
-  apartment_suite?: string;
+  phoneCountryCode?: string;
+  phoneType?: string;
+  secondaryPhone?: string;
+  streetAddress?: string;
+  apartmentSuite?: string;
   city?: string;
-  state_province?: string;
-  zip_code?: string;
+  stateProvince?: string;
+  zipCode?: string;
   country?: string;
   bio?: string;
   education?: any;
-  work_history?: any;
-  profile_visibility?: any;
-  created_at: string;
-  updated_at: string;
+  workHistory?: any;
+  profileVisibility?: any;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface GetUserProfileData {
@@ -207,6 +232,28 @@ export interface UpdateUserProfileVariables {
   workHistory?: string;
   profileVisibility?: string;
   isActive?: boolean;
+}
+
+// Organizational structure types
+export interface Department {
+  id: string;
+  name: string;
+  description?: string;
+}
+
+export interface Role {
+  id: string;
+  title: string;
+  description?: string;
+  department: Department;
+}
+
+export interface GetDepartmentsForProfileData {
+  allDepartments: Department[];
+}
+
+export interface GetRolesForProfileData {
+  allRoles: Role[];
 }
 
 export interface ChangePasswordData {

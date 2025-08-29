@@ -3,6 +3,7 @@ import MainContainerTemplate from "../templates/MainContainerTemplate";
 import ChatLeftCard from "./ChatLeftCard";
 import ChatRightCard from "./ChatRightCard";
 import { useChatContext } from "../../contexts/ChatContext";
+import PaginationFooterWrapper from "../shared/PaginationFooterWrapper";
 
 export interface Message {
   id: number;
@@ -38,7 +39,7 @@ const ChatMainContainer: React.FC<ChatMainContainerProps> = ({
   const chatPageConfig = {
     leftTitle: "Team Communication",
     leftSubtitle: "Contacts, groups, and favorites",
-    leftFooter: "", // Remove footer to let ChatLeftCard handle its own pagination
+    leftFooter: <PaginationFooterWrapper />, // Use shared pagination footer
     rightTitle: selectedContact ? selectedContact.name : "Chat Window",
     rightSubtitle: selectedContact
       ? selectedContact.isGroup
@@ -51,8 +52,8 @@ const ChatMainContainer: React.FC<ChatMainContainerProps> = ({
 
   return (
     <MainContainerTemplate
-      // Use master-detail content relationship for chat page
-      contentRelationship="master-detail"
+      // Use independent content relationship since we're providing custom content for both cards
+      contentRelationship="independent"
       // Left Card Configuration (Master - Contact List)
       leftTitle={chatPageConfig.leftTitle}
       leftSubtitle={chatPageConfig.leftSubtitle}
@@ -66,10 +67,12 @@ const ChatMainContainer: React.FC<ChatMainContainerProps> = ({
       // Expansion State
       expandedCard={expandedCard}
       onExpandClick={onExpandClick}
-      // Container Styling
-      className={className}
-      gap="gap-4"
-      padding="p-4"
+      // Container Styling - Improved spacing and layout
+      className={`${className} chat-interface-container`}
+      gap="gap-6"
+      padding="p-6"
+      // Chat-specific grid proportions (left card smaller, right card larger)
+      gridProportions="1fr 3fr"
     />
   );
 };

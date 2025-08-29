@@ -110,6 +110,43 @@ class Item(models.Model):
         return self.name
 
 
+class Plant(models.Model):
+    """Manufacturing plant/facility"""
+
+    name = models.CharField(max_length=200)
+    location = models.CharField(max_length=200, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "plants"
+        verbose_name = "Plant"
+        verbose_name_plural = "Plants"
+
+    def __str__(self):
+        return self.name
+
+
+class ProductionModel(models.Model):
+    """Product models manufactured at a plant"""
+
+    name = models.CharField(max_length=200)
+    plant = models.ForeignKey(Plant, on_delete=models.CASCADE, related_name="models")
+    description = models.TextField(blank=True, null=True)
+    model_code = models.CharField(max_length=50, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "production_models"
+        verbose_name = "Production Model"
+        verbose_name_plural = "Production Models"
+
+    def __str__(self):
+        return f"{self.name} ({self.plant.name})"
+
+
 class Department(models.Model):
     """Department model for organizational structure"""
 
@@ -124,6 +161,88 @@ class Department(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Area(models.Model):
+    """Production area within a department"""
+
+    name = models.CharField(max_length=200)
+    department = models.ForeignKey(
+        Department, on_delete=models.CASCADE, related_name="areas"
+    )
+    description = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "areas"
+        verbose_name = "Area"
+        verbose_name_plural = "Areas"
+
+    def __str__(self):
+        return f"{self.name} ({self.department.name})"
+
+
+class ResourceGroup(models.Model):
+    """Group of resources for specific operations"""
+
+    name = models.CharField(max_length=200)
+    operation = models.CharField(max_length=200)
+    department = models.ForeignKey(
+        Department,
+        on_delete=models.CASCADE,
+        related_name="resource_groups",
+        blank=True,
+        null=True,
+    )
+    area = models.ForeignKey(
+        Area,
+        on_delete=models.CASCADE,
+        related_name="resource_groups",
+        blank=True,
+        null=True,
+    )
+    description = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "resource_groups"
+        verbose_name = "Resource Group"
+        verbose_name_plural = "Resource Groups"
+
+    def __str__(self):
+        return f"{self.name} - {self.operation}"
+
+
+class Resource(models.Model):
+    """Individual resource/equipment within a resource group"""
+
+    name = models.CharField(max_length=200)
+    resource_group = models.ForeignKey(
+        ResourceGroup, on_delete=models.CASCADE, related_name="resources"
+    )
+    resource_type = models.CharField(max_length=100, blank=True, null=True)
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ("active", "Active"),
+            ("inactive", "Inactive"),
+            ("maintenance", "Under Maintenance"),
+        ],
+        default="active",
+    )
+    description = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "resources"
+        verbose_name = "Resource"
+        verbose_name_plural = "Resources"
+
+    def __str__(self):
+        return f"{self.name} ({self.resource_group.name})"
 
 
 class Role(models.Model):
@@ -919,3 +1038,101 @@ class UpdateComment(models.Model):
     def can_delete(self, user):
         """Check if user can delete this comment"""
         return user == self.author or user.is_staff or user.is_superuser
+
+
+# Location Models for Countries, States, Cities, and Zip Codes
+class Country(models.Model):
+    """Model for countries"""
+
+    name = models.CharField(max_length=100, unique=True)
+    code = models.CharField(max_length=3, unique=True)  # ISO 3166-1 alpha-3
+    flag_emoji = models.CharField(max_length=10, blank=True, null=True)
+    phone_code = models.CharField(max_length=5, default="+1")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "countries"
+        verbose_name = "Country"
+        verbose_name_plural = "Countries"
+        ordering = ["name"]
+
+    def __str__(self):
+        return f"{self.name} ({self.code})"
+
+
+class State(models.Model):
+    """Model for states/provinces"""
+
+    name = models.CharField(max_length=100)
+    code = models.CharField(max_length=10, blank=True, null=True)  # State abbreviation
+    country = models.ForeignKey(
+        Country, on_delete=models.CASCADE, related_name="states"
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "states"
+        verbose_name = "State"
+        verbose_name_plural = "States"
+        ordering = ["name"]
+        unique_together = ["name", "country"]
+
+    def __str__(self):
+        return f"{self.name}, {self.country.name}"
+
+
+class City(models.Model):
+    """Model for cities"""
+
+    name = models.CharField(max_length=100)
+    state = models.ForeignKey(State, on_delete=models.CASCADE, related_name="cities")
+    country = models.ForeignKey(
+        Country, on_delete=models.CASCADE, related_name="cities"
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "cities"
+        verbose_name = "City"
+        verbose_name_plural = "Cities"
+        ordering = ["name"]
+        unique_together = ["name", "state"]
+
+    def __str__(self):
+        return f"{self.name}, {self.state.name}, {self.country.name}"
+
+
+class ZipCode(models.Model):
+    """Model for zip codes/postal codes"""
+
+    code = models.CharField(max_length=20)
+    city = models.ForeignKey(City, on_delete=models.CASCADE, related_name="zip_codes")
+    state = models.ForeignKey(State, on_delete=models.CASCADE, related_name="zip_codes")
+    country = models.ForeignKey(
+        Country, on_delete=models.CASCADE, related_name="zip_codes"
+    )
+    latitude = models.DecimalField(
+        max_digits=9, decimal_places=6, blank=True, null=True
+    )
+    longitude = models.DecimalField(
+        max_digits=9, decimal_places=6, blank=True, null=True
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "zip_codes"
+        verbose_name = "Zip Code"
+        verbose_name_plural = "Zip Codes"
+        ordering = ["code"]
+        unique_together = ["code", "city"]
+
+    def __str__(self):
+        return f"{self.code} - {self.city.name}, {self.state.name}, {self.country.name}"

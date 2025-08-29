@@ -36,6 +36,7 @@ interface ChatContextType {
   currentPage: number;
   setCurrentPage: (page: number) => void;
   totalPages: number;
+  itemsPerPage: number;
   activeTab: "contacts" | "groups" | "favorites";
   setActiveTab: (tab: "contacts" | "groups" | "favorites") => void;
   // Profile view state
@@ -437,33 +438,13 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
   const [activeTab, setActiveTab] = useState<
     "contacts" | "groups" | "favorites"
   >("contacts");
-  const [itemsPerPage, setItemsPerPage] = useState(8);
+  const [itemsPerPage, setItemsPerPage] = useState(12); // Set a reasonable default
   const [showProfileView, setShowProfileView] = useState(false);
 
-  // Calculate optimal items per page based on available space
+  // Simplified items per page calculation - use a fixed reasonable value
   const calculateOptimalItemsPerPage = useCallback(() => {
-    // Get the left card container height from the DOM
-    const leftCard = document.querySelector('[data-testid="left-card"]');
-
-    if (!leftCard) return 8; // Default fallback
-
-    const containerHeight = leftCard.clientHeight;
-
-    // More accurate height calculations
-    const searchHeight = 80; // Search bar height
-    const tabsHeight = 60; // Tabs height
-    const footerHeight = 80; // Pagination footer height
-    const availableHeight =
-      containerHeight - searchHeight - tabsHeight - footerHeight;
-
-    // Each user card is approximately 55px tall (reduced for better fit with compact design)
-    const userCardHeight = 55;
-    const optimalItems = Math.floor(availableHeight / userCardHeight);
-
-    // Ensure we have at least 8 items per page and at most 25 for better space utilization
-    const clampedItems = Math.max(8, Math.min(25, optimalItems));
-
-    return clampedItems;
+    // Use a fixed value for now to ensure reliability
+    return 12;
   }, []);
 
   useEffect(() => {
@@ -503,6 +484,17 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
     currentPage * itemsPerPage,
   );
 
+  // Debug logging to see pagination values
+  console.log('ChatContext - Pagination Debug:', {
+    currentDataLength: currentData.length,
+    currentPage,
+    itemsPerPage,
+    totalPages,
+    paginatedUsersLength: paginatedUsers.length,
+    sliceStart: (currentPage - 1) * itemsPerPage,
+    sliceEnd: currentPage * itemsPerPage
+  });
+
   const value: ChatContextType = {
     selectedContact,
     setSelectedContact,
@@ -514,6 +506,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
     currentPage,
     setCurrentPage,
     totalPages,
+    itemsPerPage,
     activeTab,
     setActiveTab,
     showProfileView,

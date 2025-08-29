@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useChatContext } from "../../contexts/ChatContext";
 import { useNotification } from "../../contexts/NotificationContext";
+import { usePagination } from "../../contexts/PaginationContext";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -46,8 +47,12 @@ const ChatLeftCard: React.FC = () => {
     activeTab,
     setActiveTab,
     setShowProfileView,
+    currentPage,
+    setCurrentPage,
+    allUsers,
   } = useChatContext();
   const { showSuccess, showError, showWarning, showInfo } = useNotification();
+  const { setPaginationData } = usePagination();
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddContactModal, setShowAddContactModal] = useState(false);
   const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
@@ -73,6 +78,9 @@ const ChatLeftCard: React.FC = () => {
   // Refs for measuring space
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const [recordsPerPage, setRecordsPerPage] = useState<number>(6);
+
+  // total counts are computed in-place for pagination footer
 
   // Dynamic height calculation to prevent scrollbars and footer invasion
   useEffect(() => {
@@ -105,6 +113,33 @@ const ChatLeftCard: React.FC = () => {
     // Recalculate on window resize
     window.addEventListener("resize", calculateOptimalHeight);
     return () => window.removeEventListener("resize", calculateOptimalHeight);
+  }, []);
+
+  // Dynamically compute recordsPerPage (number of visible items) based on available height
+  useEffect(() => {
+    const calculateRecords = () => {
+      if (!containerRef.current) return;
+      const container = containerRef.current;
+      const listEl = contentRef.current;
+
+      let available = container.clientHeight;
+      if (listEl) {
+        const listTop = (listEl as HTMLElement).offsetTop - container.offsetTop;
+        available = Math.max(0, container.clientHeight - listTop - 8);
+      }
+
+      const DEFAULT_CARD_HEIGHT = 64;
+      // Try to sample a card to get accurate height
+      const sample = container.querySelector('.h-16') as HTMLElement | null;
+      const cardHeight = sample ? sample.offsetHeight : DEFAULT_CARD_HEIGHT;
+
+      const computed = Math.max(3, Math.min(12, Math.floor(available / cardHeight)));
+      setRecordsPerPage((prev) => (prev !== computed ? computed : prev));
+    };
+
+    calculateRecords();
+    window.addEventListener('resize', calculateRecords);
+    return () => window.removeEventListener('resize', calculateRecords);
   }, []);
 
   const getStatusColor = (status: string) => {
@@ -200,8 +235,11 @@ const ChatLeftCard: React.FC = () => {
     setActiveTab("groups");
   };
 
+  // Use full users list when available; fall back to paginatedUsers from context
+  const usersSource = (allUsers && allUsers.length > 0) ? allUsers : paginatedUsers;
+
   // Filter all users for the Contacts tab
-  const filteredAllUsers = paginatedUsers.filter(
+  const filteredAllUsers = usersSource.filter(
     (user: any) =>
       user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (user.department &&
@@ -220,6 +258,44 @@ const ChatLeftCard: React.FC = () => {
   const filteredFavorites = favorites.filter((favorite: any) =>
     favorite.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
+
+  // Prepare paginated lists per tab so rendering matches footer
+  const contactsItems = filteredAllUsers;
+  const groupsItems = filteredGroups;
+  const favoritesItems = filteredFavorites;
+
+  // total pages are computed on-the-fly where needed
+
+  const startContacts = (currentPage - 1) * recordsPerPage;
+  const startGroups = (currentPage - 1) * recordsPerPage;
+  const startFavorites = (currentPage - 1) * recordsPerPage;
+
+  const paginatedContacts = contactsItems.slice(startContacts, startContacts + recordsPerPage);
+  const paginatedGroups = groupsItems.slice(startGroups, startGroups + recordsPerPage);
+  const paginatedFavorites = favoritesItems.slice(startFavorites, startFavorites + recordsPerPage);
+
+  // Reset to first page when filters change or recordsPerPage/activeTab changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, activeTab, recordsPerPage]);
+
+  // Update pagination context when data changes
+  useEffect(() => {
+    const itemsForTab = activeTab === 'contacts'
+      ? contactsItems
+      : activeTab === 'groups'
+        ? groupsItems
+        : favoritesItems;
+
+    const totalPagesLocal = Math.max(1, Math.ceil(itemsForTab.length / recordsPerPage));
+
+    setPaginationData({
+      currentPage: currentPage > totalPagesLocal ? 1 : currentPage,
+      totalPages: totalPagesLocal,
+      totalRecords: itemsForTab.length,
+      recordsPerPage,
+    });
+  }, [currentPage, contactsItems.length, groupsItems.length, favoritesItems.length, recordsPerPage, setPaginationData, activeTab]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -386,8 +462,8 @@ const ChatLeftCard: React.FC = () => {
 
   return (
     <div ref={containerRef} className="h-full flex flex-col overflow-hidden">
-      {/* Search and Actions */}
-      <div className="p-4 border-b border-gray-200">
+  {/* Search and Actions */}
+  <div className="p-3 border-b border-gray-200">
         <div className="flex items-center gap-3">
           {/* Search Input */}
           <div className="relative flex-1">
@@ -408,12 +484,12 @@ const ChatLeftCard: React.FC = () => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 bg-blue-50 border border-blue-200"
+                  className="p-1.5 rounded-lg transition-all duration-200 border bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
                   data-testid="chat-left-more-options"
                   title="Contact options (left)"
                   aria-label="Contact options menu (left)"
                 >
-                  <MoreVertical className="h-4 w-4 text-blue-600" />
+                  <MoreVertical className="h-4 w-4 text-gray-600" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
@@ -592,6 +668,8 @@ const ChatLeftCard: React.FC = () => {
 
       {/* Content */}
       <div ref={contentRef} className="flex-1 min-h-0 overflow-hidden">
+    {/* Debug Info removed for production UI */}
+
         {activeTab === "contacts" && (
           <div className="flex flex-col h-full overflow-hidden">
             {/* Search Results Counter */}
@@ -604,9 +682,9 @@ const ChatLeftCard: React.FC = () => {
               </div>
             )}
 
-            {paginatedUsers.length > 0 ? (
+            {contactsItems.length > 0 ? (
               <div className="flex flex-col space-y-0 overflow-hidden">
-                {paginatedUsers.map((user) => renderContactItem(user))}
+                {paginatedContacts.map((user) => renderContactItem(user))}
               </div>
             ) : (
               <div className="p-8 text-center text-gray-500">
@@ -633,9 +711,9 @@ const ChatLeftCard: React.FC = () => {
               </div>
             )}
 
-            {filteredGroups.length > 0 ? (
+            {groupsItems.length > 0 ? (
               <div className="flex flex-col space-y-0 overflow-hidden">
-                {filteredGroups.map((group) => renderContactItem(group))}
+                {paginatedGroups.map((group) => renderContactItem(group))}
               </div>
             ) : (
               <div className="p-8 text-center text-gray-500">
@@ -663,9 +741,9 @@ const ChatLeftCard: React.FC = () => {
               </div>
             )}
 
-            {filteredFavorites.length > 0 ? (
+            {favoritesItems.length > 0 ? (
               <div className="flex flex-col space-y-0 overflow-hidden">
-                {filteredFavorites.map((favorite) =>
+                {paginatedFavorites.map((favorite) =>
                   renderContactItem(favorite),
                 )}
               </div>

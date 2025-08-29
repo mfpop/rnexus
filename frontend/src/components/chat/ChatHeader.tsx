@@ -45,7 +45,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
   };
 
   return (
-    <div className="px-4 py-3 border-b border-gray-200 bg-white relative z-50 shadow-sm">
+    <div className="px-4 py-3 border-b border-gray-200 bg-white relative z-50 shadow-sm bg-gradient-to-r from-white to-gray-50">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           {/* Avatar */}

@@ -5,11 +5,14 @@ from .models import (
     ActivityPriority,
     ActivityStatus,
     Chat,
+    City,
+    Country,
     Department,
     Employee,
     Item,
     Message,
     Role,
+    State,
     SystemMessage,
     Tag,
     Update,
@@ -17,6 +20,7 @@ from .models import (
     UpdateComment,
     UpdateLike,
     UpdateMedia,
+    ZipCode,
 )
 
 
@@ -212,3 +216,58 @@ class EmployeeAdmin(admin.ModelAdmin):
         return "Yes" if obj.user else "No"
 
     user_linked.short_description = "User Account"  # type: ignore
+
+
+# Location Models Admin
+@admin.register(Country)
+class CountryAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "code",
+        "flag_emoji",
+        "phone_code",
+        "is_active",
+        "created_at",
+    )
+    list_filter = ("is_active", "created_at")
+    search_fields = ("name", "code")
+    ordering = ("name",)
+    readonly_fields = ("created_at", "updated_at")
+
+
+@admin.register(State)
+class StateAdmin(admin.ModelAdmin):
+    list_display = ("name", "code", "country", "is_active", "created_at")
+    list_filter = ("country", "is_active", "created_at")
+    search_fields = ("name", "code", "country__name")
+    ordering = ("country__name", "name")
+    autocomplete_fields = ["country"]
+    readonly_fields = ("created_at", "updated_at")
+
+
+@admin.register(City)
+class CityAdmin(admin.ModelAdmin):
+    list_display = ("name", "state", "country", "is_active", "created_at")
+    list_filter = ("state__country", "state", "is_active", "created_at")
+    search_fields = ("name", "state__name", "country__name")
+    ordering = ("country__name", "state__name", "name")
+    autocomplete_fields = ["state", "country"]
+    readonly_fields = ("created_at", "updated_at")
+
+
+@admin.register(ZipCode)
+class ZipCodeAdmin(admin.ModelAdmin):
+    list_display = (
+        "code",
+        "city",
+        "state",
+        "country",
+        "latitude",
+        "longitude",
+        "is_active",
+    )
+    list_filter = ("country", "state", "is_active", "created_at")
+    search_fields = ("code", "city__name", "state__name", "country__name")
+    ordering = ("country__name", "state__name", "city__name", "code")
+    autocomplete_fields = ["city", "state", "country"]
+    readonly_fields = ("created_at", "updated_at")

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { HomeLeftCard } from "./home";
 import { ContactLeftCard } from "./contact";
@@ -17,7 +17,9 @@ import { MetricsLeftCard, MetricsProvider } from "./metrics";
 import { ProjectsLeftCard, ProjectsProvider } from "./projects";
 import { ActivitiesLeftCard, ActivitiesProvider } from "./activities";
 import { AboutLeftCard, AboutProvider } from "./about";
-import { ChatLeftCardSimple, ChatProvider } from "./chat";
+import { ChatProvider } from "./chat";
+import { DatabaseLeftCard } from "./database";
+import { TeamsLeftCard } from "./teams";
 import LeftSidebarTemplate from "./templates/LeftSidebarTemplate";
 import RightSidebarTemplate from "./templates/RightSidebarTemplate";
 import MainContainerTemplate from "./templates/MainContainerTemplate";
@@ -45,6 +47,8 @@ import Metrics from "../pages/Metrics";
 import Projects from "../pages/Projects";
 import Activities from "../pages/Activities";
 import About from "../pages/About";
+import DatabaseSettingsPage from "../pages/DatabaseSettingsPage";
+import TeamsPage from "../pages/TeamsPage";
 
 import {
   House,
@@ -104,6 +108,24 @@ export default function StableLayout() {
     }
   };
 
+  // Grid columns and card visibility are now handled by MainContainerTemplate
+
+  const handleExpandClick = useCallback((side: "left" | "right") => {
+    setExpandedCard((prev) => {
+      if (side === "left") {
+        if (prev === null) return "left";
+        if (prev === "left") return "left-full";
+        if (prev === "left-full") return null;
+        return "left";
+      } else {
+        if (prev === null) return "right";
+        if (prev === "right") return "right-full";
+        if (prev === "right-full") return null;
+        return "right";
+      }
+    });
+  }, []);
+
   // Helper function to get the current page component
   const getCurrentPage = useMemo(() => {
     const page = (() => {
@@ -113,7 +135,7 @@ export default function StableLayout() {
         case "/production":
           return <ProductionPage />;
         case "/chat":
-          return <ChatPage />;
+          return <ChatPage expandedCard={expandedCard} onExpandClick={handleExpandClick} />;
         case "/login":
           return <LoginPage />;
         case "/register":
@@ -138,14 +160,18 @@ export default function StableLayout() {
           return <Projects />;
         case "/activities":
           return <Activities />;
+        case "/teams":
+          return <TeamsPage />;
         case "/about":
           return <About />;
+        case "/db-settings":
+          return <DatabaseSettingsPage />;
         default:
           return <MainPage />;
       }
     })();
     return page;
-  }, [location.pathname]);
+  }, [location.pathname, expandedCard, handleExpandClick]);
 
   // Helper function to get page-specific configuration
   const getPageConfig = (path: string) => {
@@ -281,6 +307,15 @@ export default function StableLayout() {
           rightSubtitle: "Select an activity to view detailed information",
           rightFooter: "© 2024 Nexus LMD. All rights reserved.",
         };
+      case "/teams":
+        return {
+          leftTitle: "Microsoft Teams",
+          leftSubtitle: "Team collaboration and communication",
+          leftFooter: "Stay connected with your team",
+          rightTitle: "Teams Dashboard",
+          rightSubtitle: "Manage meetings, channels, and chats",
+          rightFooter: "© 2024 Nexus LMD. All rights reserved.",
+        };
       case "/chat":
         return {
           leftTitle: "Team Communications",
@@ -299,6 +334,15 @@ export default function StableLayout() {
           rightTitle: "Company Information",
           rightSubtitle: "Select a section to learn more about RNexus",
           rightFooter: "Discover our story, values, and achievements",
+        };
+      case "/db-settings":
+        return {
+          leftTitle: "Database Management",
+          leftSubtitle: "Database configuration and monitoring",
+          leftFooter: "Administrative access required",
+          rightTitle: "Database Settings",
+          rightSubtitle: "Configure database connections and performance",
+          rightFooter: "Changes may require system restart",
         };
       case "/profile":
         return {
@@ -326,24 +370,6 @@ export default function StableLayout() {
     const config = getPageConfig(location.pathname);
     return config;
   }, [location.pathname]);
-
-  // Grid columns and card visibility are now handled by MainContainerTemplate
-
-  const handleExpandClick = (side: "left" | "right") => {
-    setExpandedCard((prev) => {
-      if (side === "left") {
-        if (prev === null) return "left";
-        if (prev === "left") return "left-full";
-        if (prev === "left-full") return null;
-        return "left";
-      } else {
-        if (prev === null) return "right";
-        if (prev === "right") return "right-full";
-        if (prev === "right-full") return null;
-        return "right";
-      }
-    });
-  };
 
   // Authentication handler
   const handleAuthClick = () => {
@@ -427,6 +453,14 @@ export default function StableLayout() {
       onClick: () => forceNavigate("/activities"),
       height: "h-16",
     }, // B10
+    {
+      icon: <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg>,
+      title: "Teams",
+      onClick: () => forceNavigate("/teams"),
+      height: "h-16",
+    }, // B11
   ];
 
   // Button navigation handler (from layout.md)
@@ -445,10 +479,11 @@ export default function StableLayout() {
       4: "/metrics",
       5: "/projects",
       6: "/activities",
-      7: "/about",
-      8: "/contact",
-      9: "/help",
-      10: "/activities",
+      7: "/teams",
+      8: "/about",
+      9: "/contact",
+      10: "/help",
+      11: "/teams",
       18: "/system",
       19: "/help",
       20: "/settings",
@@ -574,27 +609,7 @@ export default function StableLayout() {
         />
 
         {/* Main Content Area - Conditional Layout */}
-        {location.pathname === "/chat" ? (
-          // Chat page uses ChatProvider and PaginationProvider for left-right card communication
-          <ChatProvider>
-            <PaginationProvider>
-              <MainContainerTemplate
-                key={location.pathname}
-                leftTitle={pageConfig.leftTitle}
-                leftSubtitle={pageConfig.leftSubtitle}
-                leftFooter={pageConfig.leftFooter}
-                leftContent={<ChatLeftCardSimple />}
-                rightTitle={pageConfig.rightTitle}
-                rightSubtitle={pageConfig.rightSubtitle}
-                rightFooter={pageConfig.rightFooter}
-                rightContent={getCurrentPage}
-                expandedCard={expandedCard}
-                onExpandClick={handleExpandClick}
-                gridProportions="1fr 3fr"
-              />
-            </PaginationProvider>
-          </ChatProvider>
-        ) : location.pathname === "/help" ? (
+        {location.pathname === "/help" ? (
           // Help page uses HelpProvider for left-right card communication
           <HelpProvider>
             <HelpMainContainer
@@ -735,6 +750,22 @@ export default function StableLayout() {
               />
             </PaginationProvider>
           </ActivitiesProvider>
+        ) : location.pathname === "/teams" ? (
+          // Teams page uses standard MainContainer Template
+          <MainContainerTemplate
+            key={location.pathname}
+            leftTitle={pageConfig.leftTitle}
+            leftSubtitle={pageConfig.leftSubtitle}
+            leftFooter={pageConfig.leftFooter}
+            leftContent={<TeamsLeftCard />}
+            rightTitle={pageConfig.rightTitle}
+            rightSubtitle={pageConfig.rightSubtitle}
+            rightFooter={pageConfig.rightFooter}
+            rightContent={getCurrentPage}
+            expandedCard={expandedCard}
+            onExpandClick={handleExpandClick}
+            gridProportions="1fr 3fr"
+          />
         ) : location.pathname === "/about" ? (
           // About page uses AboutProvider for left-right card communication
           <AboutProvider>
@@ -753,6 +784,13 @@ export default function StableLayout() {
               gridProportions="1fr 3fr"
             />
           </AboutProvider>
+        ) : location.pathname === "/chat" ? (
+          // Chat page uses ChatProvider and PaginationProvider for left-right card communication
+          <ChatProvider>
+            <PaginationProvider>
+              {getCurrentPage}
+            </PaginationProvider>
+          </ChatProvider>
         ) : (
           // Other pages use the standard MainContainer Template
           <MainContainerTemplate
@@ -773,6 +811,8 @@ export default function StableLayout() {
                 <ResetPasswordLeftCard />
               ) : location.pathname === "/profile" ? (
                 <ProfileLeftCard />
+              ) : location.pathname === "/db-settings" ? (
+                <DatabaseLeftCard />
               ) : (
                 <div className="p-4">
                   <p className="text-gray-600">

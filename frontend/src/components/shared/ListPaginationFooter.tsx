@@ -26,7 +26,6 @@ const ListPaginationFooter: React.FC<ListPaginationFooterProps> = ({
   showRecordsPerPage = true,
   className = "",
 }) => {
-  const startRecord = (currentPage - 1) * recordsPerPage + 1;
   const endRecord = Math.min(currentPage * recordsPerPage, totalRecords);
 
   const handleFirstPage = () => {
@@ -102,9 +101,8 @@ const ListPaginationFooter: React.FC<ListPaginationFooterProps> = ({
       <div className="flex flex-col sm:flex-row items-center gap-3">
         {/* Records info */}
         <div className="text-xs text-gray-700">
-          Showing <span className="font-medium">{startRecord}</span> to{" "}
           <span className="font-medium">{endRecord}</span> of{" "}
-          <span className="font-medium">{totalRecords}</span> results
+          <span className="font-medium">{totalRecords}</span>
         </div>
 
         {/* Records per page selector */}

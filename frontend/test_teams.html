@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teams SDK Test</title>
+</head>
+<body>
+    <h1>Teams SDK Test</h1>
+    <div id="status">Testing...</div>
+    <div id="output"></div>
+
+    <script type="module">
+        const output = document.getElementById('output');
+        const status = document.getElementById('status');
+
+        async function testTeamsSDK() {
+            try {
+                status.textContent = 'Loading Teams SDK...';
+
+                // Test dynamic import
+                const teamsModule = await import('@microsoft/teams-js');
+                const microsoftTeams = teamsModule.default || teamsModule;
+
+                output.innerHTML += '<p>✅ Teams SDK loaded successfully</p>';
+                output.innerHTML += `<p>SDK version: ${microsoftTeams.version || 'Unknown'}</p>`;
+
+                // Test initialization
+                try {
+                    await microsoftTeams.initialize();
+                    output.innerHTML += '<p>✅ Teams SDK initialized successfully</p>';
+
+                    // Try to get context
+                    try {
+                        const context = await microsoftTeams.getContext();
+                        output.innerHTML += '<p>✅ Teams context retrieved</p>';
+                        output.innerHTML += `<p>Context: ${JSON.stringify(context, null, 2)}</p>`;
+                    } catch (contextError) {
+                        output.innerHTML += `<p>⚠️ Context error (expected in browser): ${contextError.message}</p>`;
+                    }
+                } catch (initError) {
+                    output.innerHTML += `<p>⚠️ Initialization error (expected in browser): ${initError.message}</p>`;
+                }
+
+                status.textContent = 'Test completed';
+
+            } catch (error) {
+                output.innerHTML += `<p>❌ Error loading Teams SDK: ${error.message}</p>`;
+                status.textContent = 'Test failed';
+            }
+        }
+
+        testTeamsSDK();
+    </script>
+</body>
+</html>
