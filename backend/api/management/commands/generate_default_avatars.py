@@ -50,8 +50,8 @@ class Command(BaseCommand):
             try:
                 avatar_image = self.generate_avatar(user)
                 if avatar_image:
-                    # Save the avatar
-                    filename = f"avatar_{user.username}.png"
+                    # Save the avatar with a unique name to avoid conflicts
+                    filename = f"avatar_{user.username}_{user.id}.png"
                     profile.avatar.save(filename, ContentFile(avatar_image), save=True)
                     generated_count += 1
                     self.stdout.write(
