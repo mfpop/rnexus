@@ -3,7 +3,7 @@ export interface BaseMessage {
   id: number;
   senderId: number;
   senderName: string;
-  timestamp: Date;
+  timestamp: string; // GraphQL returns ISO string timestamps
   type: 'text' | 'image' | 'audio' | 'video' | 'document' | 'location' | 'contact';
   content: string;
   status?: 'sending' | 'sent' | 'delivered' | 'read';
@@ -11,7 +11,7 @@ export interface BaseMessage {
   forwarded?: boolean;
   forwardedFrom?: string;
   edited?: boolean;
-  editedAt?: Date;
+  editedAt?: string; // GraphQL returns ISO string timestamps
 }
 
 export interface TextMessage extends BaseMessage {
@@ -79,7 +79,7 @@ export interface Chat {
   name: string;
   type: 'user' | 'group';
   lastMessage?: Message | null;
-  lastActivity: Date;
+  lastActivity: string; // GraphQL returns ISO string timestamps
   unreadCount: number;
   participants: string[];
   isGroup: boolean;

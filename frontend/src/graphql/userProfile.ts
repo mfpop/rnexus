@@ -31,6 +31,8 @@ export const GET_USER_PROFILE = gql`
       education
       workHistory
       profileVisibility
+      avatar
+      avatarUrl
       createdAt
       updatedAt
     }
@@ -118,6 +120,8 @@ export const UPDATE_USER_PROFILE = gql`
         education
         workHistory
         profileVisibility
+        avatar
+        avatarUrl
         createdAt
         updatedAt
       }
@@ -131,6 +135,21 @@ export const CHANGE_PASSWORD = gql`
   mutation ChangePassword($currentPassword: String!, $newPassword: String!) {
     changePassword(currentPassword: $currentPassword, newPassword: $newPassword) {
       ok
+      errors
+    }
+  }
+`;
+
+// Mutation to upload avatar
+export const UPLOAD_AVATAR = gql`
+  mutation UploadAvatar($avatar: String!) {
+    uploadAvatar(avatar: $avatar) {
+      ok
+      userProfile {
+        id
+        avatar
+        avatarUrl
+      }
       errors
     }
   }
@@ -192,6 +211,8 @@ export interface UserProfile {
   education?: any;
   workHistory?: any;
   profileVisibility?: any;
+  avatar?: string;
+  avatarUrl?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -266,4 +287,20 @@ export interface ChangePasswordData {
 export interface ChangePasswordVariables {
   currentPassword: string;
   newPassword: string;
+}
+
+export interface UploadAvatarData {
+  uploadAvatar: {
+    ok: boolean;
+    userProfile?: {
+      id: string;
+      avatar?: string;
+      avatarUrl?: string;
+    };
+    errors: string[];
+  };
+}
+
+export interface UploadAvatarVariables {
+  avatar: string;
 }

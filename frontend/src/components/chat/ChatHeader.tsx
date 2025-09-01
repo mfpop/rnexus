@@ -1,24 +1,34 @@
 import React, { useState } from 'react';
 import { useChatContext } from '../../contexts/ChatContext';
+import { useCall } from '../../contexts/CallContext';
 import { Message } from './MessageTypes';
 
 interface ChatHeaderProps {
   messages: Message[];
-  formatTime: (timestamp: Date) => string;
+  formatTime: (timestamp: string) => string; // GraphQL returns ISO string timestamps
   onClearChat: () => void;
   onEnterSelectionMode: () => void;
   isSelectionMode: boolean;
+  onCloseChat: () => void;
+  onSearch?: (query: string) => void;
+  searchQuery?: string;
+  onClearSearch?: () => void;
 }
 
 const ChatHeader: React.FC<ChatHeaderProps> = ({
   messages,
-  formatTime,
   onClearChat,
   onEnterSelectionMode,
-  isSelectionMode
+  isSelectionMode,
+  onCloseChat,
+  onSearch,
+  searchQuery = '',
+  onClearSearch
 }) => {
   const { selectedContact } = useChatContext();
+  const { startCall } = useCall();
   const [showMoreOptions, setShowMoreOptions] = useState(false);
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
 
   if (!selectedContact) {
     return null;
@@ -29,17 +39,23 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
 
     const lastMessage = messages.find(msg => msg.senderId !== 1);
     if (lastMessage) {
-      const now = new Date();
-      const diff = now.getTime() - lastMessage.timestamp.getTime();
-      const minutes = Math.floor(diff / 60000);
-      const hours = Math.floor(diff / 3600000);
-      const days = Math.floor(diff / 86400000);
+      try {
+        const now = new Date();
+        const messageDate = new Date(lastMessage.timestamp);
+        const diff = now.getTime() - messageDate.getTime();
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
 
-      if (minutes < 1) return 'just now';
-      if (minutes < 60) return `${minutes}m ago`;
-      if (hours < 24) return `${hours}h ago`;
-      if (days < 7) return `${days}d ago`;
-      return lastMessage.timestamp.toLocaleDateString();
+        if (minutes < 1) return 'just now';
+        if (minutes < 60) return `${minutes}m ago`;
+        if (hours < 24) return `${hours}h ago`;
+        if (days < 7) return `${days}d ago`;
+        return messageDate.toLocaleDateString();
+      } catch (error) {
+        console.error('Error parsing timestamp:', error, lastMessage.timestamp);
+        return 'recently';
+      }
     }
     return 'offline';
   };
@@ -62,7 +78,22 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
           <div className="flex-1">
             <h3 className="font-semibold text-gray-800 text-lg">{selectedContact.name}</h3>
             <p className="text-sm text-gray-600">
-              {selectedContact.isGroup
+              {searchQuery ? (
+                <span className="flex items-center space-x-1">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  <span>
+                    {(() => {
+                      const filteredCount = messages.filter(msg =>
+                        msg.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        msg.senderName.toLowerCase().includes(searchQuery.toLowerCase())
+                      ).length;
+                      return `${filteredCount} result${filteredCount !== 1 ? 's' : ''} for "${searchQuery}"`;
+                    })()}
+                  </span>
+                </span>
+              ) : selectedContact.isGroup
                 ? `${selectedContact.members || 0} members`
                 : getLastSeen()}
             </p>
@@ -71,11 +102,66 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
 
         {/* Action Buttons */}
         <div className="flex items-center space-x-2">
-          {/* Selection Mode Toggle */}
+          {/* Enhanced Search */}
+          <div className="relative flex items-center">
+            {isSearchExpanded ? (
+              <div className="flex items-center bg-white border border-gray-300 rounded-full shadow-lg px-3 py-1.5 min-w-[200px] transition-all duration-300">
+                <svg className="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Search messages..."
+                  value={searchQuery}
+                  onChange={(e) => onSearch?.(e.target.value)}
+                  className="flex-1 outline-none text-sm bg-transparent"
+                  autoFocus
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => {
+                      onClearSearch?.();
+                      setIsSearchExpanded(false);
+                    }}
+                    className="ml-2 p-1 hover:bg-gray-100 rounded-full transition-colors"
+                    title="Clear search"
+                  >
+                    <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    setIsSearchExpanded(false);
+                    if (!searchQuery) onClearSearch?.();
+                  }}
+                  className="ml-1 p-1 hover:bg-gray-100 rounded-full transition-colors"
+                  title="Close search"
+                >
+                  <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7" />
+                  </svg>
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setIsSearchExpanded(true)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-all duration-200 hover:scale-105"
+                title="Search messages"
+              >
+                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </button>
+            )}
+          </div>
+
+          {/* Selection Mode Toggle - Moved to right of search */}
           {!isSelectionMode && (
             <button
               onClick={onEnterSelectionMode}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="p-2 hover:bg-gray-100 rounded-full transition-all duration-200 hover:scale-105"
               title="Select messages"
             >
               <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,38 +169,6 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
               </svg>
             </button>
           )}
-
-          {/* Search */}
-          <button
-            onClick={() => {
-              const searchTerm = prompt(`Search in conversation with ${selectedContact?.name}:\n\nEnter search term:`);
-              if (searchTerm && searchTerm.trim()) {
-                const matchingMessages = messages.filter((msg) =>
-                  msg.content.toLowerCase().includes(searchTerm.toLowerCase())
-                );
-                if (matchingMessages.length > 0) {
-                  // Create a more user-friendly search results display
-                  const results = matchingMessages.map((msg, index) => {
-                    const time = formatTime(msg.timestamp);
-                    const preview = msg.content.length > 50
-                      ? msg.content.substring(0, 50) + '...'
-                      : msg.content;
-                    return `${index + 1}. [${time}] ${msg.senderName}: ${preview}`;
-                  }).join('\n\n');
-
-                  alert(`🔍 Found ${matchingMessages.length} message(s) containing "${searchTerm}":\n\n${results}`);
-                } else {
-                  alert(`🔍 No messages found containing "${searchTerm}"`);
-                }
-              }
-            }}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-            title="Search messages"
-          >
-            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </button>
 
           {/* More Options */}
           <div className="relative">
@@ -132,10 +186,19 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
             {showMoreOptions && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     setShowMoreOptions(false);
-                    if (confirm(`Start voice call with ${selectedContact?.name}?`)) {
-                      alert(`📞 Calling ${selectedContact?.name}...\n\nCall duration: 00:00\nStatus: Connecting...\n\n(Real call functionality would be implemented here)`);
+                    if (selectedContact) {
+                      try {
+                        await startCall({
+                          id: selectedContact.id.toString(),
+                          name: selectedContact.name,
+                          avatar: selectedContact.avatar
+                        }, 'voice');
+                      } catch (error) {
+                        console.error('Failed to start voice call:', error);
+                        alert('Failed to start voice call. Please check your microphone permissions.');
+                      }
                     }
                   }}
                   className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
@@ -147,9 +210,20 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
                 </button>
 
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     setShowMoreOptions(false);
-                    alert(`📹 Starting video call with ${selectedContact?.name}...\n\nVideo: ON\nAudio: ON\nStatus: Connecting...\n\n(Real video call functionality would be implemented here)`);
+                    if (selectedContact) {
+                      try {
+                        await startCall({
+                          id: selectedContact.id.toString(),
+                          name: selectedContact.name,
+                          avatar: selectedContact.avatar
+                        }, 'video');
+                      } catch (error) {
+                        console.error('Failed to start video call:', error);
+                        alert('Failed to start video call. Please check your camera and microphone permissions.');
+                      }
+                    }
                   }}
                   className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
                 >
@@ -172,6 +246,19 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
                   <span>Clear Chat</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowMoreOptions(false);
+                    onCloseChat();
+                  }}
+                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  <span>Close Chat</span>
                 </button>
               </div>
             )}

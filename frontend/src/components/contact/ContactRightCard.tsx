@@ -7,6 +7,8 @@ import {
   MessageSquare,
   AlertCircle,
   CheckCircle2,
+  Phone,
+  Sparkles,
 } from "lucide-react";
 import { Button, Input } from "../ui/bits";
 import { SimpleSelect } from "../ui/bits/SimpleSelect";
@@ -22,6 +24,7 @@ const ContactRightCard: React.FC = () => {
     lastName: string;
     email: string;
     company: string;
+    phone: string;
     subject: string;
     message: string;
     inquiryType: string;
@@ -30,6 +33,7 @@ const ContactRightCard: React.FC = () => {
     lastName: "",
     email: "",
     company: "",
+    phone: "",
     subject: "",
     message: "",
     inquiryType: "general",
@@ -111,14 +115,83 @@ const ContactRightCard: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Submit using GraphQL
+      const mutation = `
+        mutation CreateContact(
+          $firstName: String!
+          $lastName: String!
+          $email: String!
+          $company: String!
+          $subject: String!
+          $message: String!
+          $inquiryType: String
+          $phone: String
+        ) {
+          createContact(
+            firstName: $firstName
+            lastName: $lastName
+            email: $email
+            company: $company
+            subject: $subject
+            message: $message
+            inquiryType: $inquiryType
+            phone: $phone
+          ) {
+            ok
+            contact {
+              id
+              firstName
+              lastName
+              email
+              company
+              subject
+              message
+              inquiryType
+              status
+              createdAt
+            }
+            errors
+          }
+        }
+      `;
+
+      const response = await fetch('/graphql/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: mutation,
+          variables: {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email,
+            company: formData.company,
+            subject: formData.subject,
+            message: formData.message,
+            inquiryType: formData.inquiryType,
+            phone: formData.phone || '',
+          },
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.errors) {
+        throw new Error(result.errors[0].message || 'GraphQL error occurred');
+      }
+
+      if (!result.data?.createContact?.ok) {
+        const errors = result.data?.createContact?.errors || ['Failed to send message'];
+        throw new Error(errors.join(', '));
+      }
 
       // Handle successful form submission
-
       setIsSubmitted(true);
     } catch (error) {
-      setErrors({ submit: "Failed to send message. Please try again." });
+      setErrors({
+        submit: error instanceof Error ? error.message : "Failed to send message. Please try again."
+      });
     } finally {
       setIsLoading(false);
     }
@@ -131,6 +204,7 @@ const ContactRightCard: React.FC = () => {
       lastName: "",
       email: "",
       company: "",
+      phone: "",
       subject: "",
       message: "",
       inquiryType: "general",
@@ -140,32 +214,48 @@ const ContactRightCard: React.FC = () => {
 
   if (isSubmitted) {
     return (
-      <div className="p-6 h-full flex flex-col justify-center max-w-md mx-auto w-full">
+      <div className="p-6 h-full flex flex-col justify-center max-w-lg mx-auto w-full">
         {/* Success State */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-            <CheckCircle2 className="h-8 w-8 text-white" />
+        <div className="text-center mb-6">
+          <div className="relative">
+            <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 via-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-2xl shadow-emerald-200">
+              <CheckCircle2 className="h-8 w-8 text-white" />
+            </div>
+            <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center animate-bounce">
+              <Sparkles className="h-3 w-3 text-white" />
+            </div>
           </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            Message Sent!
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-2">
+            Message Sent Successfully!
           </h2>
-          <p className="text-gray-600">
-            Thank you for contacting us. We've received your message and will
-            get back to you shortly.
+          <p className="text-gray-600 text-base leading-relaxed">
+            Thank you for reaching out! We've received your message and will get back to you within 24 hours.
           </p>
         </div>
 
         {/* Next Steps */}
-        <div className="space-y-4 mb-8">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h3 className="font-medium text-blue-800 mb-2">
+        <div className="space-y-3 mb-6">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-4 shadow-lg">
+            <h3 className="font-semibold text-blue-800 mb-2 text-base">
               What happens next?
             </h3>
-            <ul className="text-sm text-blue-700 space-y-1">
-              <li>• We'll review your message within 2 hours</li>
-              <li>• You'll receive a confirmation email shortly</li>
-              <li>• Our team will respond based on your inquiry type</li>
-              <li>• For urgent matters, please call our support line</li>
+            <ul className="text-blue-700 space-y-1 text-sm">
+              <li className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span>We'll review your message within 2 hours</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span>You'll receive a confirmation email shortly</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span>Our team will respond based on your inquiry type</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span>For urgent matters, please call our support line</span>
+              </li>
             </ul>
           </div>
         </div>
@@ -174,7 +264,7 @@ const ContactRightCard: React.FC = () => {
         <div className="space-y-3">
           <Button
             onClick={handleNewMessage}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition-colors"
+            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl"
           >
             <div className="flex items-center justify-center gap-2">
               <MessageSquare className="h-5 w-5" />
@@ -184,19 +274,19 @@ const ContactRightCard: React.FC = () => {
 
           <Button
             onClick={() => (window.location.href = "/")}
-            className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-lg font-medium transition-colors"
+            className="w-full bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 py-3 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
           >
             Back to Dashboard
           </Button>
         </div>
 
         {/* Support Info */}
-        <div className="mt-8 text-center">
+        <div className="mt-6 text-center">
           <p className="text-gray-600 text-sm">
             Need immediate assistance?{" "}
             <a
               href="tel:+15551234567"
-              className="text-blue-600 hover:text-blue-500 font-medium transition-colors"
+              className="text-blue-600 hover:text-blue-500 font-semibold transition-colors duration-200 underline decoration-2 underline-offset-2"
             >
               Call (555) 123-4567
             </a>
@@ -207,35 +297,39 @@ const ContactRightCard: React.FC = () => {
   }
 
   return (
-    <div className="p-6 h-full flex flex-col max-w-xl mx-auto w-full">
-      {/* Header */}
+    <div className="p-6 h-full flex flex-col max-w-2xl mx-auto w-full">
+      {/* Enhanced Header */}
       <div className="text-center mb-6">
-        <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-          <Send className="h-8 w-8 text-white" />
+        <div className="relative mb-4">
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-700 rounded-2xl flex items-center justify-center mx-auto shadow-2xl shadow-blue-200/50 transform hover:scale-105 transition-transform duration-300">
+            <Send className="h-8 w-8 text-white" />
+          </div>
+          <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-pink-400 to-rose-500 rounded-full flex items-center justify-center animate-pulse">
+            <Sparkles className="h-3 w-3 text-white" />
+          </div>
         </div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-800 via-gray-700 to-gray-600 bg-clip-text text-transparent mb-2">
           Send us a Message
         </h2>
-        <p className="text-gray-600">
-          We'd love to hear from you. Send us a message and we'll respond as
-          soon as possible.
+        <p className="text-gray-600 text-base leading-relaxed max-w-md mx-auto">
+          We'd love to hear from you. Send us a message and we'll respond as soon as possible.
         </p>
       </div>
 
-      {/* Contact Form */}
+      {/* Enhanced Contact Form */}
       <form onSubmit={handleSubmit} className="space-y-4 flex-1">
         {/* Name Fields */}
         <div className="grid grid-cols-2 gap-4">
-          <div>
+          <div className="group">
             <label
               htmlFor="firstName"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-semibold text-gray-700 mb-1 group-hover:text-blue-600 transition-colors duration-200"
             >
               First Name *
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <User className="h-4 w-4 text-gray-400" />
+                <User className="h-4 w-4 text-gray-400 group-hover:text-blue-500 transition-colors duration-200" />
               </div>
               <Input
                 type="text"
@@ -244,26 +338,29 @@ const ContactRightCard: React.FC = () => {
                 value={formData.firstName}
                 onChange={handleInputChange}
                 variant={errors["firstName"] ? "error" : "default"}
-                className="w-full pl-9 pr-3"
+                className="w-full pl-10 pr-3 py-2.5 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
                 placeholder="First name"
                 disabled={isLoading}
               />
             </div>
             {errors["firstName"] && (
-              <p className="mt-1 text-xs text-red-600">{errors["firstName"]}</p>
+              <p className="mt-1 text-xs text-red-600 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {errors["firstName"]}
+              </p>
             )}
           </div>
 
-          <div>
+          <div className="group">
             <label
               htmlFor="lastName"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-semibold text-gray-700 mb-1 group-hover:text-blue-600 transition-colors duration-200"
             >
               Last Name *
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <User className="h-4 w-4 text-gray-400" />
+                <User className="h-4 w-4 text-gray-400 group-hover:text-blue-500 transition-colors duration-200" />
               </div>
               <Input
                 type="text"
@@ -272,29 +369,32 @@ const ContactRightCard: React.FC = () => {
                 value={formData.lastName}
                 onChange={handleInputChange}
                 variant={errors["lastName"] ? "error" : "default"}
-                className="w-full pl-9 pr-3"
+                className="w-full pl-10 pr-3 py-2.5 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
                 placeholder="Last name"
                 disabled={isLoading}
               />
             </div>
             {errors["lastName"] && (
-              <p className="mt-1 text-xs text-red-600">{errors["lastName"]}</p>
+              <p className="mt-1 text-xs text-red-600 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {errors["lastName"]}
+              </p>
             )}
           </div>
         </div>
 
         {/* Email and Company */}
         <div className="grid grid-cols-2 gap-4">
-          <div>
+          <div className="group">
             <label
               htmlFor="email"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-semibold text-gray-700 mb-1 group-hover:text-blue-600 transition-colors duration-200"
             >
               Email Address *
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-4 w-4 text-gray-400" />
+                <Mail className="h-4 w-4 text-gray-400 group-hover:text-blue-500 transition-colors duration-200" />
               </div>
               <Input
                 type="email"
@@ -303,26 +403,29 @@ const ContactRightCard: React.FC = () => {
                 value={formData.email}
                 onChange={handleInputChange}
                 variant={errors["email"] ? "error" : "default"}
-                className="w-full pl-9 pr-3"
+                className="w-full pl-10 pr-3 py-2.5 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
                 placeholder="Your email"
                 disabled={isLoading}
               />
             </div>
             {errors["email"] && (
-              <p className="mt-1 text-xs text-red-600">{errors["email"]}</p>
+              <p className="mt-1 text-xs text-red-600 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {errors["email"]}
+              </p>
             )}
           </div>
 
-          <div>
+          <div className="group">
             <label
               htmlFor="company"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-semibold text-gray-700 mb-1 group-hover:text-blue-600 transition-colors duration-200"
             >
               Company *
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Building className="h-4 w-4 text-gray-400" />
+                <Building className="h-4 w-4 text-gray-400 group-hover:text-blue-500 transition-colors duration-200" />
               </div>
               <Input
                 type="text"
@@ -331,22 +434,50 @@ const ContactRightCard: React.FC = () => {
                 value={formData.company}
                 onChange={handleInputChange}
                 variant={errors["company"] ? "error" : "default"}
-                className="w-full pl-9 pr-3"
+                className="w-full pl-10 pr-3 py-2.5 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
                 placeholder="Company name"
                 disabled={isLoading}
               />
             </div>
             {errors["company"] && (
-              <p className="mt-1 text-xs text-red-600">{errors["company"]}</p>
+              <p className="mt-1 text-xs text-red-600 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {errors["company"]}
+              </p>
             )}
           </div>
         </div>
 
+        {/* Phone Field */}
+        <div className="group">
+          <label
+            htmlFor="phone"
+            className="block text-sm font-semibold text-gray-700 mb-1 group-hover:text-blue-600 transition-colors duration-200"
+          >
+            Phone Number
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Phone className="h-4 w-4 text-gray-400 group-hover:text-blue-500 transition-colors duration-200" />
+            </div>
+            <Input
+              type="tel"
+              id="phone"
+              name="phone"
+              value={formData.phone}
+              onChange={handleInputChange}
+              className="w-full pl-10 pr-3 py-2.5 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
+              placeholder="Your phone number (optional)"
+              disabled={isLoading}
+            />
+          </div>
+        </div>
+
         {/* Inquiry Type */}
-        <div>
+        <div className="group">
           <label
             htmlFor="inquiryType"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-semibold text-gray-700 mb-1 group-hover:text-blue-600 transition-colors duration-200"
           >
             Inquiry Type
           </label>
@@ -356,7 +487,7 @@ const ContactRightCard: React.FC = () => {
             value={formData.inquiryType}
             onChange={handleInputChange}
             disabled={isLoading}
-            className="w-full"
+            className="w-full rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
           >
             {inquiryTypes.map((type) => (
               <option key={type.value} value={type.value}>
@@ -367,10 +498,10 @@ const ContactRightCard: React.FC = () => {
         </div>
 
         {/* Subject */}
-        <div>
+        <div className="group">
           <label
             htmlFor="subject"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-semibold text-gray-700 mb-1 group-hover:text-blue-600 transition-colors duration-200"
           >
             Subject *
           </label>
@@ -381,20 +512,23 @@ const ContactRightCard: React.FC = () => {
             value={formData.subject}
             onChange={handleInputChange}
             variant={errors["subject"] ? "error" : "default"}
-            className="w-full"
+            className="w-full py-2.5 px-3 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
             placeholder="Brief subject of your message"
             disabled={isLoading}
           />
           {errors["subject"] && (
-            <p className="mt-1 text-xs text-red-600">{errors["subject"]}</p>
+            <p className="mt-1 text-xs text-red-600 flex items-center gap-1">
+              <AlertCircle className="h-3 w-3" />
+              {errors["subject"]}
+            </p>
           )}
         </div>
 
         {/* Message */}
-        <div>
+        <div className="group">
           <label
             htmlFor="message"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-semibold text-gray-700 mb-1 group-hover:text-blue-600 transition-colors duration-200"
           >
             Message *
           </label>
@@ -403,39 +537,52 @@ const ContactRightCard: React.FC = () => {
             name="message"
             value={formData.message}
             onChange={handleInputChange}
-            rows={6}
-            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm resize-none ${
-              errors["message"] ? "border-red-500" : "border-gray-300"
+            rows={4}
+            className={`w-full px-3 py-2.5 border-2 rounded-xl focus:ring-2 focus:ring-blue-500 focus:ring-opacity-20 transition-all duration-200 text-sm resize-none shadow-sm hover:shadow-md ${
+              errors["message"]
+                ? "border-red-500 hover:border-red-400"
+                : "border-gray-200 hover:border-blue-300 focus:border-blue-500"
             }`}
             placeholder="Please provide details about your inquiry..."
             disabled={isLoading}
           />
           {errors["message"] && (
-            <p className="mt-1 text-xs text-red-600">{errors["message"]}</p>
+            <p className="mt-1 text-xs text-red-600 flex items-center gap-1">
+              <AlertCircle className="h-3 w-3" />
+              {errors["message"]}
+            </p>
           )}
-          <p className="mt-1 text-xs text-gray-500">
-            {formData.message.length}/500 characters
-          </p>
+          <div className="mt-1 flex justify-between items-center">
+            <p className="text-xs text-gray-500">
+              {formData.message.length}/500 characters
+            </p>
+            <div className="w-20 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300"
+                style={{ width: `${Math.min((formData.message.length / 500) * 100, 100)}%` }}
+              ></div>
+            </div>
+          </div>
         </div>
 
         {/* Submit Error */}
         {errors["submit"] && (
-          <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-            <AlertCircle className="h-4 w-4" />
-            <span>{errors["submit"]}</span>
+          <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-xl text-red-700 text-sm shadow-lg">
+            <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
+            <span className="font-medium">{errors["submit"]}</span>
           </div>
         )}
 
-        {/* Submit Button */}
+        {/* Enhanced Submit Button */}
         <Button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-3 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 hover:from-blue-700 hover:via-purple-700 hover:to-indigo-800 text-white py-3 rounded-2xl font-semibold text-base transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-xl hover:shadow-2xl"
         >
           {isLoading ? (
             <div className="flex items-center justify-center gap-2">
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              <span>Sending...</span>
+              <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span>Sending Message...</span>
             </div>
           ) : (
             <div className="flex items-center justify-center gap-2">

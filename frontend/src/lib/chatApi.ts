@@ -31,7 +31,7 @@ export class ChatApiService {
               senderName: msg.sender_name,
               content: msg.content,
               type: msg.message_type,
-              timestamp: new Date(msg.timestamp),
+              timestamp: msg.timestamp, // Keep as string since GraphQL expects string
               status: msg.status || 'sent',
               replyTo: null,
               forwarded: false,
@@ -46,7 +46,7 @@ export class ChatApiService {
             name: chat.name,
             type: chat.type,
             lastMessage,
-            lastActivity: chat.last_activity ? new Date(chat.last_activity) : new Date(),
+            lastActivity: chat.last_activity || new Date().toISOString(),
             unreadCount: chat.unread_count || 0,
             participants: chat.participants || [],
             isGroup: chat.type === 'group'
@@ -86,7 +86,7 @@ export class ChatApiService {
           name: data.chat.name || '',
           type: data.chat.type,
           lastMessage: null,
-          lastActivity: new Date(),
+          lastActivity: new Date().toISOString(),
           unreadCount: 0,
           participants: data.chat.participants || [],
           isGroup: data.chat.type === 'group'
@@ -124,7 +124,7 @@ export class ChatApiService {
           senderName: msg.sender_name,
           content: msg.content,
           type: msg.message_type,
-          timestamp: new Date(msg.timestamp),
+                        timestamp: msg.timestamp, // Keep as string since GraphQL expects string
           status: msg.status,
           replyTo: msg.reply_to ? {
             id: msg.reply_to.id,
@@ -132,7 +132,7 @@ export class ChatApiService {
             senderName: msg.reply_to.sender_name,
             content: msg.reply_to.content,
             type: msg.reply_to.message_type,
-            timestamp: new Date(msg.reply_to.timestamp),
+            timestamp: msg.reply_to.timestamp, // Keep as string since GraphQL expects string
             status: msg.reply_to.status || 'sent',
             replyTo: null,
             forwarded: false,
@@ -143,7 +143,7 @@ export class ChatApiService {
           forwarded: msg.forwarded || false,
           forwardedFrom: msg.forwarded_from || '',
           edited: msg.edited || false,
-          editedAt: msg.edited_at ? new Date(msg.edited_at) : null,
+          editedAt: msg.edited_at || null, // Keep as string since GraphQL expects string
           // File/media fields
           fileName: msg.file_name || '',
           fileSize: msg.file_size || '',
@@ -168,7 +168,7 @@ export class ChatApiService {
           name: data.chat.name || '',
           type: data.chat.type,
           lastMessage: null,
-          lastActivity: new Date(),
+          lastActivity: new Date().toISOString(),
           unreadCount: 0,
           participants: data.chat.participants || [],
           isGroup: data.chat.type === 'group'
@@ -213,7 +213,7 @@ export class ChatApiService {
           senderName: msg.sender_name,
           content: msg.content,
           type: msg.message_type,
-          timestamp: new Date(msg.timestamp),
+          timestamp: msg.timestamp, // Keep as string since GraphQL expects string
           status: msg.status,
           replyTo: msg.reply_to ? {
             id: msg.reply_to.id,
@@ -221,7 +221,7 @@ export class ChatApiService {
             senderName: msg.reply_to.sender_name,
             content: msg.reply_to.content,
             type: msg.reply_to.message_type,
-            timestamp: new Date(msg.reply_to.timestamp),
+            timestamp: msg.reply_to.timestamp, // Keep as string since GraphQL expects string
             status: msg.reply_to.status || 'sent',
             replyTo: null,
             forwarded: false,
@@ -313,7 +313,7 @@ export class ChatApiService {
           senderName: msg.sender_name,
           content: msg.content,
           type: msg.message_type,
-          timestamp: new Date(msg.timestamp),
+          timestamp: msg.timestamp, // Keep as string since GraphQL expects string
           status: 'sent',
           replyTo: null,
           forwarded: false,

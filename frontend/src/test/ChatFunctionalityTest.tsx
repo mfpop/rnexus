@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ChatProvider } from '../contexts/ChatContext';
-import ChatRightCard from '../components/chat/ChatRightCard';
 import ChatHeader from '../components/chat/ChatHeader';
 import MessageInput from '../components/chat/MessageInput';
-import { Message } from '../components/chat/MessageTypes';
 
 const ChatFunctionalityTest: React.FC = () => {
   const [testResults, setTestResults] = useState<Array<{
@@ -221,10 +219,21 @@ const ChatFunctionalityTest: React.FC = () => {
               <div className="h-96 flex flex-col">
                 <ChatHeader
                   messages={[]}
-                  formatTime={(time) => time.toLocaleTimeString()}
+                  formatTime={(timestamp) => {
+                    try {
+                      const date = new Date(timestamp);
+                      return date.toLocaleTimeString();
+                    } catch (error) {
+                      return '--:--';
+                    }
+                  }}
                   onClearChat={() => console.log('Clear chat')}
                   onEnterSelectionMode={() => console.log('Enter selection mode')}
                   isSelectionMode={false}
+                  onCloseChat={() => console.log('Close chat')}
+                  onSearch={(query) => console.log('Search:', query)}
+                  searchQuery=""
+                  onClearSearch={() => console.log('Clear search')}
                 />
 
                 <div className="flex-1 p-4 bg-gray-50">

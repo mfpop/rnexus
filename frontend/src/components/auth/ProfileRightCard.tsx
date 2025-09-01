@@ -17,11 +17,14 @@ import {
   GET_USER_PROFILE,
   UPDATE_USER_PROFILE,
   CHANGE_PASSWORD,
+  UPLOAD_AVATAR,
   GetUserProfileData,
   UpdateUserProfileData,
   UpdateUserProfileVariables,
   ChangePasswordData,
-  ChangePasswordVariables
+  ChangePasswordVariables,
+  UploadAvatarData,
+  UploadAvatarVariables
 } from '../../graphql/userProfile';
 
 
@@ -90,6 +93,10 @@ interface ProfileData {
     contact: boolean;
     bio: boolean;
   };
+
+  // Avatar
+  avatar?: string;
+  avatarUrl?: string;
 }
 
 interface PasswordData {
@@ -105,6 +112,7 @@ const ProfileRightCard: React.FC = () => {
   const { data: profileQueryData, loading: profileLoading, error: profileError } = useQuery<GetUserProfileData>(GET_USER_PROFILE);
   const [updateUserProfile] = useMutation<UpdateUserProfileData, UpdateUserProfileVariables>(UPDATE_USER_PROFILE);
   const [changePassword] = useMutation<ChangePasswordData, ChangePasswordVariables>(CHANGE_PASSWORD);
+  const [uploadAvatar] = useMutation<UploadAvatarData, UploadAvatarVariables>(UPLOAD_AVATAR);
 
   // Initialize profile data from GraphQL query or default values
   const initializeProfileData = (): ProfileData => {
@@ -140,6 +148,8 @@ const ProfileRightCard: React.FC = () => {
         education: Array.isArray(profile.education) ? profile.education : (typeof profile.education === 'string' ? JSON.parse(profile.education || '[]') : []),
         work_history: Array.isArray(profile.workHistory) ? profile.workHistory : (typeof profile.workHistory === 'string' ? JSON.parse(profile.workHistory || '[]') : []),
         profile_visibility: profile.profileVisibility || { email: true, phone: true },
+        avatar: profile.avatar || "",
+        avatarUrl: profile.avatarUrl || "",
       };
     }
 
@@ -180,6 +190,8 @@ const ProfileRightCard: React.FC = () => {
         contact: true,
         bio: true
       },
+      avatar: "",
+      avatarUrl: "",
     };
   };
 
@@ -211,6 +223,7 @@ const ProfileRightCard: React.FC = () => {
   });
 
   const [isPasswordLoading, setIsPasswordLoading] = useState(false);
+  const [isAvatarUploading, setIsAvatarUploading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [passwordErrors, setPasswordErrors] = useState<Record<string, string>>(
     {},
@@ -667,6 +680,65 @@ const ProfileRightCard: React.FC = () => {
       setPasswordErrors({ submit: "Network error. Please try again." });
     } finally {
       setIsPasswordLoading(false);
+    }
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsAvatarUploading(true);
+    setErrors(prev => ({ ...prev, submit: "" }));
+
+    try {
+      // Convert file to base64
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const base64String = event.target?.result as string;
+
+        try {
+          const result = await uploadAvatar({
+            variables: {
+              avatar: base64String
+            }
+          });
+
+          if (result.data?.uploadAvatar.ok) {
+            // Update local profile data with new avatar
+            setProfileData(prev => ({
+              ...prev,
+              avatar: result.data?.uploadAvatar.userProfile?.avatar || "",
+              avatarUrl: result.data?.uploadAvatar.userProfile?.avatarUrl || ""
+            }));
+
+            // Refresh profile data
+            window.location.reload();
+          } else {
+            console.error('Avatar upload failed:', result.data?.uploadAvatar.errors);
+            setErrors(prev => ({
+              ...prev,
+              submit: `Avatar upload failed: ${result.data?.uploadAvatar.errors?.join(', ')}`
+            }));
+          }
+        } catch (error) {
+          console.error("Avatar upload error:", error);
+          setErrors(prev => ({
+            ...prev,
+            submit: "Avatar upload failed. Please try again."
+          }));
+        } finally {
+          setIsAvatarUploading(false);
+        }
+      };
+
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error("File reading error:", error);
+      setErrors(prev => ({
+        ...prev,
+        submit: "Avatar upload failed. Please try again."
+      }));
+      setIsAvatarUploading(false);
     }
   };
 
@@ -1839,12 +1911,35 @@ const ProfileRightCard: React.FC = () => {
         <div className="flex items-center gap-4">
           {/* Avatar */}
           <div className="relative">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
-              {profileData.first_name?.[0]?.toUpperCase() || profileData.username?.[0]?.toUpperCase() || 'U'}
-            </div>
-            <button className="absolute -bottom-1 -right-1 w-6 h-6 bg-gray-900 rounded-full flex items-center justify-center hover:bg-gray-800 transition-colors">
-              <Camera className="h-3 w-3 text-white" />
-            </button>
+            {profileData.avatarUrl ? (
+              <img
+                src={profileData.avatarUrl}
+                alt="Profile Avatar"
+                className="w-16 h-16 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
+                {profileData.first_name?.[0]?.toUpperCase() || profileData.username?.[0]?.toUpperCase() || 'U'}
+              </div>
+            )}
+            <label className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
+              isAvatarUploading
+                ? 'bg-blue-500 animate-pulse'
+                : 'bg-gray-900 hover:bg-gray-800'
+            }`}>
+              {isAvatarUploading ? (
+                <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <Camera className="h-3 w-3 text-white" />
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAvatarUpload}
+                disabled={isAvatarUploading}
+              />
+            </label>
           </div>
 
           {/* Name & Details */}

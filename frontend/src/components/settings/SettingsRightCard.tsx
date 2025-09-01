@@ -3,6 +3,7 @@ import { Settings, User, Shield, Bell, Palette, Save, RefreshCw, AlertCircle, Mo
 import { useSettingsContext } from "./SettingsContext";
 import { useAuth } from "../../contexts/AuthContext";
 
+
 // Simple local editor for dropdown tables (mock UI, no backend)
 const DropdownTableEditor: React.FC = () => {
   const [items, setItems] = useState<Array<{ id: number; key: string; value: string }>>([
@@ -108,6 +109,7 @@ const UserRolesEditor: React.FC = () => {
 
 const SettingsRightCard: React.FC = () => {
   const { selectedSection } = useSettingsContext();
+  const { user } = useAuth();
   const [darkMode, setDarkMode] = useState(false);
   const [notifications, setNotifications] = useState({
     email: true,

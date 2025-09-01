@@ -17,4 +17,6 @@ urlpatterns = [
         views.activity_pause_view,
         name="activity-pause",
     ),
+    # Contact form endpoint
+    path("contact/", views.contact_submit_view, name="contact-submit"),
 ]

@@ -1,0 +1,177 @@
+import { gql } from '@apollo/client';
+
+// Fragment for Chat data
+export const CHAT_FRAGMENT = gql`
+  fragment ChatFragment on ChatType {
+    id
+    chatType
+    name
+    description
+    user1 {
+      id
+      username
+      email
+      firstName
+      lastName
+    }
+    user2 {
+      id
+      username
+      email
+      firstName
+      lastName
+    }
+    members
+    lastMessage {
+      id
+      senderId
+      senderName
+      content
+      messageType
+      timestamp
+      status
+    }
+    lastActivity
+    isActive
+    createdBy {
+      id
+      username
+      firstName
+      lastName
+    }
+    avatarUrl
+    createdAt
+    updatedAt
+  }
+`;
+
+// Fragment for Message data
+export const MESSAGE_FRAGMENT = gql`
+  fragment MessageFragment on MessageType {
+    id
+    chatId
+    chatType
+    senderId
+    senderName
+    content
+    messageType
+    status
+    replyTo {
+      id
+      senderId
+      senderName
+      content
+      messageType
+      timestamp
+    }
+    forwarded
+    forwardedFrom
+    edited
+    editedAt
+    fileName
+    fileSize
+    fileUrl
+    thumbnailUrl
+    caption
+    duration
+    waveform
+    latitude
+    longitude
+    locationName
+    contactName
+    contactPhone
+    contactEmail
+    timestamp
+  }
+`;
+
+// Query to get all chats for a user
+export const GET_USER_CHATS = gql`
+  query GetUserChats($userId: ID) {
+    userChats(userId: $userId) {
+      ...ChatFragment
+    }
+  }
+  ${CHAT_FRAGMENT}
+`;
+
+// Query to get a specific chat
+export const GET_CHAT = gql`
+  query GetChat($id: String!) {
+    chat(id: $id) {
+      ...ChatFragment
+    }
+  }
+  ${CHAT_FRAGMENT}
+`;
+
+// Query to get messages for a chat
+export const GET_MESSAGES = gql`
+  query GetMessages($chatId: String!, $chatType: String!) {
+    messages(chatId: $chatId, chatType: $chatType) {
+      ...MessageFragment
+    }
+  }
+  ${MESSAGE_FRAGMENT}
+`;
+
+// Mutation to create a new chat
+export const CREATE_CHAT = gql`
+  mutation CreateChat(
+    $chatType: String!
+    $name: String
+    $description: String
+    $user1Id: ID
+    $user2Id: ID
+    $memberIds: [ID]
+  ) {
+    createChat(
+      chatType: $chatType
+      name: $name
+      description: $description
+      user1Id: $user1Id
+      user2Id: $user2Id
+      memberIds: $memberIds
+    ) {
+      ok
+      chat {
+        ...ChatFragment
+      }
+      error
+    }
+  }
+  ${CHAT_FRAGMENT}
+`;
+
+// Mutation to send a message
+export const SEND_MESSAGE = gql`
+  mutation SendMessage(
+    $chatId: String!
+    $chatType: String!
+    $senderId: String!
+    $senderName: String!
+    $content: String
+    $messageType: String!
+    $fileName: String
+    $fileSize: String
+    $fileUrl: String
+  ) {
+    createMessage(
+      chatId: $chatId
+      chatType: $chatType
+      senderId: $senderId
+      senderName: $senderName
+      content: $content
+      messageType: $messageType
+      fileName: $fileName
+      fileSize: $fileSize
+      fileUrl: $fileUrl
+    ) {
+      ok
+      message {
+        ...MessageFragment
+      }
+    }
+  }
+  ${MESSAGE_FRAGMENT}
+`;

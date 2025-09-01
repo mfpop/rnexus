@@ -10,7 +10,7 @@ export interface Message {
   senderId: number;
   senderName: string;
   content: string;
-  timestamp: Date;
+  timestamp: string; // GraphQL returns ISO string timestamps
   type: "text";
 }
 

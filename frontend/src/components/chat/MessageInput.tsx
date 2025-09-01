@@ -357,6 +357,14 @@ const MessageInput: React.FC<MessageInputProps> = ({
         className="hidden"
         onChange={() => {}}
       />
+
+      {/* Hidden File Input for File Uploads */}
+      <input
+        type="file"
+        id="file-upload-input"
+        className="hidden"
+        onChange={() => {}}
+      />
     </div>
   );
 };

@@ -21,15 +21,17 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views.decorators.csrf import csrf_exempt
 
-from graphene_django.views import GraphQLView
-
 from api import views
 from api.v2.routers import urlpatterns as api_v2_router_urls
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     # GraphQL endpoint
-    path("graphql/", csrf_exempt(GraphQLView.as_view(graphiql=True)), name="graphql"),
+    path(
+        "graphql/",
+        csrf_exempt(views.JWTAuthenticatedGraphQLView.as_view(graphiql=True)),
+        name="graphql",
+    ),
     # Django default auth endpoints (for redirects)
     path("accounts/login/", views.django_login_view, name="django_login"),
     # Authentication endpoints
@@ -156,8 +158,12 @@ urlpatterns = [
     ),
     # DRF v2 router endpoints (clean namespace during migration)
     path("api/v2/", include((api_v2_router_urls, "api-v2"), namespace="api-v2-router")),
+    # Include API app URLs
+    path("api/", include("api.urls")),
 ]
 
 # Serve static files during development
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    # Serve media files during development
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

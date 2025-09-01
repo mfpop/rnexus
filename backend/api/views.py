@@ -1,4 +1,6 @@
 import json
+import logging
+import re
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, TypeAlias, Union, cast
 
@@ -17,11 +19,22 @@ import jwt
 
 from api.decorators import jwt_login_required
 
+# Set up logger
+logger = logging.getLogger(__name__)
+
+from django.http import HttpRequest
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+
+# Custom GraphQL view with JWT authentication support
+from graphene_django.views import GraphQLView
+
 from .models import (
     Activity,
     ActivityPriority,
     ActivityStatus,
     Chat,
+    Contact,
     Message,
     SystemMessage,
     Tag,
@@ -32,6 +45,22 @@ from .models import (
     UpdateMedia,
     UserProfile,
 )
+
+
+class JWTAuthenticatedGraphQLView(GraphQLView):
+    """Custom GraphQL view that properly handles JWT authentication"""
+
+    def parse_body(self, request: HttpRequest):
+        """Parse the request body and ensure user is set"""
+        # Ensure the user is set from JWT middleware
+        if hasattr(request, "user") and request.user and request.user.is_authenticated:
+            # Safely access username attribute
+            username = getattr(request.user, "username", "Unknown")
+            print(f"GraphQL: Authenticated user: {username}")
+        else:
+            print(f"GraphQL: No authenticated user, using fallback")
+
+        return super().parse_body(request)
 
 
 def healthcheck_view(request: HttpRequest) -> JsonResponse:
@@ -61,9 +90,17 @@ DjangoUser: TypeAlias = User
 def create_jwt_token(user: Union[User, AbstractBaseUser]) -> str:
     """Create a JWT token for the user"""
     now = timezone.now()
+
+    # Safely access user attributes
+    user_id = getattr(user, "id", None)
+    username = getattr(user, "username", "unknown")
+
+    if user_id is None:
+        raise ValueError("User must have an 'id' attribute")
+
     payload = {
-        "user_id": user.id,  # type: ignore
-        "username": user.username,  # type: ignore
+        "user_id": user_id,
+        "username": username,
         "exp": int(
             (now + timedelta(days=1)).timestamp()
         ),  # Token expires in 1 day (Unix timestamp)
@@ -2813,3 +2850,90 @@ def activity_pause_view(request: HttpRequest, activity_id: str) -> JsonResponse:
             return JsonResponse({"success": False, "error": str(e)}, status=500)
 
     return JsonResponse({"success": False, "error": "Method not allowed"}, status=405)
+
+
+@csrf_exempt
+def contact_submit_view(request: HttpRequest) -> JsonResponse:
+    """Handle contact form submissions"""
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+    try:
+        data = json.loads(request.body)
+
+        # Validate required fields
+        required_fields = [
+            "firstName",
+            "lastName",
+            "email",
+            "company",
+            "subject",
+            "message",
+        ]
+        for field in required_fields:
+            if not data.get(field):
+                return JsonResponse({"error": f"{field} is required"}, status=400)
+
+        # Validate email format
+        email = data["email"]
+        if not re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", email):
+            return JsonResponse({"error": "Invalid email format"}, status=400)
+
+        # Create contact submission
+        contact_data = {
+            "first_name": data["firstName"],
+            "last_name": data["lastName"],
+            "email": email,
+            "company": data["company"],
+            "subject": data["subject"],
+            "message": data["message"],
+            "inquiry_type": data.get("inquiryType", "general"),
+            "phone": data.get("phone", ""),
+        }
+
+        # Create contact using serializer for validation
+        from .serializers import ContactSerializer
+
+        serializer = ContactSerializer(data=contact_data, context={"request": request})
+
+        if serializer.is_valid():
+            # Create the contact instance directly to avoid type inference issues
+            contact: Contact = Contact.objects.create(
+                first_name=contact_data["first_name"],
+                last_name=contact_data["last_name"],
+                email=contact_data["email"],
+                company=contact_data["company"],
+                subject=contact_data["subject"],
+                message=contact_data["message"],
+                inquiry_type=contact_data["inquiry_type"],
+                phone=contact_data["phone"],
+                ip_address=request.META.get("REMOTE_ADDR"),
+                user_agent=request.META.get("HTTP_USER_AGENT", ""),
+            )
+
+            # Log the contact submission
+            logger.info(
+                f"New contact submission from {contact.email}: {contact.subject}"
+            )
+
+            # TODO: Send email notification to admin team
+            # TODO: Send confirmation email to user
+
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "Contact form submitted successfully",
+                    "contact_id": str(contact.pk),
+                },
+                status=201,
+            )
+        else:
+            return JsonResponse(
+                {"error": "Validation failed", "details": serializer.errors}, status=400
+            )
+
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON data"}, status=400)
+    except Exception as e:
+        logger.error(f"Error processing contact submission: {str(e)}")
+        return JsonResponse({"error": "Internal server error"}, status=500)

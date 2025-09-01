@@ -6,6 +6,7 @@ from .models import (
     ActivityStatus,
     Chat,
     City,
+    Contact,
     Country,
     Department,
     Employee,
@@ -271,3 +272,92 @@ class ZipCodeAdmin(admin.ModelAdmin):
     ordering = ("country__name", "state__name", "city__name", "code")
     autocomplete_fields = ["city", "state", "country"]
     readonly_fields = ("created_at", "updated_at")
+
+
+@admin.register(Contact)
+class ContactAdmin(admin.ModelAdmin):
+    list_display = (
+        "get_full_name",
+        "email",
+        "company",
+        "inquiry_type",
+        "status",
+        "created_at",
+        "assigned_to",
+    )
+    list_filter = (
+        "status",
+        "inquiry_type",
+        "created_at",
+        "assigned_to",
+    )
+    search_fields = (
+        "first_name",
+        "last_name",
+        "email",
+        "company",
+        "subject",
+        "message",
+    )
+    ordering = ("-created_at",)
+    readonly_fields = ("created_at", "updated_at", "ip_address", "user_agent")
+
+    fieldsets = (
+        (
+            "Contact Information",
+            {
+                "fields": (
+                    "first_name",
+                    "last_name",
+                    "email",
+                    "company",
+                    "phone",
+                )
+            },
+        ),
+        (
+            "Message Details",
+            {
+                "fields": (
+                    "subject",
+                    "message",
+                    "inquiry_type",
+                )
+            },
+        ),
+        (
+            "Status & Assignment",
+            {
+                "fields": (
+                    "status",
+                    "assigned_to",
+                    "admin_notes",
+                )
+            },
+        ),
+        (
+            "System Information",
+            {
+                "fields": (
+                    "ip_address",
+                    "user_agent",
+                    "created_at",
+                    "updated_at",
+                    "responded_at",
+                ),
+                "classes": ("collapse",),
+            },
+        ),
+    )
+
+    list_editable = ("status", "assigned_to")
+    autocomplete_fields = ["assigned_to"]
+
+    def get_full_name(self, obj):
+        return obj.get_full_name()
+
+    get_full_name.short_description = "Full Name"  # type: ignore
+    get_full_name.admin_order_field = "first_name"  # type: ignore
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("assigned_to")

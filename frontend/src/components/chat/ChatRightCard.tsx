@@ -1,16 +1,19 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useChatContext } from '../../contexts/ChatContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { useChatGraphQL } from '../../hooks/useChatGraphQL';
 import ChatHeader from './ChatHeader';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import ProfileView from './ProfileView';
 import CameraModal from './CameraModal';
+import CallTester from '../call/CallTester';
 import ChatApiService from '../../lib/chatApi';
-import { Message } from './MessageTypes';
-import ExpandableSearch from '../ui/ExpandableSearch';
+import { Message, ImageMessage, VideoMessage, AudioMessage, DocumentMessage, TextMessage } from './MessageTypes';
 
 const ChatRightCard: React.FC = () => {
-  const { selectedContact } = useChatContext();
+  const { selectedContact, setSelectedContact } = useChatContext();
+  const { user: currentUser } = useAuth();
 
   // State management
   const [messages, setMessages] = useState<Message[]>([]);
@@ -34,15 +37,39 @@ const ChatRightCard: React.FC = () => {
   const [recordingTime, setRecordingTime] = useState(0);
   const recordingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Message search state
+  // Search functionality state
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Dropdown states for MessageInput
+  const [emojiDropdownOpen, setEmojiDropdownOpen] = useState(false);
+  const [attachmentDropdownOpen, setAttachmentDropdownOpen] = useState(false);
+
+  // GraphQL integration for enhanced chat functionality
+  const {
+    messages: graphqlMessages,
+    loading: graphqlLoading,
+    error: graphqlError,
+    loadMessages: loadGraphQLMessages,
+    sendMessage: sendGraphQLMessage,
+    clearError,
+  } = useChatGraphQL();
 
   // Filter messages based on search query
   const filteredMessages = searchQuery.trim()
     ? messages.filter(message =>
-        message.content.toLowerCase().includes(searchQuery.toLowerCase())
+        message.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        message.senderName.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : messages;
+
+  // Search handlers
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery('');
+  };
 
   // Load messages from database when contact changes
   useEffect(() => {
@@ -51,16 +78,39 @@ const ChatRightCard: React.FC = () => {
     }
   }, [selectedContact]);
 
-  // Load messages from database
+  // Sync GraphQL messages with local state
+  useEffect(() => {
+    if (graphqlMessages.length > 0) {
+      console.log('🔄 Syncing GraphQL messages to local state:', graphqlMessages.length);
+      setMessages(graphqlMessages);
+    }
+  }, [graphqlMessages]);
+
+  // Load messages from GraphQL (with REST API fallback)
   const loadMessages = async () => {
     if (!selectedContact) return;
 
     try {
-      const result = await ChatApiService.getMessages(selectedContact.id.toString());
-      setMessages(result.messages);
+      console.log('🔄 Loading messages via GraphQL for:', selectedContact.name);
 
-      // Mark messages as read
-      await ChatApiService.markMessagesAsRead(selectedContact.id.toString());
+      // Try GraphQL first
+      await loadGraphQLMessages(selectedContact.id.toString(), 'user');
+
+      // Always try to use GraphQL messages first, then fallback to REST
+      console.log('📊 GraphQL messages count:', graphqlMessages.length);
+
+      if (graphqlMessages.length >= 0) {
+        setMessages(graphqlMessages);
+        console.log('✅ Using GraphQL messages:', graphqlMessages.length);
+      } else {
+        // Fallback to REST API
+        console.log('📡 Falling back to REST API...');
+        const result = await ChatApiService.getMessages(selectedContact.id.toString());
+        setMessages(result.messages);
+
+        // Mark messages as read
+        await ChatApiService.markMessagesAsRead(selectedContact.id.toString());
+      }
 
       // Scroll to bottom after messages load
       setTimeout(() => {
@@ -68,7 +118,8 @@ const ChatRightCard: React.FC = () => {
       }, 100);
     } catch (error) {
       console.error('Error loading messages:', error);
-      // Fallback to empty messages if API fails
+      // Clear GraphQL error and fallback to empty messages
+      clearError();
       setMessages([]);
     }
   };
@@ -87,18 +138,39 @@ const ChatRightCard: React.FC = () => {
     }
 
     try {
-      // Send message to database
-      const newMessage = await ChatApiService.sendMessage(
-        selectedContact.id.toString(),
-        messageContent,
-        'text',
-        replyToMessage?.id,
-        false,
-        ''
-      );
+      console.log('📤 Sending message via GraphQL:', messageContent);
 
-      // Add message to local state
-      setMessages(prev => [...prev, newMessage]);
+      // Try GraphQL first
+      const graphqlMessage = await sendGraphQLMessage({
+        chatId: selectedContact.id.toString(),
+        chatType: 'user',
+        senderId: currentUser?.id?.toString() || '1', // Use current user ID dynamically
+        senderName: currentUser?.username || 'You',
+        content: messageContent,
+        messageType: 'text'
+      });
+
+      if (graphqlMessage) {
+        console.log('✅ GraphQL message sent successfully:', graphqlMessage);
+        // The GraphQL hook should automatically update the messages state
+        // But let's also manually add it to local state for immediate feedback
+        setMessages(prev => [...prev, graphqlMessage]);
+        console.log('📝 Added message to local state');
+      } else {
+        // Fallback to REST API
+        console.log('📡 Falling back to REST API for sending message...');
+        const newMessage = await ChatApiService.sendMessage(
+          selectedContact.id.toString(),
+          messageContent,
+          'text',
+          replyToMessage?.id,
+          false,
+          ''
+        );
+
+        // Add message to local state
+        setMessages(prev => [...prev, newMessage]);
+      }
 
       // Scroll to bottom
       setTimeout(() => {
@@ -107,21 +179,33 @@ const ChatRightCard: React.FC = () => {
 
     } catch (error) {
       console.error('Error sending message:', error);
+      clearError();
       // You could show an error toast here
     }
   };
 
-  // Handle typing indicator
+  // Handle typing indicator - This should only be called when OTHER person types
+  // For demo purposes, we'll simulate the other person typing after a delay
   const handleTyping = useCallback(() => {
-    setIsTyping(true);
+    // Don't show typing indicator for current user typing
+    // In a real app, this would send a "typing" signal to the server
+    // and the server would notify the other person
 
+    // For demo: simulate other person typing after current user stops typing
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
 
+    // Simulate other person typing after 1 second of current user stopping
     typingTimeoutRef.current = setTimeout(() => {
-      setIsTyping(false);
-    }, 2000);
+      // Show typing indicator for other person
+      setIsTyping(true);
+
+      // Hide after 2 seconds
+      setTimeout(() => {
+        setIsTyping(false);
+      }, 2000);
+    }, 1000);
   }, []);
 
   // Message actions
@@ -245,29 +329,162 @@ const ChatRightCard: React.FC = () => {
     setMessage(prev => prev + emoji);
   }, []);
 
+  // Helper function to determine message type from file
+  const getMessageTypeFromFile = (file: File): 'audio' | 'video' | 'document' | 'text' | 'image' | 'location' | 'contact' => {
+    if (file.type.startsWith('image/')) return 'image';
+    if (file.type.startsWith('video/')) return 'video';
+    if (file.type.startsWith('audio/')) return 'audio';
+    if (file.type.includes('pdf') || file.type.includes('document') || file.type.includes('text')) return 'document';
+    return 'text'; // Default to text for unknown file types
+  };
+
   // File handling
   const handleFileUpload = useCallback((acceptedTypes: string) => {
-    // Handle file upload logic here
     console.debug('File upload for types:', acceptedTypes);
 
-    if (fileInputRef.current) {
-      fileInputRef.current.accept = acceptedTypes;
-      fileInputRef.current.click();
+    // Create a temporary file input for this upload
+    const tempFileInput = document.createElement('input');
+    tempFileInput.type = 'file';
+    tempFileInput.accept = acceptedTypes;
+    tempFileInput.style.display = 'none';
 
-      fileInputRef.current.onchange = (event) => {
-        const target = event.target as HTMLInputElement;
-        const file = target.files?.[0];
+    tempFileInput.onchange = async (event) => {
+      const target = event.target as HTMLInputElement;
+      const file = target.files?.[0];
 
-        if (file) {
-          // Simulate file upload process
-          alert(`📁 File selected: ${file.name}\nSize: ${(file.size / 1024 / 1024).toFixed(2)} MB\nType: ${file.type}\n\n✅ File would be uploaded to chat`);
+      if (file && selectedContact) {
+        try {
+          console.log('📁 File selected:', file.name, 'Size:', file.size, 'Type:', file.type);
 
-          // Reset the input
-          target.value = '';
+          // Create a temporary message to show the file is being uploaded
+          const messageType = getMessageTypeFromFile(file);
+          let tempMessage: Message;
+
+          if (messageType === 'image') {
+            tempMessage = {
+              id: Date.now(),
+              senderId: currentUser?.id || 1,
+              senderName: currentUser?.username || 'You',
+              content: `Uploading ${file.name}...`,
+              type: 'image',
+              timestamp: new Date().toISOString(),
+              status: 'sending',
+              replyTo: null,
+              forwarded: false,
+              forwardedFrom: '',
+              edited: false,
+              editedAt: undefined,
+              imageUrl: URL.createObjectURL(file),
+              fileName: file.name,
+              caption: '',
+              thumbnailUrl: URL.createObjectURL(file),
+              fileSize: file.size
+            } as ImageMessage;
+          } else if (messageType === 'video') {
+            tempMessage = {
+              id: Date.now(),
+              senderId: currentUser?.id || 1,
+              senderName: currentUser?.username || 'You',
+              content: `Uploading ${file.name}...`,
+              type: 'video',
+              timestamp: new Date().toISOString(),
+              status: 'sending',
+              replyTo: null,
+              forwarded: false,
+              forwardedFrom: '',
+              edited: false,
+              editedAt: undefined,
+              videoUrl: URL.createObjectURL(file),
+              thumbnailUrl: URL.createObjectURL(file),
+              fileName: file.name,
+              duration: 0,
+              caption: '',
+              fileSize: file.size
+            } as VideoMessage;
+          } else if (messageType === 'audio') {
+            tempMessage = {
+              id: Date.now(),
+              senderId: currentUser?.id || 1,
+              senderName: currentUser?.username || 'You',
+              content: `Uploading ${file.name}...`,
+              type: 'audio',
+              timestamp: new Date().toISOString(),
+              status: 'sending',
+              replyTo: null,
+              forwarded: false,
+              forwardedFrom: '',
+              edited: false,
+              editedAt: undefined,
+              audioUrl: URL.createObjectURL(file),
+              duration: 0
+            } as AudioMessage;
+          } else if (messageType === 'document') {
+            tempMessage = {
+              id: Date.now(),
+              senderId: currentUser?.id || 1,
+              senderName: currentUser?.username || 'You',
+              content: `Uploading ${file.name}...`,
+              type: 'document',
+              timestamp: new Date().toISOString(),
+              status: 'sending',
+              replyTo: null,
+              forwarded: false,
+              forwardedFrom: '',
+              edited: false,
+              editedAt: undefined,
+              documentUrl: URL.createObjectURL(file),
+              fileName: file.name,
+              fileSize: file.size,
+              fileType: file.type
+            } as DocumentMessage;
+          } else {
+            // Default to text message
+            tempMessage = {
+              id: Date.now(),
+              senderId: currentUser?.id || 1,
+              senderName: currentUser?.username || 'You',
+              content: `Uploading ${file.name}...`,
+              type: 'text',
+              timestamp: new Date().toISOString(),
+              status: 'sending',
+              replyTo: null,
+              forwarded: false,
+              forwardedFrom: '',
+              edited: false,
+              editedAt: undefined
+            } as TextMessage;
+          }
+
+          // Add temporary message to chat
+          setMessages(prev => [...prev, tempMessage]);
+
+          // Simulate file upload process (in real app, this would upload to server)
+          setTimeout(() => {
+            // Update message status to sent
+            setMessages(prev => prev.map(msg =>
+              msg.id === tempMessage.id
+                ? { ...msg, status: 'sent', content: `📎 ${file.name}` }
+                : msg
+            ));
+
+            // Scroll to bottom
+            scrollToBottom();
+          }, 2000);
+
+          // Clean up temporary file input
+          document.body.removeChild(tempFileInput);
+
+        } catch (error) {
+          console.error('Error handling file upload:', error);
+          alert('❌ Error uploading file. Please try again.');
         }
-      };
-    }
-  }, [fileInputRef]);
+      }
+    };
+
+    // Add to DOM and trigger click
+    document.body.appendChild(tempFileInput);
+    tempFileInput.click();
+  }, [selectedContact, currentUser, scrollToBottom]);
 
   const handlePhotoCapture = useCallback(async () => {
     setShowCamera(true);
@@ -349,28 +566,87 @@ const ChatRightCard: React.FC = () => {
   // Show welcome screen if no contact is selected
   if (!selectedContact) {
     return (
-      <div className="h-full flex items-center justify-center bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
-        <div className="text-center max-w-lg mx-auto px-8">
-          <div className="w-28 h-28 bg-gradient-to-br from-[#25d366] to-[#128c7e] rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="56"
-              height="56"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="lucide lucide-message-circle text-white">
-              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-            </svg>
+      <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden">
+        {/* Enhanced Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          {/* Primary floating elements */}
+          <div className="absolute -top-24 -right-24 w-48 h-48 bg-gradient-to-br from-blue-200 to-cyan-200 rounded-full opacity-40 animate-pulse"></div>
+          <div className="absolute -bottom-24 -left-24 w-40 h-40 bg-gradient-to-br from-green-200 to-emerald-200 rounded-full opacity-40 animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute top-1/3 left-1/5 w-28 h-28 bg-gradient-to-br from-purple-200 to-violet-200 rounded-full opacity-30 animate-pulse" style={{ animationDelay: '2s' }}></div>
+
+          {/* Secondary accent elements */}
+          <div className="absolute top-1/4 right-1/4 w-16 h-16 bg-gradient-to-br from-pink-200 to-rose-200 rounded-full opacity-25 animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+          <div className="absolute bottom-1/3 right-1/3 w-20 h-20 bg-gradient-to-br from-yellow-200 to-orange-200 rounded-full opacity-25 animate-pulse" style={{ animationDelay: '2.5s' }}></div>
+        </div>
+
+        <div className="text-center z-10 max-w-lg px-8 py-12">
+          {/* Enhanced Chat Icon with Better Animations */}
+          <div className="relative mx-auto mb-10">
+            <div className="w-36 h-36 bg-gradient-to-br from-[#25d366] via-[#20bd5f] to-[#128c7e] rounded-3xl flex items-center justify-center mx-auto shadow-2xl transform rotate-2 hover:rotate-0 hover:scale-105 transition-all duration-700 ease-out border-4 border-white/20">
+              <svg className="w-18 h-18 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+            </div>
+            <div className="absolute -top-3 -right-3 w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-400 rounded-full flex items-center justify-center animate-bounce shadow-lg border-2 border-white">
+              <span className="text-white text-base">💬</span>
+            </div>
+            {/* Subtle ring effect */}
+            <div className="absolute inset-0 w-36 h-36 mx-auto rounded-3xl border-2 border-[#25d366] opacity-20 animate-ping"></div>
           </div>
-          <h2 className="text-3xl font-bold text-gray-800 mb-4">Welcome to Nexus Chat</h2>
-          <p className="text-gray-600 leading-relaxed text-lg">
-            Select a contact from the left sidebar to start chatting.
-            Your conversations will be automatically saved and synchronized across all your devices.
-          </p>
+
+          <div className="space-y-6 mb-10">
+            <h3 className="text-4xl font-bold bg-gradient-to-r from-[#25d366] via-[#20bd5f] to-[#128c7e] bg-clip-text text-transparent drop-shadow-sm">
+              Advanced Chat Platform
+            </h3>
+            <p className="text-gray-600 text-xl leading-relaxed max-w-md mx-auto font-light">
+              Select a contact from the sidebar to start a conversation with our feature-rich messaging platform
+            </p>
+          </div>
+
+          {/* Enhanced Feature Highlights with Better Spacing */}
+          <div className="grid grid-cols-2 gap-5 mb-10">
+            <div className="group bg-white/80 backdrop-blur-md rounded-3xl p-6 shadow-xl border border-white/30 hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl flex items-center justify-center mb-3 mx-auto group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <p className="text-sm font-semibold text-gray-700">Instant Messaging</p>
+            </div>
+            <div className="group bg-white/80 backdrop-blur-md rounded-3xl p-6 shadow-xl border border-white/30 hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer">
+              <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-2xl flex items-center justify-center mb-3 mx-auto group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 11.293l-2.829-2.829a1 1 0 00-1.414 0L8.464 11.293a1 1 0 000 1.414l2.829 2.829a1 1 0 001.414 0l2.829-2.829a1 1 0 000-1.414z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17a1 1 0 102 0m0 0V9a5 5 0 10-5 5v3a1 1 0 102 0z" />
+                </svg>
+              </div>
+              <p className="text-sm font-semibold text-gray-700">Voice Messages</p>
+            </div>
+            <div className="group bg-white/80 backdrop-blur-md rounded-3xl p-6 shadow-xl border border-white/30 hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl flex items-center justify-center mb-3 mx-auto group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <p className="text-sm font-semibold text-gray-700">File Sharing</p>
+            </div>
+            <div className="group bg-white/80 backdrop-blur-md rounded-3xl p-6 shadow-xl border border-white/30 hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer">
+              <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl flex items-center justify-center mb-3 mx-auto group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                </svg>
+              </div>
+              <p className="text-sm font-semibold text-gray-700">Rich Features</p>
+            </div>
+          </div>
+
+          {/* Enhanced Security Badge */}
+          <div className="inline-flex items-center justify-center space-x-3 px-6 py-3 bg-white/70 backdrop-blur-md rounded-full shadow-lg border border-white/30">
+            <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="text-sm font-medium text-gray-600">Secure • Private • Feature-Rich</span>
+          </div>
         </div>
       </div>
     );
@@ -378,6 +654,46 @@ const ChatRightCard: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col bg-[#f0f2f5] overflow-hidden">
+      {/* GraphQL Error Display */}
+      {graphqlError && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 mx-4 mt-2 rounded relative">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              <span className="text-sm">GraphQL Error: {graphqlError}</span>
+            </div>
+            <button
+              onClick={clearError}
+              className="text-red-700 hover:text-red-900"
+            >
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Loading indicator for GraphQL operations */}
+      {graphqlLoading && (
+        <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-2 mx-4 mt-2 rounded text-sm">
+          <div className="flex items-center">
+            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Loading messages via GraphQL...
+          </div>
+        </div>
+      )}
+
+      {/* Call Testing Panel */}
+      <div className="mx-4 mt-2">
+        <CallTester />
+      </div>
+
       {/* Selection Mode Toolbar */}
       {isSelectionMode && (
         <div className="bg-gradient-to-r from-[#25d366] to-[#128c7e] text-white px-6 py-4 flex items-center justify-between shadow-lg">
@@ -413,21 +729,23 @@ const ChatRightCard: React.FC = () => {
       {/* Chat Header */}
       <ChatHeader
         messages={messages}
-        formatTime={(timestamp: Date) => timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        formatTime={(timestamp: string) => {
+          try {
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          } catch (error) {
+            console.error('Error formatting timestamp:', error, timestamp);
+            return '--:--';
+          }
+        }}
         onClearChat={handleClearChat}
         onEnterSelectionMode={enterSelectionMode}
         isSelectionMode={isSelectionMode}
+        onCloseChat={() => setSelectedContact(null)}
+        onSearch={handleSearch}
+        searchQuery={searchQuery}
+        onClearSearch={handleClearSearch}
       />
-
-      {/* Message Search */}
-      <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
-        <ExpandableSearch
-          value={searchQuery}
-          onChange={setSearchQuery}
-          placeholder="Search messages..."
-          className="w-full"
-        />
-      </div>
 
       {/* Chat Content */}
       {showProfileView ? (
@@ -437,7 +755,7 @@ const ChatRightCard: React.FC = () => {
         />
       ) : (
         <>
-          {/* Typing Indicator */}
+          {/* Typing Indicator - Shows when OTHER person is typing (not current user) */}
           {isTyping && (
             <div className="px-6 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-400 mx-4 my-2 rounded-r-lg shadow-sm">
               <div className="flex items-center space-x-3">
@@ -454,7 +772,15 @@ const ChatRightCard: React.FC = () => {
           {/* Messages */}
           <MessageList
             messages={filteredMessages}
-            formatTime={(timestamp: Date) => timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            formatTime={(timestamp: string) => {
+              try {
+                const date = new Date(timestamp);
+                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+              } catch (error) {
+                console.error('Error formatting timestamp:', error, timestamp);
+                return '--:--';
+              }
+            }}
             onReply={handleReply}
             onForward={handleForward}
             onDelete={handleDelete}
@@ -466,6 +792,7 @@ const ChatRightCard: React.FC = () => {
             setMessageOptionsOpen={setMessageOptionsOpen}
             messagesEndRef={messagesEndRef}
             scrollToBottom={scrollToBottom}
+            currentUserId={currentUser?.id}
           />
 
           {/* Reply Preview */}
@@ -504,10 +831,10 @@ const ChatRightCard: React.FC = () => {
             handleFileUpload={handleFileUpload}
             handlePhotoCapture={handlePhotoCapture}
             fileInputRef={fileInputRef}
-            emojiDropdownOpen={false}
-            setEmojiDropdownOpen={() => {}}
-            attachmentDropdownOpen={false}
-            setAttachmentDropdownOpen={() => {}}
+            emojiDropdownOpen={emojiDropdownOpen}
+            setEmojiDropdownOpen={setEmojiDropdownOpen}
+            attachmentDropdownOpen={attachmentDropdownOpen}
+            setAttachmentDropdownOpen={setAttachmentDropdownOpen}
             onTyping={handleTyping}
             replyToMessage={replyToMessage}
             setReplyToMessage={setReplyToMessage}

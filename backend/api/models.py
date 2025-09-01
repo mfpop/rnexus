@@ -82,6 +82,9 @@ class UserProfile(models.Model):
     work_history = models.JSONField(default=list, blank=True)
     profile_visibility = models.JSONField(default=dict, blank=True)
 
+    # Avatar
+    avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
+
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -1136,3 +1139,81 @@ class ZipCode(models.Model):
 
     def __str__(self):
         return f"{self.code} - {self.city.name}, {self.state.name}, {self.country.name}"
+
+
+class Contact(models.Model):
+    """Model for storing contact form submissions"""
+
+    INQUIRY_TYPE_CHOICES = [
+        ("general", "General Inquiry"),
+        ("sales", "Sales & Pricing"),
+        ("support", "Technical Support"),
+        ("partnership", "Partnership"),
+        ("demo", "Request Demo"),
+        ("feedback", "Feedback"),
+    ]
+
+    STATUS_CHOICES = [
+        ("new", "New"),
+        ("in_progress", "In Progress"),
+        ("responded", "Responded"),
+        ("closed", "Closed"),
+    ]
+
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    email = models.EmailField()
+    company = models.CharField(max_length=200)
+    subject = models.CharField(max_length=200)
+    message = models.TextField()
+    inquiry_type = models.CharField(
+        max_length=20, choices=INQUIRY_TYPE_CHOICES, default="general"
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="new")
+
+    # Optional fields
+    phone = models.CharField(max_length=20, blank=True)
+    ip_address = models.GenericIPAddressField(blank=True, null=True)
+    user_agent = models.TextField(blank=True)
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    responded_at = models.DateTimeField(blank=True, null=True)
+
+    # Admin notes
+    admin_notes = models.TextField(blank=True)
+    assigned_to = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="assigned_contacts",
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Contact Submission"
+        verbose_name_plural = "Contact Submissions"
+        indexes = [
+            models.Index(fields=["status", "created_at"]),
+            models.Index(fields=["inquiry_type", "created_at"]),
+            models.Index(fields=["email", "created_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name} - {self.subject} ({self.get_status_display()})"
+
+    def get_full_name(self):
+        return f"{self.first_name} {self.last_name}"
+
+    def mark_as_responded(self):
+        """Mark contact as responded to"""
+        self.status = "responded"
+        self.responded_at = timezone.now()
+        self.save(update_fields=["status", "responded_at"])
+
+    def assign_to_user(self, user):
+        """Assign contact to a specific user"""
+        self.assigned_to = user
+        self.save(update_fields=["assigned_to"])

@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import StableLayout from "./components/StableLayout";
 import { NotificationProvider } from "./contexts/NotificationContext";
+import { CallProvider } from "./contexts/CallContext";
+import CallManager from "./components/call/CallManager";
 
 /**
  * App Component - Implements the correct architecture
@@ -14,12 +16,17 @@ import { NotificationProvider } from "./contexts/NotificationContext";
 function App() {
   return (
     <NotificationProvider>
-      <Router>
-        <Routes>
-          {/* Single route that handles all paths */}
-          <Route path="*" element={<StableLayout />} />
-        </Routes>
-      </Router>
+      <CallProvider>
+        <Router>
+          <Routes>
+            {/* Single route that handles all paths */}
+            <Route path="*" element={<StableLayout />} />
+          </Routes>
+        </Router>
+
+        {/* Call Manager - Global call handling */}
+        <CallManager />
+      </CallProvider>
     </NotificationProvider>
   );
 }
