@@ -97,6 +97,8 @@ const ChatRightCard: React.FC = () => {
   useEffect(() => {
     if (selectedContact) {
       loadMessages();
+      // Reset message pagination when switching contacts
+      setCurrentPage(1);
     }
   }, [selectedContact]);
 
@@ -105,6 +107,8 @@ const ChatRightCard: React.FC = () => {
     if (graphqlMessages.length > 0) {
       console.log('🔄 Syncing GraphQL messages to local state:', graphqlMessages.length);
       setMessages(graphqlMessages);
+      // Reset to first page when new messages are loaded
+      setCurrentPage(1);
     }
   }, [graphqlMessages]);
 
@@ -176,7 +180,13 @@ const ChatRightCard: React.FC = () => {
         console.log('✅ GraphQL message sent successfully:', graphqlMessage);
         // The GraphQL hook should automatically update the messages state
         // But let's also manually add it to local state for immediate feedback
-        setMessages(prev => [...prev, graphqlMessage]);
+        setMessages(prev => {
+          const newMessages = [...prev, graphqlMessage];
+          // Navigate to last page to show the new message
+          const newTotalPages = Math.max(1, Math.ceil(newMessages.length / recordsPerPage));
+          setCurrentPage(newTotalPages);
+          return newMessages;
+        });
         console.log('📝 Added message to local state');
       } else {
         // Fallback to REST API
@@ -191,7 +201,13 @@ const ChatRightCard: React.FC = () => {
         );
 
         // Add message to local state
-        setMessages(prev => [...prev, newMessage]);
+        setMessages(prev => {
+          const newMessages = [...prev, newMessage];
+          // Navigate to last page to show the new message
+          const newTotalPages = Math.max(1, Math.ceil(newMessages.length / recordsPerPage));
+          setCurrentPage(newTotalPages);
+          return newMessages;
+        });
       }
 
       // Scroll to bottom
@@ -258,11 +274,19 @@ const ChatRightCard: React.FC = () => {
   const handleDelete = useCallback(async (messageId: number) => {
     try {
       await ChatApiService.deleteMessage(messageId);
-      setMessages(prev => prev.filter(msg => msg.id !== messageId));
+      setMessages(prev => {
+        const newMessages = prev.filter(msg => msg.id !== messageId);
+        // Adjust pagination if current page becomes empty
+        const newTotalPages = Math.max(1, Math.ceil(newMessages.length / recordsPerPage));
+        if (currentPage > newTotalPages) {
+          setCurrentPage(newTotalPages);
+        }
+        return newMessages;
+      });
     } catch (error) {
       console.error('Error deleting message:', error);
     }
-  }, []);
+  }, [currentPage, recordsPerPage]);
 
   const handleCopy = useCallback((content: string) => {
     navigator.clipboard.writeText(content).then(() => {
@@ -310,12 +334,20 @@ const ChatRightCard: React.FC = () => {
         await ChatApiService.deleteMessage(messageId);
       }
 
-      setMessages(prev => prev.filter(msg => !selectedMessages.has(msg.id)));
+      setMessages(prev => {
+        const newMessages = prev.filter(msg => !selectedMessages.has(msg.id));
+        // Adjust pagination if current page becomes empty
+        const newTotalPages = Math.max(1, Math.ceil(newMessages.length / recordsPerPage));
+        if (currentPage > newTotalPages) {
+          setCurrentPage(newTotalPages);
+        }
+        return newMessages;
+      });
       exitSelectionMode();
     } catch (error) {
       console.error('Error bulk deleting messages:', error);
     }
-  }, [selectedMessages, exitSelectionMode]);
+  }, [selectedMessages, exitSelectionMode, currentPage, recordsPerPage]);
 
   const handleBulkForward = useCallback(() => {
     // Implementation for bulk forwarding
@@ -478,7 +510,13 @@ const ChatRightCard: React.FC = () => {
           }
 
           // Add temporary message to chat
-          setMessages(prev => [...prev, tempMessage]);
+          setMessages(prev => {
+            const newMessages = [...prev, tempMessage];
+            // Navigate to last page to show the new message
+            const newTotalPages = Math.max(1, Math.ceil(newMessages.length / recordsPerPage));
+            setCurrentPage(newTotalPages);
+            return newMessages;
+          });
 
           // Simulate file upload process (in real app, this would upload to server)
           setTimeout(() => {

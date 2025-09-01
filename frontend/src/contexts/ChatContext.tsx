@@ -475,14 +475,14 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
     return usersData.allUsers.map((user: any) => ({
       id: parseInt(user.id),
       name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username,
-      title: user.profile?.position || 'Team Member',
-      department: user.profile?.department || 'General',
+      title: 'Team Member', // We'll add position/department later if needed
+      department: 'General',
       status: 'online' as const, // Default status for now
       lastMessage: '',
       lastMessageTime: '',
       unreadCount: 0,
-      avatar: user.profile?.avatar || user.firstName?.[0] || user.username[0],
-      avatarUrl: user.profile?.avatarUrl || null,
+      avatar: user.avatar || user.firstName?.[0] || user.username[0],
+      avatarUrl: user.avatarUrl || null,
       email: user.email,
     }));
   }, [usersData]);

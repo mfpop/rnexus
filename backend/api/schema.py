@@ -65,6 +65,13 @@ class UserType(DjangoObjectType):
         except:
             return None
 
+    def resolve_profile(self, info):
+        """Get user profile"""
+        try:
+            return self.profile
+        except:
+            return None
+
 
 class UserProfileType(DjangoObjectType):
     class Meta:
@@ -937,6 +944,8 @@ class CreateContact(graphene.Mutation):
             ip = request.META.get("REMOTE_ADDR")
         return ip
 
+
+# Profile field is not needed since avatar data is available directly on UserType
 
 # Temporarily commented out to debug schema loading
 # class UploadAvatar(graphene.Mutation):

@@ -111,13 +111,8 @@ export const GET_ALL_USERS_WITH_AVATARS = gql`
       firstName
       lastName
       isActive
-      profile {
-        id
-        position
-        department
-        avatar
-        avatarUrl
-      }
+      avatar
+      avatarUrl
     }
   }
 `;
