@@ -463,8 +463,20 @@ class Query(graphene.ObjectType):
                 return None
 
     def resolve_all_users(self, info, **kwargs):
-        """Return all users with their profile information"""
-        return User.objects.filter(is_active=True).order_by("username")
+        """Return all users with their profile information, excluding the current user"""
+        # Get current user from context
+        current_user = info.context.user if info.context else None
+
+        if current_user and current_user.is_authenticated:
+            # Exclude the current user from the list
+            return (
+                User.objects.filter(is_active=True)
+                .exclude(id=current_user.id)
+                .order_by("username")
+            )
+        else:
+            # If no authenticated user, return all active users
+            return User.objects.filter(is_active=True).order_by("username")
 
     # Organizational hierarchy resolvers
     def resolve_all_departments(self, info, **kwargs):

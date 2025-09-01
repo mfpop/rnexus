@@ -8,6 +8,7 @@ import React, {
 } from "react";
 import { useQuery } from '@apollo/client';
 import { GET_ALL_USERS_WITH_AVATARS } from '../graphql/chatQueries';
+import { useAuth } from './AuthContext';
 
 // Contact interface for chat
 export interface Contact {
@@ -444,6 +445,9 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
   const [itemsPerPage, setItemsPerPage] = useState(12); // Set a reasonable default
   const [showProfileView, setShowProfileView] = useState(false);
 
+  // Get current user from auth context
+  const { user: currentUser } = useAuth();
+
   // Fetch real user data from GraphQL
   const { data: usersData, loading: usersLoading, error: usersError } = useQuery(GET_ALL_USERS_WITH_AVATARS);
 
@@ -472,7 +476,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
   const realUsers: Contact[] = React.useMemo(() => {
     if (!usersData?.allUsers) return allUsers;
 
-    return usersData.allUsers.map((user: any) => ({
+    const transformedUsers = usersData.allUsers.map((user: any) => ({
       id: parseInt(user.id),
       name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username,
       title: 'Team Member', // We'll add position/department later if needed
@@ -485,7 +489,29 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
       avatarUrl: user.avatarUrl || null,
       email: user.email,
     }));
-  }, [usersData]);
+
+    // Remove duplicates based on ID and name to prevent pagination issues
+    const uniqueUsers = transformedUsers.filter((user: Contact, index: number, self: Contact[]) =>
+      index === self.findIndex((u: Contact) => u.id === user.id && u.name === user.name)
+    );
+
+    // Filter out the current user from the members list
+    const filteredUsers = uniqueUsers.filter((user: Contact) => {
+      if (!currentUser) return true; // If no current user, show all users
+      return user.id !== currentUser.id;
+    });
+
+    console.log('🔍 ChatContext - User data debug:', {
+      originalCount: usersData.allUsers.length,
+      transformedCount: transformedUsers.length,
+      uniqueCount: uniqueUsers.length,
+      filteredCount: filteredUsers.length,
+      currentUserId: currentUser?.id,
+      hasDuplicates: transformedUsers.length !== uniqueUsers.length
+    });
+
+    return filteredUsers;
+  }, [usersData, currentUser]);
 
   // Get current data based on active tab
   const getCurrentData = () => {

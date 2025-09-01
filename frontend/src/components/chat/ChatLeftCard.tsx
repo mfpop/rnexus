@@ -43,7 +43,6 @@ const ChatLeftCard: React.FC = () => {
     setSelectedContact,
     groups,
     favorites,
-    paginatedUsers,
     activeTab,
     setActiveTab,
     setShowProfileView,
@@ -236,7 +235,8 @@ const ChatLeftCard: React.FC = () => {
   };
 
   // Use full users list when available; fall back to paginatedUsers from context
-  const usersSource = (allUsers && allUsers.length > 0) ? allUsers : paginatedUsers;
+  // Use complete allUsers list for proper pagination, not pre-paginated data
+  const usersSource = allUsers || [];
 
   // Filter all users for the Contacts tab
   const filteredAllUsers = usersSource.filter(
@@ -247,6 +247,17 @@ const ChatLeftCard: React.FC = () => {
       (user.title &&
         user.title.toLowerCase().includes(searchQuery.toLowerCase())),
   );
+
+  // Debug pagination to check for duplicates
+  console.log('🔍 ChatLeftCard - Pagination debug:', {
+    usersSourceLength: usersSource.length,
+    filteredLength: filteredAllUsers.length,
+    currentPage,
+    recordsPerPage,
+    startIndex: (currentPage - 1) * recordsPerPage,
+    endIndex: (currentPage - 1) * recordsPerPage + recordsPerPage,
+    activeTab
+  });
 
   const filteredGroups = groups.filter(
     (group: any) =>
