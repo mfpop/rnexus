@@ -1,10 +1,13 @@
 import json
 
+from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
+
+from .models import UserProfile
 
 # Temporarily commented out due to missing SystemMessage model
 # from .models import SystemMessage
@@ -33,3 +36,39 @@ from channels.layers import get_channel_layer
 #                 'message': message_data
 #             }
 #         )
+
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    """Automatically create a UserProfile when a new User is created"""
+    if created:
+        UserProfile.objects.create(
+            user=instance,
+            phone_country_code="+1",
+            phone_type="mobile",
+            secondary_phone_type="mobile",
+            profile_visibility={
+                "email": True,
+                "phone": True,
+                "secondary_phone": True,
+                "address": True,
+                "education": True,
+                "work_history": True,
+                "position": True,
+                "contact": True,
+                "bio": True,
+            },
+            education=[],
+            work_history=[],
+        )
+        print(f"Created UserProfile for user: {instance.username}")
+
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    """Automatically save the UserProfile when the User is saved"""
+    try:
+        instance.profile.save()
+    except UserProfile.DoesNotExist:
+        # If profile doesn't exist, create it
+        create_user_profile(sender, instance, created=True, **kwargs)
