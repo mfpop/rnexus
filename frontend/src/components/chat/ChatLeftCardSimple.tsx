@@ -476,15 +476,25 @@ const ChatLeftCardSimple: React.FC = () => {
                     {/* Avatar */}
                     <div className="flex-shrink-0">
                       <div className="relative">
-                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium text-xs">
-                          {item.type === "group" ? (
+                        {item.type === "group" ? (
+                          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium text-xs">
                             <Users className="h-4 w-4" />
-                          ) : item.type === "favorite" ? (
+                          </div>
+                        ) : item.type === "favorite" ? (
+                          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium text-xs">
                             <Star className="h-4 w-4" />
-                          ) : (
-                            item.avatar || item.name.charAt(0).toUpperCase()
-                          )}
-                        </div>
+                          </div>
+                        ) : item.avatarUrl ? (
+                          <img
+                            src={item.avatarUrl}
+                            alt={item.name}
+                            className="w-8 h-8 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium text-xs">
+                            {item.avatar || item.name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
                         {/* Status indicator for contacts */}
                         {item.type === "contact" && (
                           <div

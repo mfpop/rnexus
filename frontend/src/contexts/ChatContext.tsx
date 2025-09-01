@@ -6,6 +6,8 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
+import { useQuery } from '@apollo/client';
+import { GET_ALL_USERS_WITH_AVATARS } from '../graphql/chatQueries';
 
 // Contact interface for chat
 export interface Contact {
@@ -18,6 +20,7 @@ export interface Contact {
   lastMessageTime: string;
   unreadCount: number;
   avatar: string;
+  avatarUrl?: string;
   isGroup?: boolean;
   members?: number;
   email?: string;
@@ -441,6 +444,9 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
   const [itemsPerPage, setItemsPerPage] = useState(12); // Set a reasonable default
   const [showProfileView, setShowProfileView] = useState(false);
 
+  // Fetch real user data from GraphQL
+  const { data: usersData, loading: usersLoading, error: usersError } = useQuery(GET_ALL_USERS_WITH_AVATARS);
+
   // Simplified items per page calculation - use a fixed reasonable value
   const calculateOptimalItemsPerPage = useCallback(() => {
     // Use a fixed value for now to ensure reliability
@@ -462,17 +468,36 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
     };
   }, [calculateOptimalItemsPerPage]);
 
+  // Transform GraphQL user data to Contact format
+  const realUsers: Contact[] = React.useMemo(() => {
+    if (!usersData?.allUsers) return allUsers;
+
+    return usersData.allUsers.map((user: any) => ({
+      id: parseInt(user.id),
+      name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username,
+      title: user.profile?.position || 'Team Member',
+      department: user.profile?.department || 'General',
+      status: 'online' as const, // Default status for now
+      lastMessage: '',
+      lastMessageTime: '',
+      unreadCount: 0,
+      avatar: user.profile?.avatar || user.firstName?.[0] || user.username[0],
+      avatarUrl: user.profile?.avatarUrl || null,
+      email: user.email,
+    }));
+  }, [usersData]);
+
   // Get current data based on active tab
   const getCurrentData = () => {
     switch (activeTab) {
       case "contacts":
-        return allUsers;
+        return realUsers;
       case "groups":
         return sampleGroups;
       case "favorites":
         return sampleFavorites;
       default:
-        return allUsers;
+        return realUsers;
     }
   };
 
@@ -498,10 +523,10 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
   const value: ChatContextType = {
     selectedContact,
     setSelectedContact,
-    contacts: sampleContacts,
+    contacts: realUsers,
     groups: sampleGroups,
     favorites: sampleFavorites,
-    allUsers,
+    allUsers: realUsers,
     paginatedUsers,
     currentPage,
     setCurrentPage,

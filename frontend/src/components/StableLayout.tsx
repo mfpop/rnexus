@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useQuery } from '@apollo/client';
 import { HomeLeftCard } from "./home";
 import { ContactLeftCard } from "./contact";
 import {
@@ -29,6 +30,7 @@ import { NotificationProvider } from "../contexts/NotificationContext";
 import { useAuth } from "../contexts/AuthContext";
 import { PaginationProvider } from "../contexts/PaginationContext";
 import PaginationFooterWrapper from "./shared/PaginationFooterWrapper";
+import { GET_USER_PROFILE } from "../graphql/userProfile";
 
 // Import all page components
 import MainPage from "../pages/MainPage";
@@ -91,6 +93,11 @@ export default function StableLayout() {
   const { isAuthenticated, logout: authLogout } = useAuth();
   const [expandedCard, setExpandedCard] = useState<ExpandedCardState>(null);
   const [showNotificationCenter, setShowNotificationCenter] = useState(false);
+
+  // Get current user profile with avatar information
+  const { data: profileData } = useQuery(GET_USER_PROFILE, {
+    skip: !isAuthenticated,
+  });
 
   // Custom navigation function that forces re-render
   const forceNavigate = (path: string) => {
@@ -838,6 +845,9 @@ export default function StableLayout() {
           showDatabaseButton={true}
           onDatabaseClick={() => forceNavigate("/db-settings")}
           userRole="admin" // This should come from user context in real app
+          avatarSrc={profileData?.userProfile?.avatarUrl || undefined}
+          avatarFallback={profileData?.userProfile?.user?.firstName?.[0] || profileData?.userProfile?.user?.username?.[0] || "U"}
+          avatarTitle={profileData?.userProfile?.user?.firstName ? `${profileData.userProfile.user.firstName} ${profileData.userProfile.user.lastName || ''}`.trim() : profileData?.userProfile?.user?.username || "User"}
         />
         {showNotificationCenter && (
           <NotificationCenter onClose={() => setShowNotificationCenter(false)} />

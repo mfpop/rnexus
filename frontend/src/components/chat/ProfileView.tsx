@@ -18,9 +18,17 @@ const ProfileView: React.FC<ProfileViewProps> = ({ messages, setShowProfileView 
     <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="text-center mb-6">
-          <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
-            {selectedContact.avatar}
-          </div>
+          {selectedContact.avatarUrl ? (
+            <img
+              src={selectedContact.avatarUrl}
+              alt={selectedContact.name}
+              className="w-24 h-24 rounded-full object-cover mx-auto mb-4"
+            />
+          ) : (
+            <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
+              {selectedContact.avatar}
+            </div>
+          )}
           <h2 className="text-2xl font-bold text-gray-800 mb-2">{selectedContact.name}</h2>
           <p className="text-gray-600">{selectedContact.title || 'No title'}</p>
         </div>

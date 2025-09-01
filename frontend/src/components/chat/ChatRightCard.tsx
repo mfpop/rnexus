@@ -8,6 +8,7 @@ import MessageInput from './MessageInput';
 import ProfileView from './ProfileView';
 import CameraModal from './CameraModal';
 import CallTester from '../call/CallTester';
+import ListPaginationFooter from '../shared/ListPaginationFooter';
 import ChatApiService from '../../lib/chatApi';
 import { Message, ImageMessage, VideoMessage, AudioMessage, DocumentMessage, TextMessage } from './MessageTypes';
 
@@ -40,9 +41,12 @@ const ChatRightCard: React.FC = () => {
   // Search functionality state
   const [searchQuery, setSearchQuery] = useState('');
 
+
   // Dropdown states for MessageInput
   const [emojiDropdownOpen, setEmojiDropdownOpen] = useState(false);
   const [attachmentDropdownOpen, setAttachmentDropdownOpen] = useState(false);
+
+
 
   // GraphQL integration for enhanced chat functionality
   const {
@@ -54,6 +58,8 @@ const ChatRightCard: React.FC = () => {
     clearError,
   } = useChatGraphQL();
 
+
+
   // Filter messages based on search query
   const filteredMessages = searchQuery.trim()
     ? messages.filter(message =>
@@ -61,6 +67,22 @@ const ChatRightCard: React.FC = () => {
         message.senderName.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : messages;
+
+
+
+  // Pagination state for messages
+  const [currentPage, setCurrentPage] = useState(1);
+  const [recordsPerPage, setRecordsPerPage] = useState(20);
+  const totalPages = Math.max(1, Math.ceil(filteredMessages.length / recordsPerPage));
+  const paginatedMessages = filteredMessages.slice(
+    (currentPage - 1) * recordsPerPage,
+    currentPage * recordsPerPage
+  );
+
+  // Reset to first page when messages or search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filteredMessages.length, searchQuery]);
 
   // Search handlers
   const handleSearch = (query: string) => {
@@ -770,8 +792,9 @@ const ChatRightCard: React.FC = () => {
           )}
 
           {/* Messages */}
+
           <MessageList
-            messages={filteredMessages}
+            messages={paginatedMessages}
             formatTime={(timestamp: string) => {
               try {
                 const date = new Date(timestamp);
@@ -794,6 +817,19 @@ const ChatRightCard: React.FC = () => {
             scrollToBottom={scrollToBottom}
             currentUserId={currentUser?.id}
           />
+
+          {/* Pagination Footer for messages */}
+          <div className="flex justify-center mt-2">
+            <ListPaginationFooter
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalRecords={filteredMessages.length}
+              recordsPerPage={recordsPerPage}
+              onPageChange={setCurrentPage}
+              onRecordsPerPageChange={setRecordsPerPage}
+              showRecordsPerPage={true}
+            />
+          </div>
 
           {/* Reply Preview */}
           {replyToMessage && (

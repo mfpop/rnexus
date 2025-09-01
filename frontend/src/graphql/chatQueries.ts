@@ -13,6 +13,8 @@ export const CHAT_FRAGMENT = gql`
       email
       firstName
       lastName
+      avatar
+      avatarUrl
     }
     user2 {
       id
@@ -20,6 +22,8 @@ export const CHAT_FRAGMENT = gql`
       email
       firstName
       lastName
+      avatar
+      avatarUrl
     }
     members
     lastMessage {
@@ -38,6 +42,8 @@ export const CHAT_FRAGMENT = gql`
       username
       firstName
       lastName
+      avatar
+      avatarUrl
     }
     avatarUrl
     createdAt
@@ -93,6 +99,27 @@ export const GET_USER_CHATS = gql`
     }
   }
   ${CHAT_FRAGMENT}
+`;
+
+// Query to get all users with avatar information
+export const GET_ALL_USERS_WITH_AVATARS = gql`
+  query GetAllUsersWithAvatars {
+    allUsers {
+      id
+      username
+      email
+      firstName
+      lastName
+      isActive
+      profile {
+        id
+        position
+        department
+        avatar
+        avatarUrl
+      }
+    }
+  }
 `;
 
 // Query to get a specific chat

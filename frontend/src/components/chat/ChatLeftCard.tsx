@@ -422,14 +422,22 @@ const ChatLeftCard: React.FC = () => {
       <div className="flex items-center gap-2.5 h-full">
         {/* Avatar */}
         <div className="relative flex-shrink-0">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-xs">
-            {item.avatar ||
-              item.name
-                .split(" ")
-                .map((n: string) => n[0])
-                .join("")
-                .toUpperCase()}
-          </div>
+          {item.avatarUrl ? (
+            <img
+              src={item.avatarUrl}
+              alt={item.name}
+              className="w-8 h-8 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-xs">
+              {item.avatar ||
+                item.name
+                  .split(" ")
+                  .map((n: string) => n[0])
+                  .join("")
+                  .toUpperCase()}
+            </div>
+          )}
           <div
             className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white ${getStatusColor(item.status)}`}
           ></div>

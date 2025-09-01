@@ -43,6 +43,28 @@ class UserType(DjangoObjectType):
     lastName = graphene.String(source="last_name")
     isActive = graphene.Boolean(source="is_active")
 
+    # Add avatar field from user profile
+    avatar = graphene.String()
+    avatarUrl = graphene.String()
+
+    def resolve_avatar(self, info):
+        """Get avatar filename from user profile"""
+        try:
+            profile = self.profile
+            return profile.avatar.name if profile.avatar else None
+        except:
+            return None
+
+    def resolve_avatarUrl(self, info):
+        """Get full avatar URL from user profile"""
+        try:
+            profile = self.profile
+            if profile.avatar:
+                return info.context.build_absolute_uri(profile.avatar.url)
+            return None
+        except:
+            return None
+
 
 class UserProfileType(DjangoObjectType):
     class Meta:
@@ -367,6 +389,9 @@ class Query(graphene.ObjectType):
         ContactType, inquiry_type=graphene.String()
     )
 
+    # User queries
+    all_users = graphene.List(UserType)
+
     def resolve_all_items(self, info, **kwargs):
         return Item.objects.all()
 
@@ -429,6 +454,10 @@ class Query(graphene.ObjectType):
                 return UserProfile.objects.first()
             except:
                 return None
+
+    def resolve_all_users(self, info, **kwargs):
+        """Return all users with their profile information"""
+        return User.objects.filter(is_active=True).order_by("username")
 
     # Organizational hierarchy resolvers
     def resolve_all_departments(self, info, **kwargs):

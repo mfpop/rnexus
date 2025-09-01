@@ -66,9 +66,17 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
         <div className="flex items-center gap-3">
           {/* Avatar */}
           <div className="relative">
-            <div className="w-10 h-10 bg-gradient-to-br from-[#25d366] to-[#128c7e] rounded-full flex items-center justify-center text-white font-medium text-lg">
-              {selectedContact.avatar || selectedContact.name.charAt(0).toUpperCase()}
-            </div>
+            {selectedContact.avatarUrl ? (
+              <img
+                src={selectedContact.avatarUrl}
+                alt={selectedContact.name}
+                className="w-10 h-10 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-10 h-10 bg-gradient-to-br from-[#25d366] to-[#128c7e] rounded-full flex items-center justify-center text-white font-medium text-lg">
+                {selectedContact.avatar || selectedContact.name.charAt(0).toUpperCase()}
+              </div>
+            )}
             {!selectedContact.isGroup && selectedContact.status === 'online' && (
               <div className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white bg-green-500" />
             )}
