@@ -14,15 +14,17 @@ repos:
     hooks:
       - id: black
         language_version: python3.13
+        args: ["--config", "backend/pyproject.toml"]
 
   - repo: https://github.com/pycqa/isort
     rev: 6.0.1
     hooks:
       - id: isort
-        args: ["--profile", "black"]
+        args: ["--profile", "black", "--settings-path", "backend/pyproject.toml"]
 
-  # - repo: https://github.com/pre-commit/mirrors-mypy
-  #   rev: v1.17.1
-  #   hooks:
-  #     - id: mypy
-  #       args: [--ignore-missing-imports]
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.17.1
+    hooks:
+      - id: mypy
+        args: ["--config-file", "backend/pyproject.toml", "--ignore-missing-imports"]
+        additional_dependencies: ["types-requests"]
