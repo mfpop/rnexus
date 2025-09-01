@@ -92,6 +92,10 @@ interface ProfileData {
     position: boolean;
     contact: boolean;
     bio: boolean;
+    phone: boolean;
+    secondary_phone: boolean;
+    address: boolean;
+    email: boolean;
   };
 
   // Avatar
@@ -137,7 +141,7 @@ const ProfileRightCard: React.FC = () => {
         phone_country_code: profile.phoneCountryCode || "+1",
         phone_type: (profile.phoneType as any) || "mobile",
         secondary_phone: profile.secondaryPhone || "",
-        secondary_phone_type: "mobile",
+        secondary_phone_type: (profile.secondaryPhoneType as any) || "mobile",
         street_address: profile.streetAddress || "",
         apartment_suite: profile.apartmentSuite || "",
         city: profile.city || "",
@@ -147,7 +151,17 @@ const ProfileRightCard: React.FC = () => {
         bio: profile.bio || "",
         education: Array.isArray(profile.education) ? profile.education : (typeof profile.education === 'string' ? JSON.parse(profile.education || '[]') : []),
         work_history: Array.isArray(profile.workHistory) ? profile.workHistory : (typeof profile.workHistory === 'string' ? JSON.parse(profile.workHistory || '[]') : []),
-        profile_visibility: profile.profileVisibility || { email: true, phone: true },
+        profile_visibility: profile.profileVisibility || {
+          email: true,
+          phone: true,
+          secondary_phone: true,
+          address: true,
+          education: true,
+          work_history: true,
+          position: true,
+          contact: true,
+          bio: true
+        },
         avatar: profile.avatar || "",
         avatarUrl: profile.avatarUrl || "",
       };
@@ -183,13 +197,17 @@ const ProfileRightCard: React.FC = () => {
       bio: "",
       education: [],
       work_history: [],
-      profile_visibility: {
-        education: true,
-        work_history: true,
-        position: true,
-        contact: true,
-        bio: true
-      },
+              profile_visibility: {
+          education: true,
+          work_history: true,
+          position: true,
+          contact: true,
+          bio: true,
+          phone: true,
+          secondary_phone: true,
+          address: true,
+          email: true
+        },
       avatar: "",
       avatarUrl: "",
     };
@@ -614,6 +632,7 @@ const ProfileRightCard: React.FC = () => {
         phoneCountryCode: profileData.phone_country_code,
         phoneType: profileData.phone_type,
         secondaryPhone: profileData.secondary_phone,
+        secondaryPhoneType: profileData.secondary_phone_type,
         streetAddress: profileData.street_address,
         apartmentSuite: profileData.apartment_suite,
         city: profileData.city,

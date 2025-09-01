@@ -447,6 +447,8 @@ def profile_view(request: HttpRequest) -> JsonResponse:
                 user_profile.phone_type = data["phone_type"]
             if "secondary_phone" in data:
                 user_profile.secondary_phone = data["secondary_phone"]
+            if "secondary_phone_type" in data:
+                user_profile.secondary_phone_type = data["secondary_phone_type"]
             if "street_address" in data:
                 user_profile.street_address = data["street_address"]
             if "apartment_suite" in data:
@@ -494,6 +496,8 @@ def profile_view(request: HttpRequest) -> JsonResponse:
                         "phone_country_code": user_profile.phone_country_code or "+1",
                         "phone_type": user_profile.phone_type or "mobile",
                         "secondary_phone": user_profile.secondary_phone or "",
+                        "secondary_phone_type": user_profile.secondary_phone_type
+                        or "mobile",
                         "street_address": user_profile.street_address or "",
                         "apartment_suite": user_profile.apartment_suite or "",
                         "city": user_profile.city or "",
@@ -576,6 +580,7 @@ def profile_update_view(request: HttpRequest) -> JsonResponse:
             "phone_country_code",
             "phone_type",
             "secondary_phone",
+            "secondary_phone_type",
             "street_address",
             "apartment_suite",
             "city",
@@ -622,6 +627,8 @@ def profile_update_view(request: HttpRequest) -> JsonResponse:
                     "phone_country_code": user_profile.phone_country_code or "+1",
                     "phone_type": user_profile.phone_type or "mobile",
                     "secondary_phone": user_profile.secondary_phone or "",
+                    "secondary_phone_type": user_profile.secondary_phone_type
+                    or "mobile",
                     "street_address": user_profile.street_address or "",
                     "apartment_suite": user_profile.apartment_suite or "",
                     "city": user_profile.city or "",

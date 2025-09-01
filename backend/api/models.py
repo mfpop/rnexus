@@ -66,6 +66,18 @@ class UserProfile(models.Model):
         null=True,
     )
     secondary_phone = models.CharField(max_length=20, blank=True, null=True)
+    secondary_phone_type = models.CharField(
+        max_length=10,
+        choices=[
+            ("mobile", "Mobile"),
+            ("home", "Home"),
+            ("work", "Work"),
+            ("other", "Other"),
+        ],
+        default="mobile",
+        blank=True,
+        null=True,
+    )
 
     # Address information
     street_address = models.CharField(max_length=255, blank=True, null=True)

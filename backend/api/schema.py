@@ -59,6 +59,7 @@ class UserProfileType(DjangoObjectType):
             "phone_country_code",
             "phone_type",
             "secondary_phone",
+            "secondary_phone_type",
             "street_address",
             "apartment_suite",
             "city",
@@ -120,6 +121,9 @@ class UserProfileType(DjangoObjectType):
 
     def resolve_secondaryPhone(self, info):
         return getattr(self, "secondary_phone", "")
+
+    def resolve_secondaryPhoneType(self, info):
+        return getattr(self, "secondary_phone_type", "")
 
     def resolve_streetAddress(self, info):
         return getattr(self, "street_address", "")
@@ -743,6 +747,7 @@ class UpdateUserProfile(graphene.Mutation):
                 "phoneCountryCode",
                 "phoneType",
                 "secondaryPhone",
+                "secondaryPhoneType",
                 "streetAddress",
                 "apartmentSuite",
                 "city",
@@ -765,6 +770,7 @@ class UpdateUserProfile(graphene.Mutation):
                         .replace("phoneCountryCode", "phone_country_code")
                         .replace("phoneType", "phone_type")
                         .replace("secondaryPhone", "secondary_phone")
+                        .replace("secondaryPhoneType", "secondary_phone_type")
                         .replace("streetAddress", "street_address")
                         .replace("apartmentSuite", "apartment_suite")
                         .replace("stateProvince", "state_province")

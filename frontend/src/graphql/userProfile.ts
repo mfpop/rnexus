@@ -54,6 +54,7 @@ export const UPDATE_USER_PROFILE = gql`
     $phoneCountryCode: String
     $phoneType: String
     $secondaryPhone: String
+    $secondaryPhoneType: String
     $streetAddress: String
     $apartmentSuite: String
     $city: String
@@ -79,6 +80,7 @@ export const UPDATE_USER_PROFILE = gql`
       phoneCountryCode: $phoneCountryCode
       phoneType: $phoneType
       secondaryPhone: $secondaryPhone
+      secondaryPhoneType: $secondaryPhoneType
       streetAddress: $streetAddress
       apartmentSuite: $apartmentSuite
       city: $city
@@ -110,6 +112,7 @@ export const UPDATE_USER_PROFILE = gql`
         phoneCountryCode
         phoneType
         secondaryPhone
+        secondaryPhoneType
         streetAddress
         apartmentSuite
         city
