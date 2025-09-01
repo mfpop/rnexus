@@ -33,7 +33,7 @@ export const PaginationProvider: React.FC<PaginationProviderProps> = ({ children
     currentPage: 1,
     totalPages: 1,
     totalRecords: 0,
-    recordsPerPage: 10,
+    recordsPerPage: 12,
   });
 
   const handlePageChange = (page: number) => {

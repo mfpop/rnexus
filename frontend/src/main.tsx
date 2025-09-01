@@ -6,12 +6,15 @@ import "./app.css";
 import { ApolloProvider } from "@apollo/client";
 import client from "./apollo";
 import { AuthProvider } from "./contexts/AuthContext";
+import { PaginationProvider } from "./contexts/PaginationContext";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ApolloProvider client={client}>
       <AuthProvider>
-        <App />
+        <PaginationProvider>
+          <App />
+        </PaginationProvider>
       </AuthProvider>
     </ApolloProvider>
   </React.StrictMode>,

@@ -9,6 +9,7 @@ import React, {
 import { useQuery } from '@apollo/client';
 import { GET_ALL_USERS_WITH_AVATARS } from '../graphql/chatQueries';
 import { useAuth } from './AuthContext';
+import { usePagination } from './PaginationContext';
 
 // Contact interface for chat
 export interface Contact {
@@ -40,7 +41,7 @@ interface ChatContextType {
   currentPage: number;
   setCurrentPage: (page: number) => void;
   totalPages: number;
-  itemsPerPage: number;
+  recordsPerPage: number;
   activeTab: "contacts" | "groups" | "favorites";
   setActiveTab: (tab: "contacts" | "groups" | "favorites") => void;
   // Profile view state
@@ -438,39 +439,21 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
   const [activeTab, setActiveTab] = useState<
     "contacts" | "groups" | "favorites"
   >("contacts");
-  const [itemsPerPage, setItemsPerPage] = useState(12); // Set a reasonable default
   const [showProfileView, setShowProfileView] = useState(false);
 
   // Get current user from auth context
   const { user: currentUser } = useAuth();
 
+  // Use pagination context instead of local state
+  const { currentPage, setCurrentPage, recordsPerPage, setPaginationData } = usePagination();
+
   // Fetch real user data from GraphQL
   const { data: usersData, loading: usersLoading, error: usersError } = useQuery(GET_ALL_USERS_WITH_AVATARS);
 
-  // Simplified items per page calculation - use a fixed reasonable value
-  const calculateOptimalItemsPerPage = useCallback(() => {
-    // Use a fixed value for now to ensure reliability
-    return 12;
-  }, []);
 
-  useEffect(() => {
-    const updateItemsPerPage = () => {
-      setItemsPerPage(calculateOptimalItemsPerPage());
-    };
-
-    updateItemsPerPage();
-
-    // Add resize listener to recalculate when window size changes
-    window.addEventListener("resize", updateItemsPerPage);
-
-    return () => {
-      window.removeEventListener("resize", updateItemsPerPage);
-    };
-  }, [calculateOptimalItemsPerPage]);
 
   // Transform GraphQL user data to Contact format
   const realUsers: Contact[] = React.useMemo(() => {
@@ -528,23 +511,35 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   const currentData = getCurrentData();
-  const totalPages = Math.ceil(currentData.length / itemsPerPage);
+  const totalPages = Math.ceil(currentData.length / recordsPerPage);
 
   const paginatedUsers = currentData.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
+    (currentPage - 1) * recordsPerPage,
+    currentPage * recordsPerPage,
   );
 
   // Debug logging to see pagination values
   console.log('ChatContext - Pagination Debug:', {
     currentDataLength: currentData.length,
     currentPage,
-    itemsPerPage,
+    recordsPerPage,
     totalPages,
     paginatedUsersLength: paginatedUsers.length,
-    sliceStart: (currentPage - 1) * itemsPerPage,
-    sliceEnd: currentPage * itemsPerPage
+    sliceStart: (currentPage - 1) * recordsPerPage,
+    sliceEnd: currentPage * recordsPerPage
   });
+
+  // Update pagination context when data changes
+  useEffect(() => {
+    if (currentData.length > 0) {
+      setPaginationData({
+        currentPage,
+        totalPages,
+        totalRecords: currentData.length,
+        recordsPerPage,
+      });
+    }
+  }, [currentData.length, currentPage, totalPages, recordsPerPage, setPaginationData]);
 
   const value: ChatContextType = {
     selectedContact,
@@ -557,7 +552,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
     currentPage,
     setCurrentPage,
     totalPages,
-    itemsPerPage,
+    recordsPerPage,
     activeTab,
     setActiveTab,
     showProfileView,
