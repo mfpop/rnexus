@@ -98,7 +98,7 @@
 <body>
     <div class="container">
         <h1>🔧 Address States Fix Test</h1>
-        
+
         <div class="status error">
             <strong>Issue:</strong> State/Province dropdown not showing any options when a country is selected.
         </div>
@@ -280,7 +280,7 @@ const { data: statesData, loading: statesLoading } = useQuery(
         function testStatesFix() {
             const results = document.getElementById('states-fix-results');
             results.innerHTML = '<h3>States Fix Test Results:</h3>';
-            
+
             const testCases = [
                 { name: 'Country Selection', expected: 'Countries load in dropdown' },
                 { name: 'State Loading', expected: 'States load when country selected' },
@@ -289,7 +289,7 @@ const { data: statesData, loading: statesLoading } = useQuery(
                 { name: 'Address Summary', expected: 'Complete address displays correctly' },
                 { name: 'Cascading Reset', expected: 'Dependent fields reset properly' }
             ];
-            
+
             testCases.forEach((testCase, index) => {
                 results.innerHTML += `
                     <div class="test-result pass">

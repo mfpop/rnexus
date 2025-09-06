@@ -163,7 +163,7 @@
 <body>
     <div class="container">
         <h1>🏠 Address Card Component Test</h1>
-        
+
         <div class="status info">
             <strong>Component:</strong> AddressCard - A clean, reusable address input component with cascading dropdowns and validation.
         </div>
@@ -409,7 +409,7 @@ const ProfilePage = () => {
         function testAddressCard() {
             const results = document.getElementById('address-test-results');
             results.innerHTML = '<h3>Address Card Test Results:</h3>';
-            
+
             const testCases = [
                 { name: 'Cascading Dropdowns', expected: 'Country → State → City → ZIP dependency chain' },
                 { name: 'Loading States', expected: 'Visual feedback during data fetching' },
@@ -418,7 +418,7 @@ const ProfilePage = () => {
                 { name: 'Address Summary', expected: 'Live preview of complete address' },
                 { name: 'Type Safety', expected: 'TypeScript interfaces for all data structures' }
             ];
-            
+
             testCases.forEach((testCase, index) => {
                 results.innerHTML += `
                     <div class="test-result pass">

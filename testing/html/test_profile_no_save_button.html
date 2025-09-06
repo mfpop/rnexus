@@ -162,7 +162,7 @@
 <body>
     <div class="container">
         <h1>💾 Profile No Save Button Test</h1>
-        
+
         <div class="status info">
             <strong>Feature Request:</strong> Remove save button from profile details since data is automatically saved to database.
         </div>
@@ -241,7 +241,7 @@ const validateProfile = () => { ... }
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="card">
                         <div class="card-header">Address</div>
                         <div class="card-content">
@@ -255,7 +255,7 @@ const validateProfile = () => { ... }
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="card">
                         <div class="card-header">Contact Information</div>
                         <div class="card-content">
@@ -270,7 +270,7 @@ const validateProfile = () => { ... }
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Bottom Row: Bio Card - Full Space -->
                 <div class="bio-card">
                     <div class="bio-header">Bio</div>
@@ -278,7 +278,7 @@ const validateProfile = () => { ... }
                         <textarea class="bio-textarea" placeholder="Tell us about yourself..."></textarea>
                     </div>
                 </div>
-                
+
                 <!-- No Save Button Notice -->
                 <div class="no-save-button">
                     ✅ No Save Button - Data Automatically Saved
@@ -365,7 +365,7 @@ const validateProfile = () => { ... }
         function testNoSaveButton() {
             const results = document.getElementById('no-save-test-results');
             results.innerHTML = '<h3>No Save Button Test Results:</h3>';
-            
+
             const testCases = [
                 { name: 'Save Button Removed', expected: 'No "Save Changes" button visible' },
                 { name: 'Form Structure Updated', expected: 'Changed from form to div container' },
@@ -373,7 +373,7 @@ const validateProfile = () => { ... }
                 { name: 'Password Change Preserved', expected: 'Security tab still has password change button' },
                 { name: 'Clean Interface', expected: 'Streamlined UI without save buttons' }
             ];
-            
+
             testCases.forEach((testCase, index) => {
                 results.innerHTML += `
                     <div class="test-result pass">

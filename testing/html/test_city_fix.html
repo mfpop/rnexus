@@ -126,7 +126,7 @@
 <body>
     <div class="container">
         <h1>🏙️ City Dropdown Fix Test</h1>
-        
+
         <div class="status error">
             <strong>Issue:</strong> City dropdown not showing any options when a state/province is selected.
         </div>
@@ -373,7 +373,7 @@ const handleZipcodeChange = (zipcodeId: string) => {
         function testCityFix() {
             const results = document.getElementById('city-fix-results');
             results.innerHTML = '<h3>City Fix Test Results:</h3>';
-            
+
             const testCases = [
                 { name: 'Country Selection', expected: 'Countries load in dropdown' },
                 { name: 'State Loading', expected: 'States load when country selected' },
@@ -382,7 +382,7 @@ const handleZipcodeChange = (zipcodeId: string) => {
                 { name: 'Address Summary', expected: 'Complete address displays correctly' },
                 { name: 'Data Consistency', expected: 'All IDs stored correctly' }
             ];
-            
+
             testCases.forEach((testCase, index) => {
                 results.innerHTML += `
                     <div class="test-result pass">

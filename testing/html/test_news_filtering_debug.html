@@ -140,7 +140,7 @@
             <h1>News Filtering Debug Test</h1>
             <p>Testing the news tabs filtering functionality for All, News, Communications, and Alerts</p>
         </div>
-        
+
         <div class="content">
             <!-- Tab Filtering Test -->
             <div class="test-section">
@@ -148,7 +148,7 @@
                 <div class="test-description">
                     Test the tab filtering functionality. Click on different tabs to see if the filtering works correctly.
                 </div>
-                
+
                 <div class="tab-container">
                     <button class="tab active" onclick="filterByType('all')">
                         All <span id="all-count">(0)</span>
@@ -163,7 +163,7 @@
                         Alerts <span id="alert-count">(0)</span>
                     </button>
                 </div>
-                
+
                 <div class="debug-info">
                     <div class="debug-title">Debug Information</div>
                     <div id="debug-output">
@@ -182,14 +182,14 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Mock Data Display -->
             <div class="test-section">
                 <div class="test-title">Mock Data Display</div>
                 <div class="test-description">
                     Sample data to test filtering with different types
                 </div>
-                
+
                 <div class="mock-data">
                     <div class="mock-item">
                         <span>Company Quarterly Report</span>
@@ -217,14 +217,14 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Expected Behavior -->
             <div class="test-section">
                 <div class="test-title">Expected Behavior</div>
                 <div class="test-description">
                     How the filtering should work:
                 </div>
-                
+
                 <div class="debug-info">
                     <div class="debug-item">
                         <span class="status-indicator status-success"></span>
@@ -244,14 +244,14 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Common Issues -->
             <div class="test-section">
                 <div class="test-title">Common Issues to Check</div>
                 <div class="test-description">
                     Issues that might cause filtering problems:
                 </div>
-                
+
                 <div class="debug-info">
                     <div class="debug-item">
                         <span class="status-indicator status-error"></span>
@@ -273,7 +273,7 @@
             </div>
         </div>
     </div>
-    
+
     <script>
         // Mock data
         const mockData = [
@@ -284,46 +284,45 @@
             { id: 5, title: "Policy Update Notice", type: "communication" },
             { id: 6, title: "Security Breach Alert", type: "alert" }
         ];
-        
+
         let currentFilter = 'all';
         let filteredData = [...mockData];
-        
+
         function updateDisplay() {
             // Update counts
             document.getElementById('all-count').textContent = `(${mockData.length})`;
             document.getElementById('news-count').textContent = `(${mockData.filter(item => item.type === 'news').length})`;
             document.getElementById('communication-count').textContent = `(${mockData.filter(item => item.type === 'communication').length})`;
             document.getElementById('alert-count').textContent = `(${mockData.filter(item => item.type === 'alert').length})`;
-            
+
             // Update debug info
             document.getElementById('current-filter').textContent = currentFilter;
             document.getElementById('filtered-count').textContent = filteredData.length;
             document.getElementById('total-count').textContent = mockData.length;
-            
+
             // Update tab states
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.classList.remove('active');
             });
             event.target.classList.add('active');
         }
-        
+
         function filterByType(type) {
             console.log('Filtering by type:', type);
             currentFilter = type;
-            
+
             if (type === 'all') {
                 filteredData = [...mockData];
             } else {
                 filteredData = mockData.filter(item => item.type === type);
             }
-            
+
             console.log('Filtered data:', filteredData);
             updateDisplay();
         }
-        
+
         // Initialize
         updateDisplay();
     </script>
 </body>
 </html>
-

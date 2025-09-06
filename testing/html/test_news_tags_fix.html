@@ -63,7 +63,7 @@
 <body>
     <div class="container">
         <h1>🔧 News Tags Fix Test</h1>
-        
+
         <div class="status info">
             <strong>Issue Fixed:</strong> TypeError: selectedUpdate.tags.map is not a function
         </div>
@@ -187,7 +187,7 @@ related: Array.isArray(rawUpdate.related) ? rawUpdate.related : [],
                     // Simulate the fixed logic
                     const isSafe = testCase.tags && Array.isArray(testCase.tags) && testCase.tags.length > 0;
                     const result = isSafe ? 'safe' : 'safe (no render)';
-                    
+
                     results.innerHTML += `
                         <div class="test-result ${result === 'safe' ? 'pass' : 'pass'}">
                             ✅ Test ${index + 1}: tags = ${JSON.stringify(testCase.tags)} → ${result}

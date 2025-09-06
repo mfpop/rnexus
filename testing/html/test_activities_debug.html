@@ -8,13 +8,13 @@
 <body>
     <h1>Activities GraphQL Debug Test</h1>
     <div id="result">Loading...</div>
-    
+
     <script>
         // Test GraphQL query from frontend
         async function testActivitiesQuery() {
             try {
                 console.log('Testing GraphQL query...');
-                
+
                 const response = await fetch('http://localhost:8000/graphql/', {
                     method: 'POST',
                     headers: {
@@ -44,29 +44,29 @@
                         }`
                     })
                 });
-                
+
                 console.log('Response status:', response.status);
                 console.log('Response headers:', [...response.headers.entries()]);
-                
+
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                
+
                 const data = await response.json();
                 console.log('GraphQL response:', data);
-                
+
                 if (data.errors) {
                     throw new Error('GraphQL errors: ' + JSON.stringify(data.errors));
                 }
-                
+
                 const activities = data.data.allActivities;
                 console.log('Activities count:', activities.length);
-                
+
                 document.getElementById('result').innerHTML = `
                     <h2>Success! Found ${activities.length} activities:</h2>
                     <pre>${JSON.stringify(activities, null, 2)}</pre>
                 `;
-                
+
             } catch (error) {
                 console.error('Error testing GraphQL:', error);
                 document.getElementById('result').innerHTML = `
@@ -75,7 +75,7 @@
                 `;
             }
         }
-        
+
         // Run test when page loads
         window.addEventListener('load', testActivitiesQuery);
     </script>

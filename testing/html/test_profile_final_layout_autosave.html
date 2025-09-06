@@ -210,7 +210,7 @@
             <h1>Profile Layout & Autosave Test</h1>
             <p>Testing the updated profile page layout with proper space utilization and autosave functionality</p>
         </div>
-        
+
         <div class="content">
             <!-- Layout Test Section -->
             <div class="test-section">
@@ -219,7 +219,7 @@
                     The Bio card and Address card should use all available vertical space without exceeding the screen height.
                     The layout should be responsive and maintain proper proportions.
                 </div>
-                
+
                 <div class="layout-demo">
                     <!-- Left Column -->
                     <div class="left-column">
@@ -245,21 +245,21 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Bio Card (Full Height) -->
                         <div class="card bio-card">
                             <div class="card-header">
                                 <h3 class="card-title">Bio</h3>
                             </div>
                             <div class="card-content" style="flex: 1; display: flex; flex-direction: column;">
-                                <textarea 
-                                    class="bio-textarea" 
+                                <textarea
+                                    class="bio-textarea"
                                     placeholder="Tell us about yourself... This textarea should fill all available vertical space."
                                 ></textarea>
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Right Column -->
                     <div class="right-column">
                         <!-- Address Card (Full Height) -->
@@ -312,7 +312,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Contact Information Card (Compact) -->
                         <div class="card contact-card">
                             <div class="card-header">
@@ -338,14 +338,14 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Autosave Test Section -->
             <div class="test-section">
                 <div class="test-title">Autosave Functionality Test</div>
                 <div class="test-description">
                     The autosave should work properly with the following features:
                 </div>
-                
+
                 <ul class="test-checklist">
                     <li>
                         <span class="checkmark">✓</span>
@@ -373,14 +373,14 @@
                     </li>
                 </ul>
             </div>
-            
+
             <!-- Implementation Details -->
             <div class="test-section">
                 <div class="test-title">Implementation Details</div>
                 <div class="test-description">
                     Key improvements made to the profile page:
                 </div>
-                
+
                 <ul class="test-checklist">
                     <li>
                         <span class="checkmark">✓</span>
@@ -418,37 +418,37 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Autosave Status Indicator -->
     <div id="autosaveStatus" class="autosave-status">
         <span id="autosaveText">Saved</span>
     </div>
-    
+
     <script>
         // Simulate autosave functionality for demo
         let autosaveTimeout;
         let isAutosaving = false;
-        
+
         function showAutosaveStatus(text, type = 'success') {
             const status = document.getElementById('autosaveStatus');
             const textEl = document.getElementById('autosaveText');
-            
+
             textEl.textContent = text;
             status.className = `autosave-status show ${type}`;
-            
+
             if (type === 'success') {
                 setTimeout(() => {
                     status.classList.remove('show');
                 }, 3000);
             }
         }
-        
+
         function simulateAutosave() {
             if (isAutosaving) return;
-            
+
             isAutosaving = true;
             showAutosaveStatus('Saving...', 'saving');
-            
+
             // Simulate API call
             setTimeout(() => {
                 isAutosaving = false;
@@ -456,16 +456,16 @@
                 showAutosaveStatus(`Saved ${now.toLocaleTimeString()}`, 'success');
             }, 1000);
         }
-        
+
         // Add event listeners to form inputs
         document.addEventListener('DOMContentLoaded', function() {
             const inputs = document.querySelectorAll('input, textarea, select');
-            
+
             inputs.forEach(input => {
                 input.addEventListener('input', function() {
                     // Clear existing timeout
                     clearTimeout(autosaveTimeout);
-                    
+
                     // Set new timeout for autosave
                     autosaveTimeout = setTimeout(() => {
                         simulateAutosave();

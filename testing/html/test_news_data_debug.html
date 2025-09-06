@@ -110,7 +110,7 @@
             <h1>News Data Debug Test</h1>
             <p>Testing if news data is being loaded and why tabs aren't working</p>
         </div>
-        
+
         <div class="content">
             <!-- Data Loading Test -->
             <div class="test-section">
@@ -118,7 +118,7 @@
                 <div class="test-description">
                     Check if news data is being loaded from the GraphQL API
                 </div>
-                
+
                 <div class="debug-info">
                     <div class="debug-title">Console Commands to Run</div>
                     <div class="debug-item">
@@ -139,14 +139,14 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Expected Data Structure -->
             <div class="test-section">
                 <div class="test-title">Expected Data Structure</div>
                 <div class="test-description">
                     The data should look like this:
                 </div>
-                
+
                 <div class="code-block">
 {
   "allUpdates": [
@@ -162,7 +162,7 @@
       "isActive": true
     },
     {
-      "id": "2", 
+      "id": "2",
       "type": "communication",
       "title": "Team Meeting",
       "summary": "Weekly team meeting",
@@ -176,14 +176,14 @@
 }
                 </div>
             </div>
-            
+
             <!-- Common Issues -->
             <div class="test-section">
                 <div class="test-title">Common Issues & Solutions</div>
                 <div class="test-description">
                     Issues that might cause tab filtering problems:
                 </div>
-                
+
                 <div class="debug-info">
                     <div class="debug-item">
                         <span class="status-indicator status-error"></span>
@@ -203,14 +203,14 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Database Check -->
             <div class="test-section">
                 <div class="test-title">Database Check</div>
                 <div class="test-description">
                     If no data is found, check the database:
                 </div>
-                
+
                 <div class="code-block">
 # Check if there are any updates in the database
 python manage.py shell
@@ -222,14 +222,14 @@ for update in updates[:5]:
     print(f"ID: {update.id}, Type: {update.type}, Title: {update.title}")
                 </div>
             </div>
-            
+
             <!-- Quick Fixes -->
             <div class="test-section">
                 <div class="test-title">Quick Fixes</div>
                 <div class="test-description">
                     Try these fixes based on what you find:
                 </div>
-                
+
                 <div class="debug-info">
                     <div class="debug-item">
                         <span class="status-indicator status-success"></span>
@@ -251,11 +251,11 @@ for update in updates[:5]:
             </div>
         </div>
     </div>
-    
+
     <script>
         console.log('News Data Debug Test loaded');
         console.log('Open the news page and check the console for debugging information');
-        
+
         // Instructions for user
         console.log('=== DEBUGGING INSTRUCTIONS ===');
         console.log('1. Open the news page');
@@ -272,4 +272,3 @@ for update in updates[:5]:
     </script>
 </body>
 </html>
-

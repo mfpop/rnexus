@@ -153,7 +153,7 @@
 <body>
     <div class="container">
         <h1>📝 Profile Bio Full Space Test</h1>
-        
+
         <div class="status info">
             <strong>Layout Request:</strong> Bio card must fill all available space - both horizontal and vertical.
         </div>
@@ -187,7 +187,7 @@ case 'personal':
         {/* Address Card */}
         {/* Contact Card */}
       &lt;/div&gt;
-      
+
       {/* Bottom Row: Bio Card - Full Width and Height */}
       &lt;div className="flex-1 bg-white rounded-lg border border-gray-200 flex flex-col"&gt;
         &lt;div className="p-4 border-b border-gray-200"&gt;
@@ -238,7 +238,7 @@ w-full h-full ... resize-none
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="card">
                         <div class="card-header">Address</div>
                         <div class="card-content">
@@ -252,7 +252,7 @@ w-full h-full ... resize-none
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="card">
                         <div class="card-header">Contact Information</div>
                         <div class="card-content">
@@ -267,7 +267,7 @@ w-full h-full ... resize-none
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Bottom Row: Bio Card - Full Space -->
                 <div class="bio-card">
                     <div class="bio-header">Bio</div>
@@ -350,7 +350,7 @@ w-full h-full ... resize-none
         function testBioLayout() {
             const results = document.getElementById('bio-test-results');
             results.innerHTML = '<h3>Bio Layout Test Results:</h3>';
-            
+
             const testCases = [
                 { name: 'Full Width', expected: 'Bio card spans entire container width' },
                 { name: 'Full Height', expected: 'Bio card fills remaining vertical space' },
@@ -358,7 +358,7 @@ w-full h-full ... resize-none
                 { name: 'Responsive Design', expected: 'Layout adapts to screen size' },
                 { name: 'Clean Spacing', expected: 'Proper spacing between elements' }
             ];
-            
+
             testCases.forEach((testCase, index) => {
                 results.innerHTML += `
                     <div class="test-result pass">

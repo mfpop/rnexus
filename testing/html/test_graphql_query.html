@@ -87,26 +87,26 @@
             <h1>GraphQL Query Test</h1>
             <p>Test the GraphQL query directly to see if data is being fetched</p>
         </div>
-        
+
         <div class="content">
             <div class="test-section">
                 <div class="test-title">GraphQL Query Test</div>
                 <div class="test-description">
                     Click the button below to test the GraphQL query directly
                 </div>
-                
+
                 <button class="button" onclick="testGraphQLQuery()">Test GraphQL Query</button>
                 <button class="button" onclick="clearResults()">Clear Results</button>
-                
+
                 <div id="results" class="result" style="display: none;"></div>
             </div>
-            
+
             <div class="test-section">
                 <div class="test-title">Expected Query</div>
                 <div class="test-description">
                     The query being tested:
                 </div>
-                
+
                 <div class="code-block">
 query GetAllUpdates {
   allUpdates {
@@ -135,30 +135,30 @@ query GetAllUpdates {
 }
                 </div>
             </div>
-            
+
             <div class="test-section">
                 <div class="test-title">Expected Results</div>
                 <div class="test-description">
                     Based on the database check, we should see:
                 </div>
-                
+
                 <div class="code-block">
 - 15 total updates
 - 8 news updates
-- 4 communication updates  
+- 4 communication updates
 - 3 alert updates
 - All updates should be active (isActive: true)
                 </div>
             </div>
         </div>
     </div>
-    
+
     <script>
         async function testGraphQLQuery() {
             const resultsDiv = document.getElementById('results');
             resultsDiv.style.display = 'block';
             resultsDiv.innerHTML = 'Testing GraphQL query...';
-            
+
             try {
                 const query = `
                     query GetAllUpdates {
@@ -187,7 +187,7 @@ query GetAllUpdates {
                         }
                     }
                 `;
-                
+
                 const response = await fetch('http://localhost:8000/graphql/', {
                     method: 'POST',
                     headers: {
@@ -197,31 +197,31 @@ query GetAllUpdates {
                         query: query
                     })
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.errors) {
                     resultsDiv.innerHTML = `<strong>GraphQL Errors:</strong>\n${JSON.stringify(data.errors, null, 2)}`;
                     return;
                 }
-                
+
                 const updates = data.data.allUpdates || [];
-                
+
                 let result = `<strong>Query Successful!</strong>\n\n`;
                 result += `Total updates: ${updates.length}\n\n`;
-                
+
                 if (updates.length > 0) {
                     // Count by type
                     const typeCounts = {};
                     updates.forEach(update => {
                         typeCounts[update.type] = (typeCounts[update.type] || 0) + 1;
                     });
-                    
+
                     result += `Updates by type:\n`;
                     Object.entries(typeCounts).forEach(([type, count]) => {
                         result += `  ${type}: ${count}\n`;
                     });
-                    
+
                     result += `\nFirst 3 updates:\n`;
                     updates.slice(0, 3).forEach((update, index) => {
                         result += `\n${index + 1}. ${update.title}\n`;
@@ -233,14 +233,14 @@ query GetAllUpdates {
                 } else {
                     result += `No updates found in GraphQL response.`;
                 }
-                
+
                 resultsDiv.innerHTML = result.replace(/\n/g, '<br>');
-                
+
             } catch (error) {
                 resultsDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
             }
         }
-        
+
         function clearResults() {
             const resultsDiv = document.getElementById('results');
             resultsDiv.style.display = 'none';
@@ -249,4 +249,3 @@ query GetAllUpdates {
     </script>
 </body>
 </html>
-

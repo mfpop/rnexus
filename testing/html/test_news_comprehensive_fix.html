@@ -78,7 +78,7 @@
 <body>
     <div class="container">
         <h1>🔧 News Page Comprehensive Fix Test</h1>
-        
+
         <div class="status error">
             <strong>Issues Identified:</strong>
             <ul>
@@ -95,7 +95,7 @@
                 <p><strong>Cause:</strong> Calling .map() on selectedUpdate.tags without checking if it's an array</p>
                 <p><strong>Impact:</strong> Component crashes when rendering news articles</p>
             </div>
-            
+
             <div class="error-list">
                 <h3>Error 2: Context Provider Issue</h3>
                 <p><strong>Location:</strong> NewsLeftCardWrapper.tsx:11</p>
@@ -215,8 +215,8 @@ related: Array.isArray(rawUpdate.related) ? rawUpdate.related : [],
 // Debug logging in NewsRightCard.tsx
 React.useEffect(() => {
   if (selectedUpdate) {
-    console.log('Selected update tags:', selectedUpdate.tags, 
-                'Type:', typeof selectedUpdate.tags, 
+    console.log('Selected update tags:', selectedUpdate.tags,
+                'Type:', typeof selectedUpdate.tags,
                 'Is Array:', Array.isArray(selectedUpdate.tags));
   }
 }, [selectedUpdate]);
@@ -247,7 +247,7 @@ React.useEffect(() => {
         <button onclick="window.open('http://localhost:5174/news', '_blank')">
             🚀 Test News Page
         </button>
-        
+
         <button onclick="window.open('http://localhost:8000/graphql', '_blank')">
             🔍 Open GraphQL Playground
         </button>
@@ -274,7 +274,7 @@ React.useEffect(() => {
                     // Test the fixed logic
                     const isSafe = testCase.value && Array.isArray(testCase.value) && testCase.value.length > 0;
                     const result = isSafe ? 'safe to map' : 'safe (no render)';
-                    
+
                     results.innerHTML += `
                         <div class="test-result ${result.includes('safe') ? 'pass' : 'fail'}">
                             ✅ Test ${index + 1}: ${testCase.name} → ${result}

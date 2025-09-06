@@ -109,7 +109,7 @@
 <body>
     <div class="container">
         <h1>Profile Final GraphQL Fixes - Complete Resolution</h1>
-        
+
         <div class="error-section">
             <div class="error-title">❌ Previous Errors</div>
             <div class="error-description">
@@ -151,7 +151,7 @@ allZipcodes(city_id: $cityId) { ... } // ❌ Wrong
 // Fixed in /frontend/src/graphql/userProfile.ts
 // Removed these invalid parameters:
 $countryId: ID     // ❌ Not accepted by backend
-$stateId: ID       // ❌ Not accepted by backend  
+$stateId: ID       // ❌ Not accepted by backend
 $cityId: ID        // ❌ Not accepted by backend
 $zipcodeId: ID     // ❌ Not accepted by backend
 

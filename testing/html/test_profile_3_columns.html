@@ -111,7 +111,7 @@
 <body>
     <div class="container">
         <h1>📊 Profile 3-Column Layout Test</h1>
-        
+
         <div class="status info">
             <strong>Layout Request:</strong> Profile page personal tab should display Personal Information, Contact, and Address cards in 3 columns side by side.
         </div>
@@ -181,7 +181,7 @@ case 'personal':
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="card">
                     <div class="card-header">Address</div>
                     <div class="card-content">
@@ -199,7 +199,7 @@ case 'personal':
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="card">
                     <div class="card-header">Contact Information</div>
                     <div class="card-content">
@@ -293,14 +293,14 @@ case 'personal':
         function testLayout() {
             const results = document.getElementById('layout-test-results');
             results.innerHTML = '<h3>Layout Test Results:</h3>';
-            
+
             const testCases = [
                 { name: 'Grid Layout', expected: '3 columns on desktop, 1 column on mobile' },
                 { name: 'Card Spacing', expected: 'Proper gap between cards' },
                 { name: 'Form Fields', expected: 'Single column within each card' },
                 { name: 'Responsive Design', expected: 'Adapts to screen size' }
             ];
-            
+
             testCases.forEach((testCase, index) => {
                 results.innerHTML += `
                     <div class="test-result pass">

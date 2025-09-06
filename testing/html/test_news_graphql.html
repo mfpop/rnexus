@@ -12,7 +12,7 @@
     <script>
         async function testGraphQL() {
             const output = document.getElementById('output');
-            
+
             // Test the GET_ALL_UPDATES query
             const query = `
                 query GetAllUpdates {
@@ -53,7 +53,7 @@
                 });
 
                 const result = await response.json();
-                
+
                 output.innerHTML = `
                     <h2>Response Status: ${response.status}</h2>
                     <h3>Response:</h3>

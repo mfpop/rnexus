@@ -63,7 +63,7 @@
 <body>
     <div class="container">
         <h1>📰 News Page Restoration Test</h1>
-        
+
         <div class="status info">
             <strong>Test Purpose:</strong> Verify that the news page has been properly restored and is functioning correctly.
         </div>
@@ -184,7 +184,7 @@
         <button onclick="window.open('http://localhost:5173/news', '_blank')">
             🚀 Open News Page
         </button>
-        
+
         <button onclick="window.open('http://localhost:8000/graphql', '_blank')">
             🔍 Open GraphQL Playground
         </button>
@@ -194,7 +194,7 @@
         // Simple test to check if servers are running
         async function testServers() {
             const results = document.getElementById('server-test-results');
-            
+
             try {
                 // Test frontend
                 const frontendResponse = await fetch('http://localhost:5173');
@@ -204,7 +204,7 @@
             } catch (error) {
                 results.innerHTML += '<div class="test-result fail">❌ Frontend server not running on port 5173</div>';
             }
-            
+
             try {
                 // Test backend
                 const backendResponse = await fetch('http://localhost:8000/graphql', {
@@ -219,7 +219,7 @@
                 results.innerHTML += '<div class="test-result fail">❌ Backend server not running on port 8000</div>';
             }
         }
-        
+
         // Add server test section
         document.addEventListener('DOMContentLoaded', function() {
             const testSection = document.createElement('div');

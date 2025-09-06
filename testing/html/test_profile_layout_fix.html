@@ -90,7 +90,7 @@
 <body>
     <div class="container">
         <h1>🔧 Profile Layout Fix Test</h1>
-        
+
         <div class="status info">
             <strong>Issue Fixed:</strong> Profile page personal tab cards (Personal Information, Contact, Address) were displaying side by side instead of stacked vertically.
         </div>
@@ -218,7 +218,7 @@ case 'personal':
 
 // Applied to all tab containers:
 - Personal tab: flex flex-col space-y-6
-- Professional tab: flex flex-col space-y-6  
+- Professional tab: flex flex-col space-y-6
 - Education tab: flex flex-col space-y-6
 - Experience tab: flex flex-col space-y-6
 - Security tab: flex flex-col space-y-6
@@ -240,7 +240,7 @@ case 'personal':
         function testLayout() {
             const results = document.getElementById('layout-test-results');
             results.innerHTML = '<h3>Layout Test Results:</h3>';
-            
+
             // Simulate checking if elements are stacked vertically
             const testCases = [
                 { name: 'Personal Tab', expected: 'vertical' },
@@ -249,7 +249,7 @@ case 'personal':
                 { name: 'Experience Tab', expected: 'vertical' },
                 { name: 'Security Tab', expected: 'vertical' }
             ];
-            
+
             testCases.forEach((testCase, index) => {
                 results.innerHTML += `
                     <div class="test-result pass">

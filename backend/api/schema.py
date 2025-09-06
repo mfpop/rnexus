@@ -1,16 +1,21 @@
+from typing import Any, List, Optional, Union
+
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
-from django.conf import settings
-from typing import Any, List, Optional, Union
 
 import graphene
 from graphene_django.types import DjangoObjectType
 
-from api.models import (
+from api.models import (  # New streamlined models
     Activity,
+    ActivityCategoryNew,
+    ActivityNew,
     ActivityPriority,
+    ActivityPriorityNew,
     ActivityStatus,
+    ActivityStatusNew,
     Chat,
     City,
     Contact,
@@ -19,6 +24,9 @@ from api.models import (
     Employee,
     Item,
     Message,
+    NewsCategoryNew,
+    NewsStatusNew,
+    NewsUpdateNew,
     Role,
     State,
     SystemMessage,
@@ -28,14 +36,6 @@ from api.models import (
     UpdateLike,
     UserProfile,
     ZipCode,
-    # New streamlined models
-    ActivityCategoryNew,
-    ActivityStatusNew,
-    ActivityPriorityNew,
-    ActivityNew,
-    NewsCategoryNew,
-    NewsStatusNew,
-    NewsUpdateNew,
 )
 
 
@@ -64,7 +64,7 @@ class UserType(DjangoObjectType):
     avatar = graphene.String()
     avatarUrl = graphene.String()
     profile = graphene.Field(lambda: UserProfileType)
-    
+
     # Add position and department from user profile
     position = graphene.String()
     department = graphene.String()
@@ -72,11 +72,11 @@ class UserType(DjangoObjectType):
     def resolve_avatar(self, info):
         """Get avatar filename from user profile"""
         try:
-            profile = getattr(self, 'profile', None)
-            if profile and hasattr(profile, 'avatar'):
-                avatar = getattr(profile, 'avatar', None)
+            profile = getattr(self, "profile", None)
+            if profile and hasattr(profile, "avatar"):
+                avatar = getattr(profile, "avatar", None)
                 if avatar:
-                    return getattr(avatar, 'name', None)
+                    return getattr(avatar, "name", None)
             return None
         except Exception:
             return None
@@ -84,22 +84,22 @@ class UserType(DjangoObjectType):
     def resolve_avatarUrl(self, info):
         """Get full avatar URL from user profile"""
         try:
-            profile = getattr(self, 'profile', None)
-            if profile and hasattr(profile, 'avatar'):
-                avatar = getattr(profile, 'avatar', None)
+            profile = getattr(self, "profile", None)
+            if profile and hasattr(profile, "avatar"):
+                avatar = getattr(profile, "avatar", None)
                 if avatar:
                     # Simple approach: construct URL manually
-                    base_url = 'http://localhost:8000'  # Hardcoded for now
-                    avatar_url = getattr(avatar, 'url', '')
+                    base_url = "http://localhost:8000"  # Hardcoded for now
+                    avatar_url = getattr(avatar, "url", "")
                     url = f"{base_url}{avatar_url}"
-                    username = getattr(self, 'username', 'unknown')
+                    username = getattr(self, "username", "unknown")
                     print(f"🔍 Avatar URL for {username}: {url}")
                     return url
-            username = getattr(self, 'username', 'unknown')
+            username = getattr(self, "username", "unknown")
             print(f"🔍 No avatar for {username}")
             return None
         except Exception as e:
-            username = getattr(self, 'username', 'unknown')
+            username = getattr(self, "username", "unknown")
             print(f"🔍 Error getting avatar URL for {username}: {e}")
             return None
 
@@ -113,9 +113,9 @@ class UserType(DjangoObjectType):
     def resolve_position(self, info):
         """Get position from user profile"""
         try:
-            profile = getattr(self, 'profile', None)
-            if profile and hasattr(profile, 'position'):
-                return getattr(profile, 'position', None)
+            profile = getattr(self, "profile", None)
+            if profile and hasattr(profile, "position"):
+                return getattr(profile, "position", None)
             return None
         except Exception:
             return None
@@ -123,9 +123,9 @@ class UserType(DjangoObjectType):
     def resolve_department(self, info):
         """Get department from user profile"""
         try:
-            profile = getattr(self, 'profile', None)
-            if profile and hasattr(profile, 'department'):
-                return getattr(profile, 'department', None)
+            profile = getattr(self, "profile", None)
+            if profile and hasattr(profile, "department"):
+                return getattr(profile, "department", None)
             return None
         except Exception:
             return None
@@ -196,12 +196,12 @@ class UserProfileType(DjangoObjectType):
         avatar = getattr(self, "avatar", None)
         if avatar:
             # Check if context is available and has build_absolute_uri method
-            if info.context and hasattr(info.context, 'build_absolute_uri'):
+            if info.context and hasattr(info.context, "build_absolute_uri"):
                 return info.context.build_absolute_uri(avatar.url)
             else:
                 # Fallback: construct URL manually
-                base_url = 'http://localhost:8000'  # Hardcoded for now
-                avatar_url = getattr(avatar, 'url', '')
+                base_url = "http://localhost:8000"  # Hardcoded for now
+                avatar_url = getattr(avatar, "url", "")
                 url = f"{base_url}{avatar_url}"
                 return url
         return None
@@ -547,42 +547,42 @@ class UpdateType(DjangoObjectType):
 
     def resolve_likes(self, info):
         """Get likes for this update"""
-        return getattr(self, 'likes', UpdateLike.objects.none()).all()  # type: ignore
+        return getattr(self, "likes", UpdateLike.objects.none()).all()  # type: ignore
 
     def resolve_comments(self, info):
         """Get comments for this update"""
-        return getattr(self, 'comments', UpdateComment.objects.none()).filter(is_active=True)  # type: ignore
+        return getattr(self, "comments", UpdateComment.objects.none()).filter(is_active=True)  # type: ignore
 
     def resolve_bookmarks(self, info):
         """Get bookmarks for this update"""
-        return getattr(self, 'bookmarks', UpdateBookmark.objects.none()).all()  # type: ignore
+        return getattr(self, "bookmarks", UpdateBookmark.objects.none()).all()  # type: ignore
 
     def resolve_likes_count(self, info):
         """Get count of likes for this update"""
-        return getattr(self, 'likes', UpdateLike.objects.none()).filter(is_like=True).count()  # type: ignore
+        return getattr(self, "likes", UpdateLike.objects.none()).filter(is_like=True).count()  # type: ignore
 
     def resolve_dislikes_count(self, info):
         """Get count of dislikes for this update"""
-        return getattr(self, 'likes', UpdateLike.objects.none()).filter(is_like=False).count()  # type: ignore
+        return getattr(self, "likes", UpdateLike.objects.none()).filter(is_like=False).count()  # type: ignore
 
     def resolve_comments_count(self, info):
         """Get count of comments for this update"""
-        return getattr(self, 'comments', UpdateComment.objects.none()).filter(is_active=True).count()  # type: ignore
+        return getattr(self, "comments", UpdateComment.objects.none()).filter(is_active=True).count()  # type: ignore
 
     def resolve_bookmarks_count(self, info):
         """Get count of bookmarks for this update"""
-        return getattr(self, 'bookmarks', UpdateBookmark.objects.none()).count()  # type: ignore
+        return getattr(self, "bookmarks", UpdateBookmark.objects.none()).count()  # type: ignore
 
     def resolve_user_like_status(self, info):
         """Get current user's like status for this update"""
         user = info.context.user
         if not user or user.is_anonymous:
             return None
-        
+
         try:
-            likes_manager = getattr(self, 'likes', UpdateLike.objects.none())  # type: ignore
+            likes_manager = getattr(self, "likes", UpdateLike.objects.none())  # type: ignore
             like = likes_manager.get(user=user)
-            return 'like' if like.is_like else 'dislike'
+            return "like" if like.is_like else "dislike"
         except UpdateLike.DoesNotExist:  # type: ignore
             return None
 
@@ -591,8 +591,8 @@ class UpdateType(DjangoObjectType):
         user = info.context.user
         if not user or user.is_anonymous:
             return False
-        
-        bookmarks_manager = getattr(self, 'bookmarks', UpdateBookmark.objects.none())  # type: ignore
+
+        bookmarks_manager = getattr(self, "bookmarks", UpdateBookmark.objects.none())  # type: ignore
         return bookmarks_manager.filter(user=user).exists()
 
 
@@ -604,14 +604,23 @@ class UpdateLikeType(DjangoObjectType):
     createdAt = graphene.String(source="created_at")
 
     def resolve_created_at(self, info):
-        created_at = getattr(self, 'created_at', None)
+        created_at = getattr(self, "created_at", None)
         return created_at.isoformat() if created_at else ""
 
 
 class UpdateCommentType(DjangoObjectType):
     class Meta:
         model = UpdateComment
-        fields = ("id", "update", "author", "content", "parent_comment", "is_active", "created_at", "updated_at")
+        fields = (
+            "id",
+            "update",
+            "author",
+            "content",
+            "parent_comment",
+            "is_active",
+            "created_at",
+            "updated_at",
+        )
 
     createdAt = graphene.String(source="created_at")
     updatedAt = graphene.String(source="updated_at")
@@ -621,26 +630,34 @@ class UpdateCommentType(DjangoObjectType):
     can_delete = graphene.Boolean()
 
     def resolve_created_at(self, info):
-        created_at = getattr(self, 'created_at', None)
+        created_at = getattr(self, "created_at", None)
         return created_at.isoformat() if created_at else ""
 
     def resolve_updated_at(self, info):
-        updated_at = getattr(self, 'updated_at', None)
+        updated_at = getattr(self, "updated_at", None)
         return updated_at.isoformat() if updated_at else ""
 
     def resolve_replies(self, info):
-        replies_method = getattr(self, 'get_replies', None)
+        replies_method = getattr(self, "get_replies", None)
         return replies_method() if replies_method else []
 
     def resolve_can_edit(self, info):
         user = info.context.user
-        can_edit_method = getattr(self, 'can_edit', None)
-        return can_edit_method(user) if user and not user.is_anonymous and can_edit_method else False
+        can_edit_method = getattr(self, "can_edit", None)
+        return (
+            can_edit_method(user)
+            if user and not user.is_anonymous and can_edit_method
+            else False
+        )
 
     def resolve_can_delete(self, info):
         user = info.context.user
-        can_delete_method = getattr(self, 'can_delete', None)
-        return can_delete_method(user) if user and not user.is_anonymous and can_delete_method else False
+        can_delete_method = getattr(self, "can_delete", None)
+        return (
+            can_delete_method(user)
+            if user and not user.is_anonymous and can_delete_method
+            else False
+        )
 
 
 class UpdateBookmarkType(DjangoObjectType):
@@ -651,7 +668,7 @@ class UpdateBookmarkType(DjangoObjectType):
     createdAt = graphene.String(source="created_at")
 
     def resolve_created_at(self, info):
-        created_at = getattr(self, 'created_at', None)
+        created_at = getattr(self, "created_at", None)
         return created_at.isoformat() if created_at else ""
 
 
@@ -711,7 +728,7 @@ class Query(graphene.ObjectType):
     activities_by_status = graphene.List(ActivityType, status=graphene.String())
     activities_by_priority = graphene.List(ActivityType, priority=graphene.String())
     activities_by_type = graphene.List(ActivityType, type=graphene.String())
-    
+
     # Project queries (projects are activities with type="Projects")
     all_projects = graphene.List(ActivityType)
     project = graphene.Field(ActivityType, id=graphene.String(required=True))
@@ -724,30 +741,32 @@ class Query(graphene.ObjectType):
     updates_by_type = graphene.List(UpdateType, type=graphene.String())
     updates_by_status = graphene.List(UpdateType, status=graphene.String())
     news_updates = graphene.List(UpdateType)  # Convenience query for news type
-    
+
     # Comment queries
-    update_comments = graphene.List(UpdateCommentType, update_id=graphene.String(required=True))
+    update_comments = graphene.List(
+        UpdateCommentType, update_id=graphene.String(required=True)
+    )
     comment = graphene.Field(UpdateCommentType, id=graphene.Int(required=True))
-    
+
     # =====================================================
     # New optimized queries using streamlined models
     # =====================================================
     all_activities_new = graphene.List(
         ActivityType,
         type_filter=graphene.String(),
-        status_filter=graphene.String(), 
+        status_filter=graphene.String(),
         priority_filter=graphene.String(),
         assigned_to_filter=graphene.String(),
         limit=graphene.Int(),
-        offset=graphene.Int()
+        offset=graphene.Int(),
     )
-    
+
     all_updates_new = graphene.List(
         UpdateType,
         type_filter=graphene.String(),
         status_filter=graphene.String(),
         limit=graphene.Int(),
-        offset=graphene.Int()
+        offset=graphene.Int(),
     )
 
     def resolve_all_items(self, info, **kwargs):
@@ -979,11 +998,15 @@ class Query(graphene.ObjectType):
         """Get all comments for a specific update"""
         try:
             update = Update.objects.get(id=update_id)  # type: ignore
-            return UpdateComment.objects.filter(  # type: ignore
-                update=update,
-                is_active=True,
-                parent_comment__isnull=True  # Only top-level comments
-            ).select_related('author').order_by('created_at')
+            return (
+                UpdateComment.objects.filter(  # type: ignore
+                    update=update,
+                    is_active=True,
+                    parent_comment__isnull=True,  # Only top-level comments
+                )
+                .select_related("author")
+                .order_by("created_at")
+            )
         except Update.DoesNotExist:  # type: ignore
             return []
 
@@ -998,14 +1021,22 @@ class Query(graphene.ObjectType):
     # NEW OPTIMIZED RESOLVERS FOR DATABASE REWRITE
     # These provide better performance and cleaner data access
     # =====================================================
-    
+
     # New Activity Resolvers using the streamlined models
-    def resolve_all_activities_new(self, info, type_filter=None, status_filter=None, 
-                              priority_filter=None, assigned_to_filter=None, 
-                              limit=None, offset=None, **kwargs):
+    def resolve_all_activities_new(
+        self,
+        info,
+        type_filter=None,
+        status_filter=None,
+        priority_filter=None,
+        assigned_to_filter=None,
+        limit=None,
+        offset=None,
+        **kwargs,
+    ):
         """Optimized resolver for all activities with filtering"""
-        queryset = Activity.objects.select_related('status_config', 'priority_config', 'created_by')  # type: ignore
-        
+        queryset = Activity.objects.select_related("status_config", "priority_config", "created_by")  # type: ignore
+
         # Apply filters
         if type_filter:
             queryset = queryset.filter(type__icontains=type_filter)
@@ -1015,24 +1046,32 @@ class Query(graphene.ObjectType):
             queryset = queryset.filter(priority__icontains=priority_filter)
         if assigned_to_filter:
             queryset = queryset.filter(assigned_to__icontains=assigned_to_filter)
-        
+
         # Order by creation date (newest first)
-        queryset = queryset.order_by('-created_at')
-        
+        queryset = queryset.order_by("-created_at")
+
         # Apply pagination
         if offset:
             queryset = queryset[offset:]
         if limit:
             queryset = queryset[:limit]
-            
+
         return queryset
 
-    # New Update Resolvers using the streamlined models  
-    def resolve_all_updates_new(self, info, type_filter=None, status_filter=None,
-                           active_only=True, limit=None, offset=None, **kwargs):
+    # New Update Resolvers using the streamlined models
+    def resolve_all_updates_new(
+        self,
+        info,
+        type_filter=None,
+        status_filter=None,
+        active_only=True,
+        limit=None,
+        offset=None,
+        **kwargs,
+    ):
         """Optimized resolver for all updates with filtering"""
-        queryset = Update.objects.select_related('created_by')  # type: ignore
-        
+        queryset = Update.objects.select_related("created_by")  # type: ignore
+
         # Apply filters
         if active_only:
             queryset = queryset.filter(is_active=True)
@@ -1040,16 +1079,16 @@ class Query(graphene.ObjectType):
             queryset = queryset.filter(type=type_filter)
         if status_filter:
             queryset = queryset.filter(status=status_filter)
-        
+
         # Order by priority and timestamp
-        queryset = queryset.order_by('-priority', '-timestamp')
-        
+        queryset = queryset.order_by("-priority", "-timestamp")
+
         # Apply pagination
         if offset:
             queryset = queryset[offset:]
         if limit:
             queryset = queryset[:limit]
-            
+
         return queryset
 
 
@@ -1434,6 +1473,7 @@ class CreateContact(graphene.Mutation):
 
 # Profile field is not needed since avatar data is available directly on UserType
 
+
 class UploadAvatar(graphene.Mutation):
     """Mutation for uploading user avatar"""
 
@@ -1456,39 +1496,40 @@ class UploadAvatar(graphene.Mutation):
         try:
             import base64
             import uuid
+
             from django.core.files.base import ContentFile
             from django.core.files.storage import default_storage
-            
+
             # Get user profile
             user_profile, created = UserProfile.objects.get_or_create(user=user)  # type: ignore
-            
+
             # Decode base64 image data
-            if avatar.startswith('data:image/'):
+            if avatar.startswith("data:image/"):
                 # Remove data URL prefix (e.g., 'data:image/png;base64,')
-                format, imgstr = avatar.split(';base64,')
-                file_extension = format.split('/')[-1]
+                format, imgstr = avatar.split(";base64,")
+                file_extension = format.split("/")[-1]
             else:
                 # Assume it's already base64 encoded
                 imgstr = avatar
-                file_extension = 'png'  # Default to PNG
-            
+                file_extension = "png"  # Default to PNG
+
             # Generate unique filename
             filename = f"avatar_{user.username}_{uuid.uuid4().hex[:8]}.{file_extension}"
-            
+
             # Create ContentFile from base64 data
             image_data = base64.b64decode(imgstr)
             image_file = ContentFile(image_data, name=filename)
-            
+
             # Delete old avatar if exists
             if user_profile.avatar:
                 try:
                     default_storage.delete(user_profile.avatar.name)
                 except:
                     pass  # Ignore if file doesn't exist
-            
+
             # Save new avatar
             user_profile.avatar.save(filename, image_file, save=True)
-            
+
             result = cls()
             result.ok = True
             result.userProfile = user_profile
@@ -1506,19 +1547,20 @@ class UploadAvatar(graphene.Mutation):
 # Update Interaction Mutations
 # =====================================================
 
+
 class ToggleLike(graphene.Mutation):
     """Toggle like/dislike on an update"""
-    
+
     class Arguments:
         update_id = graphene.String(required=True)
         is_like = graphene.Boolean(required=True)  # True for like, False for dislike
-    
+
     success = graphene.Boolean()
     message = graphene.String()
     like_status = graphene.String()  # 'like', 'dislike', or None
     likes_count = graphene.Int()
     dislikes_count = graphene.Int()
-    
+
     @classmethod
     def mutate(cls, root, info, update_id, is_like):
         user = info.context.user
@@ -1530,17 +1572,15 @@ class ToggleLike(graphene.Mutation):
             result.likes_count = 0
             result.dislikes_count = 0
             return result
-        
+
         try:
             update = Update.objects.get(id=update_id)  # type: ignore
-            
+
             # Get or create the like/dislike
             like_obj, created = UpdateLike.objects.get_or_create(  # type: ignore
-                update=update,
-                user=user,
-                defaults={'is_like': is_like}
+                update=update, user=user, defaults={"is_like": is_like}
             )
-            
+
             if not created:
                 # If it already exists, toggle it
                 if like_obj.is_like == is_like:
@@ -1551,15 +1591,15 @@ class ToggleLike(graphene.Mutation):
                     # Different action, update it
                     like_obj.is_like = is_like
                     like_obj.save()
-                    like_status = 'like' if is_like else 'dislike'
+                    like_status = "like" if is_like else "dislike"
             else:
                 # New like/dislike created
-                like_status = 'like' if is_like else 'dislike'
-            
+                like_status = "like" if is_like else "dislike"
+
             # Get updated counts
             likes_count = update.likes.filter(is_like=True).count()  # type: ignore
             dislikes_count = update.likes.filter(is_like=False).count()  # type: ignore
-            
+
             result = cls()
             result.success = True
             result.message = "Like status updated successfully"
@@ -1567,7 +1607,7 @@ class ToggleLike(graphene.Mutation):
             result.likes_count = likes_count
             result.dislikes_count = dislikes_count
             return result
-            
+
         except Update.DoesNotExist:  # type: ignore
             result = cls()
             result.success = False
@@ -1588,15 +1628,15 @@ class ToggleLike(graphene.Mutation):
 
 class ToggleBookmark(graphene.Mutation):
     """Toggle bookmark on an update"""
-    
+
     class Arguments:
         update_id = graphene.String(required=True)
-    
+
     success = graphene.Boolean()
     message = graphene.String()
     is_bookmarked = graphene.Boolean()
     bookmarks_count = graphene.Int()
-    
+
     @classmethod
     def mutate(cls, root, info, update_id):
         user = info.context.user
@@ -1607,16 +1647,15 @@ class ToggleBookmark(graphene.Mutation):
             result.is_bookmarked = False
             result.bookmarks_count = 0
             return result
-        
+
         try:
             update = Update.objects.get(id=update_id)  # type: ignore
-            
+
             # Check if already bookmarked
             bookmark, created = UpdateBookmark.objects.get_or_create(  # type: ignore
-                update=update,
-                user=user
+                update=update, user=user
             )
-            
+
             if not created:
                 # Already bookmarked, remove it
                 bookmark.delete()
@@ -1624,17 +1663,17 @@ class ToggleBookmark(graphene.Mutation):
             else:
                 # New bookmark created
                 is_bookmarked = True
-            
+
             # Get updated count
             bookmarks_count = update.bookmarks.count()  # type: ignore
-            
+
             result = cls()
             result.success = True
             result.message = "Bookmark status updated successfully"
             result.is_bookmarked = is_bookmarked
             result.bookmarks_count = bookmarks_count
             return result
-            
+
         except Update.DoesNotExist:  # type: ignore
             result = cls()
             result.success = False
@@ -1653,16 +1692,16 @@ class ToggleBookmark(graphene.Mutation):
 
 class CreateComment(graphene.Mutation):
     """Create a comment on an update"""
-    
+
     class Arguments:
         update_id = graphene.String(required=True)
         content = graphene.String(required=True)
         parent_comment_id = graphene.Int(required=False)
-    
+
     success = graphene.Boolean()
     message = graphene.String()
     comment = graphene.Field(UpdateCommentType)
-    
+
     @classmethod
     def mutate(cls, root, info, update_id, content, parent_comment_id=None):
         user = info.context.user
@@ -1672,18 +1711,16 @@ class CreateComment(graphene.Mutation):
             result.message = "Authentication required"
             result.comment = None
             return result
-        
+
         try:
             update = Update.objects.get(id=update_id)  # type: ignore
-            
+
             # Validate parent comment if provided
             parent_comment = None
             if parent_comment_id:
                 try:
                     parent_comment = UpdateComment.objects.get(  # type: ignore
-                        id=parent_comment_id,
-                        update=update,
-                        is_active=True
+                        id=parent_comment_id, update=update, is_active=True
                     )
                 except UpdateComment.DoesNotExist:  # type: ignore
                     result = cls()
@@ -1691,21 +1728,21 @@ class CreateComment(graphene.Mutation):
                     result.message = "Parent comment not found"
                     result.comment = None
                     return result
-            
+
             # Create the comment
             comment = UpdateComment.objects.create(  # type: ignore
                 update=update,
                 author=user,
                 content=content,
-                parent_comment=parent_comment
+                parent_comment=parent_comment,
             )
-            
+
             result = cls()
             result.success = True
             result.message = "Comment created successfully"
             result.comment = comment
             return result
-            
+
         except Update.DoesNotExist:  # type: ignore
             result = cls()
             result.success = False
@@ -1722,15 +1759,15 @@ class CreateComment(graphene.Mutation):
 
 class UpdateCommentMutation(graphene.Mutation):
     """Update a comment"""
-    
+
     class Arguments:
         comment_id = graphene.Int(required=True)
         content = graphene.String(required=True)
-    
+
     success = graphene.Boolean()
     message = graphene.String()
     comment = graphene.Field(UpdateCommentType)
-    
+
     @classmethod
     def mutate(cls, root, info, comment_id, content):
         user = info.context.user
@@ -1740,29 +1777,29 @@ class UpdateCommentMutation(graphene.Mutation):
             result.message = "Authentication required"
             result.comment = None
             return result
-        
+
         try:
             comment = UpdateComment.objects.get(id=comment_id)  # type: ignore
-            
+
             # Check if user can edit this comment
-            can_edit_method = getattr(comment, 'can_edit', None)
+            can_edit_method = getattr(comment, "can_edit", None)
             if not can_edit_method or not can_edit_method(user):
                 result = cls()
                 result.success = False
                 result.message = "You don't have permission to edit this comment"
                 result.comment = None
                 return result
-            
+
             # Update the comment
             comment.content = content
             comment.save()
-            
+
             result = cls()
             result.success = True
             result.message = "Comment updated successfully"
             result.comment = comment
             return result
-            
+
         except UpdateComment.DoesNotExist:  # type: ignore
             result = cls()
             result.success = False
@@ -1779,13 +1816,13 @@ class UpdateCommentMutation(graphene.Mutation):
 
 class DeleteComment(graphene.Mutation):
     """Delete a comment"""
-    
+
     class Arguments:
         comment_id = graphene.Int(required=True)
-    
+
     success = graphene.Boolean()
     message = graphene.String()
-    
+
     @classmethod
     def mutate(cls, root, info, comment_id):
         user = info.context.user
@@ -1794,27 +1831,27 @@ class DeleteComment(graphene.Mutation):
             result.success = False
             result.message = "Authentication required"
             return result
-        
+
         try:
             comment = UpdateComment.objects.get(id=comment_id)  # type: ignore
-            
+
             # Check if user can delete this comment
-            can_delete_method = getattr(comment, 'can_delete', None)
+            can_delete_method = getattr(comment, "can_delete", None)
             if not can_delete_method or not can_delete_method(user):
                 result = cls()
                 result.success = False
                 result.message = "You don't have permission to delete this comment"
                 return result
-            
+
             # Soft delete the comment
             comment.is_active = False
             comment.save()
-            
+
             result = cls()
             result.success = True
             result.message = "Comment deleted successfully"
             return result
-            
+
         except UpdateComment.DoesNotExist:  # type: ignore
             result = cls()
             result.success = False
@@ -1836,7 +1873,7 @@ class Mutation(graphene.ObjectType):
     change_password = ChangePassword.Field()
     create_contact = CreateContact.Field()
     upload_avatar = UploadAvatar.Field()
-    
+
     # Update interaction mutations
     toggle_like = ToggleLike.Field()
     toggle_bookmark = ToggleBookmark.Field()
