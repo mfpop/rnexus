@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Final GraphQL Fixes Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .error-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ffcccb;
+            border-radius: 6px;
+            background-color: #ffe6e6;
+        }
+        .fix-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #90ee90;
+            border-radius: 6px;
+            background-color: #f0fff0;
+        }
+        .error-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #d32f2f;
+        }
+        .fix-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #388e3c;
+        }
+        .error-description, .fix-description {
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        .code-block {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            border-left: 4px solid #007acc;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        .test-steps {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .test-steps ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .test-steps li {
+            margin-bottom: 8px;
+            color: #1976d2;
+        }
+        .expected-result {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid #28a745;
+        }
+        .expected-result h4 {
+            margin: 0 0 10px 0;
+            color: #155724;
+        }
+        .expected-result p {
+            margin: 0;
+            color: #155724;
+        }
+        .summary {
+            background: #f0f8ff;
+            padding: 20px;
+            border-radius: 6px;
+            border-left: 4px solid #2196f3;
+            margin-top: 20px;
+        }
+        .summary h3 {
+            margin: 0 0 15px 0;
+            color: #1976d2;
+        }
+        .summary ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .summary li {
+            margin-bottom: 8px;
+            color: #1976d2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Profile Final GraphQL Fixes - Complete Resolution</h1>
+        
+        <div class="error-section">
+            <div class="error-title">❌ Previous Errors</div>
+            <div class="error-description">
+                <strong>Issues that were causing 400 Bad Request errors:</strong>
+            </div>
+            <div class="code-block">
+1. GraphQL error: Unknown argument 'state_id' on field 'Query.allCities'. Did you mean 'stateId'?
+2. GraphQL error: Unknown argument 'city_id' on field 'Query.allZipcodes'. Did you mean 'cityId'?
+3. GraphQL error: Unknown argument 'countryId' on field 'Mutation.updateUserProfile'. Did you mean 'country'?
+4. GraphQL error: Unknown argument 'stateId' on field 'Mutation.updateUserProfile'.
+5. GraphQL error: Unknown argument 'cityId' on field 'Mutation.updateUserProfile'. Did you mean 'city'?
+6. GraphQL error: Unknown argument 'zipcodeId' on field 'Mutation.updateUserProfile'. Did you mean 'zipCode'?
+            </div>
+        </div>
+
+        <div class="fix-section">
+            <div class="fix-title">✅ Fix 1: Corrected GraphQL Query Parameters</div>
+            <div class="fix-description">
+                <strong>Problem:</strong> I initially changed the parameter names to snake_case, but the backend actually expects camelCase.
+            </div>
+            <div class="code-block">
+// Fixed in /frontend/src/graphql/location.ts
+// Changed back to:
+allCities(stateId: $stateId) { ... }  // ✅ Correct
+allZipcodes(cityId: $cityId) { ... }  // ✅ Correct
+
+// Instead of:
+allCities(state_id: $stateId) { ... } // ❌ Wrong
+allZipcodes(city_id: $cityId) { ... } // ❌ Wrong
+            </div>
+        </div>
+
+        <div class="fix-section">
+            <div class="fix-title">✅ Fix 2: Removed Invalid Mutation Parameters</div>
+            <div class="fix-description">
+                <strong>Problem:</strong> The GraphQL mutation definition included ID parameters that the backend doesn't accept.
+            </div>
+            <div class="code-block">
+// Fixed in /frontend/src/graphql/userProfile.ts
+// Removed these invalid parameters:
+$countryId: ID     // ❌ Not accepted by backend
+$stateId: ID       // ❌ Not accepted by backend  
+$cityId: ID        // ❌ Not accepted by backend
+$zipcodeId: ID     // ❌ Not accepted by backend
+
+// Kept only valid parameters:
+$country: String           // ✅ Accepted
+$stateProvince: String     // ✅ Accepted
+$city: String              // ✅ Accepted
+$zipCode: String           // ✅ Accepted
+            </div>
+        </div>
+
+        <div class="fix-section">
+            <div class="fix-title">✅ Fix 3: Updated TypeScript Interfaces</div>
+            <div class="fix-description">
+                <strong>Problem:</strong> TypeScript interfaces still included the removed parameters.
+            </div>
+            <div class="code-block">
+// Fixed in /frontend/src/graphql/userProfile.ts
+export interface UpdateUserProfileVariables {
+  // ... other valid parameters ...
+  country?: string;        // ✅ Kept
+  stateProvince?: string;  // ✅ Kept
+  city?: string;           // ✅ Kept
+  zipCode?: string;        // ✅ Kept
+  // Removed: countryId, stateId, cityId, zipcodeId
+}
+            </div>
+        </div>
+
+        <div class="test-steps">
+            <h3>Testing the Complete Fix</h3>
+            <ol>
+                <li>Navigate to the Profile page (Personal tab)</li>
+                <li>Open browser dev tools and check the Console tab</li>
+                <li>Select a country from the dropdown</li>
+                <li>Wait for states to load and select a state</li>
+                <li>Wait for cities to load and select a city</li>
+                <li>Wait for ZIP codes to load and select a ZIP code</li>
+                <li>Make a change to any other field (e.g., Bio)</li>
+                <li>Wait for autosave to complete (2 seconds)</li>
+                <li>Verify no GraphQL errors appear in the console</li>
+                <li>Check that "Saved [time]" indicator appears</li>
+                <li>Refresh the page and verify all selections are maintained</li>
+            </ol>
+        </div>
+
+        <div class="expected-result">
+            <h4>Expected Result:</h4>
+            <p>
+                ✅ No GraphQL 400 errors in the console<br>
+                ✅ Location dropdowns work correctly and cascade properly<br>
+                ✅ Autosave completes successfully without errors<br>
+                ✅ "Saving..." and "Saved [time]" indicators work correctly<br>
+                ✅ Profile data persists after page refresh<br>
+                ✅ All profile fields autosave correctly<br>
+                ✅ No network errors or failed requests
+            </p>
+        </div>
+
+        <div class="summary">
+            <h3>📋 Complete Fix Summary</h3>
+            <ul>
+                <li><strong>GraphQL Queries:</strong> Fixed parameter names to use camelCase (stateId, cityId) as expected by backend</li>
+                <li><strong>Mutation Definition:</strong> Removed invalid ID parameters (countryId, stateId, cityId, zipcodeId) from GraphQL mutation</li>
+                <li><strong>TypeScript Interfaces:</strong> Updated UpdateUserProfileVariables to match the corrected mutation</li>
+                <li><strong>Autosave Logic:</strong> Already correctly sending only valid parameters (names/codes, not IDs)</li>
+                <li><strong>Location Data Flow:</strong> Properly maps location selections to names for storage</li>
+            </ul>
+        </div>
+
+        <div class="test-steps">
+            <h3>Verification Checklist</h3>
+            <ul>
+                <li>□ No GraphQL errors in browser console</li>
+                <li>□ Country selection triggers state loading</li>
+                <li>□ State selection triggers city loading</li>
+                <li>□ City selection triggers ZIP code loading</li>
+                <li>□ Autosave works for all field types</li>
+                <li>□ Visual indicators show save status correctly</li>
+                <li>□ Data persists after page refresh</li>
+                <li>□ No 400 Bad Request errors</li>
+                <li>□ No network failures</li>
+                <li>□ Smooth user experience with proper feedback</li>
+            </ul>
+        </div>
+
+        <div class="fix-section">
+            <div class="fix-title">🎯 Root Cause Analysis</div>
+            <div class="fix-description">
+                The errors occurred due to a mismatch between frontend GraphQL definitions and backend schema expectations:
+                <ul>
+                    <li><strong>Query Parameters:</strong> Backend expected camelCase, but I initially changed to snake_case</li>
+                    <li><strong>Mutation Arguments:</strong> Frontend was defining ID parameters that backend doesn't support</li>
+                    <li><strong>Data Storage:</strong> Backend stores location data as names/codes, not IDs</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

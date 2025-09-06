@@ -1,7 +1,7 @@
 import React from "react";
 import {
   ActivitiesRightCard,
-  useActivitiesContext,
+  useActivities,
 } from "../components/activities";
 
 /**
@@ -11,7 +11,7 @@ import {
  * Uses ActivitiesContext to communicate with the left card
  */
 const Activities: React.FC = () => {
-  const { selectedActivity } = useActivitiesContext();
+  const { selectedActivity } = useActivities();
   return <ActivitiesRightCard selectedActivity={selectedActivity} />;
 };
 

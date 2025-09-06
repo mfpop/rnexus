@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Filtering Debug Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: #2563eb;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #f9fafb;
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 15px;
+        }
+        .test-description {
+            color: #6b7280;
+            margin-bottom: 15px;
+        }
+        .tab-container {
+            display: flex;
+            border-bottom: 1px solid #e5e7eb;
+            background: #f9fafb;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 12px 16px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        .tab.active {
+            background: white;
+            border-bottom-color: #3b82f6;
+            color: #1f2937;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .tab:not(.active) {
+            color: #6b7280;
+        }
+        .tab:not(.active):hover {
+            background: rgba(255,255,255,0.8);
+            color: #1f2937;
+        }
+        .debug-info {
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+        }
+        .debug-title {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 10px;
+        }
+        .debug-item {
+            margin: 5px 0;
+            padding: 5px;
+            background: white;
+            border-radius: 4px;
+            border-left: 3px solid #3b82f6;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-success { background-color: #10b981; }
+        .status-warning { background-color: #f59e0b; }
+        .status-error { background-color: #ef4444; }
+        .mock-data {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .mock-item {
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .mock-item .type {
+            background: #3b82f6;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .mock-item .type.news { background: #10b981; }
+        .mock-item .type.communication { background: #f59e0b; }
+        .mock-item .type.alert { background: #ef4444; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>News Filtering Debug Test</h1>
+            <p>Testing the news tabs filtering functionality for All, News, Communications, and Alerts</p>
+        </div>
+        
+        <div class="content">
+            <!-- Tab Filtering Test -->
+            <div class="test-section">
+                <div class="test-title">Tab Filtering Test</div>
+                <div class="test-description">
+                    Test the tab filtering functionality. Click on different tabs to see if the filtering works correctly.
+                </div>
+                
+                <div class="tab-container">
+                    <button class="tab active" onclick="filterByType('all')">
+                        All <span id="all-count">(0)</span>
+                    </button>
+                    <button class="tab" onclick="filterByType('news')">
+                        News <span id="news-count">(0)</span>
+                    </button>
+                    <button class="tab" onclick="filterByType('communication')">
+                        Communications <span id="communication-count">(0)</span>
+                    </button>
+                    <button class="tab" onclick="filterByType('alert')">
+                        Alerts <span id="alert-count">(0)</span>
+                    </button>
+                </div>
+                
+                <div class="debug-info">
+                    <div class="debug-title">Debug Information</div>
+                    <div id="debug-output">
+                        <div class="debug-item">
+                            <span class="status-indicator status-warning"></span>
+                            <strong>Current Filter:</strong> <span id="current-filter">all</span>
+                        </div>
+                        <div class="debug-item">
+                            <span class="status-indicator status-success"></span>
+                            <strong>Filtered Items:</strong> <span id="filtered-count">0</span>
+                        </div>
+                        <div class="debug-item">
+                            <span class="status-indicator status-success"></span>
+                            <strong>Total Items:</strong> <span id="total-count">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mock Data Display -->
+            <div class="test-section">
+                <div class="test-title">Mock Data Display</div>
+                <div class="test-description">
+                    Sample data to test filtering with different types
+                </div>
+                
+                <div class="mock-data">
+                    <div class="mock-item">
+                        <span>Company Quarterly Report</span>
+                        <span class="type news">news</span>
+                    </div>
+                    <div class="mock-item">
+                        <span>Team Meeting Announcement</span>
+                        <span class="type communication">communication</span>
+                    </div>
+                    <div class="mock-item">
+                        <span>System Maintenance Alert</span>
+                        <span class="type alert">alert</span>
+                    </div>
+                    <div class="mock-item">
+                        <span>New Product Launch</span>
+                        <span class="type news">news</span>
+                    </div>
+                    <div class="mock-item">
+                        <span>Policy Update Notice</span>
+                        <span class="type communication">communication</span>
+                    </div>
+                    <div class="mock-item">
+                        <span>Security Breach Alert</span>
+                        <span class="type alert">alert</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Expected Behavior -->
+            <div class="test-section">
+                <div class="test-title">Expected Behavior</div>
+                <div class="test-description">
+                    How the filtering should work:
+                </div>
+                
+                <div class="debug-info">
+                    <div class="debug-item">
+                        <span class="status-indicator status-success"></span>
+                        <strong>All Tab:</strong> Shows all items (6 items)
+                    </div>
+                    <div class="debug-item">
+                        <span class="status-indicator status-success"></span>
+                        <strong>News Tab:</strong> Shows only news items (2 items)
+                    </div>
+                    <div class="debug-item">
+                        <span class="status-indicator status-success"></span>
+                        <strong>Communications Tab:</strong> Shows only communication items (2 items)
+                    </div>
+                    <div class="debug-item">
+                        <span class="status-indicator status-success"></span>
+                        <strong>Alerts Tab:</strong> Shows only alert items (2 items)
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Common Issues -->
+            <div class="test-section">
+                <div class="test-title">Common Issues to Check</div>
+                <div class="test-description">
+                    Issues that might cause filtering problems:
+                </div>
+                
+                <div class="debug-info">
+                    <div class="debug-item">
+                        <span class="status-indicator status-error"></span>
+                        <strong>Type Mismatch:</strong> Check if frontend types match backend types exactly
+                    </div>
+                    <div class="debug-item">
+                        <span class="status-indicator status-error"></span>
+                        <strong>Filter State:</strong> Ensure filter state is being updated correctly
+                    </div>
+                    <div class="debug-item">
+                        <span class="status-indicator status-error"></span>
+                        <strong>Data Processing:</strong> Check if data is being processed correctly from GraphQL
+                    </div>
+                    <div class="debug-item">
+                        <span class="status-indicator status-error"></span>
+                        <strong>Component Re-rendering:</strong> Ensure components re-render when filters change
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Mock data
+        const mockData = [
+            { id: 1, title: "Company Quarterly Report", type: "news" },
+            { id: 2, title: "Team Meeting Announcement", type: "communication" },
+            { id: 3, title: "System Maintenance Alert", type: "alert" },
+            { id: 4, title: "New Product Launch", type: "news" },
+            { id: 5, title: "Policy Update Notice", type: "communication" },
+            { id: 6, title: "Security Breach Alert", type: "alert" }
+        ];
+        
+        let currentFilter = 'all';
+        let filteredData = [...mockData];
+        
+        function updateDisplay() {
+            // Update counts
+            document.getElementById('all-count').textContent = `(${mockData.length})`;
+            document.getElementById('news-count').textContent = `(${mockData.filter(item => item.type === 'news').length})`;
+            document.getElementById('communication-count').textContent = `(${mockData.filter(item => item.type === 'communication').length})`;
+            document.getElementById('alert-count').textContent = `(${mockData.filter(item => item.type === 'alert').length})`;
+            
+            // Update debug info
+            document.getElementById('current-filter').textContent = currentFilter;
+            document.getElementById('filtered-count').textContent = filteredData.length;
+            document.getElementById('total-count').textContent = mockData.length;
+            
+            // Update tab states
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+        
+        function filterByType(type) {
+            console.log('Filtering by type:', type);
+            currentFilter = type;
+            
+            if (type === 'all') {
+                filteredData = [...mockData];
+            } else {
+                filteredData = mockData.filter(item => item.type === type);
+            }
+            
+            console.log('Filtered data:', filteredData);
+            updateDisplay();
+        }
+        
+        // Initialize
+        updateDisplay();
+    </script>
+</body>
+</html>
+

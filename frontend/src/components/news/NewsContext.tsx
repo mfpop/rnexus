@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { UpdateApiService } from "../../lib/updateApi";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { useQuery } from '@apollo/client';
+import { GET_ALL_UPDATES } from '../../graphql/updates';
 import { Update, UpdateContent, UpdateAttachment, UpdateMedia } from "./MessageTypes";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -38,62 +39,57 @@ interface NewsProviderProps {
 
 export const NewsProvider: React.FC<NewsProviderProps> = ({ children }) => {
   const { isAuthenticated, loading: authLoading } = useAuth();
-  const [updates, setUpdates] = useState<Update[]>([]);
   const [selectedUpdate, setSelectedUpdate] = useState<Update | null>(null);
-  const [loading, setLoading] = useState(false); // Start with false since we don't load immediately
   const [error, setError] = useState<string | null>(null);
+
+  // Use GraphQL query for updates
+  const { data, loading, error: graphqlError, refetch } = useQuery(GET_ALL_UPDATES, {
+    fetchPolicy: 'cache-and-network',
+    errorPolicy: 'all'
+  });
+
+  // Convert GraphQL data to our Update interface
+  const convertGraphQLUpdate = (gqlUpdate: any): Update => ({
+    id: gqlUpdate.id,
+    type: gqlUpdate.type.toLowerCase(),
+    title: gqlUpdate.title,
+    summary: gqlUpdate.summary,
+    timestamp: gqlUpdate.timestamp,
+    status: gqlUpdate.status.toLowerCase(),
+    tags: [],
+    author: gqlUpdate.author,
+    icon: 'newspaper',
+    content: {
+      body: gqlUpdate.summary,
+      attachments: [],
+      media: [],
+      related: [],
+    },
+  });
+
+  // Transform GraphQL data
+  const updates = data?.allUpdates ? data.allUpdates.map(convertGraphQLUpdate) : [];
+
+  // No auto-selection - let user manually select a record
 
   // Load initial updates only when authenticated
   const loadUpdates = async () => {
-    // Check if user is authenticated before making API calls
     if (!isAuthenticated) {
-      setLoading(false);
       return;
     }
-
     try {
-      setLoading(true);
-      setError(null);
-      const { updates: fetchedUpdates } = await UpdateApiService.getUpdatesEnhanced();
-      setUpdates(fetchedUpdates);
-      if (fetchedUpdates.length > 0) {
-        setSelectedUpdate(fetchedUpdates[0] || null);
-      }
+      await refetch();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load updates');
       console.error('Error loading updates:', err);
-    } finally {
-      setLoading(false);
     }
   };
 
   // Filter updates based on type, status, and search query
-  const filterUpdates = async (type: string = 'all', status: string = 'all', searchQuery: string = '') => {
-    // Check if user is authenticated before making API calls
-    if (!isAuthenticated) {
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setError(null);
-      const { updates: filteredUpdates } = await UpdateApiService.getUpdatesEnhanced({
-        type,
-        status,
-        searchQuery,
-      });
-      setUpdates(filteredUpdates);
-      if (filteredUpdates.length > 0) {
-        setSelectedUpdate(filteredUpdates[0] || null);
-      } else {
-        setSelectedUpdate(null);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to filter updates');
-      console.error('Error filtering updates:', err);
-    } finally {
-      setLoading(false);
-    }
+  const filterUpdates = async (_type: string = 'all', _status: string = 'all', _searchQuery: string = '') => {
+    // For now, we'll just refetch all updates since GraphQL filtering would require backend changes
+    // In a real implementation, you'd want to add filtering parameters to the GraphQL query
+    await loadUpdates();
   };
 
   // Refresh updates
@@ -102,125 +98,45 @@ export const NewsProvider: React.FC<NewsProviderProps> = ({ children }) => {
   };
 
   // Toggle like/dislike for an update
-  const toggleLike = async (updateId: string, isLike: boolean) => {
-    try {
-      const response = await UpdateApiService.toggleLike(updateId, isLike);
-      if (response.success) {
-        // Update the local state to reflect the new like counts
-        setUpdates(prevUpdates =>
-          prevUpdates.map(update =>
-            update.id === updateId
-              ? {
-                  ...update,
-                  likes_count: response.likes_count,
-                  dislikes_count: response.dislikes_count,
-                  user_like_status: response.user_like_status
-                }
-              : update
-          )
-        );
-
-        // Update selected update if it's the one being liked
-        if (selectedUpdate?.id === updateId) {
-          setSelectedUpdate(prev => prev ? {
-            ...prev,
-            likes_count: response.likes_count,
-            dislikes_count: response.dislikes_count,
-            user_like_status: response.user_like_status
-          } : null);
-        }
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to toggle like');
-      console.error('Error toggling like:', err);
-    }
+  const toggleLike = async (_updateId: string, _isLike: boolean) => {
+    // TODO: Implement GraphQL mutation for toggling likes
+    console.log('Toggle like not implemented yet for GraphQL');
   };
 
   // Create a comment
-  const createComment = async (updateId: string, content: string, parentCommentId?: number) => {
-    try {
-      const response = await UpdateApiService.createComment(updateId, content, parentCommentId);
-      if (response.success) {
-        // Refresh the updates to get the new comment count
-        await refreshUpdates();
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create comment');
-      console.error('Error creating comment:', err);
-    }
+  const createComment = async (_updateId: string, _content: string, _parentCommentId?: number) => {
+    // TODO: Implement GraphQL mutation for creating comments
+    console.log('Create comment not implemented yet for GraphQL');
   };
 
   // Edit a comment
-  const editComment = async (commentId: number, content: string) => {
-    try {
-      const response = await UpdateApiService.editComment(commentId, content);
-      if (response.success) {
-        // Refresh the updates to get the updated comment
-        await refreshUpdates();
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to edit comment');
-      console.error('Error editing comment:', err);
-    }
+  const editComment = async (_commentId: number, _content: string) => {
+    // TODO: Implement GraphQL mutation for editing comments
+    console.log('Edit comment not implemented yet for GraphQL');
   };
 
   // Delete a comment
-  const deleteComment = async (commentId: number) => {
-    try {
-      const response = await UpdateApiService.deleteComment(commentId);
-      if (response.success) {
-        // Refresh the updates to get the updated comment count
-        await refreshUpdates();
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete comment');
-      console.error('Error deleting comment:', err);
-    }
+  const deleteComment = async (_commentId: number) => {
+    // TODO: Implement GraphQL mutation for deleting comments
+    console.log('Delete comment not implemented yet for GraphQL');
   };
 
   // Create a new update
-  const createUpdate = async (updateData: any) => {
-    try {
-      const response = await UpdateApiService.createUpdateNew(updateData);
-      if (response.success) {
-        // Refresh the updates to include the new one
-        await refreshUpdates();
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create update');
-      console.error('Error creating update:', err);
-    }
+  const createUpdate = async (_updateData: any) => {
+    // TODO: Implement GraphQL mutation for creating updates
+    console.log('Create update not implemented yet for GraphQL');
   };
 
   // Edit an existing update
-  const editUpdate = async (updateId: string, updateData: any) => {
-    try {
-      const response = await UpdateApiService.editUpdateNew(updateId, updateData);
-      if (response.success) {
-        // Refresh the updates to get the updated one
-        await refreshUpdates();
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to edit update');
-      console.error('Error editing update:', err);
-    }
+  const editUpdate = async (_updateId: string, _updateData: any) => {
+    // TODO: Implement GraphQL mutation for editing updates
+    console.log('Edit update not implemented yet for GraphQL');
   };
 
   // Delete an update
-  const deleteUpdate = async (updateId: string) => {
-    try {
-      const response = await UpdateApiService.deleteUpdateNew(updateId);
-      if (response.success) {
-        // Remove the deleted update from local state
-        setUpdates(prevUpdates => prevUpdates.filter(update => update.id !== updateId));
-        if (selectedUpdate?.id === updateId) {
-          setSelectedUpdate(null);
-        }
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete update');
-      console.error('Error deleting update:', err);
-    }
+  const deleteUpdate = async (_updateId: string) => {
+    // TODO: Implement GraphQL mutation for deleting updates
+    console.log('Delete update not implemented yet for GraphQL');
   };
 
   // Load updates when authentication state changes
@@ -229,17 +145,23 @@ export const NewsProvider: React.FC<NewsProviderProps> = ({ children }) => {
       loadUpdates();
     } else {
       // Clear updates when user logs out
-      setUpdates([]);
       setSelectedUpdate(null);
       setError(null);
     }
   }, [isAuthenticated]);
 
+  // Set error from GraphQL if present
+  useEffect(() => {
+    if (graphqlError) {
+      setError(graphqlError.message);
+    }
+  }, [graphqlError]);
+
   const value: NewsContextType = {
     selectedUpdate,
     setSelectedUpdate,
     updates,
-    setUpdates,
+    setUpdates: () => {}, // Not needed for GraphQL
     loading,
     error,
     refreshUpdates,

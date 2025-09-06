@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import CreateActivityModal from "./CreateActivityModal";
 
-import { useActivitiesContext } from "./ActivitiesContext";
+import { useActivities } from "./ActivitiesContext";
 import { usePagination } from "../../contexts/PaginationContext";
 
 /**
@@ -20,7 +20,25 @@ const ActivitiesLeftCardSimple: React.FC = () => {
     setSelectedActivity = () => {},
     loading = false,
     error
-  } = useActivitiesContext();
+  } = useActivities();
+
+  // Helper function to convert backend types to display types
+  const getDisplayType = (backendType: string): string => {
+    const typeMap: Record<string, string> = {
+      'PROJECTS': 'Projects',
+      'TRAINING': 'Training',
+      'ADMIN_SYSTEMS': 'Admin & Systems',
+      'ENGINEERING': 'Engineering',
+      'QUALITY': 'Quality',
+      'PRODUCTION': 'Production',
+      'MAINTENANCE': 'Maintenance',
+      'LOGISTICS': 'Logistics',
+      'MEETINGS': 'Meetings',
+      'INSPECTION_AUDIT': 'Inspection & Audit'
+    };
+    return typeMap[backendType] || backendType;
+  };
+
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<
     "all" | "today" | "upcoming" | "overdue"
@@ -36,9 +54,13 @@ const ActivitiesLeftCardSimple: React.FC = () => {
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [showTagsDropdown, setShowTagsDropdown] = useState(false);
-  const { setPaginationData } = usePagination();
-  const [currentPage, setCurrentPage] = useState(1);
-  const [recordsPerPage, setRecordsPerPage] = useState(10);
+  const {
+    currentPage,
+    recordsPerPage,
+    goToPage,
+    setRecordsPerPage,
+    updatePagination
+  } = usePagination();
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const debugRef = useRef<{ lastAvailable?: number; lastCardHeight?: number }>({});
@@ -73,7 +95,7 @@ const ActivitiesLeftCardSimple: React.FC = () => {
       debugRef.current.lastAvailable = available;
       debugRef.current.lastCardHeight = cardHeight;
 
-      setRecordsPerPage((prev) => (prev !== computed ? computed : prev));
+      setRecordsPerPage(computed);
     };
 
     const scheduleCalc = () => {
@@ -162,7 +184,34 @@ const ActivitiesLeftCardSimple: React.FC = () => {
 
     // Apply type filter
     if (selectedType) {
-      filtered = filtered.filter(activity => activity.type === selectedType);
+      // Map display type back to backend type for comparison
+      const backendType = Object.keys({
+        'PROJECTS': 'Projects',
+        'TRAINING': 'Training',
+        'ADMIN_SYSTEMS': 'Admin & Systems',
+        'ENGINEERING': 'Engineering',
+        'QUALITY': 'Quality',
+        'PRODUCTION': 'Production',
+        'MAINTENANCE': 'Maintenance',
+        'LOGISTICS': 'Logistics',
+        'MEETINGS': 'Meetings',
+        'INSPECTION_AUDIT': 'Inspection & Audit'
+      }).find(key => {
+        const displayMap: Record<string, string> = {
+          'PROJECTS': 'Projects',
+          'TRAINING': 'Training',
+          'ADMIN_SYSTEMS': 'Admin & Systems',
+          'ENGINEERING': 'Engineering',
+          'QUALITY': 'Quality',
+          'PRODUCTION': 'Production',
+          'MAINTENANCE': 'Maintenance',
+          'LOGISTICS': 'Logistics',
+          'MEETINGS': 'Meetings',
+          'INSPECTION_AUDIT': 'Inspection & Audit'
+        };
+        return displayMap[key] === selectedType;
+      });
+      filtered = filtered.filter(activity => activity.type === backendType);
     }
 
     // Apply status filter
@@ -217,25 +266,22 @@ const ActivitiesLeftCardSimple: React.FC = () => {
   }, [activities, searchQuery, activeTab, selectedType, selectedStatus, selectedPriority, sortBy, sortOrder]);
 
   // Pagination logic
-  const totalPages = Math.ceil(filteredAndSortedActivities.length / recordsPerPage);
   const startIndex = (currentPage - 1) * recordsPerPage;
   const endIndex = startIndex + recordsPerPage;
   const paginatedActivities = filteredAndSortedActivities.slice(startIndex, endIndex);
 
   // Update pagination context when data changes
   React.useEffect(() => {
-    setPaginationData({
-      currentPage,
-      totalPages,
+    updatePagination({
       totalRecords: filteredAndSortedActivities.length,
-      recordsPerPage,
+      totalPages: Math.max(1, Math.ceil(filteredAndSortedActivities.length / recordsPerPage)),
     });
-  }, [currentPage, totalPages, filteredAndSortedActivities.length, recordsPerPage, setPaginationData]);
+  }, [filteredAndSortedActivities.length, recordsPerPage, updatePagination]);
 
   // Reset to first page when filters change
   React.useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, activeTab, selectedType, selectedStatus, selectedPriority]);
+    goToPage(1);
+  }, [searchQuery, activeTab, selectedType, selectedStatus, selectedPriority, goToPage]);
 
 
 
@@ -732,7 +778,7 @@ const ActivitiesLeftCardSimple: React.FC = () => {
                   <span
                     className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full ${getTypeColor(activity.type)}`}
                   >
-                    {activity.type.charAt(0).toUpperCase() + activity.type.slice(1)}
+                    {getDisplayType(activity.type)}
                   </span>
                 </div>
               </div>

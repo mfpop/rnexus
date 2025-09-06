@@ -7,8 +7,6 @@ import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import ProfileView from './ProfileView';
 import CameraModal from './CameraModal';
-import CallTester from '../call/CallTester';
-import ListPaginationFooter from '../shared/ListPaginationFooter';
 import ChatApiService from '../../lib/chatApi';
 import { Message, ImageMessage, VideoMessage, AudioMessage, DocumentMessage, TextMessage } from './MessageTypes';
 
@@ -70,19 +68,7 @@ const ChatRightCard: React.FC = () => {
 
 
 
-  // Pagination state for messages
-  const [currentPage, setCurrentPage] = useState(1);
-  const [recordsPerPage, setRecordsPerPage] = useState(20);
-  const totalPages = Math.max(1, Math.ceil(filteredMessages.length / recordsPerPage));
-  const paginatedMessages = filteredMessages.slice(
-    (currentPage - 1) * recordsPerPage,
-    currentPage * recordsPerPage
-  );
 
-  // Reset to first page when messages or search changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [filteredMessages.length, searchQuery]);
 
   // Search handlers
   const handleSearch = (query: string) => {
@@ -97,8 +83,6 @@ const ChatRightCard: React.FC = () => {
   useEffect(() => {
     if (selectedContact) {
       loadMessages();
-      // Reset message pagination when switching contacts
-      setCurrentPage(1);
     }
   }, [selectedContact]);
 
@@ -107,8 +91,6 @@ const ChatRightCard: React.FC = () => {
     if (graphqlMessages.length > 0) {
       console.log('🔄 Syncing GraphQL messages to local state:', graphqlMessages.length);
       setMessages(graphqlMessages);
-      // Reset to first page when new messages are loaded
-      setCurrentPage(1);
     }
   }, [graphqlMessages]);
 
@@ -182,9 +164,6 @@ const ChatRightCard: React.FC = () => {
         // But let's also manually add it to local state for immediate feedback
         setMessages(prev => {
           const newMessages = [...prev, graphqlMessage];
-          // Navigate to last page to show the new message
-          const newTotalPages = Math.max(1, Math.ceil(newMessages.length / recordsPerPage));
-          setCurrentPage(newTotalPages);
           return newMessages;
         });
         console.log('📝 Added message to local state');
@@ -203,9 +182,6 @@ const ChatRightCard: React.FC = () => {
         // Add message to local state
         setMessages(prev => {
           const newMessages = [...prev, newMessage];
-          // Navigate to last page to show the new message
-          const newTotalPages = Math.max(1, Math.ceil(newMessages.length / recordsPerPage));
-          setCurrentPage(newTotalPages);
           return newMessages;
         });
       }
@@ -276,17 +252,12 @@ const ChatRightCard: React.FC = () => {
       await ChatApiService.deleteMessage(messageId);
       setMessages(prev => {
         const newMessages = prev.filter(msg => msg.id !== messageId);
-        // Adjust pagination if current page becomes empty
-        const newTotalPages = Math.max(1, Math.ceil(newMessages.length / recordsPerPage));
-        if (currentPage > newTotalPages) {
-          setCurrentPage(newTotalPages);
-        }
         return newMessages;
       });
     } catch (error) {
       console.error('Error deleting message:', error);
     }
-  }, [currentPage, recordsPerPage]);
+  }, []);
 
   const handleCopy = useCallback((content: string) => {
     navigator.clipboard.writeText(content).then(() => {
@@ -336,18 +307,13 @@ const ChatRightCard: React.FC = () => {
 
       setMessages(prev => {
         const newMessages = prev.filter(msg => !selectedMessages.has(msg.id));
-        // Adjust pagination if current page becomes empty
-        const newTotalPages = Math.max(1, Math.ceil(newMessages.length / recordsPerPage));
-        if (currentPage > newTotalPages) {
-          setCurrentPage(newTotalPages);
-        }
         return newMessages;
       });
       exitSelectionMode();
     } catch (error) {
       console.error('Error bulk deleting messages:', error);
     }
-  }, [selectedMessages, exitSelectionMode, currentPage, recordsPerPage]);
+  }, [selectedMessages, exitSelectionMode]);
 
   const handleBulkForward = useCallback(() => {
     // Implementation for bulk forwarding
@@ -512,9 +478,6 @@ const ChatRightCard: React.FC = () => {
           // Add temporary message to chat
           setMessages(prev => {
             const newMessages = [...prev, tempMessage];
-            // Navigate to last page to show the new message
-            const newTotalPages = Math.max(1, Math.ceil(newMessages.length / recordsPerPage));
-            setCurrentPage(newTotalPages);
             return newMessages;
           });
 
@@ -626,7 +589,7 @@ const ChatRightCard: React.FC = () => {
   // Show welcome screen if no contact is selected
   if (!selectedContact) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden">
+      <div className="h-full flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden">
         {/* Enhanced Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
           {/* Primary floating elements */}
@@ -639,73 +602,71 @@ const ChatRightCard: React.FC = () => {
           <div className="absolute bottom-1/3 right-1/3 w-20 h-20 bg-gradient-to-br from-yellow-200 to-orange-200 rounded-full opacity-25 animate-pulse" style={{ animationDelay: '2.5s' }}></div>
         </div>
 
-        <div className="text-center z-10 max-w-lg px-8 py-12">
-          {/* Enhanced Chat Icon with Better Animations */}
-          <div className="relative mx-auto mb-10">
-            <div className="w-36 h-36 bg-gradient-to-br from-[#25d366] via-[#20bd5f] to-[#128c7e] rounded-3xl flex items-center justify-center mx-auto shadow-2xl transform rotate-2 hover:rotate-0 hover:scale-105 transition-all duration-700 ease-out border-4 border-white/20">
-              <svg className="w-18 h-18 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="text-center z-10 max-w-lg px-6 py-8 flex flex-col justify-center h-full min-h-0">
+          {/* Compact Chat Icon */}
+          <div className="relative mx-auto mb-6">
+            <div className="w-24 h-24 bg-gradient-to-br from-[#25d366] via-[#20bd5f] to-[#128c7e] rounded-2xl flex items-center justify-center mx-auto shadow-xl transform hover:scale-105 transition-all duration-300 ease-out border-2 border-white/20">
+              <svg className="w-12 h-12 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
             </div>
-            <div className="absolute -top-3 -right-3 w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-400 rounded-full flex items-center justify-center animate-bounce shadow-lg border-2 border-white">
-              <span className="text-white text-base">💬</span>
+            <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br from-yellow-400 to-orange-400 rounded-full flex items-center justify-center animate-bounce shadow-lg border border-white">
+              <span className="text-white text-xs">💬</span>
             </div>
-            {/* Subtle ring effect */}
-            <div className="absolute inset-0 w-36 h-36 mx-auto rounded-3xl border-2 border-[#25d366] opacity-20 animate-ping"></div>
           </div>
 
-          <div className="space-y-6 mb-10">
-            <h3 className="text-4xl font-bold bg-gradient-to-r from-[#25d366] via-[#20bd5f] to-[#128c7e] bg-clip-text text-transparent drop-shadow-sm">
+          <div className="space-y-4 mb-6">
+            <h3 className="text-2xl font-bold bg-gradient-to-r from-[#25d366] via-[#20bd5f] to-[#128c7e] bg-clip-text text-transparent">
               Advanced Chat Platform
             </h3>
-            <p className="text-gray-600 text-xl leading-relaxed max-w-md mx-auto font-light">
-              Select a contact from the sidebar to start a conversation with our feature-rich messaging platform
+            <p className="text-gray-600 text-base leading-relaxed max-w-sm mx-auto">
+              Select a contact from the sidebar to start a conversation
             </p>
           </div>
 
-          {/* Enhanced Feature Highlights with Better Spacing */}
-          <div className="grid grid-cols-2 gap-5 mb-10">
-            <div className="group bg-white/80 backdrop-blur-md rounded-3xl p-6 shadow-xl border border-white/30 hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl flex items-center justify-center mb-3 mx-auto group-hover:scale-110 transition-transform duration-300">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {/* Compact Feature Highlights */}
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            <div className="group bg-white/80 backdrop-blur-md rounded-xl p-4 shadow-lg border border-white/30 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center mb-2 mx-auto group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
-              <p className="text-sm font-semibold text-gray-700">Instant Messaging</p>
+              <p className="text-xs font-semibold text-gray-700">Instant Messaging</p>
             </div>
-            <div className="group bg-white/80 backdrop-blur-md rounded-3xl p-6 shadow-xl border border-white/30 hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer">
-              <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-2xl flex items-center justify-center mb-3 mx-auto group-hover:scale-110 transition-transform duration-300">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="group bg-white/80 backdrop-blur-md rounded-xl p-4 shadow-lg border border-white/30 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer">
+              <div className="w-8 h-8 bg-gradient-to-br from-green-100 to-green-200 rounded-lg flex items-center justify-center mb-2 mx-auto group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 11.293l-2.829-2.829a1 1 0 00-1.414 0L8.464 11.293a1 1 0 000 1.414l2.829 2.829a1 1 0 001.414 0l2.829-2.829a1 1 0 000-1.414z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17a1 1 0 102 0m0 0V9a5 5 0 10-5 5v3a1 1 0 102 0z" />
                 </svg>
               </div>
-              <p className="text-sm font-semibold text-gray-700">Voice Messages</p>
+              <p className="text-xs font-semibold text-gray-700">Voice Messages</p>
             </div>
-            <div className="group bg-white/80 backdrop-blur-md rounded-3xl p-6 shadow-xl border border-white/30 hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl flex items-center justify-center mb-3 mx-auto group-hover:scale-110 transition-transform duration-300">
-                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="group bg-white/80 backdrop-blur-md rounded-xl p-4 shadow-lg border border-white/30 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer">
+              <div className="w-8 h-8 bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg flex items-center justify-center mb-2 mx-auto group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <p className="text-sm font-semibold text-gray-700">File Sharing</p>
+              <p className="text-xs font-semibold text-gray-700">File Sharing</p>
             </div>
-            <div className="group bg-white/80 backdrop-blur-md rounded-3xl p-6 shadow-xl border border-white/30 hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer">
-              <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl flex items-center justify-center mb-3 mx-auto group-hover:scale-110 transition-transform duration-300">
-                <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="group bg-white/80 backdrop-blur-md rounded-xl p-4 shadow-lg border border-white/30 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer">
+              <div className="w-8 h-8 bg-gradient-to-br from-orange-100 to-orange-200 rounded-lg flex items-center justify-center mb-2 mx-auto group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                 </svg>
               </div>
-              <p className="text-sm font-semibold text-gray-700">Rich Features</p>
+              <p className="text-xs font-semibold text-gray-700">Rich Features</p>
             </div>
           </div>
 
-          {/* Enhanced Security Badge */}
-          <div className="inline-flex items-center justify-center space-x-3 px-6 py-3 bg-white/70 backdrop-blur-md rounded-full shadow-lg border border-white/30">
-            <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {/* Compact Security Badge */}
+          <div className="inline-flex items-center justify-center space-x-2 px-4 py-2 bg-white/70 backdrop-blur-md rounded-full shadow-lg border border-white/30">
+            <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="text-sm font-medium text-gray-600">Secure • Private • Feature-Rich</span>
+            <span className="text-xs font-medium text-gray-600">Secure • Private • Feature-Rich</span>
           </div>
         </div>
       </div>
@@ -749,10 +710,6 @@ const ChatRightCard: React.FC = () => {
         </div>
       )}
 
-      {/* Call Testing Panel */}
-      <div className="mx-4 mt-2">
-        <CallTester />
-      </div>
 
       {/* Selection Mode Toolbar */}
       {isSelectionMode && (
@@ -830,9 +787,9 @@ const ChatRightCard: React.FC = () => {
           )}
 
           {/* Messages */}
-
-          <MessageList
-            messages={paginatedMessages}
+          <div className="flex-1 min-h-0 overflow-hidden">
+            <MessageList
+            messages={filteredMessages}
             formatTime={(timestamp: string) => {
               try {
                 const date = new Date(timestamp);
@@ -854,20 +811,9 @@ const ChatRightCard: React.FC = () => {
             messagesEndRef={messagesEndRef}
             scrollToBottom={scrollToBottom}
             currentUserId={currentUser?.id}
-          />
-
-          {/* Pagination Footer for messages */}
-          <div className="flex justify-center mt-2">
-            <ListPaginationFooter
-              currentPage={currentPage}
-              totalPages={totalPages}
-              totalRecords={filteredMessages.length}
-              recordsPerPage={recordsPerPage}
-              onPageChange={setCurrentPage}
-              onRecordsPerPageChange={setRecordsPerPage}
-              showRecordsPerPage={true}
             />
           </div>
+
 
           {/* Reply Preview */}
           {replyToMessage && (

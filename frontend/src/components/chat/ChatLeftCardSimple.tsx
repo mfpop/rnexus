@@ -22,7 +22,13 @@ const ChatLeftCardSimple: React.FC = () => {
     paginatedUsers
   } = useChatContext();
   const { isAuthenticated } = useAuth();
-  const { currentPage, setPaginationData, onPageChange } = usePagination();
+  const {
+    currentPage,
+    recordsPerPage,
+    goToPage,
+    setRecordsPerPage,
+    updatePagination
+  } = usePagination();
 
   // Container ref for height calculation
   const containerRef = useRef<HTMLDivElement>(null);
@@ -34,7 +40,7 @@ const ChatLeftCardSimple: React.FC = () => {
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [sortBy, setSortBy] = useState<"name" | "status" | "lastMessage" | "unreadCount">("name");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-  const [recordsPerPage, setRecordsPerPage] = useState(10);
+
 
   // Dynamically calculate optimal records per page based on container height
   useEffect(() => {
@@ -130,17 +136,17 @@ const ChatLeftCardSimple: React.FC = () => {
 
   const handleTypeFilter = (type: string) => {
     setActiveType(type);
-    onPageChange(1);
+    goToPage(1);
   };
 
   const handleStatusFilter = (status: string) => {
     setActiveStatus(status);
-    onPageChange(1);
+    goToPage(1);
   };
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    onPageChange(1);
+    goToPage(1);
   };
 
   // Filter and sort handlers
@@ -216,20 +222,17 @@ const ChatLeftCardSimple: React.FC = () => {
   });
 
   // Pagination logic
-  const totalPages = Math.ceil(sortedChatItems.length / recordsPerPage);
   const startIndex = (currentPage - 1) * recordsPerPage;
   const endIndex = startIndex + recordsPerPage;
   const paginatedChatItems = sortedChatItems.slice(startIndex, endIndex);
 
   // Update pagination context when data changes
   useEffect(() => {
-    setPaginationData({
-      currentPage: currentPage > totalPages ? 1 : currentPage,
-      totalPages,
+    updatePagination({
       totalRecords: sortedChatItems.length,
-      recordsPerPage,
+      totalPages: Math.max(1, Math.ceil(sortedChatItems.length / recordsPerPage)),
     });
-  }, [totalPages, sortedChatItems.length, recordsPerPage, setPaginationData, currentPage]);
+  }, [sortedChatItems.length, recordsPerPage, updatePagination]);
 
   return (
     <div ref={containerRef} className="h-full flex flex-col">

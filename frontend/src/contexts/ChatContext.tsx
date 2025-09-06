@@ -4,7 +4,6 @@ import React, {
   useState,
   ReactNode,
   useEffect,
-  useCallback,
 } from "react";
 import { useQuery } from '@apollo/client';
 import { GET_ALL_USERS_WITH_AVATARS } from '../graphql/chatQueries';
@@ -39,9 +38,17 @@ interface ChatContextType {
   paginatedUsers: Contact[];
   // Pagination state
   currentPage: number;
-  setCurrentPage: (page: number) => void;
   totalPages: number;
+  totalRecords: number;
   recordsPerPage: number;
+  goToPage: (page: number) => void;
+  goToNextPage: () => void;
+  goToPreviousPage: () => void;
+  goToFirstPage: () => void;
+  goToLastPage: () => void;
+  setRecordsPerPage: (recordsPerPage: number) => void;
+  updatePagination: (data: Partial<{currentPage: number; totalPages: number; totalRecords: number; recordsPerPage: number}>) => void;
+  resetPagination: () => void;
   activeTab: "contacts" | "groups" | "favorites";
   setActiveTab: (tab: "contacts" | "groups" | "favorites") => void;
   // Profile view state
@@ -448,53 +455,160 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
   const { user: currentUser } = useAuth();
 
   // Use pagination context instead of local state
-  const { currentPage, setCurrentPage, recordsPerPage, setPaginationData } = usePagination();
+  const {
+    currentPage,
+    totalPages,
+    totalRecords,
+    recordsPerPage,
+    goToPage,
+    goToNextPage,
+    goToPreviousPage,
+    goToFirstPage,
+    goToLastPage,
+    setRecordsPerPage,
+    updatePagination,
+    resetPagination
+  } = usePagination();
 
   // Fetch real user data from GraphQL
-  const { data: usersData, loading: usersLoading, error: usersError } = useQuery(GET_ALL_USERS_WITH_AVATARS);
+  const { data: usersData, loading: usersLoading, error: usersError } = useQuery(GET_ALL_USERS_WITH_AVATARS, {
+    fetchPolicy: 'cache-and-network', // Always try to fetch fresh data
+    errorPolicy: 'all'
+  });
+
+  // Debug GraphQL data
+  console.log('🔍 GraphQL Debug:', {
+    usersData,
+    usersLoading,
+    usersError,
+    allUsersLength: allUsers.length,
+    currentUser: currentUser?.id,
+    currentUserFull: currentUser,
+    sampleRawUser: usersData?.allUsers?.[0] ? {
+      id: usersData.allUsers[0].id,
+      username: usersData.allUsers[0].username,
+      firstName: usersData.allUsers[0].firstName,
+      lastName: usersData.allUsers[0].lastName,
+      avatar: usersData.allUsers[0].avatar,
+      avatarUrl: usersData.allUsers[0].avatarUrl,
+      position: usersData.allUsers[0].position,
+      department: usersData.allUsers[0].department
+    } : null
+  });
+
+  // Debug avatar data specifically
+  if (usersData?.allUsers) {
+    console.log('🔍 Sample GraphQL users with avatars:', usersData.allUsers.slice(0, 3).map((u: any) => ({
+      username: u.username,
+      firstName: u.firstName,
+      lastName: u.lastName,
+      avatar: u.avatar,
+      avatarUrl: u.avatarUrl
+    })));
+  }
 
 
 
   // Transform GraphQL user data to Contact format
   const realUsers: Contact[] = React.useMemo(() => {
-    if (!usersData?.allUsers) return allUsers;
+    // First try to use GraphQL data
+    if (usersData?.allUsers && usersData.allUsers.length > 0) {
+      console.log('🔍 Using GraphQL users:', usersData.allUsers.length);
 
-    const transformedUsers = usersData.allUsers.map((user: any) => ({
-      id: parseInt(user.id),
-      name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username,
-      title: 'Team Member', // We'll add position/department later if needed
-      department: 'General',
-      status: 'online' as const, // Default status for now
-      lastMessage: '',
-      lastMessageTime: '',
-      unreadCount: 0,
-      avatar: user.avatar || user.firstName?.[0] || user.username[0],
-      avatarUrl: user.avatarUrl || null,
-      email: user.email,
-    }));
+      const transformedUsers = usersData.allUsers.map((user: any) => {
+        const result = {
+          id: parseInt(user.id),
+          name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username,
+          title: user.position || 'Team Member',
+          department: user.department || 'General',
+          status: 'online' as const, // Default status for now
+          lastMessage: '',
+          lastMessageTime: '',
+          unreadCount: 0,
+          avatar: user.avatar || user.firstName?.[0] || user.username[0], // Fallback initials
+          avatarUrl: user.avatarUrl, // Actual avatar URL from database
+          email: user.email,
+        };
 
-    // Remove duplicates based on ID and name to prevent pagination issues
-    const uniqueUsers = transformedUsers.filter((user: Contact, index: number, self: Contact[]) =>
-      index === self.findIndex((u: Contact) => u.id === user.id && u.name === user.name)
-    );
+        // Debug each user's avatar data
+        console.log(`🔍 User ${result.name}:`, {
+          rawAvatarUrl: user.avatarUrl,
+          finalAvatarUrl: result.avatarUrl,
+          hasAvatarUrl: !!result.avatarUrl,
+          avatarUrlType: typeof result.avatarUrl,
+          isImageUrl: result.avatarUrl?.includes('http'),
+          isPngUrl: result.avatarUrl?.includes('.png'),
+          isJpegUrl: result.avatarUrl?.includes('.jpeg')
+        });
 
-    // Filter out the current user from the members list
-    const filteredUsers = uniqueUsers.filter((user: Contact) => {
-      if (!currentUser) return true; // If no current user, show all users
-      return user.id !== currentUser.id;
-    });
+        return result;
+      });
 
-    console.log('🔍 ChatContext - User data debug:', {
-      originalCount: usersData.allUsers.length,
-      transformedCount: transformedUsers.length,
-      uniqueCount: uniqueUsers.length,
-      filteredCount: filteredUsers.length,
-      currentUserId: currentUser?.id,
-      hasDuplicates: transformedUsers.length !== uniqueUsers.length
-    });
+      // Remove duplicates based on ID and name to prevent pagination issues
+      const uniqueUsers = transformedUsers.filter((user: Contact, index: number, self: Contact[]) =>
+        index === self.findIndex((u: Contact) => u.id === user.id && u.name === user.name)
+      );
 
-    return filteredUsers;
+      // Filter out the current user from the members list
+      const filteredUsers = uniqueUsers.filter((user: Contact) => {
+        if (!currentUser) return true; // If no current user, show all users
+        const shouldInclude = user.id !== currentUser.id;
+        console.log(`🔍 User ${user.name} (ID: ${user.id}) - Current user ID: ${currentUser.id} - Include: ${shouldInclude}`);
+        return shouldInclude;
+      });
+
+      // TEMPORARY: Show all users for debugging
+      console.log('🔍 TEMPORARY: Showing all users without filtering for debugging');
+      const debugUsers = uniqueUsers; // Use this instead of filteredUsers for debugging
+
+      // Also log the current user info
+      console.log('🔍 Current user debug:', {
+        currentUser,
+        currentUserId: currentUser?.id,
+        currentUserType: typeof currentUser?.id
+      });
+
+      console.log('🔍 ChatContext - GraphQL User data debug:', {
+        originalCount: usersData.allUsers.length,
+        transformedCount: transformedUsers.length,
+        uniqueCount: uniqueUsers.length,
+        filteredCount: filteredUsers.length,
+        currentUserId: currentUser?.id,
+        hasDuplicates: transformedUsers.length !== uniqueUsers.length,
+        sampleUser: transformedUsers[0] ? {
+          id: transformedUsers[0].id,
+          name: transformedUsers[0].name,
+          avatar: transformedUsers[0].avatar,
+          avatarUrl: transformedUsers[0].avatarUrl,
+          title: transformedUsers[0].title,
+          department: transformedUsers[0].department
+        } : null,
+        allUsersWithAvatars: transformedUsers.filter((u: Contact) => u.avatarUrl).length,
+        allUsersWithInitials: transformedUsers.filter((u: Contact) => !u.avatarUrl && u.avatar).length
+      });
+
+      return debugUsers; // TEMPORARY: Use debugUsers instead of filteredUsers
+    }
+
+    // If no GraphQL data, use sample data with proper fallback avatars
+    console.log('🔍 No GraphQL data, using sample data');
+    return [
+      { id: 1, name: "John Doe", title: "Software Engineer", department: "Engineering", status: "online", lastMessage: "Hey, how's the project going?", lastMessageTime: "2 min ago", unreadCount: 1, avatar: "JD", avatarUrl: null, email: "john@company.com" },
+      { id: 2, name: "Jane Smith", title: "Product Manager", department: "Product", status: "away", lastMessage: "Let's schedule a meeting", lastMessageTime: "5 min ago", unreadCount: 0, avatar: "JS", avatarUrl: null, email: "jane@company.com" },
+      { id: 3, name: "Mike Johnson", title: "Designer", department: "Design", status: "online", lastMessage: "The mockups are ready", lastMessageTime: "10 min ago", unreadCount: 2, avatar: "MJ", avatarUrl: null, email: "mike@company.com" },
+      { id: 4, name: "Sarah Wilson", title: "QA Engineer", department: "Engineering", status: "offline", lastMessage: "Found some bugs to fix", lastMessageTime: "1 hour ago", unreadCount: 0, avatar: "SW", avatarUrl: null, email: "sarah@company.com" },
+      { id: 5, name: "Alex Brown", title: "DevOps Engineer", department: "Infrastructure", status: "online", lastMessage: "Deployment successful", lastMessageTime: "30 min ago", unreadCount: 1, avatar: "AB", avatarUrl: null, email: "alex@company.com" },
+      { id: 6, name: "Lisa Davis", title: "Marketing Manager", department: "Marketing", status: "away", lastMessage: "Campaign is live", lastMessageTime: "2 hours ago", unreadCount: 0, avatar: "LD", avatarUrl: null, email: "lisa@company.com" }
+    ];
   }, [usersData, currentUser]);
+
+  // Debug realUsers after it's defined
+  console.log('🔍 realUsers length:', realUsers.length);
+  console.log('🔍 Sample realUsers with avatars:', realUsers.slice(0, 3).map(u => ({
+    name: u.name,
+    avatar: u.avatar,
+    avatarUrl: u.avatarUrl
+  })));
 
   // Get current data based on active tab
   const getCurrentData = () => {
@@ -511,7 +625,6 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   const currentData = getCurrentData();
-  const totalPages = Math.ceil(currentData.length / recordsPerPage);
 
   const paginatedUsers = currentData.slice(
     (currentPage - 1) * recordsPerPage,
@@ -531,15 +644,20 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
 
   // Update pagination context when data changes
   useEffect(() => {
+    console.log('🔍 Pagination update effect:', {
+      currentDataLength: currentData.length,
+      currentData: currentData.slice(0, 3), // Show first 3 items
+      recordsPerPage,
+      activeTab
+    });
+
     if (currentData.length > 0) {
-      setPaginationData({
-        currentPage,
-        totalPages,
+      updatePagination({
         totalRecords: currentData.length,
-        recordsPerPage,
+        totalPages: Math.max(1, Math.ceil(currentData.length / recordsPerPage)),
       });
     }
-  }, [currentData.length, currentPage, totalPages, recordsPerPage, setPaginationData]);
+  }, [currentData.length, recordsPerPage, updatePagination, activeTab]);
 
   const value: ChatContextType = {
     selectedContact,
@@ -550,9 +668,17 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
     allUsers: realUsers,
     paginatedUsers,
     currentPage,
-    setCurrentPage,
     totalPages,
+    totalRecords,
     recordsPerPage,
+    goToPage,
+    goToNextPage,
+    goToPreviousPage,
+    goToFirstPage,
+    goToLastPage,
+    setRecordsPerPage,
+    updatePagination,
+    resetPagination,
     activeTab,
     setActiveTab,
     showProfileView,

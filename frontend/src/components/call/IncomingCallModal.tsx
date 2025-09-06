@@ -1,7 +1,6 @@
 import React from 'react';
 import { Phone, PhoneOff, Video } from 'lucide-react';
 import { useCall } from '../../contexts/CallContext';
-import { formatCallDuration } from '../../utils/callUtils';
 import Button from '../ui/Button';
 
 const IncomingCallModal: React.FC = () => {

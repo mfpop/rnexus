@@ -62,9 +62,11 @@ CORS_ORIGIN_ALLOW_ALL = True if DEBUG else False
 CORS_ORIGIN_WHITELIST = [
     # Localhost dev servers
     "http://localhost:5173",  # Vite dev server
+    "http://localhost:5174",  # Vite dev server (alternate port)
     "http://localhost:3000",  # React dev server (fallback)
     # 127.0.0.1 variants commonly used by browsers/tools
     "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174",
     "http://127.0.0.1:3000",
 ]
 CORS_ALLOW_CREDENTIALS = True
@@ -176,7 +178,12 @@ STATICFILES_DIRS = [
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-GRAPHENE = {"SCHEMA": "api.schema.schema"}
+GRAPHENE = {
+    "SCHEMA": "api.schema.schema",
+    "MIDDLEWARE": [
+        "graphene_django.debug.DjangoDebugMiddleware",
+    ],
+}
 
 # Django REST framework (basic defaults; JWT handled via custom permission)
 REST_FRAMEWORK = {

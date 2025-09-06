@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import {
-  Calendar,
   Share2,
   Bookmark,
   ChevronDown,
@@ -18,7 +17,7 @@ import {
   CheckCircle,
   Search,
 } from "lucide-react";
-import { useNewsContext } from "./NewsContext";
+import { useNewsContext } from "./NewsContextNew";
 import { useAuth } from "../../contexts/AuthContext";
 import { UpdateComment } from "./MessageTypes";
 import { Tag, TagApiService } from "../../lib/updateApi";
@@ -30,6 +29,8 @@ import { Tag, TagApiService } from "../../lib/updateApi";
  * Full-featured update reader with comments and interactions
  */
 const NewsRightCard: React.FC = () => {
+  console.log('🔍 NewsRightCard component rendering');
+
   const {
     selectedUpdate,
     toggleLike,
@@ -40,6 +41,16 @@ const NewsRightCard: React.FC = () => {
     editUpdate,
     deleteUpdate
   } = useNewsContext();
+
+  // Debug logging to help identify the issue
+  React.useEffect(() => {
+    console.log('🔍 NewsRightCard - selectedUpdate:', selectedUpdate);
+    if (selectedUpdate) {
+      console.log('Selected update tags:', selectedUpdate.tags, 'Type:', typeof selectedUpdate.tags, 'Is Array:', Array.isArray(selectedUpdate.tags));
+    } else {
+      console.log('🔍 No selected update - showing empty state');
+    }
+  }, [selectedUpdate]);
   const { user } = useAuth();
 
   const [isBookmarked, setIsBookmarked] = useState(false);
@@ -608,18 +619,75 @@ const NewsRightCard: React.FC = () => {
   );
 
   if (!selectedUpdate) {
+    console.log('🔍 Rendering empty state for news page');
     return (
-      <div className="h-full flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Calendar className="h-12 w-12 text-gray-400" />
+      <div className="h-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-white p-8 relative overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-20 -right-20 w-40 h-40 bg-green-100 rounded-full opacity-20 animate-pulse"></div>
+          <div className="absolute top-1/4 -left-16 w-32 h-32 bg-blue-100 rounded-full opacity-30 animate-bounce" style={{ animationDuration: '3s' }}></div>
+          <div className="absolute bottom-1/4 -right-12 w-24 h-24 bg-purple-100 rounded-full opacity-25 animate-ping" style={{ animationDuration: '4s' }}></div>
+          <div className="absolute bottom-10 left-1/4 w-16 h-16 bg-teal-100 rounded-full opacity-20 animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute top-1/3 right-1/3 w-8 h-8 bg-orange-100 rounded-full opacity-30 animate-bounce" style={{ animationDuration: '2s', animationDelay: '0.5s' }}></div>
+          <div className="absolute bottom-1/3 left-1/3 w-12 h-12 bg-pink-100 rounded-full opacity-25 animate-ping" style={{ animationDuration: '3s', animationDelay: '1.5s' }}></div>
+        </div>
+
+        <div className="text-center max-w-md relative z-10">
+          {/* Large Icon */}
+          <div className="relative mb-8">
+            <div className="w-32 h-32 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center mx-auto shadow-lg animate-pulse">
+              <FileText className="h-16 w-16 text-blue-600 animate-bounce" style={{ animationDuration: '2s' }} />
+            </div>
+            {/* Decorative elements */}
+            <div className="absolute -top-2 -right-2 w-6 h-6 bg-red-400 rounded-full opacity-60 animate-ping" style={{ animationDuration: '3s' }}></div>
+            <div className="absolute -bottom-1 -left-1 w-4 h-4 bg-green-400 rounded-full opacity-60 animate-ping" style={{ animationDuration: '2s', animationDelay: '1s' }}></div>
           </div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">
-            Select an Update
+
+          {/* Main Message */}
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            News & Communications
           </h2>
-          <p className="text-gray-600">
-            Choose an update from the left to start reading
+          <p className="text-lg text-gray-600 mb-8">
+            Select a news item, communication, or alert from the left to view details
           </p>
+
+          {/* Feature Cards */}
+          <div className="grid grid-cols-2 gap-4 mb-8">
+            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 hover:scale-105 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse">
+                <FileText className="h-5 w-5 text-blue-600" />
+              </div>
+              <h3 className="font-semibold text-gray-800 text-sm">Latest News</h3>
+              <p className="text-xs text-gray-600">Company updates</p>
+            </div>
+            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 hover:scale-105 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse" style={{ animationDelay: '0.5s' }}>
+                <MessageCircle className="h-5 w-5 text-green-600" />
+              </div>
+              <h3 className="font-semibold text-gray-800 text-sm">Communications</h3>
+              <p className="text-xs text-gray-600">Team messages</p>
+            </div>
+            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 hover:scale-105 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+              <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse" style={{ animationDelay: '1s' }}>
+                <AlertCircle className="h-5 w-5 text-red-600" />
+              </div>
+              <h3 className="font-semibold text-gray-800 text-sm">Alerts</h3>
+              <p className="text-xs text-gray-600">Important notices</p>
+            </div>
+            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 hover:scale-105 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse" style={{ animationDelay: '1.5s' }}>
+                <ThumbsUp className="h-5 w-5 text-purple-600" />
+              </div>
+              <h3 className="font-semibold text-gray-800 text-sm">Engage</h3>
+              <p className="text-xs text-gray-600">Like & comment</p>
+            </div>
+          </div>
+
+          {/* Status Badge */}
+          <div className="inline-flex items-center px-4 py-2 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">
+            <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+            News • Communications • Alerts
+          </div>
         </div>
       </div>
     );
@@ -662,23 +730,23 @@ const NewsRightCard: React.FC = () => {
             <button
               onClick={() => handleLike(true)}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-                selectedUpdate.user_like_status === true
+                selectedUpdate.user_like_status === 'like'
                   ? "bg-green-100 text-green-700 border border-green-200"
                   : "bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200"
               }`}
             >
-              <ThumbsUp className={`h-4 w-4 ${selectedUpdate.user_like_status === true ? "fill-current" : ""}`} />
+              <ThumbsUp className={`h-4 w-4 ${selectedUpdate.user_like_status === 'like' ? "fill-current" : ""}`} />
               <span>{selectedUpdate.likes_count || 0}</span>
             </button>
             <button
               onClick={() => handleLike(false)}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-                selectedUpdate.user_like_status === false
+                selectedUpdate.user_like_status === 'dislike'
                   ? "bg-red-100 text-red-700 border border-red-200"
                   : "bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200"
               }`}
             >
-              <ThumbsDown className={`h-4 w-4 ${selectedUpdate.user_like_status === false ? "fill-current" : ""}`} />
+              <ThumbsDown className={`h-4 w-4 ${selectedUpdate.user_like_status === 'dislike' ? "fill-current" : ""}`} />
               <span>{selectedUpdate.dislikes_count || 0}</span>
             </button>
           </div>
@@ -879,7 +947,7 @@ const NewsRightCard: React.FC = () => {
             </div>
 
             {/* Tags display */}
-            {formData.tags.length > 0 && (
+            {formData.tags && Array.isArray(formData.tags) && formData.tags.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {formData.tags.map((tagId, index) => (
                   <span
@@ -926,17 +994,17 @@ const NewsRightCard: React.FC = () => {
           <h2 className="text-lg font-medium text-gray-900 mb-2">Details</h2>
           <div className="prose max-w-none">
             <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-              {selectedUpdate.content.body}
+              {selectedUpdate.body}
             </p>
           </div>
         </div>
 
         {/* Media */}
-        {selectedUpdate.content.media.length > 0 && (
+        {selectedUpdate.media && Array.isArray(selectedUpdate.media) && selectedUpdate.media.length > 0 && (
           <div className="mb-6">
             <h2 className="text-lg font-medium text-gray-900 mb-3">Media</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {selectedUpdate.content.media.map((item, index) => (
+              {selectedUpdate.media.map((item, index) => (
                 <div key={index} className="border border-gray-200 rounded-lg overflow-hidden">
                   {item.type === "image" ? (
                     <img
@@ -962,11 +1030,11 @@ const NewsRightCard: React.FC = () => {
         )}
 
         {/* Attachments */}
-        {selectedUpdate.content.attachments.length > 0 && (
+        {selectedUpdate.attachments && Array.isArray(selectedUpdate.attachments) && selectedUpdate.attachments.length > 0 && (
           <div className="mb-6">
             <h2 className="text-lg font-medium text-gray-900 mb-3">Attachments</h2>
             <div className="space-y-2">
-              {selectedUpdate.content.attachments.map((attachment, index) => (
+              {selectedUpdate.attachments.map((attachment, index) => (
                 <div
                   key={index}
                   className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
@@ -974,7 +1042,7 @@ const NewsRightCard: React.FC = () => {
                   <div className="flex items-center gap-3">
                     <FileText className="h-5 w-5 text-gray-500" />
                     <div>
-                      <p className="text-sm font-medium text-gray-900">{attachment.label}</p>
+                      <p className="text-sm font-medium text-gray-900">{attachment.name}</p>
                       <p className="text-xs text-gray-500">{attachment.type.toUpperCase()}</p>
                     </div>
                   </div>
@@ -1002,28 +1070,28 @@ const NewsRightCard: React.FC = () => {
         )}
 
         {/* Tags */}
-        {selectedUpdate.tags.length > 0 && (
+        {selectedUpdate.tags && Array.isArray(selectedUpdate.tags) && selectedUpdate.tags.length > 0 && (
           <div className="mb-6">
-                          <h2 className="text-lg font-medium text-gray-900 mb-3">Tags</h2>
-              <div className="flex flex-wrap gap-2">
-                {selectedUpdate.tags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
-                  >
-                    {typeof tag === 'number' ? getTagById(tag)?.name : tag}
-                  </span>
-                ))}
-              </div>
+            <h2 className="text-lg font-medium text-gray-900 mb-3">Tags</h2>
+            <div className="flex flex-wrap gap-2">
+              {selectedUpdate.tags.map((tag, index) => (
+                <span
+                  key={index}
+                  className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                >
+                  {typeof tag === 'number' ? getTagById(tag)?.name : tag}
+                </span>
+              ))}
+            </div>
           </div>
         )}
 
         {/* Related Updates */}
-        {selectedUpdate.content.related.length > 0 && (
+        {selectedUpdate.related && Array.isArray(selectedUpdate.related) && selectedUpdate.related.length > 0 && (
           <div className="mb-6">
             <h2 className="text-lg font-medium text-gray-900 mb-3">Related Updates</h2>
             <div className="space-y-2">
-              {selectedUpdate.content.related.map((relatedId, index) => (
+              {selectedUpdate.related.map((relatedId, index) => (
                 <div
                   key={index}
                   className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"

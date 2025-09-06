@@ -9,7 +9,7 @@ import {
   Settings,
   AlertTriangle,
 } from "lucide-react";
-import { useActivitiesContext, Activity } from "./ActivitiesContext";
+import { useActivities, Activity } from "./ActivitiesContext";
 import { activitiesApi } from "../../lib/activitiesApi";
 
 interface CreateActivityModalProps {
@@ -42,7 +42,7 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const { refreshActivities } = useActivitiesContext();
+  const { refreshActivities } = useActivities();
 
   const [formData, setFormData] = useState({
     title: "",

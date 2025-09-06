@@ -19,9 +19,9 @@ import {
   Search as SearchIcon,
   Eye,
 } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "../ui/Avatar";
 import { useChatContext } from "../../contexts/ChatContext";
 import { useNotification } from "../../contexts/NotificationContext";
-import { usePagination } from "../../contexts/PaginationContext";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -41,17 +41,55 @@ const ChatLeftCard: React.FC = () => {
   const {
     selectedContact,
     setSelectedContact,
+    contacts,
     groups,
     favorites,
     activeTab,
     setActiveTab,
     setShowProfileView,
     currentPage,
-    setCurrentPage,
+    totalPages,
+    totalRecords,
+    recordsPerPage,
+    goToPage,
+    setRecordsPerPage,
+    updatePagination,
     allUsers,
   } = useChatContext();
   const { showSuccess, showError, showWarning, showInfo } = useNotification();
-  const { setPaginationData } = usePagination();
+
+  // Debug data
+  console.log('🔍 ChatLeftCard Debug:', {
+    contacts: contacts?.length,
+    allUsers: allUsers?.length,
+    groups: groups?.length,
+    favorites: favorites?.length,
+    activeTab,
+    currentPage,
+    totalPages: totalPages || 1,
+    totalRecords,
+    recordsPerPage,
+    shouldShowPagination: totalPages > 1,
+    calculatedPages: Math.ceil(totalRecords / recordsPerPage),
+    paginationFooterData: {
+      currentPage,
+      totalPages: totalPages || 1,
+      totalRecords,
+      recordsPerPage
+    }
+  });
+
+  // Debug avatar data
+  if (allUsers && allUsers.length > 0) {
+    console.log('🔍 ChatLeftCard - Sample users with avatars:', allUsers.slice(0, 3).map((user: any) => ({
+      name: user.name,
+      avatarUrl: user.avatarUrl,
+      hasAvatarUrl: !!user.avatarUrl,
+      isImageUrl: user.avatarUrl?.includes('http'),
+      isPngUrl: user.avatarUrl?.includes('.png'),
+      isJpegUrl: user.avatarUrl?.includes('.jpeg')
+    })));
+  }
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddContactModal, setShowAddContactModal] = useState(false);
   const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
@@ -77,7 +115,6 @@ const ChatLeftCard: React.FC = () => {
   // Refs for measuring space
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const [recordsPerPage, setRecordsPerPage] = useState<number>(6);
 
   // total counts are computed in-place for pagination footer
 
@@ -132,14 +169,29 @@ const ChatLeftCard: React.FC = () => {
       const sample = container.querySelector('.h-16') as HTMLElement | null;
       const cardHeight = sample ? sample.offsetHeight : DEFAULT_CARD_HEIGHT;
 
-      const computed = Math.max(3, Math.min(12, Math.floor(available / cardHeight)));
-      setRecordsPerPage((prev) => (prev !== computed ? computed : prev));
+      const computed = Math.max(3, Math.min(10, Math.floor(available / cardHeight))); // Reduced max from 12 to 10 to ensure pagination shows
+
+      console.log('🔍 ChatLeftCard - Dynamic records calculation:', {
+        containerHeight: container.clientHeight,
+        available,
+        cardHeight,
+        computed,
+        currentRecordsPerPage: recordsPerPage,
+        totalUsers: usersSource?.length || 0,
+        willShowPagination: (usersSource?.length || 0) > computed
+      });
+
+      // Only update if the computed value is different to avoid infinite loops
+      if (computed !== recordsPerPage) {
+        console.log('🔍 ChatLeftCard - Updating recordsPerPage:', computed);
+        setRecordsPerPage(computed);
+      }
     };
 
     calculateRecords();
     window.addEventListener('resize', calculateRecords);
     return () => window.removeEventListener('resize', calculateRecords);
-  }, []);
+  }, [recordsPerPage, setRecordsPerPage]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -236,7 +288,14 @@ const ChatLeftCard: React.FC = () => {
 
   // Use full users list when available; fall back to paginatedUsers from context
   // Use complete allUsers list for proper pagination, not pre-paginated data
-  const usersSource = allUsers || [];
+  const usersSource = contacts || allUsers || [];
+
+  console.log('🔍 ChatLeftCard - Data source debug:', {
+    contactsLength: contacts?.length,
+    allUsersLength: allUsers?.length,
+    usersSourceLength: usersSource.length,
+    usersSource: usersSource.slice(0, 3) // Show first 3 items
+  });
 
   // Filter all users for the Contacts tab
   const filteredAllUsers = usersSource.filter(
@@ -285,10 +344,10 @@ const ChatLeftCard: React.FC = () => {
   const paginatedGroups = groupsItems.slice(startGroups, startGroups + recordsPerPage);
   const paginatedFavorites = favoritesItems.slice(startFavorites, startFavorites + recordsPerPage);
 
-  // Reset to first page when filters change or recordsPerPage/activeTab changes
+  // Reset to first page when filters change or activeTab changes
   useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, activeTab, recordsPerPage]);
+    goToPage(1);
+  }, [searchQuery, activeTab, goToPage]);
 
   // Update pagination context when data changes
   useEffect(() => {
@@ -300,13 +359,25 @@ const ChatLeftCard: React.FC = () => {
 
     const totalPagesLocal = Math.max(1, Math.ceil(itemsForTab.length / recordsPerPage));
 
-    setPaginationData({
-      currentPage: currentPage > totalPagesLocal ? 1 : currentPage,
+    console.log('🔍 ChatLeftCard - Updating pagination:', {
+      activeTab,
+      itemsLength: itemsForTab.length,
+      recordsPerPage,
+      totalPagesLocal,
+      currentPage
+    });
+
+    updatePagination({
       totalPages: totalPagesLocal,
       totalRecords: itemsForTab.length,
-      recordsPerPage,
     });
-  }, [currentPage, contactsItems.length, groupsItems.length, favoritesItems.length, recordsPerPage, setPaginationData, activeTab]);
+
+    // Reset to page 1 if current page is beyond the new total pages
+    if (currentPage > totalPagesLocal) {
+      console.log('🔍 ChatLeftCard - Resetting to page 1, current page exceeded total pages');
+      goToPage(1);
+    }
+  }, [contactsItems.length, groupsItems.length, favoritesItems.length, recordsPerPage, activeTab, updatePagination, currentPage, goToPage]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -421,7 +492,16 @@ const ChatLeftCard: React.FC = () => {
     setShowContextMenu(false);
   };
 
-  const renderContactItem = (item: any) => (
+  const renderContactItem = (item: any) => {
+    // Debug avatar URL
+    console.log(`🔍 Rendering contact ${item.name}:`, {
+      id: item.id,
+      avatarUrl: item.avatarUrl,
+      avatar: item.avatar,
+      hasAvatarUrl: !!item.avatarUrl
+    });
+
+    return (
     <div
       key={item.id}
       onClick={() => setSelectedContact(item)}
@@ -433,22 +513,17 @@ const ChatLeftCard: React.FC = () => {
       <div className="flex items-center gap-2.5 h-full">
         {/* Avatar */}
         <div className="relative flex-shrink-0">
-          {item.avatarUrl ? (
-            <img
-              src={item.avatarUrl}
-              alt={item.name}
-              className="w-8 h-8 rounded-full object-cover"
-            />
-          ) : (
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-xs">
+          <Avatar className="w-8 h-8">
+            {item.avatarUrl && <AvatarImage src={item.avatarUrl} alt={item.name} />}
+            <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 text-white font-semibold text-xs">
               {item.avatar ||
                 item.name
                   .split(" ")
                   .map((n: string) => n[0])
                   .join("")
                   .toUpperCase()}
-            </div>
-          )}
+            </AvatarFallback>
+          </Avatar>
           <div
             className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white ${getStatusColor(item.status)}`}
           ></div>
@@ -477,7 +552,8 @@ const ChatLeftCard: React.FC = () => {
         )}
       </div>
     </div>
-  );
+    );
+  };
 
   return (
     <div ref={containerRef} className="h-full flex flex-col overflow-hidden">

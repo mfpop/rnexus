@@ -8,8 +8,21 @@ import { usePagination } from "../../contexts/PaginationContext";
  * Redesigned to match the activities page design
  */
 const ProjectsLeftCardSimple: React.FC = () => {
-  const { selectedProject, setSelectedProject } = useProjectsContext();
-  const { setPaginationData } = usePagination();
+  const {
+    selectedProject,
+    setSelectedProject,
+    projects: projectsData,
+    loading,
+    error
+  } = useProjectsContext();
+  const {
+    currentPage,
+    goToPage,
+    setRecordsPerPage,
+    updatePagination
+  } = usePagination();
+
+  const recordsPerPage = 10; // Default records per page
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<
     "all" | "active" | "planning" | "completed"
@@ -22,8 +35,7 @@ const ProjectsLeftCardSimple: React.FC = () => {
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [selectedPriority, setSelectedPriority] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [recordsPerPage, setRecordsPerPage] = useState(10);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const debugRef = useRef<{ lastAvailable?: number; lastCardHeight?: number }>({});
@@ -74,7 +86,7 @@ const ProjectsLeftCardSimple: React.FC = () => {
       debugRef.current.lastAvailable = available;
       debugRef.current.lastCardHeight = cardHeight;
 
-      setRecordsPerPage((prev) => (prev !== computed ? computed : prev));
+      setRecordsPerPage(computed);
     };
 
     const scheduleCalc = () => {
@@ -106,72 +118,74 @@ const ProjectsLeftCardSimple: React.FC = () => {
     };
   }, []);
 
-  const projects: Project[] = [
-    {
-      id: "proj-001",
-      name: "Production Line Automation",
-      description: "Implementing automated production systems",
-      status: "active",
-      priority: "high",
-      progress: 68,
-      manager: "Sarah Johnson",
-      team: ["Sarah Johnson", "Mike Chen", "Lisa Wilson"],
-      startDate: new Date(Date.now() - 86400000 * 60),
-      endDate: new Date(Date.now() + 86400000 * 30),
-      budget: 500000,
-      spent: 340000,
-      milestones: [],
-      tasks: [],
-    },
-    {
-      id: "proj-002",
-      name: "Quality Management System Upgrade",
-      description: "Upgrading QMS to meet latest ISO standards",
-      status: "planning",
-      priority: "medium",
-      progress: 15,
-      manager: "John Smith",
-      team: ["John Smith", "QC Team"],
-      startDate: new Date(Date.now() + 86400000 * 30),
-      endDate: new Date(Date.now() + 86400000 * 120),
-      budget: 200000,
-      spent: 30000,
-      milestones: [],
-      tasks: [],
-    },
-    {
-      id: "proj-003",
-      name: "Energy Efficiency Initiative",
-      description: "Reducing energy consumption across all facilities",
-      status: "active",
-      priority: "medium",
-      progress: 42,
-      manager: "Emily Wilson",
-      team: ["Emily Wilson", "Facilities Team"],
-      startDate: new Date(Date.now() - 86400000 * 30),
-      endDate: new Date(Date.now() + 86400000 * 90),
-      budget: 150000,
-      spent: 63000,
-      milestones: [],
-      tasks: [],
-    },
-    {
-      id: "proj-004",
-      name: "Safety Training Program",
-      description: "Comprehensive safety training for all employees",
-      status: "completed",
-      priority: "high",
-      progress: 100,
-      manager: "Mike Davis",
-      team: ["Mike Davis", "HR Team", "Safety Officers"],
-      startDate: new Date(Date.now() - 86400000 * 90),
-      endDate: new Date(Date.now() - 86400000 * 10),
-      budget: 75000,
-      spent: 74500,
-      milestones: [],
-      tasks: [],
-    },
-  ];
+  const projects: Project[] = projectsData || []; // Use real data from GraphQL
+
+  // Filter projects based on active tab and search
+  const filteredProjects = projects.filter((project) => {
+    const matchesTab = activeTab === "all" || project.status === activeTab;
+    const matchesSearch = searchQuery === "" ||
+      project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      project.manager.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesPriority = !selectedPriority || project.priority === selectedPriority;
+    const matchesStatus = !selectedStatus || project.status === selectedStatus;
+
+    return matchesTab && matchesSearch && matchesPriority && matchesStatus;
+  });
+
+  // Sort projects
+  const sortedAndFilteredProjects = [...filteredProjects].sort((a, b) => {
+    let comparison = 0;
+
+    switch (sortBy) {
+      case "name":
+        comparison = a.name.localeCompare(b.name);
+        break;
+      case "progress":
+        comparison = a.progress - b.progress;
+        break;
+      case "priority":
+        const priorityOrder = { urgent: 4, high: 3, medium: 2, low: 1 };
+        comparison = (priorityOrder[a.priority as keyof typeof priorityOrder] || 0) -
+                    (priorityOrder[b.priority as keyof typeof priorityOrder] || 0);
+        break;
+      case "deadline":
+        comparison = a.endDate.getTime() - b.endDate.getTime();
+        break;
+    }
+
+    return sortOrder === "asc" ? comparison : -comparison;
+  });
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    goToPage(1);
+  }, [searchQuery, activeTab, selectedPriority, selectedStatus, goToPage]);
+
+  // Update pagination context when data changes
+  useEffect(() => {
+    updatePagination({
+      totalRecords: sortedAndFilteredProjects.length,
+      totalPages: Math.max(1, Math.ceil(sortedAndFilteredProjects.length / recordsPerPage)),
+    });
+  }, [sortedAndFilteredProjects.length, recordsPerPage, updatePagination]);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-gray-500">Loading projects...</div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-red-500">Error loading projects: {error.message}</div>
+      </div>
+    );
+  }
 
   const getStatusBulletColor = (status: string) => {
     switch (status) {
@@ -236,64 +250,10 @@ const ProjectsLeftCardSimple: React.FC = () => {
     setSortOrder(sortOrder === "asc" ? "desc" : "asc");
   };
 
-  // Filter projects based on active tab and search
-  const filteredProjects = projects.filter((project) => {
-    const matchesTab = activeTab === "all" || project.status === activeTab;
-    const matchesSearch = searchQuery === "" ||
-      project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.manager.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesPriority = !selectedPriority || project.priority === selectedPriority;
-    const matchesStatus = !selectedStatus || project.status === selectedStatus;
-
-    return matchesTab && matchesSearch && matchesPriority && matchesStatus;
-  });
-
-  // Sort projects
-  const sortedAndFilteredProjects = [...filteredProjects].sort((a, b) => {
-    let comparison = 0;
-
-    switch (sortBy) {
-      case "name":
-        comparison = a.name.localeCompare(b.name);
-        break;
-      case "progress":
-        comparison = a.progress - b.progress;
-        break;
-      case "priority":
-        const priorityOrder = { urgent: 4, high: 3, medium: 2, low: 1 };
-        comparison = (priorityOrder[a.priority as keyof typeof priorityOrder] || 0) -
-                    (priorityOrder[b.priority as keyof typeof priorityOrder] || 0);
-        break;
-      case "deadline":
-        comparison = a.endDate.getTime() - b.endDate.getTime();
-        break;
-    }
-
-    return sortOrder === "asc" ? comparison : -comparison;
-  });
-
   // Pagination logic
-  const totalPages = Math.ceil(sortedAndFilteredProjects.length / recordsPerPage);
   const startIndex = (currentPage - 1) * recordsPerPage;
   const endIndex = startIndex + recordsPerPage;
   const paginatedProjects = sortedAndFilteredProjects.slice(startIndex, endIndex);
-
-  // Reset to first page when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, activeTab, selectedPriority, selectedStatus]);
-
-  // pagination handled via usePagination context in the wider layout
-
-  // Update pagination context when data changes
-  useEffect(() => {
-    setPaginationData({
-      currentPage,
-      totalPages,
-      totalRecords: sortedAndFilteredProjects.length,
-      recordsPerPage,
-    });
-  }, [currentPage, totalPages, sortedAndFilteredProjects.length, recordsPerPage, setPaginationData]);
 
   return (
     <div ref={containerRef} className="h-full flex flex-col relative">

@@ -1,82 +1,113 @@
-# RNexus Documentation
+# RNexus Frontend
 
-Welcome to the RNexus project documentation. This directory contains all project documentation organized by category for easy navigation and maintenance.
+A modern React application built with TypeScript, Vite, and Tailwind CSS.
 
-## 📚 Documentation Structure
+## Features
 
-### 🏗️ Architecture & Design
-- **[PROJECT_ARCHITECTURE.md](architecture/PROJECT_ARCHITECTURE.md)** - High-level system architecture
-- **[DATABASE_STRUCTURE.md](architecture/DATABASE_STRUCTURE.md)** - Database schema and relationships
-- **[CI_CD_INTEGRATION.md](architecture/CI_CD_INTEGRATION.md)** - CI/CD pipeline configuration
+- **React 19** with TypeScript
+- **Vite** for fast development and building
+- **React Router** for client-side routing
+- **Tailwind CSS** for styling
+- **Lucide React** for icons
+- **Modern UI Components** with shadcn/ui style
 
-### 🚀 Setup & Deployment
-- **[SETUP_GUIDE.md](setup/SETUP_GUIDE.md)** - Complete setup instructions
-- **[SETUP_COMPLETE_SYSTEM.md](setup/SETUP_COMPLETE_SYSTEM.md)** - System setup completion guide
-- **[DEPLOYMENT_PRODUCTION.md](setup/DEPLOYMENT_PRODUCTION.md)** - Production deployment guide
-- **[ENVIRONMENT.md](setup/ENVIRONMENT.md)** - Environment configuration
-- **[RESTORE_RUNBOOK.md](setup/RESTORE_RUNBOOK.md)** - System restoration procedures
+## Platform Modules
 
-### 💻 Implementation Details
-- **[CHAT_SYSTEM_README.md](implementation/CHAT_SYSTEM_README.md)** - Chat functionality implementation
-- **[CONTACT_GRAPHQL_IMPLEMENTATION.md](implementation/CONTACT_GRAPHQL_IMPLEMENTATION.md)** - Contact system GraphQL
-- **[CHAT_GRAPHQL_IMPLEMENTATION.md](implementation/CHAT_GRAPHQL_IMPLEMENTATION.md)** - Chat system GraphQL
-- **[ORGANIZATIONAL_STRUCTURE_IMPLEMENTATION.md](implementation/ORGANIZATIONAL_STRUCTURE_IMPLEMENTATION.md)** - Org structure features
-- **[HELP_SYSTEM_DOCUMENTATION.md](implementation/HELP_SYSTEM_DOCUMENTATION.md)** - Help system implementation
+### 📢 News, Alerts, and Communication
+This module is a centralized tool for disseminating important information, managing alerts, and broadcasting official communications to the entire organization or specific departments.
 
-### 🧪 Testing & Quality
-- **[CHAT_FUNCTIONALITY_TEST_REPORT.md](testing/CHAT_FUNCTIONALITY_TEST_REPORT.md)** - Chat testing results
-- **[CHAT_FUNCTIONALITY_COMPLETE.md](testing/CHAT_FUNCTIONALITY_COMPLETE.md)** - Chat testing completion
-- **[CHAT_LAYOUT_REPAIR_COMPLETE.md](testing/CHAT_LAYOUT_REPAIR_COMPLETE.md)** - Chat layout fixes
-- **[ENHANCED_CHAT_COMPLETE.md](testing/ENHANCED_CHAT_COMPLETE.md)** - Chat enhancements
-- **[PROFILE_PAGE_DEBUGGING.md](testing/PROFILE_PAGE_DEBUGGING.md)** - Profile debugging
-- **[GRAPHQL_PROFILE_FIXES.md](testing/GRAPHQL_PROFILE_FIXES.md)** - GraphQL profile fixes
+- **News Publishing**: Empowers every department to publish official news and updates to a designated news feed
+- **Alerts Management**: Designed to create and manage time-sensitive alerts, ensuring critical information reaches the right people immediately
+- **Official Communications**: Serves as a platform for sending formal communications and memos to targeted groups or the entire company
 
-### 🔧 Development Tools
-- **[DEVELOPMENT_TOOLS_SUMMARY.md](development/DEVELOPMENT_TOOLS_SUMMARY.md)** - Development tools overview
-- **[DEPENDENCIES_UPDATE.md](development/DEPENDENCIES_UPDATE.md)** - Dependency management
-- **[TYPING_FIXES.md](development/TYPING_FIXES.md)** - Type checking fixes
-- **[VENV_CONSOLIDATION_SUMMARY.md](development/VENV_CONSOLIDATION_SUMMARY.md)** - Virtual environment setup
+### 🏭 Production Management
+Real-time monitoring and management of manufacturing lines with efficiency tracking and alerts.
 
-## 🚀 Quick Start
+### 📊 Business Intelligence
+Comprehensive analytics dashboard with KPI visualization, trend analysis, and reporting.
 
-1. **Setup**: See [SETUP_GUIDE.md](setup/SETUP_GUIDE.md)
-2. **Architecture**: See [PROJECT_ARCHITECTURE.md](architecture/PROJECT_ARCHITECTURE.md)
-3. **Development**: See [DEVELOPMENT_TOOLS_SUMMARY.md](development/DEVELOPMENT_TOOLS_SUMMARY.md)
+### 👥 Team Collaboration
+Project monitoring, task management, and collaboration tools with real-time communication.
 
-## 📁 Project Structure
+## Getting Started
 
-```
-rnexus/
-├── docs/                          # 📚 All documentation
-│   ├── architecture/              # 🏗️ System design & architecture
-│   ├── setup/                     # 🚀 Setup & deployment guides
-│   ├── implementation/            # 💻 Feature implementation details
-│   ├── testing/                   # 🧪 Testing & debugging guides
-│   └── development/               # 🔧 Development tools & processes
-├── backend/                       # 🐍 Django backend
-├── frontend/                      # ⚛️ React frontend
-├── tools/                         # 🛠️ Development tools
-└── README.md                      # 📖 Project overview
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+
+### Installation
+
+1. Install dependencies:
+
+```bash
+npm install
 ```
 
-## 🔍 Finding Information
+2. Start the development server:
 
-- **New to the project?** Start with [SETUP_GUIDE.md](setup/SETUP_GUIDE.md)
-- **Understanding the system?** Read [PROJECT_ARCHITECTURE.md](architecture/PROJECT_ARCHITECTURE.md)
-- **Setting up development?** See [DEVELOPMENT_TOOLS_SUMMARY.md](development/DEVELOPMENT_TOOLS_SUMMARY.md)
-- **Implementing features?** Check [implementation/](implementation/) directory
-- **Debugging issues?** Look in [testing/](testing/) directory
+```bash
+npm run dev
+```
 
-## 📝 Contributing
+3. Open your browser and navigate to `http://localhost:5173`
 
-When adding new documentation:
-1. Place it in the appropriate category directory
-2. Update this README with a link
-3. Follow the existing naming conventions
-4. Include clear descriptions and examples
+### Available Scripts
 
-## 🔗 Related Links
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
+- `npm run format` - Format code with Prettier
 
-- **Backend Setup**: [../backend/VENV_SETUP.md](../backend/VENV_SETUP.md)
-- **Project README**: [../README.md](../README.md)
-- **Start Servers**: [../start_servers.sh](../start_servers.sh)
+## Project Structure
+
+```
+src/
+├── components/          # Reusable UI components
+│   ├── ui/             # Base UI components (Button, Card, etc.)
+│   └── Layout.tsx      # Main layout component
+├── pages/              # Page components
+│   ├── Home.tsx        # Home page
+│   ├── Activities.tsx  # Activities page
+│   ├── Chat.tsx        # Chat page
+│   └── ...             # Other pages
+├── lib/                # Utility functions
+│   └── utils.ts        # Common utilities
+├── App.tsx             # Main app component
+└── main.tsx            # Entry point
+```
+
+## Technologies Used
+
+- **React 18.3.1** - UI library
+- **TypeScript 5.9.2** - Type safety
+- **Vite 7.0.6** - Build tool
+- **React Router 6.28.0** - Routing
+- **Tailwind CSS 4.1.11** - Styling
+- **Lucide React 0.468.0** - Icons
+
+## Development
+
+The application uses a modern tech stack with:
+
+- **Component-based architecture** with React hooks
+- **Type-safe development** with TypeScript
+- **Modern styling** with Tailwind CSS
+- **Fast development** with Vite's hot module replacement
+- **Clean code** with ESLint and Prettier
+
+## Building for Production
+
+```bash
+npm run build
+```
+
+This will create a `dist` folder with optimized production files.
+
+## Contributing
+
+1. Follow the existing code style
+2. Use TypeScript for all new code
+3. Write meaningful commit messages
+4. Test your changes before submitting

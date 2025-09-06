@@ -86,6 +86,7 @@ class UserProfile(models.Model):
     state_province = models.CharField(max_length=100, blank=True, null=True)
     zip_code = models.CharField(max_length=20, blank=True, null=True)
     country = models.CharField(max_length=100, blank=True, null=True)
+    country_code = models.CharField(max_length=10, blank=True, null=True)
 
     bio = models.TextField(blank=True, null=True)
 
@@ -1055,6 +1056,27 @@ class UpdateComment(models.Model):
         return user == self.author or user.is_staff or user.is_superuser
 
 
+class UpdateBookmark(models.Model):
+    """Model to track bookmarks on updates"""
+
+    id = models.AutoField(primary_key=True)
+    update = models.ForeignKey(Update, on_delete=models.CASCADE, related_name="bookmarks")
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="update_bookmarks"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [
+            "update",
+            "user",
+        ]  # One user can only bookmark once per update
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.user.username} bookmarked {self.update.title}"
+
+
 # Location Models for Countries, States, Cities, and Zip Codes
 class Country(models.Model):
     """Model for countries"""
@@ -1228,4 +1250,205 @@ class Contact(models.Model):
     def assign_to_user(self, user):
         """Assign contact to a specific user"""
         self.assigned_to = user
+
+
+# =====================================================
+# NEW STREAMLINED MODELS FOR DATABASE REWRITE
+# These models provide a cleaner, more efficient database structure
+# =====================================================
+
+class ActivityCategoryNew(models.Model):
+    """Simple category lookup for activities"""
+    name = models.CharField(max_length=50, unique=True)
+    display_name = models.CharField(max_length=100)
+    icon = models.CharField(max_length=10, default="📋")  # Emoji icon
+    color = models.CharField(max_length=7, default="#3B82F6")  # Hex color
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        verbose_name_plural = "Activity Categories (New)"
+        ordering = ['display_name']
+        db_table = 'api_activitycategory'
+    
+    def __str__(self):
+        return self.display_name
+
+
+class ActivityStatusNew(models.Model):
+    """Status definitions with colors"""
+    name = models.CharField(max_length=20, unique=True)
+    display_name = models.CharField(max_length=50)
+    color_bg = models.CharField(max_length=7, default="#F3F4F6")
+    color_text = models.CharField(max_length=7, default="#374151")
+    color_border = models.CharField(max_length=7, default="#D1D5DB")
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        verbose_name_plural = "Activity Statuses (New)"
+        ordering = ['display_name']
+        db_table = 'api_activitystatus_new'
+    
+    def __str__(self):
+        return self.display_name
+
+
+class ActivityPriorityNew(models.Model):
+    """Priority definitions with colors"""
+    name = models.CharField(max_length=20, unique=True)
+    display_name = models.CharField(max_length=50)
+    level = models.IntegerField(default=0)  # Numeric priority (higher = more urgent)
+    color_bg = models.CharField(max_length=7, default="#F3F4F6")
+    color_text = models.CharField(max_length=7, default="#374151")
+    color_border = models.CharField(max_length=7, default="#D1D5DB")
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        verbose_name_plural = "Activity Priorities (New)"
+        ordering = ['-level']
+        db_table = 'api_activitypriority_new'
+    
+    def __str__(self):
+        return self.display_name
+
+
+class ActivityNew(models.Model):
+    """Simplified Activity model with essential fields"""
+    
+    # Primary fields
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    
+    # Relationships (simplified)
+    category = models.ForeignKey(ActivityCategoryNew, on_delete=models.PROTECT, related_name='activities')
+    status = models.ForeignKey(ActivityStatusNew, on_delete=models.PROTECT, related_name='activities')
+    priority = models.ForeignKey(ActivityPriorityNew, on_delete=models.PROTECT, related_name='activities')
+    
+    # Time management
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    estimated_duration = models.IntegerField(help_text="Estimated duration in minutes")
+    actual_duration = models.IntegerField(blank=True, null=True, help_text="Actual duration in minutes")
+    
+    # Assignment and location
+    assigned_to = models.CharField(max_length=100)
+    assigned_by = models.CharField(max_length=100)
+    location = models.CharField(max_length=200, blank=True, null=True)
+    
+    # Progress and notes
+    progress = models.IntegerField(default=0, help_text="Progress percentage (0-100)")
+    notes = models.TextField(blank=True)
+    
+    # Metadata
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_activities_new')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        verbose_name_plural = "Activities (New)"
+        ordering = ['-created_at']
+        db_table = 'api_activity_new'
+        indexes = [
+            models.Index(fields=['category', 'status']),
+            models.Index(fields=['status', 'priority']),
+            models.Index(fields=['created_by', 'created_at']),
+            models.Index(fields=['is_active', 'start_time']),
+        ]
+    
+    def __str__(self):
+        return f"{self.title} ({self.category.name})"
+    
+    @property
+    def duration_hours(self):
+        """Calculate duration in hours"""
+        duration = self.actual_duration or self.estimated_duration
+        return round(duration / 60, 1) if duration else 0
+
+
+class NewsCategoryNew(models.Model):
+    """Category for news/updates"""
+    name = models.CharField(max_length=50, unique=True)
+    display_name = models.CharField(max_length=100)
+    icon = models.CharField(max_length=10, default="📰")  # Emoji icon
+    color = models.CharField(max_length=7, default="#10B981")  # Hex color
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        verbose_name_plural = "News Categories (New)"
+        ordering = ['display_name']
+        db_table = 'api_newscategory'
+    
+    def __str__(self):
+        return self.display_name
+
+
+class NewsStatusNew(models.Model):
+    """Status for news/updates"""
+    name = models.CharField(max_length=20, unique=True)
+    display_name = models.CharField(max_length=50)
+    color_bg = models.CharField(max_length=7, default="#F3F4F6")
+    color_text = models.CharField(max_length=7, default="#374151")
+    color_border = models.CharField(max_length=7, default="#D1D5DB")
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        verbose_name_plural = "News Statuses (New)"
+        ordering = ['display_name']
+        db_table = 'api_newsstatus'
+    
+    def __str__(self):
+        return self.display_name
+
+
+class NewsUpdateNew(models.Model):
+    """Simplified News/Update model"""
+    
+    # Primary fields
+    id = models.CharField(max_length=255, primary_key=True)
+    title = models.CharField(max_length=255)
+    summary = models.TextField()
+    body = models.TextField()
+    
+    # Relationships (simplified)
+    category = models.ForeignKey(NewsCategoryNew, on_delete=models.PROTECT, related_name='updates')
+    status = models.ForeignKey(NewsStatusNew, on_delete=models.PROTECT, related_name='updates')
+    
+    # Content metadata
+    author = models.CharField(max_length=255)
+    tags = models.JSONField(default=list)  # List of tag strings
+    icon = models.CharField(max_length=10, default="📰")  # Emoji icon
+    
+    # Publishing and priority
+    timestamp = models.DateTimeField(default=timezone.now)
+    priority = models.IntegerField(default=0)  # Higher number = higher priority
+    expires_at = models.DateTimeField(null=True, blank=True)  # For time-sensitive updates
+    
+    # Metadata
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_updates_new')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        verbose_name_plural = "News Updates (New)"
+        ordering = ['-priority', '-timestamp']
+        db_table = 'api_newsupdate'
+        indexes = [
+            models.Index(fields=['category', 'status']),
+            models.Index(fields=['status', 'timestamp']),
+            models.Index(fields=['created_by', 'timestamp']),
+            models.Index(fields=['is_active', 'timestamp']),
+            models.Index(fields=['priority', 'timestamp']),
+        ]
+    
+    def __str__(self):
+        return f"{self.title} ({self.category.name})"
+    
+    @property
+    def is_expired(self):
+        """Check if update is expired"""
+        if self.expires_at:
+            return timezone.now() > self.expires_at
+        return False
         self.save(update_fields=["assigned_to"])

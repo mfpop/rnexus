@@ -27,6 +27,7 @@ export const GET_USER_PROFILE = gql`
       stateProvince
       zipCode
       country
+      countryCode
       bio
       education
       workHistory
@@ -54,13 +55,13 @@ export const UPDATE_USER_PROFILE = gql`
     $phoneCountryCode: String
     $phoneType: String
     $secondaryPhone: String
-    $secondaryPhoneType: String
     $streetAddress: String
     $apartmentSuite: String
     $city: String
     $stateProvince: String
     $zipCode: String
     $country: String
+    $countryCode: String
     $bio: String
     $education: String
     $workHistory: String
@@ -80,13 +81,13 @@ export const UPDATE_USER_PROFILE = gql`
       phoneCountryCode: $phoneCountryCode
       phoneType: $phoneType
       secondaryPhone: $secondaryPhone
-      secondaryPhoneType: $secondaryPhoneType
       streetAddress: $streetAddress
       apartmentSuite: $apartmentSuite
       city: $city
       stateProvince: $stateProvince
       zipCode: $zipCode
       country: $country
+      countryCode: $countryCode
       bio: $bio
       education: $education
       workHistory: $workHistory
@@ -210,6 +211,7 @@ export interface UserProfile {
   stateProvince?: string;
   zipCode?: string;
   country?: string;
+  countryCode?: string;
   bio?: string;
   education?: any;
   workHistory?: any;
@@ -251,6 +253,7 @@ export interface UpdateUserProfileVariables {
   stateProvince?: string;
   zipCode?: string;
   country?: string;
+  countryCode?: string;
   bio?: string;
   education?: string;
   workHistory?: string;

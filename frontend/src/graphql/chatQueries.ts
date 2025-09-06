@@ -2,7 +2,7 @@ import { gql } from '@apollo/client';
 
 // Fragment for Chat data
 export const CHAT_FRAGMENT = gql`
-  fragment ChatFragment on ChatType {
+  fragment ChatChatFragment on ChatType {
     id
     chatType
     name
@@ -53,7 +53,7 @@ export const CHAT_FRAGMENT = gql`
 
 // Fragment for Message data
 export const MESSAGE_FRAGMENT = gql`
-  fragment MessageFragment on MessageType {
+  fragment ChatMessageFragment on MessageType {
     id
     chatId
     chatType
@@ -95,7 +95,7 @@ export const MESSAGE_FRAGMENT = gql`
 export const GET_USER_CHATS = gql`
   query GetUserChats($userId: ID) {
     userChats(userId: $userId) {
-      ...ChatFragment
+      ...ChatChatFragment
     }
   }
   ${CHAT_FRAGMENT}
@@ -113,6 +113,8 @@ export const GET_ALL_USERS_WITH_AVATARS = gql`
       isActive
       avatar
       avatarUrl
+      position
+      department
     }
   }
 `;
@@ -121,7 +123,7 @@ export const GET_ALL_USERS_WITH_AVATARS = gql`
 export const GET_CHAT = gql`
   query GetChat($id: String!) {
     chat(id: $id) {
-      ...ChatFragment
+      ...ChatChatFragment
     }
   }
   ${CHAT_FRAGMENT}
@@ -131,7 +133,7 @@ export const GET_CHAT = gql`
 export const GET_MESSAGES = gql`
   query GetMessages($chatId: String!, $chatType: String!) {
     messages(chatId: $chatId, chatType: $chatType) {
-      ...MessageFragment
+      ...ChatMessageFragment
     }
   }
   ${MESSAGE_FRAGMENT}
@@ -157,7 +159,7 @@ export const CREATE_CHAT = gql`
     ) {
       ok
       chat {
-        ...ChatFragment
+        ...ChatChatFragment
       }
       error
     }
@@ -191,7 +193,7 @@ export const SEND_MESSAGE = gql`
     ) {
       ok
       message {
-        ...MessageFragment
+        ...ChatMessageFragment
       }
     }
   }

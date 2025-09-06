@@ -4,7 +4,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 
-import { useActivitiesContext } from "./ActivitiesContext";
+import { useActivities } from "./ActivitiesContext";
 
 /**
  * ActivitiesLeftCardSimple - Simple activities list for StableLayout integration
@@ -17,7 +17,7 @@ const ActivitiesLeftCardSimple: React.FC = () => {
     loading,
     error,
     refreshActivities
-  } = useActivitiesContext();
+  } = useActivities();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<
     "all" | "today" | "upcoming" | "overdue"

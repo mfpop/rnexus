@@ -16,6 +16,7 @@ interface ListPaginationFooterProps {
  * ListPaginationFooter - Pagination controls for list pages
  * Ensures consistent 10 records per page display across all list components
  */
+
 const ListPaginationFooter: React.FC<ListPaginationFooterProps> = ({
   currentPage,
   totalPages,
@@ -26,35 +27,41 @@ const ListPaginationFooter: React.FC<ListPaginationFooterProps> = ({
   showRecordsPerPage = true,
   className = "",
 }) => {
-  const endRecord = Math.min(currentPage * recordsPerPage, totalRecords);
+  // Defensive: ensure all values are valid numbers
+  const safeCurrentPage = Number.isFinite(currentPage) && currentPage > 0 ? currentPage : 1;
+  const safeTotalPages = Number.isFinite(totalPages) && totalPages > 0 ? totalPages : 1;
+  const safeTotalRecords = Number.isFinite(totalRecords) && totalRecords >= 0 ? totalRecords : 0;
+  const safeRecordsPerPage = Number.isFinite(recordsPerPage) && recordsPerPage > 0 ? recordsPerPage : 10;
+
+  const endRecord = Math.min(safeCurrentPage * safeRecordsPerPage, safeTotalRecords);
 
   const handleFirstPage = () => {
-    if (currentPage > 1) {
+    if (safeCurrentPage > 1) {
       onPageChange(1);
     }
   };
 
   const handlePreviousPage = () => {
-    if (currentPage > 1) {
-      onPageChange(currentPage - 1);
+    if (safeCurrentPage > 1) {
+      onPageChange(safeCurrentPage - 1);
     }
   };
 
   const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      onPageChange(currentPage + 1);
+    if (safeCurrentPage < safeTotalPages) {
+      onPageChange(safeCurrentPage + 1);
     }
   };
 
   const handleLastPage = () => {
-    if (currentPage < totalPages) {
-      onPageChange(totalPages);
+    if (safeCurrentPage < safeTotalPages) {
+      onPageChange(safeTotalPages);
     }
   };
 
   const getVisiblePages = () => {
     // If only one page, just return [1]
-    if (totalPages === 1) {
+    if (safeTotalPages === 1) {
       return [1];
     }
 
@@ -63,14 +70,14 @@ const ListPaginationFooter: React.FC<ListPaginationFooterProps> = ({
     const rangeWithDots = [];
 
     for (
-      let i = Math.max(2, currentPage - delta);
-      i <= Math.min(totalPages - 1, currentPage + delta);
+      let i = Math.max(2, safeCurrentPage - delta);
+      i <= Math.min(safeTotalPages - 1, safeCurrentPage + delta);
       i++
     ) {
       range.push(i);
     }
 
-    if (currentPage - delta > 2) {
+    if (safeCurrentPage - delta > 2) {
       rangeWithDots.push(1, "...");
     } else {
       rangeWithDots.push(1);
@@ -78,16 +85,17 @@ const ListPaginationFooter: React.FC<ListPaginationFooterProps> = ({
 
     rangeWithDots.push(...range);
 
-    if (currentPage + delta < totalPages - 1) {
-      rangeWithDots.push("...", totalPages);
+    if (safeCurrentPage + delta < safeTotalPages - 1) {
+      rangeWithDots.push("...", safeTotalPages);
     } else {
-      rangeWithDots.push(totalPages);
+      rangeWithDots.push(safeTotalPages);
     }
 
     return rangeWithDots;
   };
 
-  if (totalRecords === 0) {
+
+  if (safeTotalRecords === 0) {
     return (
       <div className="flex items-center justify-center h-full text-sm text-teal-600">
         No records to display
@@ -102,7 +110,7 @@ const ListPaginationFooter: React.FC<ListPaginationFooterProps> = ({
         {/* Records info */}
         <div className="text-xs text-gray-700">
           <span className="font-medium">{endRecord}</span> of{" "}
-          <span className="font-medium">{totalRecords}</span>
+          <span className="font-medium">{safeTotalRecords}</span>
         </div>
 
         {/* Records per page selector */}
@@ -113,7 +121,7 @@ const ListPaginationFooter: React.FC<ListPaginationFooterProps> = ({
             </label>
             <select
               id="recordsPerPage"
-              value={recordsPerPage}
+              value={safeRecordsPerPage}
               onChange={(e) => onRecordsPerPageChange(Number(e.target.value))}
               className="text-xs border border-gray-300 rounded px-1.5 py-0.5 focus:ring-1 focus:ring-blue-500 focus:border-transparent"
             >
@@ -132,7 +140,7 @@ const ListPaginationFooter: React.FC<ListPaginationFooterProps> = ({
         {/* First Page */}
         <button
           onClick={handleFirstPage}
-          disabled={currentPage === 1}
+          disabled={safeCurrentPage === 1}
           className="flex items-center justify-center w-6 h-6 text-xs font-medium text-gray-500 bg-white border border-gray-300 rounded hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-gray-500 transition-colors"
           title="First page"
         >
@@ -142,7 +150,7 @@ const ListPaginationFooter: React.FC<ListPaginationFooterProps> = ({
         {/* Previous Page */}
         <button
           onClick={handlePreviousPage}
-          disabled={currentPage === 1}
+          disabled={safeCurrentPage === 1}
           className="flex items-center justify-center w-6 h-6 text-xs font-medium text-gray-500 bg-white border border-gray-300 rounded hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-gray-500 transition-colors"
           title="Previous page"
         >
@@ -150,7 +158,7 @@ const ListPaginationFooter: React.FC<ListPaginationFooterProps> = ({
         </button>
 
         {/* Page Numbers */}
-        {getVisiblePages().map((page, index) => (
+  {getVisiblePages().map((page, index) => (
           <React.Fragment key={index}>
             {page === "..." ? (
               <span className="flex items-center justify-center w-6 h-6 text-xs text-gray-500">
@@ -158,16 +166,16 @@ const ListPaginationFooter: React.FC<ListPaginationFooterProps> = ({
               </span>
             ) : (
               <button
-                onClick={() => onPageChange(page as number)}
+                onClick={() => onPageChange(Number(page))}
                 className={`flex items-center justify-center w-6 h-6 text-xs font-medium rounded transition-colors ${
-                  page === currentPage
+                  Number(page) === safeCurrentPage
                     ? "bg-blue-600 text-white border border-blue-600"
                     : "text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-700"
                 }`}
                 aria-label={`Go to page ${page}`}
-                aria-current={page === currentPage ? "page" : undefined}
+                aria-current={Number(page) === safeCurrentPage ? "page" : undefined}
               >
-                {page}
+                {String(page)}
               </button>
             )}
           </React.Fragment>
@@ -176,7 +184,7 @@ const ListPaginationFooter: React.FC<ListPaginationFooterProps> = ({
         {/* Next Page */}
         <button
           onClick={handleNextPage}
-          disabled={currentPage === totalPages}
+          disabled={safeCurrentPage === safeTotalPages}
           className="flex items-center justify-center w-6 h-6 text-xs font-medium text-gray-500 bg-white border border-gray-300 rounded hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-gray-500 transition-colors"
           title="Next page"
         >
@@ -186,7 +194,7 @@ const ListPaginationFooter: React.FC<ListPaginationFooterProps> = ({
         {/* Last Page */}
         <button
           onClick={handleLastPage}
-          disabled={currentPage === totalPages}
+          disabled={safeCurrentPage === safeTotalPages}
           className="flex items-center justify-center w-6 h-6 text-xs font-medium text-gray-500 bg-white border border-gray-300 rounded hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-gray-500 transition-colors"
           title="Last page"
         >

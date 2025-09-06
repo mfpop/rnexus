@@ -43,7 +43,7 @@ const useSystemMessageWebSocket = (
     const possibleConfigs = [
       { port: 8000, path: "/ws/test/" }, // Use test endpoint that doesn't require auth
       { port: 8000, path: "/ws/system_messages/" },
-      { port: 8001, path: "/ws/system_messages/" },
+      { port: 8000, path: "/ws/system_messages/" },
       { port: 3001, path: "/ws/system_messages/" },
       { port: 3000, path: "/ws/system_messages/" },
     ];

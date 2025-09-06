@@ -1,15 +1,12 @@
 import React from 'react';
 import {
-  Phone,
   PhoneOff,
   Mic,
   MicOff,
   Video,
   VideoOff,
   Monitor,
-  MonitorOff,
-  Volume2,
-  VolumeX
+  MonitorOff
 } from 'lucide-react';
 import { useCall } from '../../contexts/CallContext';
 import Button from '../ui/Button';

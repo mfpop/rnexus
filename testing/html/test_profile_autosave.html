@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Autosave Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .test-description {
+            margin-bottom: 15px;
+            color: #666;
+            line-height: 1.5;
+        }
+        .test-steps {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .test-steps ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .test-steps li {
+            margin-bottom: 8px;
+            color: #555;
+        }
+        .expected-result {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid #28a745;
+        }
+        .expected-result h4 {
+            margin: 0 0 10px 0;
+            color: #155724;
+        }
+        .expected-result p {
+            margin: 0;
+            color: #155724;
+        }
+        .note {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid #ffc107;
+            margin-top: 15px;
+        }
+        .note h4 {
+            margin: 0 0 10px 0;
+            color: #856404;
+        }
+        .note p {
+            margin: 0;
+            color: #856404;
+        }
+        .status-indicator {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status-saving {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        .status-saved {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+        .status-error {
+            background: #ffebee;
+            color: #c62828;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Profile Autosave Functionality Test</h1>
+        
+        <div class="test-section">
+            <div class="test-title">Test 1: Basic Autosave Functionality</div>
+            <div class="test-description">
+                Test that profile changes are automatically saved after a 2-second delay when the user stops typing.
+            </div>
+            <div class="test-steps">
+                <ol>
+                    <li>Navigate to the Profile page (Personal tab)</li>
+                    <li>Make changes to any field (e.g., First Name, Last Name, Bio)</li>
+                    <li>Wait for 2 seconds without making additional changes</li>
+                    <li>Observe the autosave status indicator in the header</li>
+                </ol>
+            </div>
+            <div class="expected-result">
+                <h4>Expected Result:</h4>
+                <p>
+                    - A "Saving..." indicator should appear in the header during the save process<br>
+                    - After successful save, a green dot and "Saved [time]" should appear<br>
+                    - A success notification should briefly appear saying "Profile saved automatically"<br>
+                    - Changes should persist when refreshing the page
+                </p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Test 2: Debounced Autosave</div>
+            <div class="test-description">
+                Test that rapid changes don't trigger multiple saves, but only the final state is saved.
+            </div>
+            <div class="test-steps">
+                <ol>
+                    <li>Start typing in the Bio field rapidly</li>
+                    <li>Make multiple changes within 2 seconds</li>
+                    <li>Stop typing and wait for 2 seconds</li>
+                    <li>Check the network tab to see only one save request was made</li>
+                </ol>
+            </div>
+            <div class="expected-result">
+                <h4>Expected Result:</h4>
+                <p>
+                    - Only one save request should be made after the 2-second delay<br>
+                    - The final state of the field should be saved, not intermediate states<br>
+                    - No multiple "Saving..." indicators should appear
+                </p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Test 3: Location Field Autosave</div>
+            <div class="test-description">
+                Test that location changes (Country, State, City, ZIP) are properly saved with correct IDs.
+            </div>
+            <div class="test-steps">
+                <ol>
+                    <li>Select a country from the dropdown</li>
+                    <li>Wait for states to load and select a state</li>
+                    <li>Wait for cities to load and select a city</li>
+                    <li>Wait for ZIP codes to load and select a ZIP code</li>
+                    <li>Wait for autosave to complete</li>
+                    <li>Refresh the page and verify selections are maintained</li>
+                </ol>
+            </div>
+            <div class="expected-result">
+                <h4>Expected Result:</h4>
+                <p>
+                    - Each location change should trigger autosave after 2 seconds<br>
+                    - The correct country, state, city, and ZIP code should be selected after refresh<br>
+                    - Location data should be saved with proper IDs, not just names
+                </p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Test 4: Education and Work History Autosave</div>
+            <div class="test-description">
+                Test that changes to education and work history arrays are properly saved.
+            </div>
+            <div class="test-steps">
+                <ol>
+                    <li>Navigate to the Education tab</li>
+                    <li>Add a new education entry and fill in details</li>
+                    <li>Wait for autosave to complete</li>
+                    <li>Navigate to the Experience tab</li>
+                    <li>Add a new work experience entry and fill in details</li>
+                    <li>Wait for autosave to complete</li>
+                    <li>Refresh the page and verify entries are maintained</li>
+                </ol>
+            </div>
+            <div class="expected-result">
+                <h4>Expected Result:</h4>
+                <p>
+                    - Education and work history changes should trigger autosave<br>
+                    - Array data should be properly serialized and saved<br>
+                    - Entries should persist after page refresh
+                </p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Test 5: Security Tab Exclusion</div>
+            <div class="test-description">
+                Test that autosave is disabled on the Security tab (password changes).
+            </div>
+            <div class="test-steps">
+                <ol>
+                    <li>Navigate to the Security tab</li>
+                    <li>Make changes to password fields</li>
+                    <li>Wait for 5+ seconds</li>
+                    <li>Check that no autosave occurs</li>
+                </ol>
+            </div>
+            <div class="expected-result">
+                <h4>Expected Result:</h4>
+                <p>
+                    - No autosave should occur on the Security tab<br>
+                    - Password changes should only be saved when the "Change Password" button is clicked<br>
+                    - No "Saving..." indicator should appear
+                </p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Test 6: Error Handling</div>
+            <div class="test-description">
+                Test that autosave errors are properly handled and displayed.
+            </div>
+            <div class="test-steps">
+                <ol>
+                    <li>Disconnect from the internet or block the GraphQL endpoint</li>
+                    <li>Make a change to any profile field</li>
+                    <li>Wait for autosave to attempt</li>
+                    <li>Observe error handling</li>
+                    <li>Reconnect and make another change</li>
+                </ol>
+            </div>
+            <div class="expected-result">
+                <h4>Expected Result:</h4>
+                <p>
+                    - An error notification should appear when autosave fails<br>
+                    - The error should be user-friendly and not technical<br>
+                    - Autosave should resume working once connectivity is restored<br>
+                    - No infinite retry loops should occur
+                </p>
+            </div>
+        </div>
+
+        <div class="note">
+            <h4>Implementation Notes:</h4>
+            <p>
+                The autosave functionality has been implemented with the following features:<br>
+                • 2-second debounce delay to prevent excessive API calls<br>
+                • Visual status indicators (saving/saved states)<br>
+                • Proper error handling and user feedback<br>
+                • Exclusion of Security tab from autosave<br>
+                • Support for all profile field types including arrays and location data<br>
+                • Prevention of multiple simultaneous save operations
+            </p>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Status Indicators Reference</div>
+            <div class="test-description">
+                Visual indicators that should appear in the profile header:
+            </div>
+            <div class="test-steps">
+                <ul>
+                    <li><span class="status-indicator status-saving">Saving...</span> - Appears during autosave operation</li>
+                    <li><span class="status-indicator status-saved">Saved [time]</span> - Appears after successful save</li>
+                    <li><span class="status-indicator status-error">Save Failed</span> - Appears if save fails (not implemented in current version)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

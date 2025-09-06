@@ -1,4 +1,4 @@
-import { Update, UpdateAttachment, UpdateMedia } from '../components/news';
+import { Update, UpdateExtended, UpdateAttachment, UpdateMedia } from '../components/news';
 import AuthService from './authService';
 
 const API_BASE_URL = 'http://localhost:8000';
@@ -160,7 +160,7 @@ export class UpdateApiService {
     searchQuery: string = '',
     page: number = 1,
     pageSize: number = 20
-  ): Promise<{ updates: Update[]; pagination: any }> {
+  ): Promise<{ updates: UpdateExtended[]; pagination: any }> {
     try {
       const params = new URLSearchParams({
         type,
@@ -186,22 +186,36 @@ export class UpdateApiService {
       const data = await response.json();
       if (data.success) {
         return {
-          updates: data.updates.map((update: any) => ({
+          updates: data.updates.map((update: any): UpdateExtended => ({
             id: update.id,
             type: update.type,
             title: update.title,
             summary: update.summary,
+            body: update.content.body,
             timestamp: update.timestamp,
             status: update.status,
             tags: update.tags,
             author: update.author,
             icon: update.icon,
-            content: {
-              body: update.content.body,
-              attachments: update.content.attachments || [],
-              media: update.content.media || [],
-              related: update.content.related || [],
-            },
+            priority: update.priority || 'normal',
+            isActive: update.is_active,
+            isExpired: update.expires_at ? new Date(update.expires_at) < new Date() : false,
+            timeAgo: update.created_at ? `${Math.floor((Date.now() - new Date(update.created_at).getTime()) / 60000)} min ago` : '',
+            readingTime: Math.max(1, Math.ceil((update.content.body || '').split(' ').length / 200)),
+            fullName: update.created_by ? `${update.created_by.firstName} ${update.created_by.lastName}`.trim() : update.author || '',
+            createdAt: update.created_at,
+            updatedAt: update.updated_at,
+            expiresAt: update.expires_at,
+            attachments: update.content.attachments || [],
+            media: update.content.media || [],
+            related: update.content.related || [],
+            createdBy: update.created_by,
+            can_delete: update.can_delete,
+            can_edit: update.can_edit,
+            user_like_status: update.user_like_status,
+            likes_count: update.likes_count,
+            dislikes_count: update.dislikes_count,
+            comments_count: update.comments_count,
           })),
           pagination: data.pagination,
         };
@@ -215,7 +229,7 @@ export class UpdateApiService {
   }
 
   // Get a specific update by ID
-  static async getUpdate(updateId: string): Promise<Update> {
+  static async getUpdate(updateId: string): Promise<UpdateExtended> {
     try {
       const response = await fetch(`${API_BASE_URL}/api/updates/${updateId}/`, {
         method: 'GET',
@@ -235,17 +249,31 @@ export class UpdateApiService {
           type: update.type,
           title: update.title,
           summary: update.summary,
+          body: update.content.body,
           timestamp: update.timestamp,
           status: update.status,
           tags: update.tags,
           author: update.author,
           icon: update.icon,
-          content: {
-            body: update.content.body,
-            attachments: update.content.attachments || [],
-            media: update.content.media || [],
-            related: update.content.related || [],
-          },
+          priority: update.priority || 'normal',
+          isActive: update.is_active,
+          isExpired: update.expires_at ? new Date(update.expires_at) < new Date() : false,
+          timeAgo: update.created_at ? `${Math.floor((Date.now() - new Date(update.created_at).getTime()) / 60000)} min ago` : '',
+          readingTime: Math.max(1, Math.ceil((update.content.body || '').split(' ').length / 200)),
+          fullName: update.created_by ? `${update.created_by.firstName} ${update.created_by.lastName}`.trim() : update.author || '',
+          createdAt: update.created_at,
+          updatedAt: update.updated_at,
+          expiresAt: update.expires_at,
+          attachments: update.content.attachments || [],
+          media: update.content.media || [],
+          related: update.content.related || [],
+          createdBy: update.created_by,
+          can_delete: update.can_delete,
+          can_edit: update.can_edit,
+          user_like_status: update.user_like_status,
+          likes_count: update.likes_count,
+          dislikes_count: update.dislikes_count,
+          comments_count: update.comments_count,
         };
       } else {
         throw new Error(data.error || 'Failed to fetch update');

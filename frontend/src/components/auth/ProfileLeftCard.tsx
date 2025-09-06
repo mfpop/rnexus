@@ -164,7 +164,7 @@ const ProfileLeftCard: React.FC = () => {
           </div>
                   <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
           <div
-            className={`bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300 ease-in-out`}
+            className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300 ease-in-out"
             style={{ width: `${percent}%` }}
           ></div>
         </div>

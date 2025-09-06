@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
+import { useAuth } from '../../contexts/AuthContext';
 import {
   User,
   Key,
@@ -8,63 +9,66 @@ import {
   Briefcase,
   Plus,
   Trash2,
-  Camera,
+  Lock,
+  Building,
 } from "lucide-react";
-import { Button, Input, PhoneTypeDropdown, NotificationToast } from "../ui/bits";
-import AuthService from "../../lib/authService";
+import { Button, Input, NotificationToast } from "../ui/bits";
+import AvatarUpload from "../ui/AvatarUpload";
+import DailyActivitiesCard from "./profile/DailyActivitiesCard";
 import { useQuery, useMutation } from '@apollo/client';
 import {
   GET_USER_PROFILE,
   UPDATE_USER_PROFILE,
-  CHANGE_PASSWORD,
   UPLOAD_AVATAR,
+  CHANGE_PASSWORD,
   GetUserProfileData,
   UpdateUserProfileData,
   UpdateUserProfileVariables,
   ChangePasswordData,
   ChangePasswordVariables,
-  UploadAvatarData,
-  UploadAvatarVariables
 } from '../../graphql/userProfile';
-
-
+import {
+  GET_ALL_COUNTRIES,
+  GET_STATES_BY_COUNTRY,
+  GET_CITIES_BY_STATE,
+  GetAllCountriesData,
+  GetStatesByCountryData,
+  GetCitiesByStateData,
+  GetStatesByCountryVariables,
+  GetCitiesByStateVariables,
+  Country,
+  State,
+  City
+} from '../../graphql/location';
 
 interface ProfileData {
   username: string;
   email: string;
-
-  // Comprehensive name fields
   first_name: string;
   middle_name?: string;
   last_name: string;
-  maternal_last_name?: string; // For Mexican naming convention
-  preferred_name?: string; // Nickname or preferred name
-
+  maternal_last_name?: string;
+  preferred_name?: string;
   date_joined: string;
   last_login: string;
   is_active: boolean;
   is_staff: boolean;
   is_superuser: boolean;
-
-  // New fields
   position?: string;
   department?: string;
-
-  // Enhanced phone support
   phone?: string;
   phone_country_code?: string;
   phone_type?: 'mobile' | 'home' | 'work' | 'other';
   secondary_phone?: string;
+  secondary_phone_country_code?: string;
   secondary_phone_type?: 'mobile' | 'home' | 'work' | 'other';
-
-  // Address fields
   street_address?: string;
   apartment_suite?: string;
   city?: string;
   state_province?: string;
   zip_code?: string;
   country?: string;
-
+  countryCode?: string;
   bio?: string;
   education?: Array<{
     id: string;
@@ -74,7 +78,7 @@ interface ProfileData {
     startYear?: string;
     endYear?: string;
     description?: string;
-    visible?: boolean
+    visible?: boolean;
   }>;
   work_history?: Array<{
     id: string;
@@ -84,7 +88,7 @@ interface ProfileData {
     startYear?: string;
     endYear?: string;
     description?: string;
-    visible?: boolean
+    visible?: boolean;
   }>;
   profile_visibility?: {
     education: boolean;
@@ -97,8 +101,6 @@ interface ProfileData {
     address: boolean;
     email: boolean;
   };
-
-  // Avatar
   avatar?: string;
   avatarUrl?: string;
 }
@@ -110,20 +112,20 @@ interface PasswordData {
 }
 
 const ProfileRightCard: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'personal' | 'professional' | 'education' | 'experience' | 'security'>('personal');
+  const [activeTab, setActiveTab] = useState<'general' | 'professional' | 'education' | 'experience' | 'security'>('general');
 
   // GraphQL hooks
   const { data: profileQueryData, loading: profileLoading, error: profileError } = useQuery<GetUserProfileData>(GET_USER_PROFILE);
   const [updateUserProfile] = useMutation<UpdateUserProfileData, UpdateUserProfileVariables>(UPDATE_USER_PROFILE);
   const [changePassword] = useMutation<ChangePasswordData, ChangePasswordVariables>(CHANGE_PASSWORD);
-  const [uploadAvatar] = useMutation<UploadAvatarData, UploadAvatarVariables>(UPLOAD_AVATAR);
+  const [uploadAvatar] = useMutation(UPLOAD_AVATAR);
 
   // Initialize profile data from GraphQL query or default values
   const initializeProfileData = (): ProfileData => {
     if (profileQueryData?.userProfile) {
       const profile = profileQueryData.userProfile;
       return {
-        username: profile.user.email, // Using email as username
+        username: profile.user.email,
         email: profile.user.email,
         first_name: profile.user.firstName,
         middle_name: profile.middleName || "",
@@ -137,17 +139,19 @@ const ProfileRightCard: React.FC = () => {
         is_superuser: false,
         position: profile.position || "",
         department: profile.department || "",
-        phone: profile.phone || "",
-        phone_country_code: profile.phoneCountryCode || "+1",
+  phone: profile.phone || "",
+  phone_country_code: profile.phoneCountryCode || "+1",
         phone_type: (profile.phoneType as any) || "mobile",
         secondary_phone: profile.secondaryPhone || "",
-        secondary_phone_type: (profile.secondaryPhoneType as any) || "mobile",
+        secondary_phone_country_code: profile.phoneCountryCode || "+1",
+        secondary_phone_type: "mobile",
         street_address: profile.streetAddress || "",
         apartment_suite: profile.apartmentSuite || "",
         city: profile.city || "",
         state_province: profile.stateProvince || "",
         zip_code: profile.zipCode || "",
         country: profile.country || "",
+        countryCode: profile.countryCode || "",
         bio: profile.bio || "",
         education: Array.isArray(profile.education) ? profile.education : (typeof profile.education === 'string' ? JSON.parse(profile.education || '[]') : []),
         work_history: Array.isArray(profile.workHistory) ? profile.workHistory : (typeof profile.workHistory === 'string' ? JSON.parse(profile.workHistory || '[]') : []),
@@ -183,10 +187,11 @@ const ProfileRightCard: React.FC = () => {
       is_superuser: false,
       position: "",
       department: "",
-      phone: "",
-      phone_country_code: "+1",
+  phone: "",
+  phone_country_code: "+1",
       phone_type: "mobile",
       secondary_phone: "",
+      secondary_phone_country_code: "+1",
       secondary_phone_type: "mobile",
       street_address: "",
       apartment_suite: "",
@@ -197,42 +202,52 @@ const ProfileRightCard: React.FC = () => {
       bio: "",
       education: [],
       work_history: [],
-              profile_visibility: {
-          education: true,
-          work_history: true,
-          position: true,
-          contact: true,
-          bio: true,
-          phone: true,
-          secondary_phone: true,
-          address: true,
-          email: true
-        },
+      profile_visibility: {
+        email: true,
+        phone: true,
+        secondary_phone: true,
+        address: true,
+        education: true,
+        work_history: true,
+        position: true,
+        contact: true,
+        bio: true
+      },
       avatar: "",
       avatarUrl: "",
     };
   };
 
   const [profileData, setProfileData] = useState<ProfileData>(initializeProfileData());
+  const [initialProfileData, setInitialProfileData] = useState<ProfileData | null>(null);
+  const { user: currentUser } = useAuth();
+  // Allow superusers (admin) or staff to edit username and profile status
+  const canEditUserName = !!(currentUser?.is_superuser || currentUser?.is_staff);
+  const canEditProfileStatus = !!(currentUser?.is_superuser || currentUser?.is_staff);
 
-  // Update profile data when GraphQL data changes
-  useEffect(() => {
-    console.log('Profile query data:', profileQueryData);
-    console.log('Profile loading:', profileLoading);
-    console.log('Profile error:', profileError);
+  // Location data state
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [states, setStates] = useState<State[]>([]);
+  const [cities, setCities] = useState<City[]>([]);
+  const [selectedStateId, setSelectedStateId] = useState<string>('');
 
-    if (profileQueryData?.userProfile) {
-      console.log('Setting profile data:', profileQueryData.userProfile);
-      setProfileData(initializeProfileData());
+  // GraphQL queries for location data
+  const { data: countriesData, loading: countriesLoading } = useQuery<GetAllCountriesData>(GET_ALL_COUNTRIES);
+  const { data: statesData, loading: statesLoading } = useQuery<GetStatesByCountryData, GetStatesByCountryVariables>(
+    GET_STATES_BY_COUNTRY,
+    {
+      variables: { countryCode: profileData.countryCode || '' },
+      skip: !profileData.countryCode
     }
-  }, [profileQueryData, profileLoading, profileError]);
+  );
+  const { data: citiesData, loading: citiesLoading } = useQuery<GetCitiesByStateData, GetCitiesByStateVariables>(
+    GET_CITIES_BY_STATE,
+    {
+      variables: { stateId: selectedStateId },
+      skip: !selectedStateId
+    }
+  );
 
-
-
-  // OpenAddresses data state
-  const [countries, setCountries] = useState<Array<{name: string, cca2: string, flag: string}>>([]);
-  const [states, setStates] = useState<Array<{geonameId: number, name: string}>>([]);
-  const [cities, setCities] = useState<Array<{geonameId: number, name: string}>>([]);
 
   const [passwordData, setPasswordData] = useState<PasswordData>({
     current_password: "",
@@ -241,118 +256,72 @@ const ProfileRightCard: React.FC = () => {
   });
 
   const [isPasswordLoading, setIsPasswordLoading] = useState(false);
-  const [isAvatarUploading, setIsAvatarUploading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [passwordErrors, setPasswordErrors] = useState<Record<string, string>>(
-    {},
-  );
+  const [passwordErrors, setPasswordErrors] = useState<Record<string, string>>({});
   const [successMessage, setSuccessMessage] = useState("");
   const [passwordSuccessMessage, setPasswordSuccessMessage] = useState("");
+  const [avatarUploadMessage, setAvatarUploadMessage] = useState("");
   const [showPasswords, setShowPasswords] = useState({
     current: false,
     new: false,
     confirm: false,
   });
 
-  // Auto-save functionality using GraphQL mutation
-  const autoSaveProfile = useCallback(async (data: ProfileData) => {
-    // Only auto-save a small subset of fields to avoid sending very large payloads
-    // (education/work_history can be large and should be saved only on explicit save)
-    try {
-      const variables: UpdateUserProfileVariables = {
-        email: data.email,
-        firstName: data.first_name,
-        lastName: data.last_name,
-        middleName: data.middle_name,
-        preferredName: data.preferred_name,
-        position: data.position,
-        department: data.department,
-        phone: data.phone,
-        phoneCountryCode: data.phone_country_code,
-        phoneType: data.phone_type,
-        streetAddress: data.street_address,
-        city: data.city,
-        stateProvince: data.state_province,
-        zipCode: data.zip_code,
-        country: data.country,
-        bio: data.bio,
-        // Intentionally omit education, workHistory and profileVisibility here
-        isActive: data.is_active,
-      };
-
-      // Prevent overlapping autosave requests
-      if ((autoSaveProfile as any).isSaving) return;
-      (autoSaveProfile as any).isSaving = true;
-
-      // Skip autosave if payload is too large to avoid server 400 due to
-      // DATA_UPLOAD_MAX_MEMORY_SIZE (Django). Use a conservative threshold.
-      try {
-        const payload = JSON.stringify(variables || {});
-        const payloadSize = new Blob([payload]).size; // bytes
-        const MAX_AUTOSAVE_BYTES = 50 * 1024; // 50 KB
-        if (payloadSize > MAX_AUTOSAVE_BYTES) {
-          console.warn(`Autosave skipped: payload too large (${payloadSize} bytes)`);
-          (autoSaveProfile as any).isSaving = false;
-          return;
-        }
-      } catch (e) {
-        // If size estimation fails, continue but log
-        console.warn('Autosave: could not compute payload size, continuing', e);
-      }
-
-      const result = await updateUserProfile({ variables });
-      (autoSaveProfile as any).isSaving = false;
-
-      if (result.data?.updateUserProfile.ok) {
-        console.log('Profile auto-saved successfully');
-        window.dispatchEvent(new CustomEvent('profile-updated'));
-      } else {
-        console.error('Profile auto-save failed:', result.data?.updateUserProfile.errors);
-      }
-    } catch (error: any) {
-      (autoSaveProfile as any).isSaving = false;
-      // Detect Django error for large request bodies and log a clearer message
-      const message = error?.message || String(error);
-      if (message.includes('DATA_UPLOAD_MAX_MEMORY_SIZE') || message.includes('Request body exceeded')) {
-        console.error('Profile auto-save failed: request body too large for server. Skipping autosave of large collections.');
-      } else {
-        console.error('Profile auto-save error:', error);
+  // Update profile data when GraphQL query data changes
+  useEffect(() => {
+    if (profileQueryData?.userProfile) {
+      const newProfileData = initializeProfileData();
+      setProfileData(newProfileData);
+      // Set initial data for change detection
+      if (!initialProfileData) {
+        setInitialProfileData(newProfileData);
       }
     }
-  }, [updateUserProfile]);
+  }, [profileQueryData, profileLoading, profileError, initialProfileData]);
 
-  // Debounced auto-save effect
+  // Update countries when GraphQL data is available
   useEffect(() => {
-    // Only attempt auto-save when authenticated
-  if (!AuthService.isAuthenticated()) return;
+    if (countriesData?.allCountries) {
+      setCountries(countriesData.allCountries);
+    }
+  }, [countriesData]);
 
-    const timeoutId = setTimeout(() => {
-      // Only autosave small-profile fields to avoid large uploads
-      const smallFields = [
-        'email', 'first_name', 'last_name', 'middle_name', 'preferred_name',
-        'position', 'department', 'phone', 'phone_country_code',
-        'street_address', 'city', 'state_province', 'zip_code', 'country', 'bio'
-      ];
+  // Update states when GraphQL data is available
+  useEffect(() => {
+    if (statesData?.allStates) {
+      setStates(statesData.allStates);
 
-      const shouldAutoSave = smallFields.some(k => Boolean(profileData[k as keyof ProfileData]));
-      if (shouldAutoSave) {
-        autoSaveProfile(profileData);
+      // If we have a selected state name, find its ID
+      if (profileData.state_province) {
+        const selectedState = statesData.allStates.find(s => s.name === profileData.state_province);
+        if (selectedState) {
+          setSelectedStateId(selectedState.id);
+        }
       }
-    }, 2000); // Auto-save after 2 seconds of inactivity
+    } else {
+      setStates([]);
+      setSelectedStateId('');
+    }
+  }, [statesData, profileData.countryCode, profileData.state_province]);
 
-    return () => clearTimeout(timeoutId);
-  }, [profileData, autoSaveProfile]);
-
-  // Load countries on component mount
+  // Update cities when GraphQL data is available
   useEffect(() => {
-    loadCountries();
-  }, []);
+    if (citiesData?.allCities) {
+      setCities(citiesData.allCities);
+    } else {
+      setCities([]);
+    }
+  }, [citiesData]);
 
-  // Load states when country changes
+
+
+  // Reset dependent fields when country changes
   useEffect(() => {
     if (profileData.country) {
-      loadStates(profileData.country);
-      // Reset dependent fields
       setProfileData(prev => ({
         ...prev,
         state_province: "",
@@ -362,11 +331,9 @@ const ProfileRightCard: React.FC = () => {
     }
   }, [profileData.country]);
 
-  // Load cities when state changes
+  // Reset dependent fields when state changes
   useEffect(() => {
     if (profileData.state_province) {
-      loadCities(profileData.state_province);
-      // Reset dependent fields
       setProfileData(prev => ({
         ...prev,
         city: "",
@@ -375,150 +342,524 @@ const ProfileRightCard: React.FC = () => {
     }
   }, [profileData.state_province]);
 
+  // Reset dependent fields when city changes
+  useEffect(() => {
+    if (profileData.city) {
+      setProfileData(prev => ({
+        ...prev,
+        zip_code: "",
+      }));
+    }
+  }, [profileData.city]);
+
+  // Manual save mode - removed autosave functionality
+  // Track unsaved changes
+  useEffect(() => {
+    if (!initialProfileData) return;
+
+    const hasChanges = JSON.stringify(profileData) !== JSON.stringify(initialProfileData);
+    setHasUnsavedChanges(hasChanges);
+  }, [profileData, initialProfileData]);
+
+  const performSave = async () => {
+    if (isSaving) return; // Prevent multiple simultaneous saves
+
+    setIsSaving(true);
+    setErrors({});
+
+    try {
+      // Build a minimal variables object containing only changed fields to avoid sending huge payloads
+      const vars: any = {};
+      const prev = initialProfileData as ProfileData | null;
+
+      const setIfChanged = (varName: string, newValue: any, prevValue?: any) => {
+        // compare using JSON to handle arrays/objects
+        if (typeof prevValue === 'undefined') prevValue = prev ? (prev as any)[varName] : undefined;
+        try {
+          if (JSON.stringify(prevValue) !== JSON.stringify(newValue)) {
+            vars[varName] = newValue;
+          }
+        } catch (e) {
+          // fallback to direct comparison
+          if (prevValue !== newValue) vars[varName] = newValue;
+        }
+      };
+
+      setIfChanged('email', profileData.email, prev?.email);
+      setIfChanged('firstName', profileData.first_name, prev?.first_name);
+      setIfChanged('lastName', profileData.last_name, prev?.last_name);
+      setIfChanged('middleName', profileData.middle_name || '', prev?.middle_name || '');
+      setIfChanged('maternalLastName', profileData.maternal_last_name || '', prev?.maternal_last_name || '');
+      setIfChanged('preferredName', profileData.preferred_name || '', prev?.preferred_name || '');
+      setIfChanged('position', profileData.position || '', prev?.position || '');
+      setIfChanged('department', profileData.department || '', prev?.department || '');
+      setIfChanged('phone', profileData.phone || '', prev?.phone || '');
+      setIfChanged('phoneCountryCode', profileData.phone_country_code || '+1', prev?.phone_country_code || '+1');
+      setIfChanged('phoneType', profileData.phone_type || 'mobile', prev?.phone_type || 'mobile');
+      setIfChanged('secondaryPhone', profileData.secondary_phone || '', prev?.secondary_phone || '');
+      setIfChanged('streetAddress', profileData.street_address || '', prev?.street_address || '');
+      setIfChanged('apartmentSuite', profileData.apartment_suite || '', prev?.apartment_suite || '');
+      setIfChanged('city', profileData.city || '', prev?.city || '');
+      setIfChanged('stateProvince', profileData.state_province || '', prev?.state_province || '');
+      setIfChanged('zipCode', profileData.zip_code || '', prev?.zip_code || '');
+      setIfChanged('country', profileData.country || '', prev?.country || '');
+      setIfChanged('countryCode', profileData.countryCode || '', prev?.countryCode || '');
+      setIfChanged('isActive', profileData.is_active, prev?.is_active);
+      setIfChanged('bio', profileData.bio || '', prev?.bio || '');
+
+      // For potentially large JSON blobs, only include them if changed and reasonably sized
+      try {
+        const educationJson = JSON.stringify(profileData.education || []);
+        const workJson = JSON.stringify(profileData.work_history || []);
+        const profileVisJson = JSON.stringify(profileData.profile_visibility || {});
+
+        const MAX_SAVE_SIZE = 100 * 1024; // 100 KB
+
+        if (prev && JSON.stringify(prev.education || []) !== educationJson) {
+          if (educationJson.length <= MAX_SAVE_SIZE) {
+            vars['education'] = educationJson;
+          } else {
+            console.warn('Skipping save of education: payload too large');
+          }
+        }
+
+        if (prev && JSON.stringify(prev.work_history || []) !== workJson) {
+          if (workJson.length <= MAX_SAVE_SIZE) {
+            vars['workHistory'] = workJson;
+          } else {
+            console.warn('Skipping save of work_history: payload too large');
+          }
+        }
+
+        if (prev && JSON.stringify(prev.profile_visibility || {}) !== profileVisJson) {
+          if (profileVisJson.length <= MAX_SAVE_SIZE) {
+            vars['profileVisibility'] = profileVisJson;
+          } else {
+            console.warn('Skipping save of profile_visibility: payload too large');
+          }
+        }
+      } catch (e) {
+        console.warn('Error stringifying large profile sections, skipping them for save', e);
+      }
+
+      // If nothing changed (or only skipped large sections), don't call the mutation
+      if (Object.keys(vars).length === 0) {
+        setIsSaving(false);
+        setSuccessMessage("No changes to save");
+        setTimeout(() => setSuccessMessage(""), 3000);
+        return;
+      }
+
+      const result = await updateUserProfile({ variables: vars });
+
+      if (result.data?.updateUserProfile.ok) {
+        setLastSaved(new Date());
+        setSuccessMessage("Profile saved successfully");
+        setTimeout(() => setSuccessMessage(""), 3000);
+        // Update initial data to current data after successful save
+        setInitialProfileData({ ...profileData });
+        setHasUnsavedChanges(false);
+        setIsEditMode(false);
+      } else {
+        setErrors({ submit: result.data?.updateUserProfile.errors?.join(', ') || "Failed to save profile" });
+      }
+    } catch (error) {
+      console.error("Save error:", error);
+      setErrors({ submit: "Failed to save profile. Please try again." });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    if (hasUnsavedChanges && !confirm("Are you sure you want to discard your changes?")) {
+      return;
+    }
+
+    // Reset to initial data
+    if (initialProfileData) {
+      setProfileData({ ...initialProfileData });
+    }
+    setHasUnsavedChanges(false);
+    setIsEditMode(false);
+    setErrors({});
+  };
+
+  const handleEdit = () => {
+    setIsEditMode(true);
+  };
+
+  const handleDelete = () => {
+    if (!confirm("Are you sure you want to delete your profile? This action cannot be undone.")) {
+      return;
+    }
+
+    // TODO: Implement profile deletion
+    console.log("Profile deletion not implemented yet");
+  };
+
+  const handleRefresh = () => {
+    // Reset to initial state and reload profile data
+    setIsEditMode(false);
+    setHasUnsavedChanges(false);
+    setIsSaving(false);
+    setErrors({});
+    setPasswordErrors({});
+    setSuccessMessage("");
+    setPasswordSuccessMessage("");
+
+    // Reset profile data to initial state if available
+    if (initialProfileData) {
+      setProfileData({ ...initialProfileData });
+    }
+
+    // Optionally refetch from server (if using Apollo, it will refetch automatically)
+    console.log("Profile refreshed - data reset to initial state");
+  };
+
+  // Expose button handlers to window object for StableLayout
+  useEffect(() => {
+    const profileButtonHandlers = {
+      save: performSave,
+      cancel: handleCancel,
+      edit: handleEdit,
+      delete: handleDelete,
+      refresh: handleRefresh,
+      isEditMode,
+      hasUnsavedChanges,
+      isSaving
+    };
+
+    (window as any).profileButtonHandlers = profileButtonHandlers;
+    console.log('Profile button handlers exposed:', { isEditMode, hasUnsavedChanges, isSaving });
+
+    return () => {
+      delete (window as any).profileButtonHandlers;
+    };
+  }, [performSave, handleCancel, handleEdit, handleDelete, handleRefresh, isEditMode, hasUnsavedChanges, isSaving]);
+
   const handleProfileChange = (field: keyof ProfileData, value: any) => {
-    console.log(`Profile change - Field: ${field}, Value:`, value);
     setProfileData((prev) => {
       const updated = { ...prev, [field]: value };
-      console.log(`Updated profile data:`, updated);
       return updated;
     });
   };
+
+  // Validation helpers
+  const validateEmail = (email: string) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  };
+
+  const validatePhone = (phone: string) => {
+    if (!phone || phone.trim() === '') return true; // Empty is valid
+    // Normalize: remove spaces, dashes, parens, plus signs
+    const digits = phone.replace(/[^0-9]/g, '');
+    // Allow between 7 and 15 digits
+    return digits.length >= 7 && digits.length <= 15;
+  };
+
+  // Validate ZIP/Postal code based on country
+  const validateZipCode = (zipCode: string, country: string): boolean => {
+    if (!zipCode || zipCode.trim() === '') return true; // Empty is valid
+
+    const cleaned = zipCode.trim().toUpperCase();
+
+    switch (country?.toLowerCase()) {
+      case 'united states':
+      case 'usa':
+        // US ZIP: 5 digits or 5+4 format
+        return /^\d{5}(-\d{4})?$/.test(cleaned);
+      case 'canada':
+        // Canadian postal code: A1A 1A1 format
+        return /^[A-Z]\d[A-Z]\s?\d[A-Z]\d$/.test(cleaned);
+      case 'united kingdom':
+      case 'uk':
+        // UK postcode: various formats like SW1A 1AA
+        return /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i.test(cleaned);
+      case 'germany':
+        // German postal code: 5 digits
+        return /^\d{5}$/.test(cleaned);
+      case 'france':
+        // French postal code: 5 digits
+        return /^\d{5}$/.test(cleaned);
+      default:
+        // Generic validation: 3-10 alphanumeric characters
+        return /^[A-Z0-9\s-]{3,10}$/i.test(cleaned);
+    }
+  };
+
+  // Format ZIP/Postal code based on country
+  const formatZipCode = (zipCode: string, country: string): string => {
+    if (!zipCode) return zipCode;
+
+    const cleaned = zipCode.replace(/[^A-Z0-9]/gi, '').toUpperCase();
+
+    switch (country?.toLowerCase()) {
+      case 'united states':
+      case 'usa':
+        // Format as 12345 or 12345-6789
+        if (cleaned.length <= 5) return cleaned;
+        if (cleaned.length <= 9) return `${cleaned.slice(0, 5)}-${cleaned.slice(5)}`;
+        return cleaned.slice(0, 9);
+      case 'canada':
+        // Format as A1A 1A1
+        if (cleaned.length <= 3) return cleaned;
+        if (cleaned.length <= 6) return `${cleaned.slice(0, 3)} ${cleaned.slice(3)}`;
+        return cleaned.slice(0, 6);
+      case 'united kingdom':
+      case 'uk':
+        // Keep spaces for UK postcodes
+        return zipCode.toUpperCase();
+      default:
+        return cleaned;
+    }
+  };
+
+  // Get ZIP/Postal code placeholder based on country
+  const getZipPlaceholder = (country: string): string => {
+    switch (country?.toLowerCase()) {
+      case 'united states':
+      case 'usa':
+        return '12345 or 12345-6789';
+      case 'canada':
+        return 'A1A 1A1';
+      case 'united kingdom':
+      case 'uk':
+        return 'SW1A 1AA';
+      case 'germany':
+      case 'france':
+        return '12345';
+      default:
+        return 'ZIP/Postal Code';
+    }
+  };
+
+  // Get helpful address information based on country
+  const getAddressInfo = (country: string): string => {
+    switch (country?.toLowerCase()) {
+      case 'united states':
+      case 'usa':
+        return 'ZIP codes can be 5 digits (12345) or 9 digits (12345-6789)';
+      case 'canada':
+        return 'Postal codes follow the format A1A 1A1 (letter-number-letter space number-letter-number)';
+      case 'united kingdom':
+      case 'uk':
+        return 'UK postcodes vary in format, e.g., SW1A 1AA or M1 1AA';
+      case 'germany':
+        return 'German postal codes are 5 digits (12345)';
+      case 'france':
+        return 'French postal codes are 5 digits (75001 for Paris)';
+      default:
+        return 'Please enter your local postal/ZIP code format';
+    }
+  };
+
+  // Map phone country codes to ISO country codes for GraphQL queries
+  const phoneCodeToISOCode = (phoneCode: string): string => {
+    const mapping: Record<string, string> = {
+      '+1': 'US',        // United States/Canada
+      '+44': 'GB',       // United Kingdom
+      '+33': 'FR',       // France
+      '+49': 'DE',       // Germany
+      '+39': 'IT',       // Italy
+      '+34': 'ES',       // Spain
+      '+81': 'JP',       // Japan
+      '+86': 'CN',       // China
+      '+91': 'IN',       // India
+      '+55': 'BR',       // Brazil
+      '+52': 'MX',       // Mexico
+      '+61': 'AU',       // Australia
+      '+7': 'RU',        // Russia
+      '+82': 'KR',       // South Korea
+      // Add more mappings as needed
+    };
+    return mapping[phoneCode] || phoneCode;
+  };
+
+  // Validate street address
+  const validateStreetAddress = (address: string): boolean => {
+    if (!address || address.trim() === '') return true; // Empty is valid
+    // Basic validation: at least 3 characters, contains both letters and numbers
+    const cleaned = address.trim();
+    return cleaned.length >= 3 && /\d/.test(cleaned) && /[a-zA-Z]/.test(cleaned);
+  };
+
+  // Get address completion suggestions based on common patterns
+  const getAddressPattern = (country: string): string => {
+    switch (country?.toLowerCase()) {
+      case 'united states':
+      case 'usa':
+        return 'Examples: 123 Main St, 4567 Oak Avenue Apt 2B';
+      case 'canada':
+        return 'Examples: 123 Main Street, 456 Maple Avenue Unit 5';
+      case 'united kingdom':
+      case 'uk':
+        return 'Examples: 123 High Street, 45 Oxford Road';
+      case 'germany':
+        return 'Examples: Hauptstraße 123, Musterweg 45';
+      case 'france':
+        return 'Examples: 123 Rue de la Paix, 45 Avenue des Champs';
+      default:
+        return 'Include your house/building number and street name';
+    }
+  };
+
+  // Handle address field changes with validation
+  const handleAddressChange = (field: keyof ProfileData, value: string) => {
+    if (field === 'zip_code') {
+      const formatted = formatZipCode(value, profileData.country || '');
+      handleProfileChange(field, formatted);
+
+      // Validate ZIP code
+      const isValid = validateZipCode(formatted, profileData.country || '');
+      if (!isValid && formatted.trim() !== '') {
+        setErrors(prev => ({ ...prev, zip_code: 'Please enter a valid ZIP/postal code' }));
+      } else {
+        setErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors['zip_code'];
+          return newErrors;
+        });
+      }
+    } else if (field === 'street_address') {
+      handleProfileChange(field, value);
+
+      // Validate street address
+      const isValid = validateStreetAddress(value);
+      if (!isValid && value.trim() !== '') {
+        setErrors(prev => ({ ...prev, street_address: 'Please enter a valid street address with number and street name' }));
+      } else {
+        setErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors['street_address'];
+          return newErrors;
+        });
+      }
+    } else {
+      handleProfileChange(field, value);
+      // Clear any existing errors for the field
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field as string];
+        return newErrors;
+      });
+    }
+  };
+
+  // Format phone number as user types
+  const formatPhoneNumber = (value: string) => {
+    // Remove all non-digits
+    const digits = value.replace(/[^0-9]/g, '');
+
+    // Format based on length (US/International patterns)
+    if (digits.length >= 10) {
+      // Format as (XXX) XXX-XXXX for US/Canada numbers
+      if (digits.length === 10) {
+        return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+      }
+      // For international numbers, format with spaces
+      if (digits.length <= 15) {
+        return digits.replace(/(\d{1,4})(\d{1,4})?(\d{1,4})?(\d{1,4})?/, (_, p1, p2, p3, p4) => {
+          let formatted = p1;
+          if (p2) formatted += ' ' + p2;
+          if (p3) formatted += ' ' + p3;
+          if (p4) formatted += ' ' + p4;
+          return formatted;
+        });
+      }
+    } else if (digits.length >= 7) {
+      // Format as XXX-XXXX for shorter numbers
+      return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+    }
+
+    return digits; // Return digits only for shorter inputs
+  };
+
+  // Get country code display format
+  const getCountryCodeDisplay = (code: string) => {
+    if (!code) return 'Code';
+    return code.startsWith('+') ? code : `+${code}`;
+  };
+
+  // Wrapped change handler that does inline validation for contact fields
+  const handleContactChange = (field: keyof ProfileData, value: any) => {
+    let processedValue = value;
+
+    // Auto-format phone numbers as user types
+    if (field === 'phone' || field === 'secondary_phone') {
+      processedValue = formatPhoneNumber(value);
+    }
+
+    // Update profile data with formatted value
+    handleProfileChange(field, processedValue);
+
+    // Inline validation
+    if (field === 'email') {
+      if (!validateEmail(value)) {
+        setErrors(prev => ({ ...prev, email: 'Please enter a valid email address' }));
+      } else {
+        setErrors(prev => { const copy = { ...prev }; delete copy['email']; return copy; });
+      }
+    }
+
+    if (field === 'phone') {
+      if (value && !validatePhone(value)) {
+        setErrors(prev => ({ ...prev, phone: 'Please enter a valid phone number (7-15 digits)' }));
+      } else {
+        setErrors(prev => { const copy = { ...prev }; delete copy['phone']; return copy; });
+      }
+    }
+
+    if (field === 'secondary_phone') {
+      if (value && !validatePhone(value)) {
+        setErrors(prev => ({ ...prev, secondary_phone: 'Please enter a valid phone number (7-15 digits)' }));
+      } else {
+        setErrors(prev => { const copy = { ...prev }; delete copy['secondary_phone']; return copy; });
+      }
+    }
+
+    // Auto-select country code based on phone number patterns
+    if (field === 'phone' && value && !profileData.phone_country_code) {
+      const digits = value.replace(/[^0-9]/g, '');
+      if (digits.length === 10 && digits[0] !== '0') {
+        // Likely US/Canada number
+        handleProfileChange('phone_country_code', '+1');
+      }
+    }
+
+    if (field === 'secondary_phone' && value && !profileData.secondary_phone_country_code) {
+      const digits = value.replace(/[^0-9]/g, '');
+      if (digits.length === 10 && digits[0] !== '0') {
+        // Likely US/Canada number
+        handleProfileChange('secondary_phone_country_code', '+1');
+      }
+    }
+  };
+
+  // Handle location selection changes - inline handlers are used instead
 
   const addEducation = () => {
     setProfileData(prev => ({
       ...prev,
       education: [...(prev.education || []), {
         id: Date.now().toString(),
-        school: '',
-        degree: '',
-        field: '',
-        startYear: '',
-        endYear: '',
-        description: '',
+        school: "",
+        degree: "",
+        field: "",
+        startYear: "",
+        endYear: "",
+        description: "",
         visible: true
       }]
-    } as ProfileData));
-  };
-
-  const updateEducation = (id: string, field: string, value: string | boolean) => {
-    setProfileData(prev => ({
-      ...prev,
-      education: (prev.education || []).map(e => e.id === id ? ({ ...e, [field]: value } as any) : e)
-    } as ProfileData));
+    }));
   };
 
   const removeEducation = (id: string) => {
     setProfileData(prev => ({
       ...prev,
       education: (prev.education || []).filter(e => e.id !== id)
-    } as ProfileData));
-  };
-
-  // OpenAddresses data loading functions
-  const loadCountries = async () => {
-    try {
-      const response = await fetch("https://restcountries.com/v3.1/all?fields=name,cca2,flag");
-      if (response.ok) {
-        const data = await response.json();
-        const sortedCountries = data
-          .map((country: any) => ({
-            name: country.name.common,
-            cca2: country.cca2,
-            flag: country.flag
-          }))
-          .sort((a: any, b: any) => a.name.localeCompare(b.name));
-        setCountries(sortedCountries);
-      } else {
-        console.error("Failed to fetch countries, status:", response.status);
-      }
-    } catch (error) {
-      console.error("Failed to load countries:", error);
-      // Fallback to basic countries
-      const fallbackCountries = [
-        { name: "United States", cca2: "US", flag: "🇺🇸" },
-        { name: "Canada", cca2: "CA", flag: "🇨🇦" },
-        { name: "Mexico", cca2: "MX", flag: "🇲🇽" },
-        { name: "United Kingdom", cca2: "GB", flag: "🇬🇧" },
-        { name: "Germany", cca2: "DE", flag: "🇩🇪" },
-        { name: "France", cca2: "FR", flag: "🇫🇷" },
-        { name: "Spain", cca2: "ES", flag: "🇪🇸" },
-        { name: "Italy", cca2: "IT", flag: "🇮🇹" }
-      ];
-      setCountries(fallbackCountries);
-    }
-  };
-
-  const loadStates = async (countryName: string) => {
-    try {
-      // Mock states data for now - in a real implementation, this would call OpenAddresses API
-      const mockStates = getMockStates(countryName);
-      setStates(mockStates);
-    } catch (error) {
-      console.error("Failed to load states:", error);
-      setStates([]);
-    }
-  };
-
-  const loadCities = async (stateName: string) => {
-    try {
-      // Mock cities data for now - in a real implementation, this would call OpenAddresses API
-      const mockCities = getMockCities(stateName);
-      setCities(mockCities);
-    } catch (error) {
-      console.error("Failed to load cities:", error);
-      setCities([]);
-    }
-  };
-
-  const getMockStates = (countryName: string) => {
-    const stateMap: Record<string, Array<{geonameId: number, name: string}>> = {
-      "United States": [
-        { geonameId: 1, name: "California" },
-        { geonameId: 2, name: "New York" },
-        { geonameId: 3, name: "Texas" },
-        { geonameId: 4, name: "Florida" },
-        { geonameId: 5, name: "Illinois" }
-      ],
-      "Canada": [
-        { geonameId: 101, name: "Ontario" },
-        { geonameId: 102, name: "Quebec" },
-        { geonameId: 103, name: "British Columbia" },
-        { geonameId: 104, name: "Alberta" }
-      ],
-      "Mexico": [
-        { geonameId: 201, name: "Jalisco" },
-        { geonameId: 202, name: "Mexico City" },
-        { geonameId: 203, name: "Nuevo Leon" },
-        { geonameId: 204, name: "Baja California" }
-      ]
-    };
-    return stateMap[countryName] || [];
-  };
-
-  const getMockCities = (stateName: string) => {
-    const cityMap: Record<string, Array<{geonameId: number, name: string}>> = {
-      "California": [
-        { geonameId: 1001, name: "Los Angeles" },
-        { geonameId: 1002, name: "San Francisco" },
-        { geonameId: 1003, name: "San Diego" }
-      ],
-      "New York": [
-        { geonameId: 2001, name: "New York City" },
-        { geonameId: 2002, name: "Buffalo" },
-        { geonameId: 2003, name: "Rochester" }
-      ],
-      "Ontario": [
-        { geonameId: 3001, name: "Toronto" },
-        { geonameId: 3002, name: "Ottawa" },
-        { geonameId: 3003, name: "Mississauga" }
-      ],
-      "Jalisco": [
-        { geonameId: 4001, name: "Guadalajara" },
-        { geonameId: 4002, name: "Zapopan" },
-        { geonameId: 4003, name: "Tlaquepaque" }
-      ]
-    };
-    return cityMap[stateName] || [];
+    }));
   };
 
   const addWork = () => {
@@ -526,142 +867,78 @@ const ProfileRightCard: React.FC = () => {
       ...prev,
       work_history: [...(prev.work_history || []), {
         id: Date.now().toString(),
-        company: '',
-        title: '',
-        department: '',
-        startYear: '',
-        endYear: '',
-        description: '',
+        company: "",
+        title: "",
+        department: "",
+        startYear: "",
+        endYear: "",
+        description: "",
         visible: true
       }]
-    } as ProfileData));
-  };
-
-  const updateWork = (id: string, field: string, value: string | boolean) => {
-    setProfileData(prev => ({
-      ...prev,
-      work_history: (prev.work_history || []).map(w => w.id === id ? ({ ...w, [field]: value } as any) : w)
-    } as ProfileData));
+    }));
   };
 
   const removeWork = (id: string) => {
     setProfileData(prev => ({
       ...prev,
       work_history: (prev.work_history || []).filter(w => w.id !== id)
-    } as ProfileData));
+    }));
   };
 
-  const handlePasswordChange = (field: keyof PasswordData, value: string) => {
-    setPasswordData((prev) => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
-    if (passwordErrors[field]) {
-      setPasswordErrors((prev) => ({ ...prev, [field]: "" }));
+  const handleAvatarUpload = async (base64Data: string): Promise<void> => {
+    try {
+      const result = await uploadAvatar({
+        variables: { avatar: base64Data },
+      });
+
+      if (result.data?.uploadAvatar?.ok) {
+        // Update profile data with new avatar URL
+        const newAvatarUrl = result.data.uploadAvatar.userProfile?.avatarUrl;
+        if (newAvatarUrl) {
+          setProfileData(prev => ({
+            ...prev,
+            avatarUrl: newAvatarUrl
+          }));
+
+          // Show success notification
+          setAvatarUploadMessage('Avatar updated successfully!');
+
+          // Auto-clear notification
+          setTimeout(() => setAvatarUploadMessage(""), 3000);
+
+          // Refetch profile data to ensure consistency
+          window.location.reload(); // Simple refresh to update all avatar instances
+        }
+      } else {
+        throw new Error(result.data?.uploadAvatar?.errors?.[0] || 'Upload failed');
+      }
+    } catch (error) {
+      console.error('Avatar upload error:', error);
+      setAvatarUploadMessage('Failed to upload avatar. Please try again.');
+      throw error;
     }
-  };
-
-  const validateProfile = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!profileData.email) {
-      newErrors["email"] = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(profileData.email)) {
-      newErrors["email"] = "Please enter a valid email address";
-    }
-
-    if (profileData.first_name && profileData.first_name.length > 30) {
-      newErrors["first_name"] = "First name must be less than 30 characters";
-    }
-
-    if (profileData.last_name && profileData.last_name.length > 30) {
-      newErrors["last_name"] = "Last name must be less than 30 characters";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
   };
 
   const validatePassword = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!passwordData.current_password) {
-      newErrors["current_password"] = "Current password is required";
+    if (!passwordData['current_password']) {
+      newErrors['current_password'] = "Current password is required";
     }
-
-    if (!passwordData.new_password) {
-      newErrors["new_password"] = "New password is required";
-    } else if (passwordData.new_password.length < 8) {
-      newErrors["new_password"] = "Password must be at least 8 characters";
+    if (!passwordData['new_password']) {
+      newErrors['new_password'] = "New password is required";
     }
-
-    if (passwordData.new_password !== passwordData.confirm_password) {
-      newErrors["confirm_password"] = "Passwords do not match";
+    if (passwordData['new_password'].length < 8) {
+      newErrors['new_password'] = "Password must be at least 8 characters";
+    }
+    if (passwordData['new_password'] !== passwordData['confirm_password']) {
+      newErrors['confirm_password'] = "Passwords do not match";
     }
 
     setPasswordErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // Helper functions for department/position matching
-  const normalize = (s?: string) => (s || "").toLowerCase().trim();
-  const isDept = (dept?: string, key?: string) => normalize(dept).includes((key || "").toLowerCase());
-  const posMatches = (pos = "", keywords: string[]) => {
-    const p = normalize(pos);
-    return keywords.some(k => p.includes(k.toLowerCase()));
-  };
-
-  const handleProfileSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateProfile()) {
-      return;
-    }
-
-    setSuccessMessage("");
-
-    try {
-      const variables: UpdateUserProfileVariables = {
-        email: profileData.email,
-        firstName: profileData.first_name,
-        lastName: profileData.last_name,
-        middleName: profileData.middle_name,
-        maternalLastName: profileData.maternal_last_name,
-        preferredName: profileData.preferred_name,
-        position: profileData.position,
-        department: profileData.department,
-        phone: profileData.phone,
-        phoneCountryCode: profileData.phone_country_code,
-        phoneType: profileData.phone_type,
-        secondaryPhone: profileData.secondary_phone,
-        secondaryPhoneType: profileData.secondary_phone_type,
-        streetAddress: profileData.street_address,
-        apartmentSuite: profileData.apartment_suite,
-        city: profileData.city,
-        stateProvince: profileData.state_province,
-        zipCode: profileData.zip_code,
-        country: profileData.country,
-        bio: profileData.bio,
-        education: JSON.stringify(profileData.education),
-        workHistory: JSON.stringify(profileData.work_history),
-        profileVisibility: JSON.stringify(profileData.profile_visibility),
-        isActive: profileData.is_active,
-      };
-
-      const result = await updateUserProfile({ variables });
-
-      if (result.data?.updateUserProfile.ok) {
-        setSuccessMessage("Profile updated successfully!");
-        // Dispatch profile-updated event for ProfileLeftCard
-        window.dispatchEvent(new CustomEvent('profile-updated'));
-        setTimeout(() => setSuccessMessage(""), 3000);
-      } else {
-        console.error('Profile update failed:', result.data?.updateUserProfile.errors);
-        setSuccessMessage(`Update failed: ${result.data?.updateUserProfile.errors?.join(', ')}`);
-      }
-    } catch (error) {
-      console.error("Profile update error:", error);
-      setSuccessMessage("Network error. Please try again.");
-    }
-  };
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -678,7 +955,7 @@ const ProfileRightCard: React.FC = () => {
         variables: {
           currentPassword: passwordData.current_password,
           newPassword: passwordData.new_password,
-        },
+        }
       });
 
       if (result.data?.changePassword.ok) {
@@ -688,502 +965,510 @@ const ProfileRightCard: React.FC = () => {
           new_password: "",
           confirm_password: "",
         });
-        setPasswordErrors({});
+        setTimeout(() => setPasswordSuccessMessage(""), 3000);
       } else {
-        setPasswordErrors({
-          submit: result.data?.changePassword.errors?.join(', ') || "Failed to change password",
-        });
+        setPasswordSuccessMessage(`Password change failed: ${result.data?.changePassword.errors?.join(', ')}`);
       }
     } catch (error) {
       console.error("Password change error:", error);
-      setPasswordErrors({ submit: "Network error. Please try again." });
+      setPasswordSuccessMessage("Network error. Please try again.");
     } finally {
       setIsPasswordLoading(false);
     }
   };
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsAvatarUploading(true);
-    setErrors(prev => ({ ...prev, submit: "" }));
-
-    try {
-      // Convert file to base64
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        const base64String = event.target?.result as string;
-
-        try {
-          const result = await uploadAvatar({
-            variables: {
-              avatar: base64String
-            }
-          });
-
-          if (result.data?.uploadAvatar.ok) {
-            // Update local profile data with new avatar
-            setProfileData(prev => ({
-              ...prev,
-              avatar: result.data?.uploadAvatar.userProfile?.avatar || "",
-              avatarUrl: result.data?.uploadAvatar.userProfile?.avatarUrl || ""
-            }));
-
-            // Refresh profile data
-            window.location.reload();
-          } else {
-            console.error('Avatar upload failed:', result.data?.uploadAvatar.errors);
-            setErrors(prev => ({
-              ...prev,
-              submit: `Avatar upload failed: ${result.data?.uploadAvatar.errors?.join(', ')}`
-            }));
-          }
-        } catch (error) {
-          console.error("Avatar upload error:", error);
-          setErrors(prev => ({
-            ...prev,
-            submit: "Avatar upload failed. Please try again."
-          }));
-        } finally {
-          setIsAvatarUploading(false);
-        }
-      };
-
-      reader.readAsDataURL(file);
-    } catch (error) {
-      console.error("File reading error:", error);
-      setErrors(prev => ({
-        ...prev,
-        submit: "Avatar upload failed. Please try again."
-      }));
-      setIsAvatarUploading(false);
-    }
-  };
-
-  // Debug info display - must be after all hooks are declared
-  if (profileLoading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading profile data...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (profileError) {
-    return (
-      <div className="p-8 text-center">
-        <div className="text-red-600 mb-4">
-          <p className="text-lg font-semibold">Error loading profile</p>
-          <p className="text-sm">{profileError.message}</p>
-        </div>
-        <button
-          onClick={() => window.location.reload()}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Retry
-        </button>
-      </div>
-    );
-  }
-
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'personal':
+      case 'general':
         return (
-          <div className="space-y-6">
-            {/* Three Cards Side by Side */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Name Card */}
-              <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-                <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
-                  <h3 className="text-lg font-medium text-gray-900">Name</h3>
-                </div>
-                <div className="p-4 space-y-3">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-sm font-medium text-gray-600">First Name:</div>
-                    <div className="text-sm">
-                      <Input
-                        type="text"
-                        value={profileData.first_name || ""}
-                        onChange={(e) => handleProfileChange("first_name", e.target.value)}
-                        className="w-full h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:ring-inset"
-                        placeholder="Enter first name"
-                      />
-                    </div>
+          <div className="flex flex-col space-y-6 h-full">
+            {/* Cards in two columns */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
+              {/* Left column - Personal and Address Information */}
+              <div className="flex flex-col space-y-6">
+                {/* Personal Information Card */}
+                <div className="bg-white rounded-lg border border-gray-200">
+                  <div className="p-4 border-b border-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                      <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      Personal Information
+                    </h3>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-sm font-medium text-gray-600">Middle Name:</div>
-                    <div className="text-sm">
-                                             <Input
-                         type="text"
-                         value={profileData.middle_name || ""}
-                         onChange={(e) => handleProfileChange("middle_name", e.target.value)}
-                         className="w-full h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:ring-inset"
-                         placeholder="Enter middle name"
-                       />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-sm font-medium text-gray-600">Last Name:</div>
-                    <div className="text-sm">
-                                             <Input
-                         type="text"
-                         value={profileData.last_name || ""}
-                         onChange={(e) => handleProfileChange("last_name", e.target.value)}
-                         className="w-full h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:ring-inset"
-                         placeholder="Enter last name"
-                       />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-sm font-medium text-gray-600">Maternal Last:</div>
-                    <div className="text-sm">
-                      <Input
-                        type="text"
-                        value={profileData.maternal_last_name || ""}
-                        onChange={(e) => handleProfileChange("maternal_last_name", e.target.value)}
-                        className="w-full h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:ring-inset"
-                        placeholder="Enter maternal last name"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-sm font-medium text-gray-600">Nickname:</div>
-                    <div className="text-sm">
-                      <Input
-                        type="text"
-                        value={profileData.preferred_name || ""}
-                        onChange={(e) => handleProfileChange("preferred_name", e.target.value)}
-                        className="w-full h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:ring-inset"
-                        placeholder="Enter nickname"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Contact Card */}
-              <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-                <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
-                  <h3 className="text-lg font-medium text-gray-900">Contact</h3>
-                </div>
-                <div className="p-4 space-y-3">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-sm font-medium text-gray-600">Email Address:</div>
-                    <div className="text-sm">
-                      <Input
-                        type="email"
-                        value={profileData.email || ""}
-                        onChange={(e) => handleProfileChange("email", e.target.value)}
-                        className="w-full h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:ring-inset"
-                        placeholder="Enter email address"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="text-sm font-medium text-gray-600">Primary Phone:</div>
-                    <div className="flex space-x-2">
-                      <select
-                        value={profileData.phone_country_code || "+1"}
-                        onChange={(e) => handleProfileChange("phone_country_code", e.target.value)}
-                        className="w-24 h-8 px-3 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
-                      >
-                        <option value="+1">🇺🇸 +1</option>
-                        <option value="+52">🇲🇽 +52</option>
-                        <option value="+44">🇬🇧 +44</option>
-                        <option value="+49">🇩🇪 +49</option>
-                        <option value="+33">🇫🇷 +33</option>
-                        <option value="+34">🇪🇸 +34</option>
-                        <option value="+39">🇮🇹 +39</option>
-                        <option value="+31">🇳🇱 +31</option>
-                        <option value="+32">🇧🇪 +32</option>
-                        <option value="+41">🇨🇭 +41</option>
-                        <option value="+46">🇸🇪 +46</option>
-                        <option value="+47">🇳🇴 +47</option>
-                        <option value="+45">🇩🇰 +45</option>
-                        <option value="+358">🇫🇮 +358</option>
-                        <option value="+48">🇵🇱 +48</option>
-                        <option value="+420">🇨🇿 +420</option>
-                        <option value="+36">🇭🇺 +36</option>
-                        <option value="+43">🇦🇹 +43</option>
-                        <option value="+351">🇵🇹 +351</option>
-                        <option value="+30">🇬🇷 +30</option>
-                        <option value="+90">🇹🇷 +90</option>
-                        <option value="+7">🇷🇺 +7</option>
-                        <option value="+86">🇨🇳 +86</option>
-                        <option value="+81">🇯🇵 +81</option>
-                        <option value="+82">🇰🇷 +82</option>
-                        <option value="+91">🇮🇳 +91</option>
-                        <option value="+61">🇦🇺 +61</option>
-                        <option value="+64">🇳🇿 +64</option>
-                        <option value="+55">🇧🇷 +55</option>
-                        <option value="+54">🇦🇷 +54</option>
-                        <option value="+56">🇨🇱 +56</option>
-                        <option value="+57">🇨🇴 +57</option>
-                        <option value="+58">🇻🇪 +58</option>
-                        <option value="+51">🇵🇪 +51</option>
-                        <option value="+593">🇪🇨 +593</option>
-                        <option value="+595">🇵🇾 +595</option>
-                        <option value="+598">🇺🇾 +598</option>
-                        <option value="+591">🇧🇴 +591</option>
-                        <option value="+503">🇸🇻 +503</option>
-                        <option value="+502">🇬🇹 +502</option>
-                        <option value="+504">🇭🇳 +504</option>
-                        <option value="+505">🇳🇮 +505</option>
-                        <option value="+506">🇨🇷 +506</option>
-                        <option value="+507">🇵🇦 +507</option>
-                        <option value="+971">🇦🇪 +971</option>
-                        <option value="+966">🇸🇦 +966</option>
-                        <option value="+972">🇮🇱 +972</option>
-                        <option value="+20">🇪🇬 +20</option>
-                        <option value="+27">🇿🇦 +27</option>
-                        <option value="+234">🇳🇬 +234</option>
-                        <option value="+254">🇰🇪 +254</option>
-                        <option value="+233">🇬🇭 +233</option>
-                        <option value="+212">🇲🇦 +212</option>
-                        <option value="+216">🇹🇳 +216</option>
-                        <option value="+213">🇩🇿 +213</option>
-                        <option value="+221">🇸🇳 +221</option>
-                        <option value="+225">🇨🇮 +225</option>
-                        <option value="+237">🇨🇲 +237</option>
-                        <option value="+236">🇨🇫 +236</option>
-                        <option value="+235">🇹🇩 +235</option>
-                        <option value="+249">🇸🇩 +249</option>
-                        <option value="+251">🇪🇹 +251</option>
-                        <option value="+255">🇹🇿 +255</option>
-                        <option value="+256">🇺🇬 +256</option>
-                        <option value="+257">🇧🇮 +257</option>
-                        <option value="+250">🇷🇼 +250</option>
-                        <option value="+252">🇸🇴 +252</option>
-                        <option value="+253">🇩🇯 +253</option>
-                      </select>
-                      <Input
-                        type="tel"
-                        value={profileData.phone || ""}
-                        onChange={(e) => handleProfileChange("phone", e.target.value)}
-                        className="flex-1 h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:ring-inset"
-                        placeholder="Phone number"
-                      />
-                      <PhoneTypeDropdown
-                        value={profileData.phone_type || "mobile"}
-                        onChange={(value) => handleProfileChange("phone_type", value)}
-                        className="w-24"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="text-sm font-medium text-gray-600">Secondary Phone:</div>
-                    <div className="flex space-x-2">
-                      <select
-                        value={profileData.phone_country_code || "+1"}
-                        onChange={(e) => handleProfileChange("phone_country_code", e.target.value)}
-                        className="w-24 h-8 px-3 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
-                      >
-                        <option value="+1">🇺🇸 +1</option>
-                        <option value="+52">🇲🇽 +52</option>
-                        <option value="+44">🇬🇧 +44</option>
-                        <option value="+49">🇩🇪 +49</option>
-                        <option value="+33">🇫🇷 +33</option>
-                        <option value="+34">🇪🇸 +34</option>
-                        <option value="+39">🇮🇹 +39</option>
-                        <option value="+31">🇳🇱 +31</option>
-                        <option value="+32">🇧🇪 +32</option>
-                        <option value="+41">🇨🇭 +41</option>
-                        <option value="+46">🇸🇪 +46</option>
-                        <option value="+47">🇳🇴 +47</option>
-                        <option value="+45">🇩🇰 +45</option>
-                        <option value="+358">🇫🇮 +358</option>
-                        <option value="+48">🇵🇱 +48</option>
-                        <option value="+420">🇨🇿 +420</option>
-                        <option value="+36">🇭🇺 +36</option>
-                        <option value="+43">🇦🇹 +43</option>
-                        <option value="+351">🇵🇹 +351</option>
-                        <option value="+30">🇬🇷 +30</option>
-                        <option value="+90">🇹🇷 +90</option>
-                        <option value="+7">🇷🇺 +7</option>
-                        <option value="+86">🇨🇳 +86</option>
-                        <option value="+81">🇯🇵 +81</option>
-                        <option value="+82">🇰🇷 +82</option>
-                        <option value="+91">🇮🇳 +91</option>
-                        <option value="+61">🇦🇺 +61</option>
-                        <option value="+64">🇳🇿 +64</option>
-                        <option value="+55">🇧🇷 +55</option>
-                        <option value="+54">🇦🇷 +54</option>
-                        <option value="+56">🇨🇱 +56</option>
-                        <option value="+57">🇨🇴 +57</option>
-                        <option value="+58">🇻🇪 +58</option>
-                        <option value="+51">🇵🇪 +51</option>
-                        <option value="+593">🇪🇨 +593</option>
-                        <option value="+595">🇵🇾 +595</option>
-                        <option value="+598">🇺🇾 +598</option>
-                        <option value="+591">🇧🇴 +591</option>
-                        <option value="+503">🇸🇻 +503</option>
-                        <option value="+502">🇬🇹 +502</option>
-                        <option value="+504">🇭🇳 +504</option>
-                        <option value="+505">🇳🇮 +505</option>
-                        <option value="+506">🇨🇷 +506</option>
-                        <option value="+507">🇵🇦 +507</option>
-                        <option value="+971">🇦🇪 +971</option>
-                        <option value="+966">🇸🇦 +966</option>
-                        <option value="+972">🇮🇱 +972</option>
-                        <option value="+20">🇪🇬 +20</option>
-                        <option value="+27">🇿🇦 +27</option>
-                        <option value="+234">🇳🇬 +234</option>
-                        <option value="+254">🇰🇪 +254</option>
-                        <option value="+233">🇬🇭 +233</option>
-                        <option value="+212">🇲🇦 +212</option>
-                        <option value="+216">🇹🇳 +216</option>
-                        <option value="+213">🇩🇿 +213</option>
-                        <option value="+221">🇸🇳 +221</option>
-                        <option value="+225">🇨🇮 +225</option>
-                        <option value="+237">🇨🇲 +237</option>
-                        <option value="+236">🇨🇫 +236</option>
-                        <option value="+235">🇹🇩 +235</option>
-                        <option value="+249">🇸🇩 +249</option>
-                        <option value="+251">🇪🇹 +251</option>
-                        <option value="+255">🇹🇿 +255</option>
-                        <option value="+256">🇺🇬 +256</option>
-                        <option value="+257">🇧🇮 +257</option>
-                        <option value="+250">🇷🇼 +250</option>
-                        <option value="+252">🇸🇴 +252</option>
-                        <option value="+253">🇩🇯 +253</option>
-                      </select>
-                      <Input
-                        type="tel"
-                        value={profileData.secondary_phone || ""}
-                        onChange={(e) => handleProfileChange("secondary_phone", e.target.value)}
-                        className="flex-1 h-8 text-sm border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:ring-inset"
-                        placeholder="Phone number"
-                      />
-                      <PhoneTypeDropdown
-                        value={profileData.secondary_phone_type || "mobile"}
-                        onChange={(value) => handleProfileChange("secondary_phone_type", value)}
-                        className="w-24"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Address Card */}
-              <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-                <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
-                  <h3 className="text-lg font-medium text-gray-900">Address</h3>
-                </div>
-                <div className="p-4 space-y-3">
-                  <div className="p-3 space-y-2">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="text-sm font-medium text-gray-600">Country:</div>
-                      <div className="text-sm">
-                        <select
-                          value={profileData.country || ""}
-                          onChange={(e) => handleProfileChange("country", e.target.value)}
-                          className="w-full h-7 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                        >
-                          <option value="">Select country</option>
-                          {countries.map((country) => (
-                            <option key={country.cca2} value={country.name}>
-                              {country.flag} {country.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="text-sm font-medium text-gray-600">State/Province:</div>
-                      <div className="text-sm">
-                        <select
-                          value={profileData.state_province || ""}
-                          onChange={(e) => handleProfileChange("state_province", e.target.value)}
-                          className="w-full h-7 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                          disabled={!profileData.country}
-                        >
-                          <option value="">Select state/province</option>
-                          {states.map((state) => (
-                            <option key={state.geonameId} value={state.name}>
-                              {state.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="text-sm font-medium text-gray-600">City:</div>
-                      <div className="text-sm">
-                        <select
-                          value={profileData.city || ""}
-                          onChange={(e) => handleProfileChange("city", e.target.value)}
-                          className="w-full h-7 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                          disabled={!profileData.state_province}
-                        >
-                          <option value="">Select city</option>
-                          {cities.map((city) => (
-                            <option key={city.geonameId} value={city.name}>
-                              {city.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="text-sm font-medium text-gray-600">Street Address:</div>
-                      <div className="text-sm">
+                  <div className="p-6">
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* User name (admin/staff only) */}
+                      <div>
+                        <label className="flex text-sm font-medium text-gray-700 mb-2 items-center justify-between">
+                          <span>User name</span>
+                          {!canEditUserName && (
+                            <span className="flex items-center text-xs text-gray-500" aria-hidden="true">
+                              <Lock className="w-4 h-4 mr-1" />
+                            </span>
+                          )}
+                        </label>
                         <Input
                           type="text"
-                          value={profileData.street_address || ""}
-                          onChange={(e) => handleProfileChange("street_address", e.target.value)}
-                          className="w-full h-7 text-sm border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:ring-inset"
-                          placeholder="123 Tech Street"
+                          value={profileData.preferred_name || ''}
+                          onChange={(e) => handleProfileChange('preferred_name', e.target.value)}
+                          className="w-full h-[38px]"
+                          placeholder="User name"
+                          disabled={!canEditUserName}
                         />
                       </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="text-sm font-medium text-gray-600">Apartment/Suite:</div>
-                      <div className="text-sm">
+
+                      {/* Profile Status */}
+                      <div>
+                        <label className="flex text-sm font-medium text-gray-700 mb-2 items-center justify-between">
+                          <span>Profile Status</span>
+                          {!canEditProfileStatus && (
+                            <span className="flex items-center text-xs text-gray-500" aria-hidden="true">
+                              <Lock className="w-4 h-4 mr-1" />
+                            </span>
+                          )}
+                        </label>
+                        <div className="flex items-center">
+                          <div className="inline-flex items-center px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+                            <svg className="w-4 h-4 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span className="text-sm text-blue-700 font-medium">{profileData.is_active ? 'Active Profile' : 'Inactive'}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* First Name */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
                         <Input
                           type="text"
-                          value={profileData.apartment_suite || ""}
-                          onChange={(e) => handleProfileChange("apartment_suite", e.target.value)}
-                          className="w-full h-7 text-sm border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:ring-inset"
-                          placeholder="Enter apartment/suite"
+                          value={profileData.first_name || ''}
+                          onChange={(e) => handleProfileChange('first_name', e.target.value)}
+                          className="w-full h-[38px] px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="First name"
+                          disabled={!isEditMode}
                         />
                       </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="text-sm font-medium text-gray-600">ZIP Code:</div>
-                      <div className="text-sm">
+
+                      {/* Middle Name */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Middle Name</label>
                         <Input
                           type="text"
-                          value={profileData.zip_code || ""}
-                          onChange={(e) => handleProfileChange("zip_code", e.target.value)}
-                          className="w-full h-7 text-sm border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:ring-inset"
-                          placeholder="Enter ZIP/postal code"
+                          value={profileData.middle_name || ''}
+                          onChange={(e) => handleProfileChange('middle_name', e.target.value)}
+                          className="w-full h-[38px] px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="Middle name"
+                          disabled={!isEditMode}
+                        />
+                      </div>
+
+                      {/* Last Name */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                        <Input
+                          type="text"
+                          value={profileData.last_name || ''}
+                          onChange={(e) => handleProfileChange('last_name', e.target.value)}
+                          className="w-full h-[38px] px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="Last name"
+                          disabled={!isEditMode}
+                        />
+                      </div>
+
+                      {/* Maternal name */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Maternal name</label>
+                        <Input
+                          type="text"
+                          value={profileData.maternal_last_name || ''}
+                          onChange={(e) => handleProfileChange('maternal_last_name', e.target.value)}
+                          className="w-full h-[38px] px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="Maternal name"
+                          disabled={!isEditMode}
                         />
                       </div>
                     </div>
                   </div>
+                </div>
 
+                {/* Address Information Card */}
+                <div className="bg-white rounded-lg border border-gray-200">
+                  <div className="p-4 border-b border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                        <svg className="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Address Information
+                      </h3>
+                      <div className="text-sm text-gray-500">
+                        {(() => {
+                          const fields = [profileData.country, profileData.state_province, profileData.city, profileData.street_address, profileData.zip_code];
+                          const completed = fields.filter(field => field && field.trim()).length;
+                          return `${completed}/5 fields completed`;
+                        })()}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Country */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
+                        <select
+                          value={profileData.country || ''}
+                          onChange={(e) => {
+                            const selectedCountry = countries.find(c => c.name === e.target.value);
+                            handleAddressChange('country', e.target.value);
+                            if (selectedCountry) {
+                              console.log('Selected country:', selectedCountry); // Debug
+                              const isoCode = phoneCodeToISOCode(selectedCountry.code || '');
+                              console.log('Mapped ISO code:', isoCode); // Debug
+                              handleProfileChange('countryCode', isoCode);
+                              // Reset dependent fields when country changes
+                              handleProfileChange('state_province', '');
+                              handleProfileChange('city', '');
+                              // Clear ZIP code error since validation rules changed
+                              setErrors(prev => {
+                                const newErrors = { ...prev };
+                                delete newErrors['zip_code'];
+                                return newErrors;
+                              });
+                            }
+                          }}
+                          className={`w-full bg-white rounded-md h-[38px] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:border-transparent ${
+                            countriesLoading
+                              ? 'border-gray-200 text-gray-400'
+                              : profileData.country
+                              ? 'border-green-300 focus:ring-green-500'
+                              : 'border-gray-300 focus:ring-blue-500'
+                          }`}
+                          disabled={!isEditMode || countriesLoading}
+                        >
+                          <option value="">{countriesLoading ? 'Loading countries...' : 'Select Country'}</option>
+                          {countries.map(c => (
+                            <option key={`country-${c.id}`} value={c.name}>
+                              {c.name} {c.code ? `(${c.code})` : ''}
+                            </option>
+                          ))}
+                        </select>
+                        {countriesLoading && <p className="text-xs text-gray-500 mt-1">Loading countries...</p>}
+                      </div>
 
+                      {/* State/Province */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">State/Province</label>
+                        <select
+                          value={profileData.state_province || ''}
+                          onChange={(e) => {
+                            const selectedState = states.find(s => s.name === e.target.value);
+                            handleAddressChange('state_province', e.target.value);
+                            if (selectedState) {
+                              console.log('Selected state:', selectedState); // Debug
+                              setSelectedStateId(selectedState.id);
+                              // Reset city when state changes
+                              handleProfileChange('city', '');
+                            } else {
+                              setSelectedStateId('');
+                            }
+                          }}
+                          className={`w-full bg-white rounded-md h-[38px] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:border-transparent ${
+                            !profileData.country
+                              ? 'border-gray-200 text-gray-400'
+                              : statesLoading
+                              ? 'border-gray-200 text-gray-400'
+                              : profileData.state_province
+                              ? 'border-green-300 focus:ring-green-500'
+                              : 'border-gray-300 focus:ring-blue-500'
+                          }`}
+                          disabled={!isEditMode || !profileData.country || statesLoading}
+                        >
+                          <option value="">
+                            {!profileData.country
+                              ? 'Select Country First'
+                              : statesLoading
+                              ? 'Loading states...'
+                              : states.length === 0 && profileData.country
+                              ? 'No states available'
+                              : 'Select State/Province'
+                            }
+                          </option>
+                          {states.map(state => (
+                            <option key={`state-${state.id}`} value={state.name}>{state.name}</option>
+                          ))}
+                        </select>
+                        {statesLoading && <p className="text-xs text-gray-500 mt-1">Loading states...</p>}
+                        {!profileData.country && <p className="text-xs text-gray-500 mt-1">Please select a country first</p>}
+                      </div>
+
+                      {/* City */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
+                        <select
+                          value={profileData.city || ''}
+                          onChange={(e) => {
+                            handleAddressChange('city', e.target.value);
+                          }}
+                          className={`w-full bg-white rounded-md h-[38px] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:border-transparent ${
+                            !profileData.state_province
+                              ? 'border-gray-200 text-gray-400'
+                              : citiesLoading
+                              ? 'border-gray-200 text-gray-400'
+                              : profileData.city
+                              ? 'border-green-300 focus:ring-green-500'
+                              : 'border-gray-300 focus:ring-blue-500'
+                          }`}
+                          disabled={!isEditMode || !profileData.state_province || citiesLoading}
+                        >
+                          <option value="">
+                            {!profileData.state_province
+                              ? 'Select State/Province First'
+                              : citiesLoading
+                              ? 'Loading cities...'
+                              : cities.length === 0 && profileData.state_province
+                              ? 'No cities available'
+                              : 'Select City'
+                            }
+                          </option>
+                          {cities.map(city => (
+                            <option key={`city-${city.id}`} value={city.name}>{city.name}</option>
+                          ))}
+                        </select>
+                        {citiesLoading && <p className="text-xs text-gray-500 mt-1">Loading cities...</p>}
+                        {!profileData.state_province && <p className="text-xs text-gray-500 mt-1">Please select a state/province first</p>}
+                      </div>
+
+                      {/* ZIP/Postal Code */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">ZIP/Postal Code</label>
+                        <Input
+                          type="text"
+                          value={profileData.zip_code || ''}
+                          onChange={(e) => handleAddressChange('zip_code', e.target.value)}
+                          className={`w-full h-[38px] px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:border-transparent ${
+                            errors['zip_code']
+                              ? 'border-red-300 focus:ring-red-500'
+                              : profileData.zip_code && validateZipCode(profileData.zip_code, profileData.country || '')
+                              ? 'border-green-300 focus:ring-green-500'
+                              : 'border-gray-300 focus:ring-blue-500'
+                          }`}
+                          disabled={!isEditMode}
+                          placeholder={getZipPlaceholder(profileData.country || '')}
+                        />
+                        {errors['zip_code'] && <p className="text-xs text-red-500 mt-1">{errors['zip_code']}</p>}
+                        {profileData.country && !errors['zip_code'] && (
+                          <p className="text-xs text-gray-500 mt-1">{getAddressInfo(profileData.country)}</p>
+                        )}
+                      </div>
+
+                      {/* Street Address */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Street Address</label>
+                        <Input
+                          type="text"
+                          value={profileData.street_address || ''}
+                          onChange={(e) => handleAddressChange('street_address', e.target.value)}
+                          className={`w-full h-[38px] px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:border-transparent ${
+                            errors['street_address']
+                              ? 'border-red-300 focus:ring-red-500'
+                              : profileData.street_address && validateStreetAddress(profileData.street_address)
+                              ? 'border-green-300 focus:ring-green-500'
+                              : 'border-gray-300 focus:ring-blue-500'
+                          }`}
+                          placeholder="123 Main Street"
+                          disabled={!isEditMode}
+                        />
+                        {errors['street_address'] && <p className="text-xs text-red-500 mt-1">{errors['street_address']}</p>}
+                        {profileData.country && !errors['street_address'] && (
+                          <p className="text-xs text-gray-500 mt-1">{getAddressPattern(profileData.country)}</p>
+                        )}
+                      </div>
+
+                      {/* Apartment/Suite */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Apartment/Suite <span className="text-gray-400">(Optional)</span></label>
+                        <Input
+                          type="text"
+                          value={profileData.apartment_suite || ''}
+                          onChange={(e) => handleAddressChange('apartment_suite', e.target.value)}
+                          className={`w-full h-[38px] px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:border-transparent ${
+                            profileData.apartment_suite && profileData.apartment_suite.trim().length > 0
+                              ? 'border-green-300 focus:ring-green-500'
+                              : 'border-gray-300 focus:ring-blue-500'
+                          }`}
+                          placeholder="Apt 4B, Suite 100, etc."
+                          disabled={!isEditMode}
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Bio Card - Full Width */}
-            <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-              <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
-                <h3 className="text-lg font-medium text-gray-900">Bio</h3>
-              </div>
-              <div>
-                <textarea
-                  value={profileData.bio || ""}
-                  onChange={(e) => handleProfileChange("bio", e.target.value)}
-                  className="w-full min-h-48 px-4 py-3 border-0 rounded-b-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset resize-none text-sm"
-                  placeholder="Tell us about yourself..."
-                />
+              {/* Right column - Contact Information and Bio */}
+              <div className="flex flex-col space-y-6 h-full">
+                {/* Contact Information Card */}
+                <div className="bg-white rounded-lg border border-gray-200">
+                  <div className="p-4 border-b border-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                      <svg className="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                      </svg>
+                      Contact Information
+                    </h3>
+                  </div>
+                  <div className="p-6">
+                    <div className="space-y-4">
+                      {/* Email */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <Input
+                          type="email"
+                          value={profileData.email || ''}
+                          onChange={(e) => handleContactChange('email', e.target.value)}
+                          className="w-full h-[38px] px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="Email address"
+                          disabled={!isEditMode}
+                        />
+                        {errors['email'] && <p className="text-xs text-red-500 mt-1">{errors['email']}</p>}
+                      </div>
+
+                      {/* Phone */}
+                      <div className="grid grid-cols-4 gap-4">
+                        <div className="col-span-1">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                          <select
+                            value={profileData.phone_country_code || ''}
+                            onChange={(e) => handleContactChange('phone_country_code', e.target.value)}
+                            className="w-full bg-white border border-gray-300 rounded-md h-[38px] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            aria-label="Phone country code"
+                            disabled={!isEditMode}
+                          >
+                            <option value="">{getCountryCodeDisplay('')}</option>
+                            {countries.map(c => (
+                              <option key={`gpc-${c.id}`} value={c.code}>
+                                {getCountryCodeDisplay(c.code)} {c.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="col-span-2">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">&nbsp;</label>
+                          <Input
+                            type="tel"
+                            value={profileData.phone || ''}
+                            onChange={(e) => handleContactChange('phone', e.target.value)}
+                            className={`w-full h-[38px] px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:border-transparent ${
+                              errors['phone']
+                                ? 'border-red-300 focus:ring-red-500'
+                                : profileData.phone && validatePhone(profileData.phone)
+                                ? 'border-green-300 focus:ring-green-500'
+                                : 'border-gray-300 focus:ring-blue-500'
+                            }`}
+                            placeholder="(555) 123-4567"
+                            disabled={!isEditMode}
+                          />
+                          {errors['phone'] && <p className="text-xs text-red-500 mt-1">{errors['phone']}</p>}
+                        </div>
+
+                        <div className="col-span-1">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                          <select
+                            value={profileData.phone_type || 'mobile'}
+                            onChange={(e) => handleProfileChange('phone_type', e.target.value)}
+                            className="w-full bg-white border border-gray-300 rounded-md h-[38px] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            disabled={!isEditMode}
+                          >
+                            <option value="mobile">Mobile</option>
+                            <option value="home">Home</option>
+                            <option value="work">Work</option>
+                            <option value="other">Other</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Secondary Phone */}
+                      <div className="grid grid-cols-4 gap-4">
+                        <div className="col-span-1">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Secondary Phone</label>
+                          <select
+                            value={profileData.secondary_phone_country_code || ''}
+                            onChange={(e) => handleContactChange('secondary_phone_country_code', e.target.value)}
+                            className="w-full bg-white border border-gray-300 rounded-md h-[38px] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            aria-label="Secondary phone country code"
+                            disabled={!isEditMode}
+                          >
+                            <option value="">{getCountryCodeDisplay('')}</option>
+                            {countries.map(c => (
+                              <option key={`gpc2-${c.id}`} value={c.code}>
+                                {getCountryCodeDisplay(c.code)} {c.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="col-span-2">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">&nbsp;</label>
+                          <Input
+                            type="tel"
+                            value={profileData.secondary_phone || ''}
+                            onChange={(e) => handleContactChange('secondary_phone', e.target.value)}
+                            className={`w-full h-[38px] px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:border-transparent ${
+                              errors['secondary_phone']
+                                ? 'border-red-300 focus:ring-red-500'
+                                : profileData.secondary_phone && validatePhone(profileData.secondary_phone)
+                                ? 'border-green-300 focus:ring-green-500'
+                                : 'border-gray-300 focus:ring-blue-500'
+                            }`}
+                            placeholder="(555) 987-6543"
+                            disabled={!isEditMode}
+                          />
+                          {errors['secondary_phone'] && <p className="text-xs text-red-500 mt-1">{errors['secondary_phone']}</p>}
+                        </div>
+
+                        <div className="col-span-1">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                          <select
+                            value={profileData.secondary_phone_type || 'mobile'}
+                            onChange={(e) => handleProfileChange('secondary_phone_type', e.target.value)}
+                            className="w-full bg-white border border-gray-300 rounded-md h-[38px] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            disabled={!isEditMode}
+                          >
+                            <option value="mobile">Mobile</option>
+                            <option value="home">Home</option>
+                            <option value="work">Work</option>
+                            <option value="other">Other</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bio Card */}
+                <div className="bg-white rounded-lg border border-gray-200 flex flex-col flex-1 min-h-0">
+                  <div className="p-4 border-b border-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                      <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      Biography Information
+                    </h3>
+                  </div>
+                  <div className="p-6 flex-1 flex flex-col min-h-0 h-full">
+                    <textarea
+                        value={profileData.bio || ''}
+                        onChange={(e) => handleProfileChange('bio', e.target.value)}
+                        className="w-full h-full min-h-0 flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                        placeholder="Write a short bio about yourself..."
+                        disabled={!isEditMode}
+                      />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -1191,728 +1476,336 @@ const ProfileRightCard: React.FC = () => {
 
       case 'professional':
         return (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
-              {/* Left Column - Position, Department & Professional Overview (30%) */}
-              <div className="lg:col-span-3 space-y-6">
-                {/* Position and Department Card */}
-                <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-                  <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
-                    <h3 className="text-lg font-medium text-gray-900">Position and Department</h3>
-                  </div>
-                  <div className="p-4">
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Position
-                        </label>
-                        <Input
-                          type="text"
-                          value={profileData.position || ""}
-                          onChange={(e) => handleProfileChange("position", e.target.value)}
-                          className="w-full border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:ring-inset"
-                          placeholder="e.g. Production Manager, Quality Engineer, Line Supervisor, Machine Operator"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Department
-                        </label>
-                        <Input
-                          type="text"
-                          value={profileData.department || ""}
-                          onChange={(e) => handleProfileChange("department", e.target.value)}
-                          className="w-full border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:ring-inset"
-                          placeholder="e.g. Production, Quality, Maintenance, Engineering, IT, Logistics"
-                        />
-                      </div>
+          <div className="flex flex-col space-y-6">
+            <div className="bg-white rounded-lg border border-gray-200">
+              <div className="p-4 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-900">Professional Information</h3>
+                  {!canEditProfileStatus && (
+                    <div className="flex items-center gap-2 text-sm text-amber-600 bg-amber-50 px-3 py-1 rounded-lg">
+                      <Lock className="w-4 h-4" />
+                      <span>Admin Only</span>
                     </div>
-                  </div>
-                </div>
-
-                {/* Professional Overview Card */}
-                <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-                  <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
-                    <h3 className="text-lg font-medium text-gray-900">Professional Overview</h3>
-                  </div>
-                  <div className="p-4 space-y-4">
-                    {/* Daily Activities */}
-                    <div>
-                      <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        Daily Activities
-                      </h4>
-                      <div className="space-y-1">
-                        {[
-                          "Production line monitoring",
-                          "Team stand-up meetings",
-                          "Quality control checks",
-                          "Lean process improvement"
-                        ].map((activity, index) => (
-                          <div key={index} className="flex items-start gap-2">
-                            <div className="w-1 h-1 bg-green-400 rounded-full mt-2 flex-shrink-0"></div>
-                            <span className="text-xs text-gray-600">{activity}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Responsibilities */}
-                    <div>
-                      <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        Key Responsibilities
-                      </h4>
-                      <div className="space-y-1">
-                        {[
-                          "Ensure production targets",
-                          "Maintain safety standards",
-                          "Implement lean principles",
-                          "Lead continuous improvement"
-                        ].map((responsibility, index) => (
-                          <div key={index} className="flex items-start gap-2">
-                            <div className="w-1 h-1 bg-blue-400 rounded-full mt-2 flex-shrink-0"></div>
-                            <span className="text-xs text-gray-600">{responsibility}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Targets */}
-                    <div>
-                      <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                        <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                        Current Targets
-                      </h4>
-                      <div className="space-y-1">
-                        {[
-                          "Reduce cycle time by 15%",
-                          "Achieve 99.5% quality rate",
-                          "Implement 5S methodology",
-                          "Reduce waste by 25%"
-                        ].map((target, index) => (
-                          <div key={index} className="flex items-start gap-2">
-                            <div className="w-1 h-1 bg-purple-400 rounded-full mt-2 flex-shrink-0"></div>
-                            <span className="text-xs text-gray-600">{target}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
-
-              {/* Right Column - Plant Organizational Structure (70%) */}
-              <div className="lg:col-span-7">
-                <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-                  <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
-                    <h3 className="text-lg font-medium text-gray-900">Plant Organizational Structure</h3>
+              <div className="p-4 space-y-4">
+                {canEditProfileStatus ? (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Position</label>
+                      <Input
+                        type="text"
+                        value={profileData.position || ""}
+                        onChange={(e) => handleProfileChange("position", e.target.value)}
+                        className="w-full"
+                        placeholder="Enter position"
+                        disabled={!isEditMode}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                      <Input
+                        type="text"
+                        value={profileData.department || ""}
+                        onChange={(e) => handleProfileChange("department", e.target.value)}
+                        className="w-full"
+                        placeholder="Enter department"
+                        disabled={!isEditMode}
+                      />
+                    </div>
                   </div>
-                  <div className="p-6">
-                    <div className="text-center">
-                      <h4 className="text-lg font-bold text-gray-800 mb-6 flex items-center justify-center gap-3">
-                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-                          <span className="text-white text-lg">🏭</span>
-                        </div>
-                        Plant Organizational Structure
-                      </h4>
-
-                      {/* Executive Level */}
-                      <div className="mb-8">
-                        <div className="text-sm font-semibold text-gray-600 mb-3 text-center">EXECUTIVE LEVEL</div>
-                        <div className={`inline-block p-4 rounded-xl border-2 transition-all duration-300 transform hover:scale-105 ${
-                          profileData.position?.toLowerCase().includes('plant manager') ||
-                          profileData.position?.toLowerCase().includes('plant director') ||
-                          profileData.position?.toLowerCase().includes('general manager') ||
-                          profileData.position?.toLowerCase().includes('operations director')
-                            ? 'bg-gradient-to-br from-blue-400 to-blue-600 border-blue-500 text-white shadow-lg scale-110 ring-2 ring-blue-300'
-                            : 'bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300 text-gray-800'
-                        }`}>
-                          <div className="text-lg font-bold mb-1">🏭 PLANT MANAGER</div>
-                          <div className="text-xs opacity-90">Strategic Leadership</div>
-
-                        </div>
-                      </div>
-
-                      {/* Department Leadership Level */}
-                      <div className="mb-8">
-                        <div className="text-sm font-semibold text-gray-600 mb-4 text-center">DEPARTMENT LEADERSHIP</div>
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                          {/* Production Leadership */}
-                          <div className={`p-3 rounded-lg border-2 transition-all duration-300 transform hover:scale-105 ${
-                            isDept(profileData.department, 'production') ||
-                            posMatches(profileData.position, ['production manager', 'production supervisor', 'operations manager'])
-                              ? 'bg-gradient-to-br from-green-400 to-green-600 border-green-500 shadow-lg scale-110 ring-2 ring-green-300 text-white'
-                              : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 text-gray-800'
-                          }`}>
-                            <div className="text-base font-bold mb-1">🏭 PRODUCTION</div>
-                            <div className="text-xs opacity-90">Manufacturing</div>
-
-                          </div>
-
-                          {/* Quality Leadership */}
-                          <div className={`p-3 rounded-lg border-2 transition-all duration-300 transform hover:scale-105 ${
-                            isDept(profileData.department, 'quality') ||
-                            posMatches(profileData.position, ['quality manager', 'quality supervisor', 'qa manager'])
-                              ? 'bg-gradient-to-br from-purple-400 to-purple-600 border-purple-500 shadow-lg scale-110 ring-2 ring-purple-300 text-white'
-                              : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 text-gray-800'
-                          }`}>
-                            <div className="text-base font-bold mb-1">🔍 QUALITY</div>
-                            <div className="text-xs opacity-90">Standards</div>
-
-                          </div>
-
-                          {/* Maintenance Leadership */}
-                          <div className={`p-3 rounded-lg border-2 transition-all duration-300 transform hover:scale-105 ${
-                            isDept(profileData.department, 'maintenance') ||
-                            posMatches(profileData.position, ['maintenance manager', 'maintenance supervisor', 'reliability manager'])
-                              ? 'bg-gradient-to-br from-blue-400 to-blue-600 border-blue-500 shadow-lg scale-110 ring-2 ring-blue-300 text-white'
-                              : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 text-gray-800'
-                          }`}>
-                            <div className="text-base font-bold mb-1">⚙️ MAINTENANCE</div>
-                            <div className="text-xs opacity-90">Equipment</div>
-
-                          </div>
-
-                          {/* Engineering Leadership */}
-                          <div className={`p-3 rounded-lg border-2 transition-all duration-300 transform hover:scale-105 ${
-                            isDept(profileData.department, 'engineering') ||
-                            posMatches(profileData.position, ['engineering manager', 'process engineer', 'project engineer'])
-                              ? 'bg-gradient-to-br from-indigo-400 to-indigo-600 border-indigo-500 shadow-lg scale-110 ring-2 ring-indigo-300 text-white'
-                              : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 text-gray-800'
-                          }`}>
-                            <div className="text-base font-bold mb-1">🔧 ENGINEERING</div>
-                            <div className="text-xs opacity-90">Innovation</div>
-
+                ) : (
+                  <div className="space-y-4">
+                    <div className="p-4 bg-gray-50 rounded-lg">
+                      <div className="text-sm text-gray-600 mb-2">Current Role Information</div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Position</label>
+                          <div className="text-sm text-gray-900 bg-white border border-gray-200 rounded-md px-3 py-2">
+                            {profileData.position || "Not assigned"}
                           </div>
                         </div>
-                      </div>
-
-                      {/* Support Departments */}
-                      <div className="mb-8">
-                        <div className="text-sm font-semibold text-gray-600 mb-4 text-center">SUPPORT DEPARTMENTS</div>
-                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                          {/* Logistics */}
-                          <div className={`p-3 rounded-lg border-2 transition-all duration-300 transform hover:scale-105 ${
-                            isDept(profileData.department, 'logistics') ||
-                            posMatches(profileData.position, ['logistics manager', 'logistics supervisor', 'warehouse manager'])
-                              ? 'bg-gradient-to-br from-orange-400 to-orange-600 border-orange-500 shadow-lg scale-110 ring-2 ring-orange-300 text-white'
-                              : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 text-gray-800'
-                          }`}>
-                            <div className="text-base font-bold mb-1">📦 LOGISTICS</div>
-                            <div className="text-xs opacity-90">Material Flow</div>
-
-                          </div>
-
-                          {/* Continuous Improvement */}
-                          <div className={`p-2 rounded-lg border-2 transition-all duration-300 transform hover:scale-105 ${
-                            isDept(profileData.department, 'continuous improvement') ||
-                            posMatches(profileData.position, ['ci manager', 'lean coordinator', 'process improvement'])
-                              ? 'bg-gradient-to-br from-teal-400 to-teal-600 border-teal-500 shadow-lg scale-110 ring-2 ring-teal-300 text-white'
-                              : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 text-gray-800'
-                          }`}>
-                            <div className="text-sm font-bold mb-1">📈 CI</div>
-                            <div className="text-xs opacity-90">Lean</div>
-
-                          </div>
-
-                          {/* HR */}
-                          <div className={`p-2 rounded-lg border-2 transition-all duration-300 transform hover:scale-105 ${
-                            isDept(profileData.department, 'hr') ||
-                            posMatches(profileData.position, ['hr manager', 'hr generalist', 'hr coordinator'])
-                              ? 'bg-gradient-to-br from-pink-400 to-pink-600 border-pink-500 shadow-lg scale-110 ring-2 ring-pink-300 text-white'
-                              : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 text-gray-800'
-                          }`}>
-                            <div className="text-sm font-bold mb-1">👥 HR</div>
-                            <div className="text-xs opacity-90">People</div>
-
-                          </div>
-
-                          {/* Safety */}
-                          <div className={`p-2 rounded-lg border-2 transition-all duration-300 transform hover:scale-105 ${
-                            isDept(profileData.department, 'safety') ||
-                            posMatches(profileData.position, ['safety manager', 'safety officer', 'ehs manager'])
-                              ? 'bg-gradient-to-br from-red-400 to-red-600 border-red-500 shadow-lg scale-110 ring-2 ring-red-300 text-white'
-                              : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 text-gray-800'
-                          }`}>
-                            <div className="text-sm font-bold mb-1">🛡️ SAFETY</div>
-                            <div className="text-xs opacity-90">Workplace</div>
-
-                          </div>
-
-                          {/* IT */}
-                          <div className={`p-2 rounded-lg border-2 transition-all duration-300 transform hover:scale-105 ${
-                            isDept(profileData.department, 'it') ||
-                            posMatches(profileData.position, ['it manager', 'system administrator', 'it coordinator'])
-                              ? 'bg-gradient-to-br from-cyan-400 to-cyan-600 border-cyan-500 shadow-lg scale-110 ring-2 ring-cyan-300 text-white'
-                              : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 text-gray-800'
-                          }`}>
-                            <div className="text-sm font-bold mb-1">💻 IT</div>
-                            <div className="text-xs opacity-90">Technology</div>
-
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Operational Level */}
-                      <div className="mb-6">
-                        <div className="text-sm font-semibold text-gray-600 mb-4 text-center">OPERATIONAL LEVEL</div>
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                          {/* Supervisors */}
-                          <div className={`p-3 rounded-lg border-2 transition-all duration-300 transform hover:scale-105 ${
-                            posMatches(profileData.position, ['supervisor', 'team leader', 'lead', 'foreman'])
-                              ? 'bg-gradient-to-br from-green-400 to-green-600 border-green-500 shadow-lg scale-110 ring-2 ring-green-300 text-white'
-                              : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 text-gray-800'
-                          }`}>
-                            <div className="text-base font-bold mb-1">👥 SUPERVISORS</div>
-                            <div className="text-xs opacity-90">Team Leadership</div>
-
-                          </div>
-
-                          {/* Technical Specialists */}
-                          <div className={`p-3 rounded-lg border-2 transition-all duration-300 transform hover:scale-105 ${
-                            posMatches(profileData.position, ['engineer', 'technician', 'analyst', 'coordinator', 'specialist'])
-                              ? 'bg-gradient-to-br from-blue-400 to-blue-600 border-blue-500 shadow-lg scale-110 ring-2 ring-blue-300 text-white'
-                              : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 text-gray-800'
-                          }`}>
-                            <div className="text-base font-bold mb-1">⚙️ TECHNICAL SPECIALISTS</div>
-                            <div className="text-xs opacity-90">Expertise</div>
-
-                          </div>
-
-                          {/* Operators */}
-                          <div className={`p-3 rounded-lg border-2 transition-all duration-300 transform hover:scale-105 ${
-                            posMatches(profileData.position, ['operator', 'assembler', 'machinist', 'worker'])
-                              ? 'bg-gradient-to-br from-orange-400 to-orange-600 border-orange-500 shadow-lg scale-110 ring-2 ring-orange-300 text-white'
-                              : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 text-gray-800'
-                          }`}>
-                            <div className="text-base font-bold mb-1">🏭 OPERATORS</div>
-                            <div className="text-xs opacity-90">Production</div>
-
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                          <div className="text-sm text-gray-900 bg-white border border-gray-200 rounded-md px-3 py-2">
+                            {profileData.department || "Not assigned"}
                           </div>
                         </div>
                       </div>
                     </div>
-
-
+                    <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="flex items-start gap-3">
+                        <Lock className="w-5 h-5 text-blue-600 mt-0.5" />
+                        <div>
+                          <h4 className="text-sm font-medium text-blue-900">Role Assignment Required</h4>
+                          <p className="text-sm text-blue-700 mt-1">
+                            Only administrators can assign or modify user roles and positions.
+                            Contact your system administrator to update your professional information.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
-
-
             </div>
+
+            {/* Daily Activities Card - Only show if user has a position/role */}
+            {profileData.position ? (
+              <DailyActivitiesCard
+                position={profileData.position}
+                department={profileData.department}
+                assignedTo={profileData.username}
+              />
+            ) : (
+              <div className="bg-white rounded-lg border border-gray-200">
+                <div className="p-6 text-center">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Briefcase className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Role Assigned</h3>
+                  <p className="text-gray-500 mb-4">
+                    Daily activities and tasks will appear here once a position and department are assigned to your account.
+                  </p>
+                  <div className="text-sm text-gray-400">
+                    Contact your administrator to assign your professional role.
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         );
 
       case 'education':
-        console.log("Rendering education tab, profileData.education:", profileData.education);
         return (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-gray-900">Education Records</h3>
-              <Button
-                onClick={addEducation}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                Add Education
-              </Button>
-            </div>
-
-            {/* Education Table */}
-            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-3 py-2 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                        Institution
-                      </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Degree & Field
-                      </th>
-                      <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
-                        Period
-                      </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Description
-                      </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
-                        Status
-                      </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {Array.isArray(profileData.education) && profileData.education.length > 0 ? profileData.education.map((edu) => (
-                      <tr key={edu.id} className="hover:bg-gray-50 transition-colors [&>td]:!p-0">
-                        <td className="py-4 whitespace-nowrap">
-                          <Input
-                            value={edu.school || ''}
-                            onChange={(e) => updateEducation(edu.id, 'school', e.target.value)}
-                            placeholder="Institution name"
-                            className="w-full h-8 text-base font-medium border-0 !border-0 bg-transparent hover:bg-gray-100 focus:bg-blue-50 focus:outline-none focus:ring-0 !ring-0 focus-visible:ring-0 !focus-visible:ring-0 text-sm rounded px-3"
-                          />
-                        </td>
-                        <td className="px-3 py-4 whitespace-nowrap">
-                          <div className="space-y-2">
-                            <Input
-                              value={edu.degree || ''}
-                              onChange={(e) => updateEducation(edu.id, 'degree', e.target.value)}
-                              placeholder="Degree"
-                              className="w-full h-8 text-sm border-0 !border-0 bg-transparent hover:bg-gray-100 focus:bg-blue-50 focus:outline-none focus:ring-0 !ring-0 focus-visible:ring-0 !focus-visible:ring-0 rounded px-2"
-                            />
-                            <Input
-                              value={edu.field || ''}
-                              onChange={(e) => updateEducation(edu.id, 'field', e.target.value)}
-                              placeholder="Field of study"
-                              className="w-full h-8 text-sm border-0 !border-0 bg-transparent hover:bg-gray-100 focus:bg-blue-50 focus:outline-none focus:ring-0 !ring-0 focus-visible:ring-0 !focus-visible:ring-0 rounded px-2"
-                            />
-                          </div>
-                        </td>
-                        <td className="py-4 whitespace-nowrap w-24">
-                          <div className="flex items-center gap-1">
-                            <Input
-                              value={edu.startYear || ''}
-                              onChange={(e) => updateEducation(edu.id, 'startYear', e.target.value)}
-                              placeholder="Start"
-                              className="w-16 h-8 text-sm border-0 !border-0 bg-transparent hover:bg-gray-100 focus:bg-blue-50 focus:outline-none focus:ring-0 !ring-0 focus-visible:ring-0 !focus-visible:ring-0 rounded px-1 text-center"
-                            />
-                            <span className="text-gray-400 text-xs">-</span>
-                            <Input
-                              value={edu.endYear || ''}
-                              onChange={(e) => updateEducation(edu.id, 'endYear', e.target.value)}
-                              placeholder="End"
-                              className="w-16 h-8 text-sm border-0 !border-0 bg-transparent hover:bg-gray-100 focus:bg-blue-50 focus:outline-none focus:ring-0 !ring-0 focus-visible:ring-0 !focus-visible:ring-0 rounded px-1 text-center"
-                            />
-                          </div>
-                        </td>
-                        <td className="!p-0 !m-0">
-                          <textarea
-                            value={edu.description || ''}
-                            onChange={(e) => updateEducation(edu.id, 'description', e.target.value)}
-                            placeholder="Brief description..."
-                            rows={3}
-                            className="w-full text-sm border-0 !border-0 bg-transparent hover:bg-gray-100 focus:bg-blue-50 focus:outline-none focus:ring-0 !ring-0 focus-visible:ring-0 !focus-visible:ring-0 rounded px-2 py-2 resize-none"
-                          />
-                        </td>
-                        <td className="px-3 py-4 whitespace-nowrap w-20">
-                          <select
-                            value={edu.visible ? 'visible' : 'hidden'}
-                            onChange={(e) => updateEducation(edu.id, 'visible', e.target.value === 'visible')}
-                            className="w-full h-8 px-2 border-0 bg-transparent hover:bg-gray-100 focus:bg-white focus:outline-none text-sm rounded"
-                          >
-                            <option value="visible">Visible</option>
-                            <option value="hidden">Hidden</option>
-                          </select>
-                        </td>
-                        <td className="px-3 py-4 whitespace-nowrap text-right text-sm font-medium w-16">
-                          <Button
-                            onClick={() => removeEducation(edu.id)}
-                            className="bg-red-50 hover:bg-red-100 text-red-600 border-0 p-2 rounded"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </td>
-                      </tr>
-                    )) : null}
-                  </tbody>
-                </table>
+          <div className="flex flex-col space-y-6">
+            <div className="bg-white rounded-lg border border-gray-200">
+              <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+                <h3 className="text-lg font-semibold text-gray-900">Education</h3>
+                <Button
+                  onClick={addEducation}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2"
+                  disabled={!isEditMode}
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Education
+                </Button>
               </div>
-
-              {/* Empty State */}
-              {(!Array.isArray(profileData.education) || profileData.education.length === 0) && (
-                <div className="text-center py-12 text-gray-500">
-                  <GraduationCap className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                  <p className="text-sm font-medium">No education records yet</p>
-                  <p className="text-xs text-gray-400 mt-1">Click "Add Education" to get started</p>
-                </div>
-              )}
+              <div className="p-4 space-y-4">
+                {profileData.education?.map((edu, index) => (
+                  <div key={edu.id} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex justify-between items-start mb-4">
+                      <h4 className="font-medium text-gray-900">Education #{index + 1}</h4>
+                      <Button
+                        onClick={() => removeEducation(edu.id)}
+                        className="text-red-600 hover:text-red-700 p-1"
+                        disabled={!isEditMode}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">School</label>
+                        <Input
+                          type="text"
+                          value={edu.school}
+                          onChange={(e) => {
+                            const newEducation = [...(profileData.education || [])];
+                            newEducation[index] = { ...edu, school: e.target.value };
+                            handleProfileChange("education", newEducation);
+                          }}
+                          className="w-full"
+                          placeholder="Enter school name"
+                          disabled={!isEditMode}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Degree</label>
+                        <Input
+                          type="text"
+                          value={edu.degree}
+                          onChange={(e) => {
+                            const newEducation = [...(profileData.education || [])];
+                            newEducation[index] = { ...edu, degree: e.target.value };
+                            handleProfileChange("education", newEducation);
+                          }}
+                          className="w-full"
+                          placeholder="Enter degree"
+                          disabled={!isEditMode}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {(!profileData.education || profileData.education.length === 0) && (
+                  <p className="text-gray-500 text-center py-8">No education entries yet. Click "Add Education" to get started.</p>
+                )}
+              </div>
             </div>
           </div>
         );
 
       case 'experience':
-        console.log("Rendering experience tab, profileData.work_history:", profileData.work_history);
         return (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-gray-900">Work Experience Records</h3>
-              <Button
-                onClick={addWork}
-                className="bg-blue-600 hover:bg-blue-700 text-white border-0 flex items-center gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                Add Experience
-              </Button>
-            </div>
-
-            <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="px-3 py-2 text-xs font-semibold text-gray-700 text-left">Position & Company</th>
-                    <th className="px-3 py-2 text-xs font-semibold text-gray-700 text-left">Department</th>
-                    <th className="px-3 py-2 text-xs font-semibold text-gray-700 text-center w-24">Period</th>
-                    <th className="px-3 py-2 text-xs font-semibold text-gray-700 text-left">Description</th>
-                    <th className="px-3 py-2 text-xs font-semibold text-gray-700 text-center w-20">Status</th>
-                    <th className="px-3 py-2 text-xs font-semibold text-gray-700 text-center w-16">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {Array.isArray(profileData.work_history) && profileData.work_history.length > 0 ? profileData.work_history.map((work) => (
-                    <tr key={work.id} className="hover:bg-gray-50 transition-colors [&>td]:!p-0">
-                      <td className="py-2 whitespace-nowrap">
-                        <div className="space-y-2">
-                          <Input
-                            value={work.title || ''}
-                            onChange={(e) => updateWork(work.id, 'title', e.target.value)}
-                            placeholder="Job Title"
-                            className="w-full h-8 text-base font-medium border-0 !border-0 bg-transparent hover:bg-gray-100 focus:bg-blue-50 focus:outline-none focus:ring-0 !ring-0 focus-visible:ring-0 !focus-visible:ring-0 text-sm rounded px-3"
-                          />
-                          <Input
-                            value={work.company || ''}
-                            onChange={(e) => updateWork(work.id, 'company', e.target.value)}
-                            placeholder="Company Name"
-                            className="w-full h-8 text-sm border-0 !border-0 bg-transparent hover:bg-gray-100 focus:bg-blue-50 focus:outline-none focus:ring-0 !ring-0 focus-visible:ring-0 !focus-visible:ring-0 rounded px-3"
-                          />
-                        </div>
-                      </td>
-                      <td className="px-3 py-2 whitespace-nowrap">
+          <div className="flex flex-col space-y-6">
+            <div className="bg-white rounded-lg border border-gray-200">
+              <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+                <h3 className="text-lg font-semibold text-gray-900">Work Experience</h3>
+                <Button
+                  onClick={addWork}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2"
+                  disabled={!isEditMode}
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Experience
+                </Button>
+              </div>
+              <div className="p-4 space-y-4">
+                {profileData.work_history?.map((work, index) => (
+                  <div key={work.id} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex justify-between items-start mb-4">
+                      <h4 className="font-medium text-gray-900">Experience #{index + 1}</h4>
+                      <Button
+                        onClick={() => removeWork(work.id)}
+                        className="text-red-600 hover:text-red-700 p-1"
+                        disabled={!isEditMode}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Company</label>
                         <Input
-                          value={work.department || ''}
-                          onChange={(e) => updateWork(work.id, 'department', e.target.value)}
-                          placeholder="Department"
-                          className="w-full h-8 text-sm border-0 !border-0 bg-transparent hover:bg-gray-100 focus:bg-blue-50 focus:outline-none focus:ring-0 !ring-0 focus-visible:ring-0 !focus-visible:ring-0 rounded px-2"
+                          type="text"
+                          value={work.company}
+                          onChange={(e) => {
+                            const newWorkHistory = [...(profileData.work_history || [])];
+                            newWorkHistory[index] = { ...work, company: e.target.value };
+                            handleProfileChange("work_history", newWorkHistory);
+                          }}
+                          className="w-full"
+                          placeholder="Enter company name"
+                          disabled={!isEditMode}
                         />
-                      </td>
-                      <td className="py-2 whitespace-nowrap w-24">
-                        <div className="flex items-center gap-1">
-                          <Input
-                            value={work.startYear || ''}
-                            onChange={(e) => updateWork(work.id, 'startYear', e.target.value)}
-                            placeholder="Start"
-                            className="w-16 h-8 text-sm border-0 !border-0 bg-transparent hover:bg-gray-100 focus:bg-blue-50 focus:outline-none focus:ring-0 !ring-0 focus-visible:ring-0 !focus-visible:ring-0 rounded px-1 text-center"
-                          />
-                          <span className="text-gray-400 text-xs">-</span>
-                          <Input
-                            value={work.endYear || ''}
-                            onChange={(e) => updateWork(work.id, 'endYear', e.target.value)}
-                            placeholder="End"
-                            className="w-16 h-8 text-sm border-0 !border-0 bg-transparent hover:bg-gray-100 focus:bg-blue-50 focus:outline-none focus:ring-0 !ring-0 focus-visible:ring-0 !focus-visible:ring-0 rounded px-1 text-center"
-                          />
-                        </div>
-                      </td>
-                      <td className="!p-0 !m-0">
-                        <textarea
-                          value={work.description || ''}
-                          onChange={(e) => updateWork(work.id, 'description', e.target.value)}
-                          placeholder="Job description, responsibilities, achievements..."
-                          rows={5}
-                          className="w-full px-2 py-3 border-0 rounded-b-lg focus:outline-none focus:ring-0 !ring-0 focus-visible:ring-0 !focus-visible:ring-0 resize-none text-sm bg-transparent hover:bg-gray-100 focus:bg-blue-50 align-middle"
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                        <Input
+                          type="text"
+                          value={work.title}
+                          onChange={(e) => {
+                            const newWorkHistory = [...(profileData.work_history || [])];
+                            newWorkHistory[index] = { ...work, title: e.target.value };
+                            handleProfileChange("work_history", newWorkHistory);
+                          }}
+                          className="w-full"
+                          placeholder="Enter job title"
+                          disabled={!isEditMode}
                         />
-                      </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-center w-20">
-                        <select
-                          value={work.visible ? "visible" : "hidden"}
-                          onChange={(e) => updateWork(work.id, 'visible', e.target.value === "visible")}
-                          className="w-full h-8 px-2 border-0 bg-transparent hover:bg-gray-100 focus:bg-blue-50 focus:outline-none text-sm rounded"
-                        >
-                          <option value="visible">Visible</option>
-                          <option value="hidden">Hidden</option>
-                        </select>
-                      </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-right text-sm font-medium w-16">
-                        <Button
-                          onClick={() => removeWork(work.id)}
-                          className="bg-red-50 hover:bg-red-100 text-red-600 border-0 p-2 rounded"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                                              </td>
-                      </tr>
-                    )) : null}
-                </tbody>
-              </table>
-
-              {/* Empty State */}
-              {(!Array.isArray(profileData.work_history) || profileData.work_history.length === 0) && (
-                <div className="text-center py-12 text-gray-500">
-                  <Briefcase className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                  <p className="text-sm font-medium">No work experience records yet</p>
-                  <p className="text-xs text-gray-400 mt-1">Click "Add Experience" to get started</p>
-                </div>
-              )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {(!profileData.work_history || profileData.work_history.length === 0) && (
+                  <p className="text-gray-500 text-center py-8">No work experience entries yet. Click "Add Experience" to get started.</p>
+                )}
+              </div>
             </div>
           </div>
         );
 
       case 'security':
         return (
-          <div className="space-y-6">
-            <p className="text-sm text-gray-600">Update your password and security settings</p>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Current Password
-                </label>
-                <div className="relative">
-                  <Input
-                    type={showPasswords.current ? "text" : "password"}
-                    value={passwordData.current_password}
-                    onChange={(e) => handlePasswordChange("current_password", e.target.value)}
-                    variant={passwordErrors["current_password"] ? "error" : "default"}
-                    className="pr-10"
-                  />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                    onClick={() =>
-                      setShowPasswords((prev) => ({ ...prev, current: !prev.current }))
-                    }
-                  >
-                    {showPasswords.current ? (
-                      <EyeOff className="h-4 w-4 text-gray-400" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-gray-400" />
-                    )}
-                  </button>
-                </div>
-                {passwordErrors["current_password"] && (
-                  <p className="text-red-600 text-sm mt-1">{passwordErrors["current_password"]}</p>
-                )}
+          <div className="flex flex-col space-y-6">
+            <div className="bg-white rounded-lg border border-gray-200">
+              <div className="p-4 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900">Change Password</h3>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  New Password
-                </label>
-                <div className="relative">
-                  <Input
-                    type={showPasswords.new ? "text" : "password"}
-                    value={passwordData.new_password}
-                    onChange={(e) => handlePasswordChange("new_password", e.target.value)}
-                    variant={passwordErrors["new_password"] ? "error" : "default"}
-                    className="pr-10"
-                  />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                    onClick={() =>
-                      setShowPasswords((prev) => ({ ...prev, new: !prev.new }))
-                    }
-                  >
-                    {showPasswords.new ? (
-                      <EyeOff className="h-4 w-4 text-gray-400" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-gray-400" />
-                    )}
-                  </button>
-                </div>
-                {passwordErrors["new_password"] && (
-                  <p className="text-red-600 text-sm mt-1">{passwordErrors["new_password"]}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Confirm New Password
-                </label>
-                <div className="relative">
-                  <Input
-                    type={showPasswords.confirm ? "text" : "password"}
-                    value={passwordData.confirm_password}
-                    onChange={(e) => handlePasswordChange("confirm_password", e.target.value)}
-                    variant={passwordErrors["confirm_password"] ? "error" : "default"}
-                    className="pr-10"
-                  />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                    onClick={() =>
-                      setShowPasswords((prev) => ({ ...prev, confirm: !prev.confirm }))
-                    }
-                  >
-                    {showPasswords.confirm ? (
-                      <EyeOff className="h-4 w-4 text-gray-400" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-gray-400" />
-                    )}
-                  </button>
-                </div>
-                {passwordErrors["confirm_password"] && (
-                  <p className="text-red-600 text-sm mt-1">{passwordErrors["confirm_password"]}</p>
-                )}
-              </div>
-            </div>
-
-            {/* Password Success/Error Messages */}
-            {passwordSuccessMessage && (
-              <NotificationToast
-                type="success"
-                message={passwordSuccessMessage}
-                isVisible={!!passwordSuccessMessage}
-                onClose={() => setPasswordSuccessMessage("")}
-              />
-            )}
-
-            {passwordErrors["submit"] && (
-              <NotificationToast
-                type="error"
-                message={passwordErrors["submit"]}
-                isVisible={!!passwordErrors["submit"]}
-                onClose={() => setPasswordErrors((prev) => ({ ...prev, submit: "" }))}
-              />
-            )}
-
-            <div className="pt-4 border-t border-gray-200">
-              <Button
-                onClick={handlePasswordSubmit}
-                disabled={isPasswordLoading}
-                className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2"
-              >
-                {isPasswordLoading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Changing...
-                  </>
-                ) : (
-                  <>
-                    <Key className="h-4 w-4" />
-                    Change Password
-                  </>
-                )}
-              </Button>
-            </div>
-
-            {/* Account Status Section */}
-            <div className="pt-6 border-t border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Account Status</h3>
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className={`w-3 h-3 rounded-full ${profileData.is_active ? "bg-green-500" : "bg-red-500"}`}></div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">
-                      Account Status: {profileData.is_active ? "Active" : "Inactive"}
-                    </p>
-                    <p className="text-xs text-gray-600">
-                      {profileData.is_active ? "Your account is active and accessible" : "Your account is currently inactive"}
-                    </p>
+              <div className="p-4 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                  <div className="relative">
+                    <Input
+                      type={showPasswords.current ? "text" : "password"}
+                      value={passwordData.current_password}
+                      onChange={(e) => setPasswordData(prev => ({ ...prev, current_password: e.target.value }))}
+                      className="w-full pr-10"
+                      placeholder="Enter current password"
+                      disabled={!isEditMode}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPasswords(prev => ({ ...prev, current: !prev.current }))}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPasswords.current ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
                   </div>
+                  {passwordErrors['current_password'] && <p className="text-red-500 text-xs mt-1">{passwordErrors['current_password']}</p>}
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="sr-only peer"
-                    checked={profileData.is_active}
-                    onChange={(e) => handleProfileChange("is_active", e.target.checked)}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                  <div className="relative">
+                    <Input
+                      type={showPasswords.new ? "text" : "password"}
+                      value={passwordData.new_password}
+                      onChange={(e) => setPasswordData(prev => ({ ...prev, new_password: e.target.value }))}
+                      className="w-full pr-10"
+                      placeholder="Enter new password"
+                      disabled={!isEditMode}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPasswords(prev => ({ ...prev, new: !prev.new }))}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPasswords.new ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  {passwordErrors['new_password'] && <p className="text-red-500 text-xs mt-1">{passwordErrors['new_password']}</p>}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                  <div className="relative">
+                    <Input
+                      type={showPasswords.confirm ? "text" : "password"}
+                      value={passwordData.confirm_password}
+                      onChange={(e) => setPasswordData(prev => ({ ...prev, confirm_password: e.target.value }))}
+                      className="w-full pr-10"
+                      placeholder="Confirm new password"
+                      disabled={!isEditMode}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPasswords(prev => ({ ...prev, confirm: !prev.confirm }))}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPasswords.confirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  {passwordErrors['confirm_password'] && <p className="text-red-500 text-xs mt-1">{passwordErrors['confirm_password']}</p>}
+                </div>
+                <div className="pt-4 border-t border-gray-200">
+                  <Button
+                    onClick={handlePasswordSubmit}
+                    disabled={isPasswordLoading}
+                    className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2"
+                  >
+                    <Key className="w-4 h-4" />
+                    {isPasswordLoading ? "Changing..." : "Change Password"}
+                  </Button>
+                </div>
+                {passwordSuccessMessage && (
+                  <NotificationToast
+                    type={passwordSuccessMessage.includes("successfully") ? "success" : "error"}
+                    message={passwordSuccessMessage}
+                    isVisible={!!passwordSuccessMessage}
+                    onClose={() => setPasswordSuccessMessage("")}
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                </label>
+                )}
               </div>
             </div>
           </div>
@@ -1923,100 +1816,100 @@ const ProfileRightCard: React.FC = () => {
     }
   };
 
-  return (
-    <div className="h-full bg-white flex flex-col">
-      {/* Avatar Section */}
-      <div className="p-6 border-b border-gray-100 bg-gray-50">
-        <div className="flex items-center gap-4">
-          {/* Avatar */}
-          <div className="relative">
-            {profileData.avatarUrl ? (
-              <img
-                src={profileData.avatarUrl}
-                alt="Profile Avatar"
-                className="w-16 h-16 rounded-full object-cover"
-              />
-            ) : (
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
-                {profileData.first_name?.[0]?.toUpperCase() || profileData.username?.[0]?.toUpperCase() || 'U'}
-              </div>
-            )}
-            <label className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
-              isAvatarUploading
-                ? 'bg-blue-500 animate-pulse'
-                : 'bg-gray-900 hover:bg-gray-800'
-            }`}>
-              {isAvatarUploading ? (
-                <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                <Camera className="h-3 w-3 text-white" />
-              )}
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleAvatarUpload}
-                disabled={isAvatarUploading}
-              />
-            </label>
-          </div>
-
-          {/* Name & Details */}
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900">
-              {profileData.first_name && profileData.last_name
-                ? `${profileData.first_name} ${profileData.last_name}`
-                : profileData.username || 'John Doe'
-              }
-            </h3>
-            <p className="text-sm text-gray-600">{profileData.position || 'Senior Software Engineer'}</p>
-            <p className="text-xs text-gray-500">{profileData.department || 'Tech Solutions Inc.'}</p>
-          </div>
-
-          {/* Status Indicator */}
-          <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${profileData.is_active ? "bg-green-500" : "bg-red-500"}`}></div>
-            <span className="text-xs text-gray-600">
-              {profileData.is_active ? "Active" : "Inactive"}
-            </span>
-          </div>
+  if (profileLoading) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading profile...</p>
         </div>
       </div>
+    );
+  }
 
+  if (profileError) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Error loading profile: {profileError.message}</p>
+          <Button
+            onClick={() => window.location.reload()}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+          >
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full flex flex-col bg-gray-50">
       {/* Tab Navigation */}
-      <div className="border-b border-gray-200 bg-gray-50">
+      <div className="bg-white border-b border-gray-200 px-6">
         <div className="flex items-center justify-between">
-          <div className="flex">
+          <nav className="flex space-x-8">
             {[
-              { id: 'personal', label: 'Personal Info', icon: User },
-              { id: 'professional', label: 'Professional', icon: Briefcase },
-              { id: 'education', label: 'Education', icon: GraduationCap },
-              { id: 'experience', label: 'Experience', icon: Briefcase },
-              { id: 'security', label: 'Security', icon: Key },
+              { id: 'general', label: 'General', icon: User, adminOnly: false },
+              { id: 'professional', label: 'Current Role', icon: Briefcase, adminOnly: true },
+              { id: 'education', label: 'Education', icon: GraduationCap, adminOnly: false },
+              { id: 'experience', label: 'Work History', icon: Building, adminOnly: false },
+              { id: 'security', label: 'Security', icon: Key, adminOnly: false },
             ].map((tab) => {
               const Icon = tab.icon;
               return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                  className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm ${
                     activeTab === tab.id
-                      ? 'border-blue-500 text-blue-600 bg-white'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon className="w-4 h-4" />
                   {tab.label}
+                  {tab.adminOnly && (
+                    <Lock className="w-3 h-3 text-amber-500" />
+                  )}
                 </button>
               );
             })}
+          </nav>
+
+          {/* Avatar and Last Saved */}
+          <div className="flex items-center gap-4 select-none">
+            <div className="flex items-center gap-2">
+              <AvatarUpload
+                currentAvatarUrl={profileData.avatarUrl}
+                onAvatarChange={handleAvatarUpload}
+                fallbackText={profileData.first_name?.[0] || profileData.last_name?.[0] || profileData.username?.[0] || "U"}
+                disabled={!isEditMode}
+              />
+              {avatarUploadMessage && (
+                <NotificationToast
+                  type={avatarUploadMessage.includes("successfully") ? "success" : "error"}
+                  message={avatarUploadMessage}
+                  isVisible={!!avatarUploadMessage}
+                  onClose={() => setAvatarUploadMessage("")}
+                />
+              )}
+            </div>
+            {lastSaved && (
+              <div className="flex items-center gap-1 text-xs text-gray-400">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Last saved: {lastSaved.toLocaleTimeString()}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Content Area - grows to fill available space */}
-      <div className="flex-1 p-6 overflow-y-auto">
-        <form onSubmit={activeTab === 'security' ? handlePasswordSubmit : handleProfileSubmit} className="h-full">
+      {/* Content Area */}
+      <div className="flex-1 p-4 overflow-hidden">
+        <div className="h-full flex flex-col">
           {renderTabContent()}
 
           {/* Success/Error Messages for Profile */}
@@ -2041,7 +1934,38 @@ const ProfileRightCard: React.FC = () => {
               )}
             </>
           )}
-        </form>
+
+          {/* Status Bar */}
+          <div className="mt-4 px-4 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                {isEditMode ? (
+                  <>
+                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                    <span className="text-sm text-gray-600">
+                      {hasUnsavedChanges
+                        ? "You have unsaved changes. Use Save or Cancel buttons on the right sidebar."
+                        : "Edit mode active. Fields are now editable."}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                    <span className="text-sm text-gray-600">
+                      Read-only mode. Click Edit Profile button on the right sidebar to make changes.
+                    </span>
+                  </>
+                )}
+              </div>
+              {lastSaved && (
+                <span className="text-xs text-gray-500">
+                  Last saved: {lastSaved.toLocaleTimeString()}
+                </span>
+              )}
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
   );

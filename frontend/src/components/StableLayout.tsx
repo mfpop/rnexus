@@ -12,7 +12,7 @@ import {
 import { HelpProvider, HelpMainContainer } from "./help";
 import { SettingsLeftCard, SettingsProvider } from "./settings";
 import { SystemLeftCard, SystemProvider } from "./system";
-import { NewsRightCard, NewsProvider, NewsLeftCardWrapper } from "./news";
+import { NewsProvider, NewsLeftCardWrapper } from "./news";
 import { ProductionLeftCard, ProductionProvider } from "./production";
 import { MetricsLeftCard, MetricsProvider } from "./metrics";
 import { ProjectsLeftCard, ProjectsProvider } from "./projects";
@@ -98,6 +98,11 @@ export default function StableLayout() {
   const { data: profileData } = useQuery(GET_USER_PROFILE, {
     skip: !isAuthenticated,
   });
+
+
+
+
+
 
   // Custom navigation function that forces re-render
   const forceNavigate = (path: string) => {
@@ -255,10 +260,10 @@ export default function StableLayout() {
         return {
           leftTitle: "System Settings",
           leftSubtitle: "Configure your application preferences",
-          leftFooter: "All changes auto-saved",
+          leftFooter: "Use right sidebar buttons to save settings",
           rightTitle: "Configuration",
           rightSubtitle: "Customize your experience",
-          rightFooter: "Settings apply immediately",
+          rightFooter: "Click Edit to modify settings. Save changes manually.",
         };
       case "/system":
         return {
@@ -276,7 +281,7 @@ export default function StableLayout() {
           leftFooter: <PaginationFooterWrapper />,
           rightTitle: "Article Reader",
           rightSubtitle: "Select an article to start reading",
-          rightFooter: "Engage with news and updates",
+          rightFooter: "Use right sidebar buttons to manage articles and settings.",
         };
       case "/production":
         return {
@@ -303,7 +308,7 @@ export default function StableLayout() {
           leftFooter: <PaginationFooterWrapper />,
           rightTitle: "Project Dashboard",
           rightSubtitle: "Select a project to view detailed dashboard",
-          rightFooter: "Comprehensive project management and tracking",
+          rightFooter: "Use right sidebar buttons to create, edit, and save project data.",
         };
       case "/activities":
         return {
@@ -312,7 +317,7 @@ export default function StableLayout() {
           leftFooter: <PaginationFooterWrapper />,
           rightTitle: "Activity Dashboard",
           rightSubtitle: "Select an activity to view detailed information",
-          rightFooter: "© 2024 Nexus LMD. All rights reserved.",
+          rightFooter: "Use right sidebar buttons to manage activity data and settings.",
         };
       case "/teams":
         return {
@@ -331,7 +336,7 @@ export default function StableLayout() {
           rightTitle: "Chat Interface",
           rightSubtitle: "Real-time communication with your team",
           rightFooter:
-            "Be respectful, clear, and professional in all team communications. Use appropriate language and maintain a positive work environment.",
+            "Use right sidebar buttons for chat management. Be professional and respectful.",
         };
       case "/about":
         return {
@@ -358,7 +363,7 @@ export default function StableLayout() {
           leftFooter: "Keep your profile updated for better experience",
           rightTitle: "Profile Details",
           rightSubtitle: "View and edit your profile information",
-          rightFooter: "All changes are saved automatically",
+          rightFooter: "Use Edit button to modify. Save manually to persist changes.",
         };
       default:
         return {
@@ -478,6 +483,11 @@ export default function StableLayout() {
       return;
     }
 
+    if (location.pathname === "/profile") {
+      handleProfilePageButton(buttonNumber);
+      return;
+    }
+
     // Default navigation mapping for other pages
     const navigationMap: { [key: number]: string } = {
       1: "/",
@@ -528,38 +538,89 @@ export default function StableLayout() {
     }
   };
 
+  // Profile page specific button handling
+  const handleProfilePageButton = (buttonNumber: number) => {
+    const handlers = (window as any).profileButtonHandlers;
+    if (!handlers) {
+      console.warn('Profile button handlers not available');
+      return;
+    }
+
+    console.log(`Profile button ${buttonNumber} clicked, handlers:`, handlers);
+
+    switch (buttonNumber) {
+      case 11: // Add Record - Not applicable for profile
+        break;
+      case 12: // Edit Record - Enable edit mode
+        console.log('Calling handlers.edit()');
+        handlers.edit();
+        break;
+      case 13: // Save - Save profile changes
+        console.log('Calling handlers.save()');
+        handlers.save();
+        break;
+      case 14: // Cancel - Cancel profile changes
+        console.log('Calling handlers.cancel()');
+        handlers.cancel();
+        break;
+      case 15: // Delete - Delete profile
+        console.log('Calling handlers.delete()');
+        handlers.delete();
+        break;
+      case 17: // Refresh - Reload profile data
+        console.log('Calling handlers.refresh()');
+        if (handlers.refresh) {
+          handlers.refresh();
+        } else {
+          // Fallback to page reload if no refresh handler
+          window.location.reload();
+        }
+        break;
+      default:
+        console.log(`Profile page button ${buttonNumber} clicked`);
+    }
+  };
+
+  // Check if we're on profile page for conditional button titles
+  const isProfilePage = location.pathname === "/profile";
+
   // Stable right sidebar buttons (B11-B20) - exact from layout.md
-  const rightSidebarButtons = [
+  const rightSidebarButtons = useMemo(() => [
     // First Buttons Section (B11-B15)
     {
       icon: <Plus className="h-6 w-6" />,
       title: "Add Record",
       onClick: () => handleButtonClick(11),
       height: "h-16",
+      disabled: false,
     }, // B11
     {
       icon: <Edit3 className="h-6 w-6" />,
-      title: "Edit Record",
+      title: isProfilePage ? "Edit Profile" : "Edit Record",
       onClick: () => handleButtonClick(12),
       height: "h-16",
+      disabled: false,
     }, // B12
     {
       icon: <Save className="h-6 w-6" />,
-      title: "Save",
+      title: isProfilePage ? "Save Profile" : "Save",
       onClick: () => handleButtonClick(13),
       height: "h-16",
+      disabled: false,
     }, // B13
     {
       icon: <X className="h-6 w-6" />,
-      title: "Cancel",
+      title: isProfilePage ? "Cancel Changes" : "Cancel",
       onClick: () => handleButtonClick(14),
       height: "h-16",
+      disabled: false,
     }, // B14
     {
       icon: <Trash2 className="h-6 w-6" />,
-      title: "Delete",
+      title: isProfilePage ? "Delete Profile" : "Delete",
       onClick: () => handleButtonClick(15),
       height: "h-16",
+      disabled: false,
     }, // B15
 
     // Second Buttons Section (B16-B20)
@@ -568,30 +629,35 @@ export default function StableLayout() {
       title: "Filter",
       onClick: () => handleButtonClick(16),
       height: "h-16",
+      disabled: false,
     }, // B16
     {
       icon: <RefreshCw className="h-6 w-6" />,
       title: "Refresh",
       onClick: () => handleButtonClick(17),
       height: "h-16",
+      disabled: false,
     }, // B17
     {
       icon: <Monitor className="h-6 w-6" />,
       title: "App Monitor",
       onClick: () => handleButtonClick(18),
       height: "h-16",
+      disabled: false,
     }, // B18
     {
       icon: <Info className="h-6 w-6" />,
       title: "App Documentation",
       onClick: () => handleButtonClick(19),
       height: "h-16",
+      disabled: false,
     }, // B19
     {
       icon: <Cog className="h-6 w-6" />,
       title: "Settings",
       onClick: () => handleButtonClick(20),
       height: "h-16",
+      disabled: false,
     }, // B20
     {
       icon: (
@@ -603,7 +669,7 @@ export default function StableLayout() {
       onClick: () => setShowNotificationCenter((prev) => !prev),
       height: "h-16",
     }, // New Notification Bell
-  ];
+  ], [isProfilePage]);
 
   return (
     <NotificationProvider>
@@ -676,7 +742,7 @@ export default function StableLayout() {
                 rightTitle={pageConfig.rightTitle}
                 rightSubtitle={pageConfig.rightSubtitle}
                 rightFooter={pageConfig.rightFooter}
-                rightContent={<NewsRightCard />}
+                rightContent={getCurrentPage}
                 gridProportions="1fr 3fr"
               />
             </PaginationProvider>
@@ -845,7 +911,7 @@ export default function StableLayout() {
           showDatabaseButton={true}
           onDatabaseClick={() => forceNavigate("/db-settings")}
           userRole="admin" // This should come from user context in real app
-          avatarSrc={profileData?.userProfile?.avatarUrl || undefined}
+          avatarSrc={profileData?.userProfile?.avatarUrl}
           avatarFallback={profileData?.userProfile?.user?.firstName?.[0] || profileData?.userProfile?.user?.username?.[0] || "U"}
           avatarTitle={profileData?.userProfile?.user?.firstName ? `${profileData.userProfile.user.firstName} ${profileData.userProfile.user.lastName || ''}`.trim() : profileData?.userProfile?.user?.username || "User"}
         />

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Search, Newspaper, MessageSquare, AlertTriangle, Filter, Clock, ArrowUpDown } from "lucide-react";
-import { useNewsContext } from "./NewsContext";
+import { useNewsContext } from "./NewsContextNew";
 import { useAuth } from "../../contexts/AuthContext";
 import { usePagination } from "../../contexts/PaginationContext";
 
@@ -19,10 +19,18 @@ const NewsLeftCardSimple: React.FC = () => {
     error,
     refreshUpdates,
     filterUpdates,
-    deleteUpdate
+    deleteUpdate,
+    processedUpdates
   } = useNewsContext();
   const { isAuthenticated } = useAuth();
-  const { currentPage, setPaginationData, onPageChange } = usePagination();
+  const {
+    currentPage,
+    totalPages,
+    recordsPerPage,
+    goToPage,
+    setRecordsPerPage,
+    updatePagination
+  } = usePagination();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [activeType, setActiveType] = useState<string>("all");
@@ -31,7 +39,7 @@ const NewsLeftCardSimple: React.FC = () => {
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [sortBy, setSortBy] = useState<"date" | "type" | "priority" | "title">("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [recordsPerPage, setRecordsPerPage] = useState(10);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const debugRef = useRef<{ lastAvailable?: number; lastCardHeight?: number }>({});
@@ -129,7 +137,7 @@ const NewsLeftCardSimple: React.FC = () => {
       debugRef.current.lastCardHeight = cardHeight;
 
       // Only update when it actually changes to avoid rerenders
-      setRecordsPerPage((prev) => (prev !== computed ? computed : prev));
+      setRecordsPerPage(computed);
     };
 
     const scheduleCalc = () => {
@@ -222,24 +230,29 @@ const NewsLeftCardSimple: React.FC = () => {
   };
 
   const handleTypeFilter = async (type: string) => {
+    console.log('=== TAB CLICKED ===');
+    console.log('Filtering by type:', type);
+    console.log('Current activeType:', activeType);
+    console.log('Current activeStatus:', activeStatus);
+    console.log('Current searchQuery:', searchQuery);
     setActiveType(type);
     await filterUpdates(type, activeStatus, searchQuery);
     // Reset to first page when filter changes
-    onPageChange(1);
+    goToPage(1);
   };
 
   const handleStatusFilter = async (status: string) => {
     setActiveStatus(status);
     await filterUpdates(activeType, status, searchQuery);
     // Reset to first page when filter changes
-    onPageChange(1);
+    goToPage(1);
   };
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
     await filterUpdates(activeType, activeStatus, query);
     // Reset to first page when search changes
-    onPageChange(1);
+    goToPage(1);
   };
 
   // Filter and sort handlers
@@ -279,22 +292,28 @@ const NewsLeftCardSimple: React.FC = () => {
   console.log('NewsLeftCardSimple - updates:', updates.length, 'filteredUpdates:', filteredUpdates.length);
 
   // Pagination logic
-  const totalPages = Math.ceil(filteredUpdates.length / recordsPerPage);
-
   // Calculate start and end indices for current page
   const startIndex = (currentPage - 1) * recordsPerPage;
   const endIndex = startIndex + recordsPerPage;
   const paginatedUpdates = filteredUpdates.slice(startIndex, endIndex);
 
+  // Debug pagination
+  console.log('Pagination debug:', {
+    filteredUpdatesLength: filteredUpdates.length,
+    currentPage,
+    recordsPerPage,
+    startIndex,
+    endIndex,
+    paginatedUpdatesLength: paginatedUpdates.length
+  });
+
   // Update pagination context when data changes
   useEffect(() => {
-    setPaginationData({
-      currentPage: currentPage > totalPages ? 1 : currentPage, // Reset to page 1 if current page exceeds total pages
-      totalPages,
+    updatePagination({
       totalRecords: filteredUpdates.length,
-      recordsPerPage,
+      totalPages: Math.max(1, Math.ceil(filteredUpdates.length / recordsPerPage)),
     });
-  }, [totalPages, filteredUpdates.length, recordsPerPage, setPaginationData, currentPage]);
+  }, [filteredUpdates.length, recordsPerPage, updatePagination]);
 
   return (
     <div ref={containerRef} className="flex flex-col h-full relative">
@@ -473,10 +492,10 @@ const NewsLeftCardSimple: React.FC = () => {
       <div className="news-tabs border-b border-gray-200 bg-gray-50 min-h-[40px]">
         <div className="flex overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 p-2">
           {[
-            { key: "all", label: "All", count: filteredUpdates.length, type: "all" },
-            { key: "news", label: "News", count: filteredUpdates.filter(u => u.type === "news").length, type: "news" },
-            { key: "communication", label: "Comunicates", count: filteredUpdates.filter(u => u.type === "communication").length, type: "communication" },
-            { key: "alert", label: "Alerts", count: filteredUpdates.filter(u => u.type === "alert").length, type: "alert" },
+            { key: "all", label: "All", count: processedUpdates.length, type: "all" },
+            { key: "news", label: "News", count: processedUpdates.filter(u => u.type === "news").length, type: "news" },
+            { key: "communication", label: "Communications", count: processedUpdates.filter(u => u.type === "communication").length, type: "communication" },
+            { key: "alert", label: "Alerts", count: processedUpdates.filter(u => u.type === "alert").length, type: "alert" },
           ].map((tab) => (
           <button
             key={tab.key}

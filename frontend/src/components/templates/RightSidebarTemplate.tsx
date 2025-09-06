@@ -9,6 +9,7 @@ interface SidebarButton {
   title: string;
   onClick: () => void;
   height: string;
+  disabled?: boolean;
 }
 
 interface RightSidebarTemplateProps {
@@ -35,8 +36,8 @@ interface RightSidebarTemplateProps {
  */
 const RightSidebarTemplate: React.FC<RightSidebarTemplateProps> = ({
   avatar,
-  avatarSrc = "https://github.com/shadcn.png",
-  avatarFallback = "MH",
+  avatarSrc,
+  avatarFallback = "U",
   avatarTitle = "Mihai Herea",
   firstButtons = [], // B11-B15
   secondButtons = [], // B16-B20
@@ -44,6 +45,7 @@ const RightSidebarTemplate: React.FC<RightSidebarTemplateProps> = ({
   onDatabaseClick,
   userRole = "admin", // Default to admin for demo
 }) => {
+
   // Show database button only for admin and staff
   const canAccessDatabase = userRole === "admin" || userRole === "staff";
   const shouldShowDatabaseButton = showDatabaseButton && canAccessDatabase;
@@ -55,7 +57,7 @@ const RightSidebarTemplate: React.FC<RightSidebarTemplateProps> = ({
         <div className="w-full h-full rounded-lg flex items-center justify-center">
           {avatar || (
             <Avatar className="w-10 h-10" title={avatarTitle}>
-              <AvatarImage src={avatarSrc} />
+              {avatarSrc && <AvatarImage src={avatarSrc} alt={avatarTitle} />}
               <AvatarFallback className="bg-gray-100 text-gray-600">
                 {avatarFallback}
               </AvatarFallback>
@@ -72,9 +74,14 @@ const RightSidebarTemplate: React.FC<RightSidebarTemplateProps> = ({
               <Button
                 variant="ghost"
                 size="icon"
-                className={`${button.height} w-12 text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-colors`}
+                className={`${button.height} w-12 transition-colors ${
+                  button.disabled
+                    ? 'text-gray-300 cursor-not-allowed'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
+                }`}
                 title={button.title}
-                onClick={button.onClick}
+                onClick={button.disabled ? undefined : button.onClick}
+                disabled={button.disabled}
               >
                 {button.icon}
               </Button>
@@ -91,9 +98,14 @@ const RightSidebarTemplate: React.FC<RightSidebarTemplateProps> = ({
               <Button
                 variant="ghost"
                 size="icon"
-                className={`${button.height} w-12 text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-colors`}
+                className={`${button.height} w-12 transition-colors ${
+                  button.disabled
+                    ? 'text-gray-300 cursor-not-allowed'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
+                }`}
                 title={button.title}
-                onClick={button.onClick}
+                onClick={button.disabled ? undefined : button.onClick}
+                disabled={button.disabled}
               >
                 {button.icon}
               </Button>
