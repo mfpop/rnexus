@@ -22,6 +22,7 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/Avatar";
 import { useChatContext } from "../../contexts/ChatContext";
 import { useNotification } from "../../contexts/NotificationContext";
+import PaginationFooterWrapper from "../shared/PaginationFooterWrapper";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -315,7 +316,10 @@ const ChatLeftCard: React.FC = () => {
     recordsPerPage,
     startIndex: (currentPage - 1) * recordsPerPage,
     endIndex: (currentPage - 1) * recordsPerPage + recordsPerPage,
-    activeTab
+    activeTab,
+    totalPages,
+    totalRecords,
+    shouldShowPagination: totalPages > 1 && totalRecords > recordsPerPage
   });
 
   const filteredGroups = groups.filter(
@@ -556,7 +560,7 @@ const ChatLeftCard: React.FC = () => {
   };
 
   return (
-    <div ref={containerRef} className="h-full flex flex-col overflow-hidden">
+    <div ref={containerRef} className="h-full flex flex-col">
   {/* Search and Actions */}
   <div className="p-3 border-b border-gray-200">
         <div className="flex items-center gap-3">
@@ -762,11 +766,11 @@ const ChatLeftCard: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div ref={contentRef} className="flex-1 min-h-0 overflow-hidden">
+      <div ref={contentRef} className="flex-grow overflow-hidden" style={{ maxHeight: 'calc(100% - 60px)' }}>
     {/* Debug Info removed for production UI */}
 
         {activeTab === "contacts" && (
-          <div className="flex flex-col h-full overflow-hidden">
+          <div className="flex flex-col overflow-hidden">
             {/* Search Results Counter */}
             {searchQuery && (
               <div className="px-4 py-2 bg-blue-50 border-b border-blue-200">
@@ -795,7 +799,7 @@ const ChatLeftCard: React.FC = () => {
         )}
 
         {activeTab === "groups" && (
-          <div className="flex flex-col h-full overflow-hidden">
+          <div className="flex flex-col overflow-hidden">
             {/* Search Results Counter */}
             {searchQuery && (
               <div className="px-4 py-2 bg-blue-50 border-b border-blue-200">
@@ -824,7 +828,7 @@ const ChatLeftCard: React.FC = () => {
         )}
 
         {activeTab === "favorites" && (
-          <div className="flex flex-col h-full overflow-hidden">
+          <div className="flex flex-col overflow-hidden">
             {/* Search Results Counter */}
             {searchQuery && (
               <div className="px-4 py-2 bg-blue-50 border-b border-blue-200">
@@ -855,6 +859,9 @@ const ChatLeftCard: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Pagination Footer */}
+      <PaginationFooterWrapper />
 
       {/* Context Menu */}
       {showContextMenu && (
