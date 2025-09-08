@@ -37,7 +37,11 @@ interface AddressFormProps {
   className?: string;
 }
 
-const AddressFormEnhanced: React.FC<AddressFormProps> = ({ value, onChange, className = "" }) => {
+const AddressFormEnhanced: React.FC<AddressFormProps> = ({
+  value,
+  onChange,
+  className = "",
+}) => {
   const [countries, setCountries] = useState<Country[]>([]);
   const [states, setStates] = useState<StateProvince[]>([]);
   const [cities, setCities] = useState<CityTown[]>([]);
@@ -47,7 +51,6 @@ const AddressFormEnhanced: React.FC<AddressFormProps> = ({ value, onChange, clas
     cities: false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-
 
   // Load countries on component mount
   useEffect(() => {
@@ -81,10 +84,8 @@ const AddressFormEnhanced: React.FC<AddressFormProps> = ({ value, onChange, clas
     }
   }, [value.state_province]);
 
-
-
   const loadCountries = async () => {
-    setLoading(prev => ({ ...prev, countries: true }));
+    setLoading((prev) => ({ ...prev, countries: true }));
     try {
       const response = await fetch("https://restcountries.com/v3.1/all");
       if (response.ok) {
@@ -94,13 +95,13 @@ const AddressFormEnhanced: React.FC<AddressFormProps> = ({ value, onChange, clas
             name: country.name.common,
             cca2: country.cca2,
             cca3: country.cca3,
-            flag: country.flag
+            flag: country.flag,
           }))
           .sort((a: Country, b: Country) => a.name.localeCompare(b.name));
         setCountries(sortedCountries);
         // Clear any existing country errors when countries load successfully
-        if (errors['countries']) {
-          setErrors(prev => ({ ...prev, countries: "" }));
+        if (errors["countries"]) {
+          setErrors((prev) => ({ ...prev, countries: "" }));
         }
       } else {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -110,18 +111,21 @@ const AddressFormEnhanced: React.FC<AddressFormProps> = ({ value, onChange, clas
       // Only show error if we don't have fallback countries
       const fallbackCountries = getFallbackCountries();
       if (fallbackCountries.length === 0) {
-        setErrors(prev => ({ ...prev, countries: "Failed to load countries. Please refresh the page." }));
+        setErrors((prev) => ({
+          ...prev,
+          countries: "Failed to load countries. Please refresh the page.",
+        }));
       } else {
         // Use fallback countries silently without showing error
         setCountries(fallbackCountries);
       }
     } finally {
-      setLoading(prev => ({ ...prev, countries: false }));
+      setLoading((prev) => ({ ...prev, countries: false }));
     }
   };
 
   const loadStates = async (countryName: string) => {
-    setLoading(prev => ({ ...prev, states: true }));
+    setLoading((prev) => ({ ...prev, states: true }));
     try {
       // Use enhanced mock data
       const mockStates = getEnhancedStates(countryName);
@@ -131,14 +135,12 @@ const AddressFormEnhanced: React.FC<AddressFormProps> = ({ value, onChange, clas
       const mockStates = getEnhancedStates(countryName);
       setStates(mockStates);
     } finally {
-      setLoading(prev => ({ ...prev, states: false }));
+      setLoading((prev) => ({ ...prev, states: false }));
     }
   };
 
-
-
   const loadCities = async (stateName: string) => {
-    setLoading(prev => ({ ...prev, cities: true }));
+    setLoading((prev) => ({ ...prev, cities: true }));
     try {
       // Use enhanced mock data
       const mockCities = getEnhancedCities(stateName);
@@ -148,13 +150,11 @@ const AddressFormEnhanced: React.FC<AddressFormProps> = ({ value, onChange, clas
       const mockCities = getEnhancedCities(stateName);
       setCities(mockCities);
     } finally {
-      setLoading(prev => ({ ...prev, cities: false }));
+      setLoading((prev) => ({ ...prev, cities: false }));
     }
   };
 
-
-
-    // Enhanced mock data
+  // Enhanced mock data
   const getEnhancedStates = (countryName: string): StateProvince[] => {
     const stateMap: Record<string, StateProvince[]> = {
       "United States": [
@@ -209,7 +209,7 @@ const AddressFormEnhanced: React.FC<AddressFormProps> = ({ value, onChange, clas
         { geonameId: 49, name: "Wisconsin", adminName1: "WI" },
         { geonameId: 50, name: "Wyoming", adminName1: "WY" },
       ],
-      "Mexico": [
+      Mexico: [
         { geonameId: 51, name: "Aguascalientes", adminName1: "AGS" },
         { geonameId: 52, name: "Baja California", adminName1: "BC" },
         { geonameId: 53, name: "Baja California Sur", adminName1: "BCS" },
@@ -248,35 +248,135 @@ const AddressFormEnhanced: React.FC<AddressFormProps> = ({ value, onChange, clas
     return stateMap[countryName] || [];
   };
 
-    const getEnhancedCities = (stateName: string): CityTown[] => {
+  const getEnhancedCities = (stateName: string): CityTown[] => {
     const cityMap: Record<string, CityTown[]> = {
-      "California": [
-        { geonameId: 101, name: "Los Angeles", adminName1: "CA", adminName2: "Los Angeles County" },
-        { geonameId: 102, name: "San Francisco", adminName1: "CA", adminName2: "San Francisco County" },
-        { geonameId: 103, name: "San Diego", adminName1: "CA", adminName2: "San Diego County" },
-        { geonameId: 104, name: "Sacramento", adminName1: "CA", adminName2: "Sacramento County" },
-        { geonameId: 105, name: "Oakland", adminName1: "CA", adminName2: "Alameda County" },
+      California: [
+        {
+          geonameId: 101,
+          name: "Los Angeles",
+          adminName1: "CA",
+          adminName2: "Los Angeles County",
+        },
+        {
+          geonameId: 102,
+          name: "San Francisco",
+          adminName1: "CA",
+          adminName2: "San Francisco County",
+        },
+        {
+          geonameId: 103,
+          name: "San Diego",
+          adminName1: "CA",
+          adminName2: "San Diego County",
+        },
+        {
+          geonameId: 104,
+          name: "Sacramento",
+          adminName1: "CA",
+          adminName2: "Sacramento County",
+        },
+        {
+          geonameId: 105,
+          name: "Oakland",
+          adminName1: "CA",
+          adminName2: "Alameda County",
+        },
       ],
-      "Texas": [
-        { geonameId: 201, name: "Houston", adminName1: "TX", adminName2: "Harris County" },
-        { geonameId: 202, name: "Austin", adminName1: "TX", adminName2: "Travis County" },
-        { geonameId: 203, name: "Dallas", adminName1: "TX", adminName2: "Dallas County" },
-        { geonameId: 204, name: "San Antonio", adminName1: "TX", adminName2: "Bexar County" },
-        { geonameId: 205, name: "Fort Worth", adminName1: "TX", adminName2: "Tarrant County" },
+      Texas: [
+        {
+          geonameId: 201,
+          name: "Houston",
+          adminName1: "TX",
+          adminName2: "Harris County",
+        },
+        {
+          geonameId: 202,
+          name: "Austin",
+          adminName1: "TX",
+          adminName2: "Travis County",
+        },
+        {
+          geonameId: 203,
+          name: "Dallas",
+          adminName1: "TX",
+          adminName2: "Dallas County",
+        },
+        {
+          geonameId: 204,
+          name: "San Antonio",
+          adminName1: "TX",
+          adminName2: "Bexar County",
+        },
+        {
+          geonameId: 205,
+          name: "Fort Worth",
+          adminName1: "TX",
+          adminName2: "Tarrant County",
+        },
       ],
       "Ciudad de México": [
-        { geonameId: 301, name: "Cuauhtémoc", adminName1: "CDMX", adminName2: "Cuauhtémoc" },
-        { geonameId: 302, name: "Miguel Hidalgo", adminName1: "CDMX", adminName2: "Miguel Hidalgo" },
-        { geonameId: 303, name: "Coyoacán", adminName1: "CDMX", adminName2: "Coyoacán" },
-        { geonameId: 304, name: "Álvaro Obregón", adminName1: "CDMX", adminName2: "Álvaro Obregón" },
-        { geonameId: 305, name: "Tlalpan", adminName1: "CDMX", adminName2: "Tlalpan" },
+        {
+          geonameId: 301,
+          name: "Cuauhtémoc",
+          adminName1: "CDMX",
+          adminName2: "Cuauhtémoc",
+        },
+        {
+          geonameId: 302,
+          name: "Miguel Hidalgo",
+          adminName1: "CDMX",
+          adminName2: "Miguel Hidalgo",
+        },
+        {
+          geonameId: 303,
+          name: "Coyoacán",
+          adminName1: "CDMX",
+          adminName2: "Coyoacán",
+        },
+        {
+          geonameId: 304,
+          name: "Álvaro Obregón",
+          adminName1: "CDMX",
+          adminName2: "Álvaro Obregón",
+        },
+        {
+          geonameId: 305,
+          name: "Tlalpan",
+          adminName1: "CDMX",
+          adminName2: "Tlalpan",
+        },
       ],
-      "Jalisco": [
-        { geonameId: 401, name: "Guadalajara", adminName1: "JAL", adminName2: "Guadalajara" },
-        { geonameId: 402, name: "Zapopan", adminName1: "JAL", adminName2: "Zapopan" },
-        { geonameId: 403, name: "San Pedro Tlaquepaque", adminName1: "JAL", adminName2: "San Pedro Tlaquepaque" },
-        { geonameId: 404, name: "Tlaquepaque", adminName1: "JAL", adminName2: "Tlaquepaque" },
-        { geonameId: 405, name: "Tonalá", adminName1: "JAL", adminName2: "Tonalá" },
+      Jalisco: [
+        {
+          geonameId: 401,
+          name: "Guadalajara",
+          adminName1: "JAL",
+          adminName2: "Guadalajara",
+        },
+        {
+          geonameId: 402,
+          name: "Zapopan",
+          adminName1: "JAL",
+          adminName2: "Zapopan",
+        },
+        {
+          geonameId: 403,
+          name: "San Pedro Tlaquepaque",
+          adminName1: "JAL",
+          adminName2: "San Pedro Tlaquepaque",
+        },
+        {
+          geonameId: 404,
+          name: "Tlaquepaque",
+          adminName1: "JAL",
+          adminName2: "Tlaquepaque",
+        },
+        {
+          geonameId: 405,
+          name: "Tonalá",
+          adminName1: "JAL",
+          adminName2: "Tonalá",
+        },
       ],
     };
 
@@ -299,16 +399,16 @@ const AddressFormEnhanced: React.FC<AddressFormProps> = ({ value, onChange, clas
 
     const patterns: Record<string, RegExp> = {
       "United States": /^\d{5}(-\d{4})?$/,
-      "Canada": /^[A-Za-z]\d[A-Za-z] \d[A-Za-z]\d$/,
-      "Mexico": /^\d{5}$/,
+      Canada: /^[A-Za-z]\d[A-Za-z] \d[A-Za-z]\d$/,
+      Mexico: /^\d{5}$/,
       "United Kingdom": /^[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}$/i,
-      "Germany": /^\d{5}$/,
-      "France": /^\d{5}$/,
-      "Spain": /^\d{5}$/,
-      "Italy": /^\d{5}$/,
-      "Australia": /^\d{4}$/,
-      "Japan": /^\d{3}-\d{4}$/,
-      "India": /^\d{6}$/,
+      Germany: /^\d{5}$/,
+      France: /^\d{5}$/,
+      Spain: /^\d{5}$/,
+      Italy: /^\d{5}$/,
+      Australia: /^\d{4}$/,
+      Japan: /^\d{3}-\d{4}$/,
+      India: /^\d{6}$/,
     };
 
     const pattern = patterns[country];
@@ -319,20 +419,23 @@ const AddressFormEnhanced: React.FC<AddressFormProps> = ({ value, onChange, clas
     return "";
   };
 
-  const handleFieldChange = (field: keyof AddressFormData, fieldValue: string) => {
+  const handleFieldChange = (
+    field: keyof AddressFormData,
+    fieldValue: string,
+  ) => {
     const newValue = { ...value, [field]: fieldValue };
     onChange(newValue);
 
     // Clear errors when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: "" }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
 
     // Validate zip code
     if (field === "zip_code") {
       const zipError = validateZipCode(fieldValue, value.country);
       if (zipError) {
-        setErrors(prev => ({ ...prev, zip_code: zipError }));
+        setErrors((prev) => ({ ...prev, zip_code: zipError }));
       }
     }
   };
@@ -340,23 +443,22 @@ const AddressFormEnhanced: React.FC<AddressFormProps> = ({ value, onChange, clas
   const getZipCodePlaceholder = (country: string) => {
     const placeholders: Record<string, string> = {
       "United States": "12345 or 12345-6789",
-      "Canada": "A1A 1A1",
-      "Mexico": "12345",
+      Canada: "A1A 1A1",
+      Mexico: "12345",
       "United Kingdom": "SW1A 1AA",
-      "Germany": "12345",
-      "France": "12345",
-      "Spain": "12345",
-      "Italy": "12345",
-      "Australia": "1234",
-      "Japan": "123-4567",
-      "India": "123456",
+      Germany: "12345",
+      France: "12345",
+      Spain: "12345",
+      Italy: "12345",
+      Australia: "1234",
+      Japan: "123-4567",
+      India: "123456",
     };
     return placeholders[country] || "Enter postal code";
   };
 
   return (
     <div className={`space-y-4 ${className}`}>
-
       {/* Street Address, Apartment, and ZIP Code - Same Line */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {/* Street Address */}
@@ -368,7 +470,9 @@ const AddressFormEnhanced: React.FC<AddressFormProps> = ({ value, onChange, clas
           <Input
             type="text"
             value={value.street_address}
-            onChange={(e) => handleFieldChange("street_address", e.target.value)}
+            onChange={(e) =>
+              handleFieldChange("street_address", e.target.value)
+            }
             className="w-full"
             placeholder="123 Main Street"
           />
@@ -383,7 +487,9 @@ const AddressFormEnhanced: React.FC<AddressFormProps> = ({ value, onChange, clas
           <Input
             type="text"
             value={value.apartment_suite}
-            onChange={(e) => handleFieldChange("apartment_suite", e.target.value)}
+            onChange={(e) =>
+              handleFieldChange("apartment_suite", e.target.value)
+            }
             className="w-full"
             placeholder="Apt 4B, Suite 100, etc."
           />
@@ -399,13 +505,13 @@ const AddressFormEnhanced: React.FC<AddressFormProps> = ({ value, onChange, clas
             type="text"
             value={value.zip_code}
             onChange={(e) => handleFieldChange("zip_code", e.target.value)}
-            className={`w-full ${errors['zip_code'] ? 'border-red-500' : ''}`}
+            className={`w-full ${errors["zip_code"] ? "border-red-500" : ""}`}
             placeholder={getZipCodePlaceholder(value.country)}
           />
-          {errors['zip_code'] && (
+          {errors["zip_code"] && (
             <p className="text-sm text-red-500 mt-1 flex items-center">
               <AlertCircle className="w-4 h-4 mr-1" />
-              {errors['zip_code']}
+              {errors["zip_code"]}
             </p>
           )}
         </div>
@@ -439,8 +545,8 @@ const AddressFormEnhanced: React.FC<AddressFormProps> = ({ value, onChange, clas
               </div>
             )}
           </div>
-          {errors['countries'] && (
-            <p className="text-sm text-red-500 mt-1">{errors['countries']}</p>
+          {errors["countries"] && (
+            <p className="text-sm text-red-500 mt-1">{errors["countries"]}</p>
           )}
         </div>
 
@@ -453,7 +559,9 @@ const AddressFormEnhanced: React.FC<AddressFormProps> = ({ value, onChange, clas
           <div className="relative">
             <select
               value={value.state_province}
-              onChange={(e) => handleFieldChange("state_province", e.target.value)}
+              onChange={(e) =>
+                handleFieldChange("state_province", e.target.value)
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               disabled={!value.country || loading.states}
             >
@@ -470,8 +578,8 @@ const AddressFormEnhanced: React.FC<AddressFormProps> = ({ value, onChange, clas
               </div>
             )}
           </div>
-          {errors['states'] && (
-            <p className="text-sm text-red-500 mt-1">{errors['states']}</p>
+          {errors["states"] && (
+            <p className="text-sm text-red-500 mt-1">{errors["states"]}</p>
           )}
         </div>
 
@@ -501,14 +609,17 @@ const AddressFormEnhanced: React.FC<AddressFormProps> = ({ value, onChange, clas
               </div>
             )}
           </div>
-          {errors['cities'] && (
-            <p className="text-sm text-red-500 mt-1">{errors['cities']}</p>
+          {errors["cities"] && (
+            <p className="text-sm text-red-500 mt-1">{errors["cities"]}</p>
           )}
         </div>
       </div>
 
       {/* Address Preview - Compact */}
-      {(value.street_address || value.city || value.state_province || value.country) && (
+      {(value.street_address ||
+        value.city ||
+        value.state_province ||
+        value.country) && (
         <div className="p-2 bg-gray-50 rounded border border-gray-200">
           <p className="text-xs text-gray-600">
             {value.street_address && (
@@ -526,7 +637,6 @@ const AddressFormEnhanced: React.FC<AddressFormProps> = ({ value, onChange, clas
           </p>
         </div>
       )}
-
     </div>
   );
 };

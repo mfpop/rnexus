@@ -1,5 +1,5 @@
-import React from 'react';
-import ChatFunctionalityTest from '../test/ChatFunctionalityTest';
+import React from "react";
+import ChatFunctionalityTest from "../test/ChatFunctionalityTest";
 
 const TestPage: React.FC = () => {
   return (

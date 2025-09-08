@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import StableLayout from "./components/StableLayout";
 import { NotificationProvider } from "./contexts/NotificationContext";
 import { CallProvider } from "./contexts/CallContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import CallManager from "./components/call/CallManager";
 
 /**
@@ -15,19 +16,21 @@ import CallManager from "./components/call/CallManager";
  */
 function App() {
   return (
-    <NotificationProvider>
-      <CallProvider>
-        <Router>
-          <Routes>
-            {/* Single route that handles all paths */}
-            <Route path="*" element={<StableLayout />} />
-          </Routes>
-        </Router>
+    <AuthProvider>
+      <NotificationProvider>
+        <CallProvider>
+          <Router>
+            <Routes>
+              {/* Single route that handles all paths */}
+              <Route path="*" element={<StableLayout />} />
+            </Routes>
+          </Router>
 
-        {/* Call Manager - Global call handling */}
-        <CallManager />
-      </CallProvider>
-    </NotificationProvider>
+          {/* Call Manager - Global call handling */}
+          <CallManager />
+        </CallProvider>
+      </NotificationProvider>
+    </AuthProvider>
   );
 }
 

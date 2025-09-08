@@ -20,7 +20,9 @@ const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
     const [imageError, setImageError] = useState(false);
 
     return (
-      <AvatarContext.Provider value={{ imageLoaded, imageError, setImageLoaded, setImageError }}>
+      <AvatarContext.Provider
+        value={{ imageLoaded, imageError, setImageLoaded, setImageError }}
+      >
         <div
           ref={ref}
           className={cn(
@@ -50,13 +52,15 @@ const AvatarImage = React.forwardRef<HTMLImageElement, AvatarImageProps>(
     const { imageError, setImageLoaded, setImageError } = context;
 
     const handleLoad = () => {
-      console.log('✅ Avatar image loaded successfully:', src);
+      console.log("✅ Avatar image loaded successfully:", src);
       setImageLoaded(true);
       setImageError(false);
     };
 
-    const handleError = (event: React.SyntheticEvent<HTMLImageElement, Event>) => {
-      console.error('❌ Avatar image failed to load:', src, event);
+    const handleError = (
+      event: React.SyntheticEvent<HTMLImageElement, Event>,
+    ) => {
+      console.error("❌ Avatar image failed to load:", src, event);
       setImageLoaded(false);
       setImageError(true);
     };
@@ -65,7 +69,7 @@ const AvatarImage = React.forwardRef<HTMLImageElement, AvatarImageProps>(
       return null;
     }
 
-    console.log('🖼️ AvatarImage rendering with src:', src);
+    console.log("🖼️ AvatarImage rendering with src:", src);
 
     return (
       <img

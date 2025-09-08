@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react';
-import { useCall } from '../../contexts/CallContext';
-import { formatCallDuration } from '../../utils/callUtils';
+import React, { useEffect, useRef } from "react";
+import { useCall } from "../../contexts/CallContext";
+import { formatCallDuration } from "../../utils/callUtils";
 
 interface VideoStreamProps {
   stream?: MediaStream;
@@ -13,7 +13,7 @@ const VideoStream: React.FC<VideoStreamProps> = ({
   stream,
   isLocal = false,
   muted = false,
-  className = ''
+  className = "",
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -39,23 +39,19 @@ interface CallVideoProps {
 }
 
 const CallVideo: React.FC<CallVideoProps> = ({ isMinimized = false }) => {
-  const {
-    currentCall,
-    webrtcConnection,
-    callControls,
-    callDuration
-  } = useCall();
+  const { currentCall, webrtcConnection, callControls, callDuration } =
+    useCall();
 
-  if (!currentCall || currentCall.type !== 'video') {
+  if (!currentCall || currentCall.type !== "video") {
     return null;
   }
 
-  const containerClass = isMinimized
-    ? 'w-80 h-60'
-    : 'w-full h-full';
+  const containerClass = isMinimized ? "w-80 h-60" : "w-full h-full";
 
   return (
-    <div className={`relative bg-gray-900 rounded-lg overflow-hidden ${containerClass}`}>
+    <div
+      className={`relative bg-gray-900 rounded-lg overflow-hidden ${containerClass}`}
+    >
       {/* Remote Video (Main) */}
       <div className="w-full h-full">
         {webrtcConnection.remoteStream ? (
@@ -74,9 +70,11 @@ const CallVideo: React.FC<CallVideoProps> = ({ isMinimized = false }) => {
               </div>
               <p className="text-lg font-medium">{currentCall.receiver.name}</p>
               <p className="text-sm text-gray-300">
-                {currentCall.status === 'calling' ? 'Calling...' :
-                 currentCall.status === 'connected' ? formatCallDuration(callDuration) :
-                 currentCall.status}
+                {currentCall.status === "calling"
+                  ? "Calling..."
+                  : currentCall.status === "connected"
+                    ? formatCallDuration(callDuration)
+                    : currentCall.status}
               </p>
             </div>
           </div>
@@ -85,7 +83,9 @@ const CallVideo: React.FC<CallVideoProps> = ({ isMinimized = false }) => {
 
       {/* Local Video (Picture-in-Picture) */}
       {webrtcConnection.localStream && callControls.videoEnabled && (
-        <div className={`absolute ${isMinimized ? 'top-2 right-2 w-20 h-16' : 'top-4 right-4 w-32 h-24'} bg-gray-900 rounded-lg overflow-hidden border-2 border-white shadow-lg`}>
+        <div
+          className={`absolute ${isMinimized ? "top-2 right-2 w-20 h-16" : "top-4 right-4 w-32 h-24"} bg-gray-900 rounded-lg overflow-hidden border-2 border-white shadow-lg`}
+        >
           <VideoStream
             stream={webrtcConnection.localStream}
             isLocal={true}
@@ -99,9 +99,11 @@ const CallVideo: React.FC<CallVideoProps> = ({ isMinimized = false }) => {
         <div className="absolute top-4 left-4 text-white">
           <p className="text-lg font-medium">{currentCall.receiver.name}</p>
           <p className="text-sm text-gray-300">
-            {currentCall.status === 'calling' ? 'Calling...' :
-             currentCall.status === 'connected' ? formatCallDuration(callDuration) :
-             currentCall.status}
+            {currentCall.status === "calling"
+              ? "Calling..."
+              : currentCall.status === "connected"
+                ? formatCallDuration(callDuration)
+                : currentCall.status}
           </p>
         </div>
       )}

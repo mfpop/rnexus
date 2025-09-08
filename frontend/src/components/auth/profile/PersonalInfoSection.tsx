@@ -1,9 +1,9 @@
 // src/components/auth/profile/PersonalInfoSection.tsx
 
-import React, { useState, useEffect } from 'react';
-import { User } from 'lucide-react';
-import { Input } from '../../ui/bits';
-import { useAutosave } from './ProfileAutosaveProvider';
+import React, { useState, useEffect } from "react";
+import { User } from "lucide-react";
+import { Input } from "../../ui/bits";
+import { useAutosave } from "./ProfileAutosaveProvider";
 
 interface PersonalInfoData {
   first_name: string;
@@ -23,7 +23,7 @@ interface PersonalInfoSectionProps {
 export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   data,
   onChange,
-  errors = {}
+  errors = {},
 }) => {
   const { autosaveField, isAutosaving } = useAutosave();
   const [localData, setLocalData] = useState<PersonalInfoData>(data);
@@ -60,18 +60,28 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
               <Input
                 type="text"
                 value={localData.first_name}
-                onChange={(e) => handleFieldChange("first_name", e.target.value)}
+                onChange={(e) =>
+                  handleFieldChange("first_name", e.target.value)
+                }
                 className="w-full"
                 placeholder="Enter first name"
               />
-              {errors['first_name'] && <p className="text-red-500 text-sm mt-1">{errors['first_name']}</p>}
+              {errors["first_name"] && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors["first_name"]}
+                </p>
+              )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Middle Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Middle Name
+              </label>
               <Input
                 type="text"
                 value={localData.middle_name || ""}
-                onChange={(e) => handleFieldChange("middle_name", e.target.value)}
+                onChange={(e) =>
+                  handleFieldChange("middle_name", e.target.value)
+                }
                 className="w-full"
                 placeholder="Enter middle name"
               />
@@ -87,7 +97,9 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
                 className="w-full"
                 placeholder="Enter email address"
               />
-              {errors['email'] && <p className="text-red-500 text-sm mt-1">{errors['email']}</p>}
+              {errors["email"] && (
+                <p className="text-red-500 text-sm mt-1">{errors["email"]}</p>
+              )}
             </div>
           </div>
           <div className="space-y-4">
@@ -102,24 +114,36 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
                 className="w-full"
                 placeholder="Enter last name"
               />
-              {errors['last_name'] && <p className="text-red-500 text-sm mt-1">{errors['last_name']}</p>}
+              {errors["last_name"] && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors["last_name"]}
+                </p>
+              )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Preferred Name
+              </label>
               <Input
                 type="text"
                 value={localData.preferred_name || ""}
-                onChange={(e) => handleFieldChange("preferred_name", e.target.value)}
+                onChange={(e) =>
+                  handleFieldChange("preferred_name", e.target.value)
+                }
                 className="w-full"
                 placeholder="Enter preferred name"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Maternal Last Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Maternal Last Name
+              </label>
               <Input
                 type="text"
                 value={localData.maternal_last_name || ""}
-                onChange={(e) => handleFieldChange("maternal_last_name", e.target.value)}
+                onChange={(e) =>
+                  handleFieldChange("maternal_last_name", e.target.value)
+                }
                 className="w-full"
                 placeholder="Enter maternal last name"
               />

@@ -1,35 +1,44 @@
-import React from 'react';
-import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Video, Clock } from 'lucide-react';
-import { formatCallDurationLong } from '../../utils/callUtils';
+import React from "react";
+import {
+  Phone,
+  PhoneIncoming,
+  PhoneOutgoing,
+  PhoneMissed,
+  Video,
+  Clock,
+} from "lucide-react";
+import { formatCallDurationLong } from "../../utils/callUtils";
 
 interface CallHistoryItem {
   id: string;
   contactName: string;
   contactAvatar?: string;
-  type: 'voice' | 'video';
-  direction: 'incoming' | 'outgoing' | 'missed';
+  type: "voice" | "video";
+  direction: "incoming" | "outgoing" | "missed";
   duration?: number;
   timestamp: Date;
-  status: 'completed' | 'missed' | 'declined';
+  status: "completed" | "missed" | "declined";
 }
 
 interface CallHistoryProps {
   calls: CallHistoryItem[];
-  onCallContact?: (contactName: string, type: 'voice' | 'video') => void;
+  onCallContact?: (contactName: string, type: "voice" | "video") => void;
 }
 
 const CallHistory: React.FC<CallHistoryProps> = ({ calls, onCallContact }) => {
   const getCallIcon = (item: CallHistoryItem) => {
-    if (item.type === 'video') {
+    if (item.type === "video") {
       return <Video className="h-4 w-4" />;
     }
 
     switch (item.direction) {
-      case 'incoming':
-        return item.status === 'missed' ?
-          <PhoneMissed className="h-4 w-4 text-red-500" /> :
-          <PhoneIncoming className="h-4 w-4 text-green-500" />;
-      case 'outgoing':
+      case "incoming":
+        return item.status === "missed" ? (
+          <PhoneMissed className="h-4 w-4 text-red-500" />
+        ) : (
+          <PhoneIncoming className="h-4 w-4 text-green-500" />
+        );
+      case "outgoing":
         return <PhoneOutgoing className="h-4 w-4 text-blue-500" />;
       default:
         return <Phone className="h-4 w-4" />;
@@ -37,10 +46,10 @@ const CallHistory: React.FC<CallHistoryProps> = ({ calls, onCallContact }) => {
   };
 
   const getCallStatusText = (item: CallHistoryItem) => {
-    if (item.status === 'missed') return 'Missed';
-    if (item.status === 'declined') return 'Declined';
+    if (item.status === "missed") return "Missed";
+    if (item.status === "declined") return "Declined";
     if (item.duration) return formatCallDurationLong(item.duration);
-    return 'No answer';
+    return "No answer";
   };
 
   const formatTimestamp = (timestamp: Date) => {
@@ -49,7 +58,7 @@ const CallHistory: React.FC<CallHistoryProps> = ({ calls, onCallContact }) => {
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
-    if (hours < 1) return 'Just now';
+    if (hours < 1) return "Just now";
     if (hours < 24) return `${hours}h ago`;
     if (days < 7) return `${days}d ago`;
     return timestamp.toLocaleDateString();

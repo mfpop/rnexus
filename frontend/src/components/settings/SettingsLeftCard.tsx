@@ -1,5 +1,18 @@
 import React from "react";
-import { Settings, User, Shield, Bell, Palette, Globe, Database, Wifi, Clock, Key, Monitor, ChevronRight } from "lucide-react";
+import {
+  Settings,
+  User,
+  Shield,
+  Bell,
+  Palette,
+  Globe,
+  Database,
+  Wifi,
+  Clock,
+  Key,
+  Monitor,
+  ChevronRight,
+} from "lucide-react";
 import { useSettingsContext } from "./SettingsContext";
 
 const SettingsLeftCard: React.FC = () => {

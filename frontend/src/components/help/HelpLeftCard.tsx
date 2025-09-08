@@ -16,7 +16,12 @@ import {
 import { useHelpContext } from "./HelpContext";
 
 const HelpLeftCard: React.FC = () => {
-  const { selectedSection, selectedSubsection, setSelectedSection, setSelectedSubsection } = useHelpContext();
+  const {
+    selectedSection,
+    selectedSubsection,
+    setSelectedSection,
+    setSelectedSubsection,
+  } = useHelpContext();
 
   const handleSectionClick = (sectionId: string) => {
     // Toggle section: if already selected, collapse it; otherwise, expand it
@@ -26,7 +31,7 @@ const HelpLeftCard: React.FC = () => {
     } else {
       setSelectedSection(sectionId); // Expand the section
       // Reset to first subsection when expanding
-      const section = helpSections.find(s => s.id === sectionId);
+      const section = helpSections.find((s) => s.id === sectionId);
       if (section && section.subsections && section.subsections.length > 0) {
         const firstSubsection = section.subsections[0];
         if (firstSubsection) {
@@ -181,8 +186,6 @@ const HelpLeftCard: React.FC = () => {
 
   return (
     <div className="h-full overflow-hidden flex flex-col bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100">
-
-
       {/* Table of Contents */}
       <div className="flex-1 overflow-auto p-6">
         <div className="space-y-2">
@@ -199,21 +202,25 @@ const HelpLeftCard: React.FC = () => {
               >
                 <div className="flex items-center gap-4 p-4">
                   {/* Chapter Number */}
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold transition-all duration-300 ease-out transform ${
-                    selectedSection === section.id
-                      ? "bg-gradient-to-br from-gray-600 to-gray-700 text-white shadow-lg"
-                      : "bg-gradient-to-br from-gray-50 to-gray-100 text-gray-700 hover:from-gray-100 hover:to-gray-200 hover:scale-110 hover:shadow-md border border-gray-200"
-                  }`}>
+                  <div
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold transition-all duration-300 ease-out transform ${
+                      selectedSection === section.id
+                        ? "bg-gradient-to-br from-gray-600 to-gray-700 text-white shadow-lg"
+                        : "bg-gradient-to-br from-gray-50 to-gray-100 text-gray-700 hover:from-gray-100 hover:to-gray-200 hover:scale-110 hover:shadow-md border border-gray-200"
+                    }`}
+                  >
                     {index + 1}
                   </div>
 
                   {/* Chapter Title */}
                   <div className="flex-1">
-                    <h3 className={`text-base font-semibold tracking-tight ${
-                      selectedSection === section.id
-                        ? "text-gray-900"
-                        : "text-gray-700 group-hover:text-gray-800"
-                    }`}>
+                    <h3
+                      className={`text-base font-semibold tracking-tight ${
+                        selectedSection === section.id
+                          ? "text-gray-900"
+                          : "text-gray-700 group-hover:text-gray-800"
+                      }`}
+                    >
                       {section.title}
                     </h3>
                     <p className="text-xs text-gray-500 font-medium tracking-wide uppercase">
@@ -247,30 +254,36 @@ const HelpLeftCard: React.FC = () => {
                     >
                       <div className="flex items-center gap-4 px-5 py-3">
                         {/* Subtopic Number */}
-                        <span className={`text-xs font-mono font-semibold tracking-wide transition-all duration-300 ease-out ${
-                          selectedSubsection === subsection.id
-                            ? "text-gray-700"
-                            : "text-gray-500 hover:text-gray-600"
-                        }`}>
+                        <span
+                          className={`text-xs font-mono font-semibold tracking-wide transition-all duration-300 ease-out ${
+                            selectedSubsection === subsection.id
+                              ? "text-gray-700"
+                              : "text-gray-500 hover:text-gray-600"
+                          }`}
+                        >
                           {index + 1}.{subIndex + 1}
                         </span>
 
                         {/* Subtopic Title */}
-                        <span className={`text-sm font-medium leading-relaxed transition-all duration-300 ease-out ${
-                          selectedSubsection === subsection.id
-                            ? "text-gray-900"
-                            : "text-gray-600 hover:text-gray-700"
-                        }`}>
+                        <span
+                          className={`text-sm font-medium leading-relaxed transition-all duration-300 ease-out ${
+                            selectedSubsection === subsection.id
+                              ? "text-gray-900"
+                              : "text-gray-600 hover:text-gray-700"
+                          }`}
+                        >
                           {subsection.title}
                         </span>
 
                         {/* Page indicator */}
                         <div className="ml-auto">
-                          <div className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ease-out transform ${
-                            selectedSubsection === subsection.id
-                              ? "bg-gray-600 scale-125 shadow-sm"
-                              : "bg-gray-300 hover:bg-gray-400 hover:scale-125"
-                          }`} />
+                          <div
+                            className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ease-out transform ${
+                              selectedSubsection === subsection.id
+                                ? "bg-gray-600 scale-125 shadow-sm"
+                                : "bg-gray-300 hover:bg-gray-400 hover:scale-125"
+                            }`}
+                          />
                         </div>
                       </div>
                     </div>
@@ -281,8 +294,6 @@ const HelpLeftCard: React.FC = () => {
           ))}
         </div>
       </div>
-
-
     </div>
   );
 };

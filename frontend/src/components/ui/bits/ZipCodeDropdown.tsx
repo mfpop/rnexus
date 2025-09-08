@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ChevronDown, MapPin, Search, Loader2 } from 'lucide-react';
-import { cn } from '../../../lib/bits-ui';
-import OpenAddressesService, { AddressSuggestion } from '../../../lib/openAddressesService';
+import React, { useState, useEffect, useRef } from "react";
+import { ChevronDown, MapPin, Search, Loader2 } from "lucide-react";
+import { cn } from "../../../lib/bits-ui";
+import OpenAddressesService, {
+  AddressSuggestion,
+} from "../../../lib/openAddressesService";
 
 interface ZipCodeDropdownProps {
   value: string;
@@ -19,15 +21,15 @@ export const ZipCodeDropdown: React.FC<ZipCodeDropdownProps> = ({
   onChange,
   city,
   state,
-  country = 'US',
+  country = "US",
   className,
   placeholder = "Select ZIP code",
-  disabled = false
+  disabled = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
   const [loading, setLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Load ZIP code suggestions when country changes, or when city/state are available
@@ -40,13 +42,16 @@ export const ZipCodeDropdown: React.FC<ZipCodeDropdownProps> = ({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const loadZipCodeSuggestions = async () => {
@@ -60,41 +65,65 @@ export const ZipCodeDropdown: React.FC<ZipCodeDropdownProps> = ({
 
         // If no results from API, use fallback data
         if (zipCodes.length === 0) {
-          console.log(`No ZIP codes found from API for ${city}, ${state}, using fallback data`);
+          console.log(
+            `No ZIP codes found from API for ${city}, ${state}, using fallback data`,
+          );
           zipCodes = OpenAddressesService.getFallbackZipCodes(city, state);
         }
       } else if (state) {
         // If only state is available, get all ZIP codes for the state
-        zipCodes = OpenAddressesService.getFallbackZipCodes('', state);
+        zipCodes = OpenAddressesService.getFallbackZipCodes("", state);
       } else {
         // If only country is available, provide common ZIP codes or allow manual entry
         zipCodes = [];
       }
 
       // Convert to suggestions format
-      const suggestions: AddressSuggestion[] = zipCodes.map(zip => ({
-        display: city && state ? `${city}, ${state} ${zip}` : state ? `${state} ${zip}` : zip,
+      const suggestions: AddressSuggestion[] = zipCodes.map((zip) => ({
+        display:
+          city && state
+            ? `${city}, ${state} ${zip}`
+            : state
+              ? `${state} ${zip}`
+              : zip,
         postcode: zip,
-        city: city || '',
-        state: state || '',
-        country
+        city: city || "",
+        state: state || "",
+        country,
       }));
 
       setSuggestions(suggestions);
-      console.log(`Loaded ${suggestions.length} ZIP code suggestions for ${city || 'any city'}, ${state || 'any state'}`);
+      console.log(
+        `Loaded ${suggestions.length} ZIP code suggestions for ${city || "any city"}, ${state || "any state"}`,
+      );
     } catch (error) {
-      console.error('Failed to load ZIP codes from API, using fallback data:', error);
+      console.error(
+        "Failed to load ZIP codes from API, using fallback data:",
+        error,
+      );
       // Use fallback data on error
-      const fallbackZipCodes = OpenAddressesService.getFallbackZipCodes(city || '', state || '');
-      const fallbackSuggestions: AddressSuggestion[] = fallbackZipCodes.map(zip => ({
-        display: city && state ? `${city}, ${state} ${zip}` : state ? `${state} ${zip}` : zip,
-        postcode: zip,
-        city: city || '',
-        state: state || '',
-        country
-      }));
+      const fallbackZipCodes = OpenAddressesService.getFallbackZipCodes(
+        city || "",
+        state || "",
+      );
+      const fallbackSuggestions: AddressSuggestion[] = fallbackZipCodes.map(
+        (zip) => ({
+          display:
+            city && state
+              ? `${city}, ${state} ${zip}`
+              : state
+                ? `${state} ${zip}`
+                : zip,
+          postcode: zip,
+          city: city || "",
+          state: state || "",
+          country,
+        }),
+      );
       setSuggestions(fallbackSuggestions);
-      console.log(`Using ${fallbackSuggestions.length} fallback ZIP codes for ${city || 'any city'}, ${state || 'any state'}`);
+      console.log(
+        `Using ${fallbackSuggestions.length} fallback ZIP codes for ${city || "any city"}, ${state || "any state"}`,
+      );
     } finally {
       setLoading(false);
     }
@@ -103,12 +132,13 @@ export const ZipCodeDropdown: React.FC<ZipCodeDropdownProps> = ({
   const handleSelect = (suggestion: AddressSuggestion) => {
     onChange(suggestion.postcode);
     setIsOpen(false);
-    setSearchQuery('');
+    setSearchQuery("");
   };
 
-  const filteredSuggestions = suggestions.filter(suggestion =>
-    suggestion.postcode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    suggestion.display.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredSuggestions = suggestions.filter(
+    (suggestion) =>
+      suggestion.postcode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      suggestion.display.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   // const selectedSuggestion = suggestions.find(s => s.postcode === value);
@@ -122,7 +152,15 @@ export const ZipCodeDropdown: React.FC<ZipCodeDropdownProps> = ({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           className="w-full h-8 px-3 border border-gray-300 rounded-md bg-gray-100 text-gray-500 cursor-not-allowed"
-          placeholder={!country ? "Select country first" : !city ? "Select city first" : !state ? "Select state first" : "Enter ZIP code manually"}
+          placeholder={
+            !country
+              ? "Select country first"
+              : !city
+                ? "Select city first"
+                : !state
+                  ? "Select state first"
+                  : "Enter ZIP code manually"
+          }
           disabled
         />
       </div>
@@ -147,7 +185,9 @@ export const ZipCodeDropdown: React.FC<ZipCodeDropdownProps> = ({
             {value || placeholder}
           </span>
         </div>
-        <ChevronDown className={cn("w-4 h-4 transition-transform", isOpen && "rotate-180")} />
+        <ChevronDown
+          className={cn("w-4 h-4 transition-transform", isOpen && "rotate-180")}
+        />
       </button>
 
       {isOpen && (
@@ -177,7 +217,8 @@ export const ZipCodeDropdown: React.FC<ZipCodeDropdownProps> = ({
                   onClick={() => handleSelect(suggestion)}
                   className={cn(
                     "w-full px-3 py-2 text-left text-sm flex items-center gap-2 hover:bg-blue-50 transition-colors",
-                    suggestion.postcode === value && "bg-blue-100 text-blue-700"
+                    suggestion.postcode === value &&
+                      "bg-blue-100 text-blue-700",
                   )}
                 >
                   <MapPin className="w-4 h-4 text-gray-400" />
@@ -194,16 +235,18 @@ export const ZipCodeDropdown: React.FC<ZipCodeDropdownProps> = ({
           {/* Manual entry option */}
           <div className="p-2 border-t border-gray-200 bg-gray-50">
             <div className="space-y-2">
-              <div className="text-xs text-gray-600 text-center">Enter ZIP code manually:</div>
+              <div className="text-xs text-gray-600 text-center">
+                Enter ZIP code manually:
+              </div>
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' && searchQuery) {
+                  if (e.key === "Enter" && searchQuery) {
                     onChange(searchQuery);
                     setIsOpen(false);
-                    setSearchQuery('');
+                    setSearchQuery("");
                   }
                 }}
                 placeholder="Enter ZIP code..."
@@ -215,7 +258,7 @@ export const ZipCodeDropdown: React.FC<ZipCodeDropdownProps> = ({
                   onClick={() => {
                     onChange(searchQuery);
                     setIsOpen(false);
-                    setSearchQuery('');
+                    setSearchQuery("");
                   }}
                   className="w-full text-sm bg-blue-600 text-white py-1 rounded hover:bg-blue-700"
                 >

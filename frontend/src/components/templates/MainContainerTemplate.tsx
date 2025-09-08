@@ -281,8 +281,14 @@ const MainContainerTemplate: React.FC<MainContainerTemplateProps> = ({
       {/* Right Card - Uses RightCardTemplate */}
       {!cardVisibility.rightCardHidden && (
         <RightCardTemplate
-          rightTitle={typeof rightTitle === 'function' ? rightTitle() : rightTitle}
-          rightSubtitle={typeof rightSubtitle === 'function' ? rightSubtitle() : rightSubtitle}
+          rightTitle={
+            typeof rightTitle === "function" ? rightTitle() : rightTitle
+          }
+          rightSubtitle={
+            typeof rightSubtitle === "function"
+              ? rightSubtitle()
+              : rightSubtitle
+          }
           footer={rightFooter}
           content={resolvedRightContent}
           expandedCard={expandedCard}

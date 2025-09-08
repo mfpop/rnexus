@@ -1,7 +1,18 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { useQuery } from '@apollo/client';
-import { GET_ALL_UPDATES } from '../../graphql/updates';
-import { Update, UpdateContent, UpdateAttachment, UpdateMedia } from "./MessageTypes";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import { useQuery } from "@apollo/client";
+import { GET_ALL_UPDATES } from "../../graphql/updates";
+import {
+  Update,
+  UpdateContent,
+  UpdateAttachment,
+  UpdateMedia,
+} from "./MessageTypes";
 import { useAuth } from "../../contexts/AuthContext";
 
 interface NewsContextType {
@@ -12,10 +23,18 @@ interface NewsContextType {
   loading: boolean;
   error: string | null;
   refreshUpdates: () => Promise<void>;
-  filterUpdates: (type: string, status: string, searchQuery: string) => Promise<void>;
+  filterUpdates: (
+    type: string,
+    status: string,
+    searchQuery: string,
+  ) => Promise<void>;
   // New functionality
   toggleLike: (updateId: string, isLike: boolean) => Promise<void>;
-  createComment: (updateId: string, content: string, parentCommentId?: number) => Promise<void>;
+  createComment: (
+    updateId: string,
+    content: string,
+    parentCommentId?: number,
+  ) => Promise<void>;
   editComment: (commentId: number, content: string) => Promise<void>;
   deleteComment: (commentId: number) => Promise<void>;
   createUpdate: (updateData: any) => Promise<void>;
@@ -43,9 +62,14 @@ export const NewsProvider: React.FC<NewsProviderProps> = ({ children }) => {
   const [error, setError] = useState<string | null>(null);
 
   // Use GraphQL query for updates
-  const { data, loading, error: graphqlError, refetch } = useQuery(GET_ALL_UPDATES, {
-    fetchPolicy: 'cache-and-network',
-    errorPolicy: 'all'
+  const {
+    data,
+    loading,
+    error: graphqlError,
+    refetch,
+  } = useQuery(GET_ALL_UPDATES, {
+    fetchPolicy: "cache-and-network",
+    errorPolicy: "all",
   });
 
   // Convert GraphQL data to our Update interface
@@ -58,7 +82,7 @@ export const NewsProvider: React.FC<NewsProviderProps> = ({ children }) => {
     status: gqlUpdate.status.toLowerCase(),
     tags: [],
     author: gqlUpdate.author,
-    icon: 'newspaper',
+    icon: "newspaper",
     content: {
       body: gqlUpdate.summary,
       attachments: [],
@@ -68,7 +92,9 @@ export const NewsProvider: React.FC<NewsProviderProps> = ({ children }) => {
   });
 
   // Transform GraphQL data
-  const updates = data?.allUpdates ? data.allUpdates.map(convertGraphQLUpdate) : [];
+  const updates = data?.allUpdates
+    ? data.allUpdates.map(convertGraphQLUpdate)
+    : [];
 
   // No auto-selection - let user manually select a record
 
@@ -80,13 +106,17 @@ export const NewsProvider: React.FC<NewsProviderProps> = ({ children }) => {
     try {
       await refetch();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load updates');
-      console.error('Error loading updates:', err);
+      setError(err instanceof Error ? err.message : "Failed to load updates");
+      console.error("Error loading updates:", err);
     }
   };
 
   // Filter updates based on type, status, and search query
-  const filterUpdates = async (_type: string = 'all', _status: string = 'all', _searchQuery: string = '') => {
+  const filterUpdates = async (
+    _type: string = "all",
+    _status: string = "all",
+    _searchQuery: string = "",
+  ) => {
     // For now, we'll just refetch all updates since GraphQL filtering would require backend changes
     // In a real implementation, you'd want to add filtering parameters to the GraphQL query
     await loadUpdates();
@@ -100,43 +130,47 @@ export const NewsProvider: React.FC<NewsProviderProps> = ({ children }) => {
   // Toggle like/dislike for an update
   const toggleLike = async (_updateId: string, _isLike: boolean) => {
     // TODO: Implement GraphQL mutation for toggling likes
-    console.log('Toggle like not implemented yet for GraphQL');
+    console.log("Toggle like not implemented yet for GraphQL");
   };
 
   // Create a comment
-  const createComment = async (_updateId: string, _content: string, _parentCommentId?: number) => {
+  const createComment = async (
+    _updateId: string,
+    _content: string,
+    _parentCommentId?: number,
+  ) => {
     // TODO: Implement GraphQL mutation for creating comments
-    console.log('Create comment not implemented yet for GraphQL');
+    console.log("Create comment not implemented yet for GraphQL");
   };
 
   // Edit a comment
   const editComment = async (_commentId: number, _content: string) => {
     // TODO: Implement GraphQL mutation for editing comments
-    console.log('Edit comment not implemented yet for GraphQL');
+    console.log("Edit comment not implemented yet for GraphQL");
   };
 
   // Delete a comment
   const deleteComment = async (_commentId: number) => {
     // TODO: Implement GraphQL mutation for deleting comments
-    console.log('Delete comment not implemented yet for GraphQL');
+    console.log("Delete comment not implemented yet for GraphQL");
   };
 
   // Create a new update
   const createUpdate = async (_updateData: any) => {
     // TODO: Implement GraphQL mutation for creating updates
-    console.log('Create update not implemented yet for GraphQL');
+    console.log("Create update not implemented yet for GraphQL");
   };
 
   // Edit an existing update
   const editUpdate = async (_updateId: string, _updateData: any) => {
     // TODO: Implement GraphQL mutation for editing updates
-    console.log('Edit update not implemented yet for GraphQL');
+    console.log("Edit update not implemented yet for GraphQL");
   };
 
   // Delete an update
   const deleteUpdate = async (_updateId: string) => {
     // TODO: Implement GraphQL mutation for deleting updates
-    console.log('Delete update not implemented yet for GraphQL');
+    console.log("Delete update not implemented yet for GraphQL");
   };
 
   // Load updates when authentication state changes
@@ -191,7 +225,7 @@ export const NewsProvider: React.FC<NewsProviderProps> = ({ children }) => {
         <div className="text-center">
           <div className="text-gray-500 mb-4">Please log in to view news</div>
           <button
-            onClick={() => window.location.href = '/login'}
+            onClick={() => (window.location.href = "/login")}
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
             Go to Login
@@ -201,11 +235,7 @@ export const NewsProvider: React.FC<NewsProviderProps> = ({ children }) => {
     );
   }
 
-  return (
-    <NewsContext.Provider value={value}>
-      {children}
-    </NewsContext.Provider>
-  );
+  return <NewsContext.Provider value={value}>{children}</NewsContext.Provider>;
 };
 
 export default NewsContext;

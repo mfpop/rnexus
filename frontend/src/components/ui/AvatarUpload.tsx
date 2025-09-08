@@ -1,13 +1,13 @@
-import React, { useRef, useState } from 'react';
-import { Camera } from 'lucide-react';
-import { Avatar, AvatarImage, AvatarFallback } from './Avatar';
+import React, { useRef, useState } from "react";
+import { Camera } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "./Avatar";
 
 interface AvatarUploadProps {
   currentAvatarUrl?: string;
   fallbackText: string;
   onAvatarChange: (base64Data: string) => Promise<void>;
   disabled?: boolean;
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
   className?: string;
 }
 
@@ -16,27 +16,28 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
   fallbackText,
   onAvatarChange,
   disabled = false,
-  size = 'md',
-  className = ''
+  size = "md",
+  className = "",
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
 
   const sizeClasses = {
-    sm: 'w-8 h-8',
-    md: 'w-12 h-12',
-    lg: 'w-16 h-16'
+    sm: "w-8 h-8",
+    md: "w-12 h-12",
+    lg: "w-16 h-16",
   };
 
   const handleFileSelect = (file: File) => {
-    if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
+    if (!file.type.startsWith("image/")) {
+      alert("Please select an image file");
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) { // 5MB limit
-      alert('File size must be less than 5MB');
+    if (file.size > 5 * 1024 * 1024) {
+      // 5MB limit
+      alert("File size must be less than 5MB");
       return;
     }
 
@@ -47,8 +48,8 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
         try {
           await onAvatarChange(e.target.result as string);
         } catch (error) {
-          console.error('Avatar upload failed:', error);
-          alert('Failed to upload avatar. Please try again.');
+          console.error("Avatar upload failed:", error);
+          alert("Failed to upload avatar. Please try again.");
         } finally {
           setIsUploading(false);
         }
@@ -69,7 +70,7 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
       handleFileSelect(file);
     }
     // Reset input value so the same file can be selected again
-    event.target.value = '';
+    event.target.value = "";
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -101,9 +102,9 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
       <div
         className={`
           relative ${sizeClasses[size]} cursor-pointer group transition-all duration-200
-          ${dragOver ? 'scale-105 ring-2 ring-blue-500' : ''}
-          ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}
-          ${isUploading ? 'animate-pulse' : ''}
+          ${dragOver ? "scale-105 ring-2 ring-blue-500" : ""}
+          ${disabled ? "opacity-50 cursor-not-allowed" : "hover:scale-105"}
+          ${isUploading ? "animate-pulse" : ""}
         `}
         onClick={handleClick}
         onDragOver={handleDragOver}
@@ -111,18 +112,22 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
         onDrop={handleDrop}
       >
         <Avatar className={`${sizeClasses[size]} transition-all duration-200`}>
-          {currentAvatarUrl && <AvatarImage src={currentAvatarUrl} alt="Avatar" />}
+          {currentAvatarUrl && (
+            <AvatarImage src={currentAvatarUrl} alt="Avatar" />
+          )}
           <AvatarFallback className="bg-blue-500 text-white font-medium">
             {fallbackText}
           </AvatarFallback>
         </Avatar>
 
         {/* Upload overlay */}
-        <div className={`
+        <div
+          className={`
           absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center
           transition-opacity duration-200
-          ${disabled ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'}
-        `}>
+          ${disabled ? "opacity-0" : "opacity-0 group-hover:opacity-100"}
+        `}
+        >
           {isUploading ? (
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
           ) : (

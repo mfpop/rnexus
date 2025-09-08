@@ -1,8 +1,8 @@
 // src/components/auth/profile/SecuritySection.tsx
 
-import React, { useState } from 'react';
-import { Shield, Eye, EyeOff } from 'lucide-react';
-import { Input } from '../../ui/bits';
+import React, { useState } from "react";
+import { Shield, Eye, EyeOff } from "lucide-react";
+import { Input } from "../../ui/bits";
 
 interface SecurityData {
   current_password?: string;
@@ -17,26 +17,26 @@ interface SecuritySectionProps {
 
 export const SecuritySection: React.FC<SecuritySectionProps> = ({
   onPasswordChange,
-  errors = {}
+  errors = {},
 }) => {
   const [showPasswords, setShowPasswords] = useState({
     current: false,
     new: false,
-    confirm: false
+    confirm: false,
   });
   const [formData, setFormData] = useState<SecurityData>({
-    current_password: '',
-    new_password: '',
-    confirm_password: ''
+    current_password: "",
+    new_password: "",
+    confirm_password: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (field: keyof SecurityData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const togglePasswordVisibility = (field: keyof typeof showPasswords) => {
-    setShowPasswords(prev => ({ ...prev, [field]: !prev[field] }));
+    setShowPasswords((prev) => ({ ...prev, [field]: !prev[field] }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,19 +50,20 @@ export const SecuritySection: React.FC<SecuritySectionProps> = ({
     try {
       await onPasswordChange(formData);
       setFormData({
-        current_password: '',
-        new_password: '',
-        confirm_password: ''
+        current_password: "",
+        new_password: "",
+        confirm_password: "",
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const isFormValid = formData.current_password &&
-                     formData.new_password &&
-                     formData.confirm_password &&
-                     formData.new_password === formData.confirm_password;
+  const isFormValid =
+    formData.current_password &&
+    formData.new_password &&
+    formData.confirm_password &&
+    formData.new_password === formData.confirm_password;
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
@@ -75,12 +76,16 @@ export const SecuritySection: React.FC<SecuritySectionProps> = ({
       <div className="p-4">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Current Password
+            </label>
             <div className="relative">
               <Input
                 type={showPasswords.current ? "text" : "password"}
                 value={formData.current_password || ""}
-                onChange={(e) => handleInputChange("current_password", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("current_password", e.target.value)
+                }
                 className="w-full pr-10"
                 placeholder="Enter current password"
               />
@@ -96,16 +101,24 @@ export const SecuritySection: React.FC<SecuritySectionProps> = ({
                 )}
               </button>
             </div>
-            {errors['current_password'] && <p className="text-red-500 text-sm mt-1">{errors['current_password']}</p>}
+            {errors["current_password"] && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors["current_password"]}
+              </p>
+            )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              New Password
+            </label>
             <div className="relative">
               <Input
                 type={showPasswords.new ? "text" : "password"}
                 value={formData.new_password || ""}
-                onChange={(e) => handleInputChange("new_password", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("new_password", e.target.value)
+                }
                 className="w-full pr-10"
                 placeholder="Enter new password"
               />
@@ -121,16 +134,24 @@ export const SecuritySection: React.FC<SecuritySectionProps> = ({
                 )}
               </button>
             </div>
-            {errors['new_password'] && <p className="text-red-500 text-sm mt-1">{errors['new_password']}</p>}
+            {errors["new_password"] && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors["new_password"]}
+              </p>
+            )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Confirm New Password
+            </label>
             <div className="relative">
               <Input
                 type={showPasswords.confirm ? "text" : "password"}
                 value={formData.confirm_password || ""}
-                onChange={(e) => handleInputChange("confirm_password", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("confirm_password", e.target.value)
+                }
                 className="w-full pr-10"
                 placeholder="Confirm new password"
               />
@@ -146,10 +167,18 @@ export const SecuritySection: React.FC<SecuritySectionProps> = ({
                 )}
               </button>
             </div>
-            {errors['confirm_password'] && <p className="text-red-500 text-sm mt-1">{errors['confirm_password']}</p>}
-            {formData.new_password && formData.confirm_password && formData.new_password !== formData.confirm_password && (
-              <p className="text-red-500 text-sm mt-1">Passwords do not match</p>
+            {errors["confirm_password"] && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors["confirm_password"]}
+              </p>
             )}
+            {formData.new_password &&
+              formData.confirm_password &&
+              formData.new_password !== formData.confirm_password && (
+                <p className="text-red-500 text-sm mt-1">
+                  Passwords do not match
+                </p>
+              )}
           </div>
 
           <div className="pt-4">
@@ -164,7 +193,7 @@ export const SecuritySection: React.FC<SecuritySectionProps> = ({
                   Updating Password...
                 </div>
               ) : (
-                'Update Password'
+                "Update Password"
               )}
             </button>
           </div>
@@ -172,7 +201,9 @@ export const SecuritySection: React.FC<SecuritySectionProps> = ({
 
         {/* Password Requirements */}
         <div className="mt-6 p-4 bg-gray-50 rounded-md">
-          <h4 className="text-sm font-medium text-gray-900 mb-2">Password Requirements:</h4>
+          <h4 className="text-sm font-medium text-gray-900 mb-2">
+            Password Requirements:
+          </h4>
           <ul className="text-sm text-gray-600 space-y-1">
             <li>• At least 8 characters long</li>
             <li>• Contains at least one uppercase letter</li>

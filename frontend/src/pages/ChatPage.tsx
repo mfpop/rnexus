@@ -1,5 +1,6 @@
 import React from "react";
 import ChatMainContainer from "../components/chat/ChatMainContainer";
+import { ChatProvider } from "../contexts/ChatContext";
 
 type ExpandedCardState = "left" | "right" | "left-full" | "right-full" | null;
 
@@ -15,10 +16,12 @@ interface ChatPageProps {
  */
 const ChatPage: React.FC<ChatPageProps> = ({ expandedCard, onExpandClick }) => {
   return (
-    <ChatMainContainer
-      expandedCard={expandedCard}
-      onExpandClick={onExpandClick}
-    />
+    <ChatProvider>
+      <ChatMainContainer
+        expandedCard={expandedCard}
+        onExpandClick={onExpandClick}
+      />
+    </ChatProvider>
   );
 };
 

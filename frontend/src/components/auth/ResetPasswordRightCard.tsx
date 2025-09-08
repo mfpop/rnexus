@@ -22,7 +22,7 @@ const ResetPasswordRightCard: React.FC = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
     // Clear error when user starts typing
-    if (errors['email']) {
+    if (errors["email"]) {
       setErrors({});
     }
   };
@@ -31,9 +31,9 @@ const ResetPasswordRightCard: React.FC = () => {
     const newErrors: Record<string, string> = {};
 
     if (!email) {
-      newErrors['email'] = "Email is required";
+      newErrors["email"] = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors['email'] = "Please enter a valid email address";
+      newErrors["email"] = "Please enter a valid email address";
     }
 
     setErrors(newErrors);
@@ -193,26 +193,26 @@ const ResetPasswordRightCard: React.FC = () => {
               value={email}
               onChange={handleInputChange}
               className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors ${
-                errors['email'] ? "border-red-500" : "border-gray-300"
+                errors["email"] ? "border-red-500" : "border-gray-300"
               }`}
               placeholder="Enter your registered email"
               disabled={isLoading}
               autoComplete="email"
             />
           </div>
-      {errors['email'] && (
+          {errors["email"] && (
             <div className="flex items-center gap-2 mt-2 text-red-600 text-sm">
               <AlertCircle className="h-4 w-4" />
-        <span>{errors['email']}</span>
+              <span>{errors["email"]}</span>
             </div>
           )}
         </div>
 
         {/* Submit Error */}
-    {errors['submit'] && (
+        {errors["submit"] && (
           <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
             <AlertCircle className="h-4 w-4" />
-      <span>{errors['submit']}</span>
+            <span>{errors["submit"]}</span>
           </div>
         )}
 

@@ -45,12 +45,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const Comp = asChild ? "span" : "button";
 
     // Check if custom background or text colors are provided
-    const hasCustomColors = className && (
-      className.includes('bg-') ||
-      className.includes('text-') ||
-      className.includes('hover:bg-') ||
-      className.includes('hover:text-')
-    );
+    const hasCustomColors =
+      className &&
+      (className.includes("bg-") ||
+        className.includes("text-") ||
+        className.includes("hover:bg-") ||
+        className.includes("hover:text-"));
 
     // If custom colors are provided, don't apply variant colors
     const finalVariantClasses = hasCustomColors ? "" : variantClasses[variant];

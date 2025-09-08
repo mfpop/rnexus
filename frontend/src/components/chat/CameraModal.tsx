@@ -1,5 +1,5 @@
-import React from 'react';
-import { Paperclip } from 'lucide-react';
+import React from "react";
+import { Paperclip } from "lucide-react";
 
 interface CameraModalProps {
   showCamera: boolean;
@@ -27,7 +27,10 @@ const CameraModal: React.FC<CameraModalProps> = ({
       <div className="relative w-full h-full max-w-md max-h-screen flex flex-col">
         {/* Camera Header */}
         <div className="flex justify-between items-center p-4 text-white">
-          <button onClick={closeCamera} className="p-2 hover:bg-gray-700 rounded-full transition-colors">
+          <button
+            onClick={closeCamera}
+            className="p-2 hover:bg-gray-700 rounded-full transition-colors"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="24"
@@ -38,7 +41,8 @@ const CameraModal: React.FC<CameraModalProps> = ({
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="lucide lucide-x h-6 w-6">
+              className="lucide lucide-x h-6 w-6"
+            >
               <path d="M18 6 6 18" />
               <path d="m6 6 12 12" />
             </svg>
@@ -49,7 +53,13 @@ const CameraModal: React.FC<CameraModalProps> = ({
 
         {/* Camera Preview */}
         <div className="flex-1 flex items-center justify-center relative">
-          <video ref={videoRef} className="w-full h-full object-cover rounded-lg" autoPlay playsInline muted />
+          <video
+            ref={videoRef}
+            className="w-full h-full object-cover rounded-lg"
+            autoPlay
+            playsInline
+            muted
+          />
         </div>
 
         {/* Camera Controls */}
@@ -62,7 +72,8 @@ const CameraModal: React.FC<CameraModalProps> = ({
                 fileInputRef?.current?.click();
               }}
               className="p-3 bg-gray-600 hover:bg-gray-500 text-white rounded-full transition-colors"
-              title="Choose from gallery">
+              title="Choose from gallery"
+            >
               <Paperclip className="h-6 w-6" />
             </button>
 
@@ -70,11 +81,12 @@ const CameraModal: React.FC<CameraModalProps> = ({
             <button
               onClick={() => {
                 // Simulate photo capture
-                onPhotoCapture('photo_data_url_here');
+                onPhotoCapture("photo_data_url_here");
                 closeCamera();
               }}
               className="p-4 bg-white hover:bg-gray-200 rounded-full transition-colors"
-              title="Take photo">
+              title="Take photo"
+            >
               <div className="w-8 h-8 bg-gray-800 rounded-full"></div>
             </button>
 
@@ -82,12 +94,23 @@ const CameraModal: React.FC<CameraModalProps> = ({
             <button
               onClick={() => {
                 // Placeholder for camera switching functionality
-                console.debug('Switch camera');
+                console.debug("Switch camera");
               }}
               className="p-3 bg-gray-600 hover:bg-gray-500 text-white rounded-full transition-colors"
-              title="Switch camera">
-              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              title="Switch camera"
+            >
+              <svg
+                className="h-6 w-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
               </svg>
             </button>
           </div>

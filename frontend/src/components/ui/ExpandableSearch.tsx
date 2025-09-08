@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Search, X } from 'lucide-react';
+import React, { useState, useRef, useEffect } from "react";
+import { Search, X } from "lucide-react";
 
 interface ExpandableSearchProps {
   value: string;
@@ -20,7 +20,7 @@ const ExpandableSearch: React.FC<ExpandableSearchProps> = ({
   placeholder = "Search...",
   className = "",
   expandedWidth = "w-80",
-  collapsedWidth = "w-10"
+  collapsedWidth = "w-10",
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -37,15 +37,18 @@ const ExpandableSearch: React.FC<ExpandableSearchProps> = ({
   // Handle clicking outside to collapse
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         if (!value.trim() && !isFocused) {
           setIsExpanded(false);
         }
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [value, isFocused]);
 
   const handleContainerClick = () => {
@@ -64,7 +67,7 @@ const ExpandableSearch: React.FC<ExpandableSearchProps> = ({
   };
 
   const handleClear = () => {
-    onChange('');
+    onChange("");
     setIsExpanded(false);
     inputRef.current?.blur();
   };
@@ -88,16 +91,20 @@ const ExpandableSearch: React.FC<ExpandableSearchProps> = ({
       <div
         className={`relative flex items-center bg-white border rounded-lg transition-all duration-300 cursor-pointer ${
           shouldShowInput
-            ? 'border-gray-300 hover:border-gray-400 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-200'
-            : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
+            ? "border-gray-300 hover:border-gray-400 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-200"
+            : "border-gray-200 hover:border-gray-300 hover:shadow-sm"
         }`}
         onClick={handleContainerClick}
       >
         {/* Search Icon */}
         <div className="absolute left-3 flex items-center pointer-events-none z-10">
-          <Search className={`transition-all duration-300 ${
-            shouldShowInput ? 'h-4 w-4 text-gray-400' : 'h-5 w-5 text-gray-500'
-          }`} />
+          <Search
+            className={`transition-all duration-300 ${
+              shouldShowInput
+                ? "h-4 w-4 text-gray-400"
+                : "h-5 w-5 text-gray-500"
+            }`}
+          />
         </div>
 
         {/* Input Field */}
@@ -110,12 +117,12 @@ const ExpandableSearch: React.FC<ExpandableSearchProps> = ({
           onBlur={handleInputBlur}
           className={`w-full bg-transparent border-0 outline-none transition-all duration-300 ${
             shouldShowInput
-              ? 'pl-10 pr-10 py-2 text-sm opacity-100'
-              : 'pl-10 pr-3 py-2 text-sm opacity-0 pointer-events-none'
+              ? "pl-10 pr-10 py-2 text-sm opacity-100"
+              : "pl-10 pr-3 py-2 text-sm opacity-0 pointer-events-none"
           }`}
           placeholder={placeholder}
           style={{
-            transform: shouldShowInput ? 'translateX(0)' : 'translateX(-100%)',
+            transform: shouldShowInput ? "translateX(0)" : "translateX(-100%)",
           }}
         />
 

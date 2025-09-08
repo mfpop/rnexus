@@ -9,7 +9,7 @@ export default defineConfig({
     host: true,
     hmr: {
       port: 5173,
-      host: 'localhost',
+      host: "localhost",
     },
   },
   publicDir: "public",

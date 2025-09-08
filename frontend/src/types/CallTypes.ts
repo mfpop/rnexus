@@ -11,8 +11,15 @@ export interface CallParticipant extends CallUser {
   isLocal?: boolean;
 }
 
-export type CallType = 'voice' | 'video';
-export type CallStatus = 'idle' | 'calling' | 'ringing' | 'connected' | 'ended' | 'declined' | 'busy';
+export type CallType = "voice" | "video";
+export type CallStatus =
+  | "idle"
+  | "calling"
+  | "ringing"
+  | "connected"
+  | "ended"
+  | "declined"
+  | "busy";
 
 export interface Call {
   id: string;

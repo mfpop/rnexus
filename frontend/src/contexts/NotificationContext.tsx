@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-
-} from "react";
+import React, { createContext, useContext, useState, useCallback } from "react";
 import { NotificationType } from "../components/ui/Notification";
 import {
   useSystemMessages,
@@ -27,7 +21,7 @@ export interface NotificationData {
 }
 
 export interface SystemMessage {
-  id: string;
+  recipientId: string;
   title?: string;
   message: string;
   messageType: "info" | "warning" | "error" | "success";
@@ -116,7 +110,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
               systemMessages: [
                 newMessage,
                 ...data.systemMessages.filter(
-                  (msg: SystemMessage) => msg.id !== newMessage.id,
+                  (msg: SystemMessage) => msg.recipientId !== newMessage.recipientId,
                 ),
               ],
             };
@@ -131,7 +125,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
             return {
               ...data,
               systemMessages: data.systemMessages.filter(
-                (msg: SystemMessage) => msg.id !== newMessage.id,
+                (msg: SystemMessage) => msg.recipientId !== newMessage.recipientId,
               ),
             };
           }
@@ -147,7 +141,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
               systemMessages: [
                 newMessage,
                 ...data.systemMessages.filter(
-                  (msg: SystemMessage) => msg.id !== newMessage.id,
+                  (msg: SystemMessage) => msg.recipientId !== newMessage.recipientId,
                 ),
               ],
             };
@@ -181,7 +175,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
     (event) => {
       // Log WebSocket errors but keep them minimal in development
       console.warn("System Message WebSocket Error:", event);
-    }
+    },
   );
 
   const showSuccess = useCallback(

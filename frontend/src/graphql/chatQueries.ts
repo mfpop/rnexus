@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Fragment for Chat data
 export const CHAT_FRAGMENT = gql`
@@ -26,7 +26,7 @@ export const CHAT_FRAGMENT = gql`
       avatarUrl
     }
     members
-    lastMessage {
+    latestMessage {
       id
       senderId
       senderName
@@ -37,17 +37,9 @@ export const CHAT_FRAGMENT = gql`
     }
     lastActivity
     isActive
-    createdBy {
-      id
-      username
-      firstName
-      lastName
-      avatar
-      avatarUrl
-    }
-    avatarUrl
+    isArchived
+    archivedAt
     createdAt
-    updatedAt
   }
 `;
 
@@ -198,4 +190,149 @@ export const SEND_MESSAGE = gql`
     }
   }
   ${MESSAGE_FRAGMENT}
+`;
+
+// Favorite and Block mutations
+export const TOGGLE_FAVORITE = gql`
+  mutation ToggleFavorite($favoriteUserId: String!) {
+    toggleFavorite(favoriteUserId: $favoriteUserId) {
+      success
+      message
+      isFavorite
+    }
+  }
+`;
+
+export const GET_USER_FAVORITES = gql`
+  query GetUserFavorites {
+    userFavorites {
+      id
+      user {
+        id
+        username
+        firstName
+        lastName
+        avatar
+      }
+      favoriteUser {
+        id
+        username
+        firstName
+        lastName
+        avatar
+      }
+      createdAt
+    }
+  }
+`;
+
+export const CLEAR_ALL_FAVORITES = gql`
+  mutation ClearAllFavorites {
+    clearAllFavorites {
+      success
+      message
+      clearedCount
+    }
+  }
+`;
+
+export const TOGGLE_BLOCK = gql`
+  mutation ToggleBlock($blockedUserId: String!) {
+    toggleBlock(blockedUserId: $blockedUserId) {
+      success
+      message
+      isBlocked
+    }
+  }
+`;
+
+export const GET_USER_BLOCKS = gql`
+  query GetUserBlocks {
+    userBlocks {
+      id
+      user {
+        id
+        username
+        firstName
+        lastName
+        avatar
+      }
+      blockedUser {
+        id
+        username
+        firstName
+        lastName
+        avatar
+      }
+      createdAt
+    }
+  }
+`;
+
+// Query to get all chats (groups)
+export const GET_ALL_CHATS = gql`
+  query GetAllChats {
+    allChats {
+      id
+      chatType
+      name
+      description
+      user1 {
+        id
+        username
+        firstName
+        lastName
+        avatar
+        avatarUrl
+      }
+      user2 {
+        id
+        username
+        firstName
+        lastName
+        avatar
+        avatarUrl
+      }
+      members
+      latestMessage {
+        id
+        senderId
+        senderName
+        content
+        messageType
+        timestamp
+        status
+      }
+      lastActivity
+      isActive
+      isArchived
+      archivedAt
+      createdAt
+    }
+  }
+`;
+
+// Query to get archived chats
+
+
+
+
+// Simple Archive Chat Mutation
+export const ARCHIVE_CHAT = gql`
+  mutation ArchiveChat($userId: Int!) {
+    archiveChat(userId: $userId) {
+      success
+      message
+    }
+  }
+`;
+
+// Simple Unarchive Chat Mutation
+export const UNARCHIVE_CHAT = gql`
+  mutation UnarchiveChat($userId: Int!) {
+    unarchiveChat(userId: $userId) {
+      success
+      message
+    }
+  }
 `;

@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Fragment for Activity data
 export const ACTIVITY_FRAGMENT = gql`

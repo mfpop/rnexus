@@ -1,4 +1,4 @@
-import { Activity } from '../components/activities/ActivitiesContext';
+import { ActivityExtended } from "../components/activities/ActivitiesContext";
 
 // WebSocket message types
 export interface WebSocketMessage {
@@ -9,7 +9,7 @@ export interface WebSocketMessage {
 
 // WebSocket event handlers
 export interface WebSocketHandlers {
-  onActivityUpdated?: (activity: Activity) => void;
+  onActivityUpdated?: (activity: ActivityExtended) => void;
   onTaskUpdated?: (task: any, activityId: string) => void;
   onMilestoneUpdated?: (milestone: any, activityId: string) => void;
   onChecklistUpdated?: (checklist: any, activityId: string) => void;
@@ -48,12 +48,12 @@ export class WebSocketService {
       this.ws = new WebSocket(this.url);
 
       this.ws.onopen = () => {
-  console.debug('WebSocket connected');
+        console.debug("WebSocket connected");
         this.isConnecting = false;
         this.reconnectAttempts = 0;
 
         // Resubscribe to previously subscribed activities
-        this.subscribedActivities.forEach(activityId => {
+        this.subscribedActivities.forEach((activityId) => {
           this.subscribeToActivity(activityId);
         });
 
@@ -65,38 +65,40 @@ export class WebSocketService {
           const message: WebSocketMessage = JSON.parse(event.data);
           this.handleMessage(message);
         } catch (error) {
-          console.error('Error parsing WebSocket message:', error);
+          console.error("Error parsing WebSocket message:", error);
         }
       };
 
       this.ws.onclose = (event) => {
-  console.debug('WebSocket disconnected:', event.code, event.reason);
+        console.debug("WebSocket disconnected:", event.code, event.reason);
         this.isConnecting = false;
         this.handlers.onDisconnected?.();
 
         // Attempt to reconnect if not a clean close
-        if (event.code !== 1000 && this.reconnectAttempts < this.maxReconnectAttempts) {
+        if (
+          event.code !== 1000 &&
+          this.reconnectAttempts < this.maxReconnectAttempts
+        ) {
           this.scheduleReconnect();
         }
       };
 
       this.ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
+        console.error("WebSocket error:", error);
         this.isConnecting = false;
-        this.handlers.onError?.('WebSocket connection error');
+        this.handlers.onError?.("WebSocket connection error");
       };
-
     } catch (error) {
-      console.error('Error creating WebSocket:', error);
+      console.error("Error creating WebSocket:", error);
       this.isConnecting = false;
-      this.handlers.onError?.('Failed to create WebSocket connection');
+      this.handlers.onError?.("Failed to create WebSocket connection");
     }
   }
 
   // Disconnect from WebSocket
   disconnect(): void {
     if (this.ws) {
-      this.ws.close(1000, 'User initiated disconnect');
+      this.ws.close(1000, "User initiated disconnect");
       this.ws = null;
     }
     this.subscribedActivities.clear();
@@ -105,13 +107,13 @@ export class WebSocketService {
   // Subscribe to activity updates
   subscribeToActivity(activityId: string): void {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
-      console.warn('WebSocket not connected, cannot subscribe to activity');
+      console.warn("WebSocket not connected, cannot subscribe to activity");
       return;
     }
 
     const message: WebSocketMessage = {
-      type: 'subscribe_activity',
-      data: { activity_id: activityId }
+      type: "subscribe_activity",
+      data: { activity_id: activityId },
     };
 
     this.ws.send(JSON.stringify(message));
@@ -125,8 +127,8 @@ export class WebSocketService {
     }
 
     const message: WebSocketMessage = {
-      type: 'unsubscribe_activity',
-      data: { activity_id: activityId }
+      type: "unsubscribe_activity",
+      data: { activity_id: activityId },
     };
 
     this.ws.send(JSON.stringify(message));
@@ -136,48 +138,60 @@ export class WebSocketService {
   // Handle incoming WebSocket messages
   private handleMessage(message: WebSocketMessage): void {
     switch (message.type) {
-      case 'subscription_confirmed':
-  console.debug('Subscribed to activity:', message['activity_id']);
+      case "subscription_confirmed":
+        console.debug("Subscribed to activity:", message["activity_id"]);
         break;
 
-      case 'activity_updated':
+      case "activity_updated":
         if (this.handlers.onActivityUpdated) {
-          this.handlers.onActivityUpdated(message['activity']);
+          this.handlers.onActivityUpdated(message["activity"]);
         }
         break;
 
-      case 'task_updated':
+      case "task_updated":
         if (this.handlers.onTaskUpdated) {
-          this.handlers.onTaskUpdated(message['task'], message['activity_id']);
+          this.handlers.onTaskUpdated(message["task"], message["activity_id"]);
         }
         break;
 
-      case 'milestone_updated':
+      case "milestone_updated":
         if (this.handlers.onMilestoneUpdated) {
-          this.handlers.onMilestoneUpdated(message['milestone'], message['activity_id']);
+          this.handlers.onMilestoneUpdated(
+            message["milestone"],
+            message["activity_id"],
+          );
         }
         break;
 
-      case 'checklist_updated':
+      case "checklist_updated":
         if (this.handlers.onChecklistUpdated) {
-          this.handlers.onChecklistUpdated(message['checklist'], message['activity_id']);
+          this.handlers.onChecklistUpdated(
+            message["checklist"],
+            message["activity_id"],
+          );
         }
         break;
 
-      case 'comment_added':
+      case "comment_added":
         if (this.handlers.onCommentAdded) {
-          this.handlers.onCommentAdded(message['comment'], message['activity_id']);
+          this.handlers.onCommentAdded(
+            message["comment"],
+            message["activity_id"],
+          );
         }
         break;
 
-      case 'time_log_updated':
+      case "time_log_updated":
         if (this.handlers.onTimeLogUpdated) {
-          this.handlers.onTimeLogUpdated(message['time_log'], message['activity_id']);
+          this.handlers.onTimeLogUpdated(
+            message["time_log"],
+            message["activity_id"],
+          );
         }
         break;
 
       default:
-  console.debug('Unknown WebSocket message type:', message.type);
+        console.debug("Unknown WebSocket message type:", message.type);
     }
   }
 
@@ -186,14 +200,16 @@ export class WebSocketService {
     this.reconnectAttempts++;
     const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
 
-  console.debug(`Scheduling WebSocket reconnection attempt ${this.reconnectAttempts} in ${delay}ms`);
+    console.debug(
+      `Scheduling WebSocket reconnection attempt ${this.reconnectAttempts} in ${delay}ms`,
+    );
 
     setTimeout(() => {
       if (this.reconnectAttempts < this.maxReconnectAttempts) {
         this.connect();
       } else {
-        console.error('Max WebSocket reconnection attempts reached');
-        this.handlers.onError?.('Failed to reconnect after maximum attempts');
+        console.error("Max WebSocket reconnection attempts reached");
+        this.handlers.onError?.("Failed to reconnect after maximum attempts");
       }
     }, delay);
   }
@@ -205,19 +221,19 @@ export class WebSocketService {
 
   // Get connection state
   getConnectionState(): string {
-    if (!this.ws) return 'disconnected';
+    if (!this.ws) return "disconnected";
 
     switch (this.ws.readyState) {
       case WebSocket.CONNECTING:
-        return 'connecting';
+        return "connecting";
       case WebSocket.OPEN:
-        return 'connected';
+        return "connected";
       case WebSocket.CLOSING:
-        return 'closing';
+        return "closing";
       case WebSocket.CLOSED:
-        return 'closed';
+        return "closed";
       default:
-        return 'unknown';
+        return "unknown";
     }
   }
 
@@ -226,13 +242,14 @@ export class WebSocketService {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(message));
     } else {
-      console.warn('WebSocket not connected, cannot send message');
+      console.warn("WebSocket not connected, cannot send message");
     }
   }
 }
 
 // Create and export singleton instance
-const WS_BASE_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8000/ws/activities/';
+const WS_BASE_URL =
+  import.meta.env.VITE_WS_URL || "ws://localhost:8000/ws/activities/";
 
 export const websocketService = new WebSocketService(WS_BASE_URL, {});
 

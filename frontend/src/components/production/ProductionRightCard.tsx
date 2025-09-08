@@ -93,7 +93,8 @@ const ProductionRightCard: React.FC<ProductionRightCardProps> = ({
   };
 
   // Safely get the latest real-time data point (may be undefined)
-  const lastData = realTimeData.length > 0 ? realTimeData[realTimeData.length - 1] : undefined;
+  const lastData =
+    realTimeData.length > 0 ? realTimeData[realTimeData.length - 1] : undefined;
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -445,7 +446,9 @@ const ProductionRightCard: React.FC<ProductionRightCardProps> = ({
                 <Activity className="h-6 w-6 text-purple-500 mx-auto mb-1" />
                 <div className="text-sm text-gray-600">Vibration</div>
                 <div className="text-lg font-semibold">
-                  {lastData ? `${lastData.vibration.toFixed(1)} mm/s` : "2.5 mm/s"}
+                  {lastData
+                    ? `${lastData.vibration.toFixed(1)} mm/s`
+                    : "2.5 mm/s"}
                 </div>
               </div>
             </div>

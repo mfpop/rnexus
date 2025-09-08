@@ -1,9 +1,31 @@
 // New Optimized Activities Context Provider
 // This provides a clean, efficient data layer for activities with improved performance
 
-import { createContext, useContext, useState, useCallback, ReactNode, useMemo } from "react";
-import { useQuery } from '@apollo/client';
-import { GET_ALL_ACTIVITIES } from '../../graphql/activities_new';
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  ReactNode,
+  useMemo,
+} from "react";
+import { useQuery } from "@apollo/client";
+import { GET_ALL_ACTIVITIES } from "../../graphql/activities_new";
+import {
+  ApolloClient,
+  InMemoryCache,
+  createHttpLink,
+} from "@apollo/client";
+
+// Create a separate Apollo client for activities that doesn't send auth headers
+const activitiesHttpLink = createHttpLink({
+  uri: "http://localhost:8000/graphql/",
+});
+
+const activitiesClient = new ApolloClient({
+  link: activitiesHttpLink,
+  cache: new InMemoryCache(),
+});
 
 // =====================================================
 // Type Definitions
@@ -33,8 +55,8 @@ export interface ActivityExtended {
   type: string;
   status: "planned" | "in-progress" | "completed" | "cancelled" | "overdue";
   priority: "low" | "medium" | "high" | "critical";
-  startTime: Date;  // Keep as Date for compatibility
-  endTime: Date;    // Keep as Date for compatibility
+  startTime: Date; // Keep as Date for compatibility
+  endTime: Date; // Keep as Date for compatibility
   assignedTo: string;
   assignedBy: string;
   location?: string;
@@ -45,7 +67,7 @@ export interface ActivityExtended {
   durationHours: number;
   statusDisplay: string;
   priorityDisplay: string;
-  fullName: string;  // Computed from createdBy
+  fullName: string; // Computed from createdBy
   createdAt: string;
   updatedAt: string;
 
@@ -127,7 +149,9 @@ interface ActivitiesContextType {
 // Context Creation
 // =====================================================
 
-const ActivitiesContext = createContext<ActivitiesContextType | undefined>(undefined);
+const ActivitiesContext = createContext<ActivitiesContextType | undefined>(
+  undefined,
+);
 
 export const useActivities = () => {
   const context = useContext(ActivitiesContext);
@@ -150,37 +174,58 @@ interface ActivitiesProviderProps {
 export const ActivitiesProvider = ({
   children,
   initialFilters = {},
-  initialPagination = { limit: 50, offset: 0 }
+  initialPagination = { limit: 50, offset: 0 },
 }: ActivitiesProviderProps) => {
   // ===== State =====
-  const [selectedActivity, setSelectedActivity] = useState<ActivityExtended | null>(null);
+  const [selectedActivity, setSelectedActivity] =
+    useState<ActivityExtended | null>(null);
   const [filters, setFiltersState] = useState<ActivityFilters>(initialFilters);
-  const [pagination, setPaginationState] = useState<ActivityPagination>(initialPagination);
+  const [pagination, setPaginationState] =
+    useState<ActivityPagination>(initialPagination);
 
   // ===== GraphQL Query =====
   // Use the simplified query without parameters (client-side filtering will handle filters)
   const { data, loading, error, refetch } = useQuery(GET_ALL_ACTIVITIES, {
-    fetchPolicy: 'cache-and-network',
-    errorPolicy: 'all',
+    client: activitiesClient, // Use separate client without auth headers
+    fetchPolicy: "cache-and-network",
+    errorPolicy: "all",
     notifyOnNetworkStatusChange: true,
+    onCompleted: (data) => {
+      console.log("DEBUG: Activities query completed successfully");
+      console.log("DEBUG: Activities data:", data);
+      console.log(
+        "DEBUG: Number of activities:",
+        data?.allActivities?.length || 0,
+      );
+    },
+    onError: (error) => {
+      console.error("DEBUG: Activities query error:", error);
+      console.error("DEBUG: Error details:", error.graphQLErrors, error.networkError);
+    },
   });
 
   // ===== Data Processing =====
   // Transform raw GraphQL data to our extended format
   const processedActivities: ActivityExtended[] = useMemo(() => {
-    return (data?.allActivities || []).map((activity: any) => ({
+    const result = (data?.allActivities || []).map((activity: any) => ({
       ...activity,
       startTime: new Date(activity.startTime),
       endTime: new Date(activity.endTime),
       // Add computed fields for backward compatibility
       durationHours: activity.estimatedDuration / 60, // Convert minutes to hours
-      statusDisplay: activity.status.charAt(0).toUpperCase() + activity.status.slice(1).replace('-', ' '),
-      priorityDisplay: activity.priority.charAt(0).toUpperCase() + activity.priority.slice(1),
+      statusDisplay:
+        activity.status.charAt(0).toUpperCase() +
+        activity.status.slice(1).replace("-", " "),
+      priorityDisplay:
+        activity.priority.charAt(0).toUpperCase() + activity.priority.slice(1),
       // Add user full name if available
       fullName: activity.createdBy
         ? `${activity.createdBy.firstName} ${activity.createdBy.lastName}`.trim()
-        : '',
+        : "",
     }));
+    console.log("DEBUG: Processed activities:", result.length);
+    console.log("DEBUG: First activity sample:", result[0]);
+    return result;
   }, [data?.allActivities]);
 
   // Apply all filters client-side
@@ -189,36 +234,45 @@ export const ActivitiesProvider = ({
 
     // Type filter
     if (filters.type) {
-      filtered = filtered.filter(activity => activity.type === filters.type);
+      filtered = filtered.filter((activity) => activity.type === filters.type);
     }
 
     // Status filter
     if (filters.status) {
-      filtered = filtered.filter(activity => activity.status === filters.status);
+      filtered = filtered.filter(
+        (activity) => activity.status === filters.status,
+      );
     }
 
     // Priority filter
     if (filters.priority) {
-      filtered = filtered.filter(activity => activity.priority === filters.priority);
+      filtered = filtered.filter(
+        (activity) => activity.priority === filters.priority,
+      );
     }
 
     // Assigned to filter
     if (filters.assignedTo) {
-      filtered = filtered.filter(activity =>
-        activity.assignedTo === filters.assignedTo ||
-        activity.fullName.toLowerCase().includes(filters.assignedTo!.toLowerCase())
+      filtered = filtered.filter(
+        (activity) =>
+          activity.assignedTo === filters.assignedTo ||
+          activity.fullName
+            .toLowerCase()
+            .includes(filters.assignedTo!.toLowerCase()),
       );
     }
 
     // Search query filter
     if (filters.searchQuery) {
       const query = filters.searchQuery.toLowerCase();
-      filtered = filtered.filter(activity =>
-        activity.title.toLowerCase().includes(query) ||
-        activity.description.toLowerCase().includes(query) ||
-        activity.assignedTo.toLowerCase().includes(query) ||
-        activity.fullName.toLowerCase().includes(query) ||
-        (activity.location && activity.location.toLowerCase().includes(query))
+      filtered = filtered.filter(
+        (activity) =>
+          activity.title.toLowerCase().includes(query) ||
+          activity.description.toLowerCase().includes(query) ||
+          activity.assignedTo.toLowerCase().includes(query) ||
+          activity.fullName.toLowerCase().includes(query) ||
+          (activity.location &&
+            activity.location.toLowerCase().includes(query)),
       );
     }
 
@@ -227,13 +281,16 @@ export const ActivitiesProvider = ({
 
   // ===== Actions =====
   const setFilters = useCallback((newFilters: Partial<ActivityFilters>) => {
-    setFiltersState(prev => ({ ...prev, ...newFilters }));
-    setPaginationState(prev => ({ ...prev, offset: 0 })); // Reset pagination when filtering
+    setFiltersState((prev) => ({ ...prev, ...newFilters }));
+    setPaginationState((prev) => ({ ...prev, offset: 0 })); // Reset pagination when filtering
   }, []);
 
-  const setPagination = useCallback((newPagination: Partial<ActivityPagination>) => {
-    setPaginationState(prev => ({ ...prev, ...newPagination }));
-  }, []);
+  const setPagination = useCallback(
+    (newPagination: Partial<ActivityPagination>) => {
+      setPaginationState((prev) => ({ ...prev, ...newPagination }));
+    },
+    [],
+  );
 
   const clearFilters = useCallback(() => {
     setFiltersState({});
@@ -244,7 +301,7 @@ export const ActivitiesProvider = ({
     try {
       await refetch();
     } catch (err) {
-      console.error('Error refreshing activities:', err);
+      console.error("Error refreshing activities:", err);
     }
   }, [refetch]);
 
@@ -255,43 +312,61 @@ export const ActivitiesProvider = ({
       // Since we're using client-side filtering, we can't do server-side pagination
       // In a real implementation, you'd need to implement server-side pagination
       // or handle this differently. For now, we'll just log that more data is requested.
-      console.log('Load more requested - implementing client-side pagination');
+      console.log("Load more requested - implementing client-side pagination");
 
-      setPaginationState(prev => ({
+      setPaginationState((prev) => ({
         ...prev,
         offset: (prev.offset || 0) + (prev.limit || 50),
         hasMore: false, // Disable infinite loading for now
       }));
     } catch (err) {
-      console.error('Error loading more activities:', err);
+      console.error("Error loading more activities:", err);
     }
   }, [loading, pagination]);
 
   // ===== Filtering Helpers =====
-  const getActivitiesByType = useCallback((type: string): ActivityExtended[] => {
-    return filteredActivities.filter(activity => activity.type === type);
-  }, [filteredActivities]);
+  const getActivitiesByType = useCallback(
+    (type: string): ActivityExtended[] => {
+      return filteredActivities.filter((activity) => activity.type === type);
+    },
+    [filteredActivities],
+  );
 
-  const getActivitiesByStatus = useCallback((status: string): ActivityExtended[] => {
-    return filteredActivities.filter(activity => activity.status === status);
-  }, [filteredActivities]);
+  const getActivitiesByStatus = useCallback(
+    (status: string): ActivityExtended[] => {
+      return filteredActivities.filter(
+        (activity) => activity.status === status,
+      );
+    },
+    [filteredActivities],
+  );
 
-  const getActivitiesByPriority = useCallback((priority: string): ActivityExtended[] => {
-    return filteredActivities.filter(activity => activity.priority === priority);
-  }, [filteredActivities]);
+  const getActivitiesByPriority = useCallback(
+    (priority: string): ActivityExtended[] => {
+      return filteredActivities.filter(
+        (activity) => activity.priority === priority,
+      );
+    },
+    [filteredActivities],
+  );
 
-  const searchActivities = useCallback((query: string): ActivityExtended[] => {
-    if (!query.trim()) return filteredActivities;
+  const searchActivities = useCallback(
+    (query: string): ActivityExtended[] => {
+      if (!query.trim()) return filteredActivities;
 
-    const searchTerm = query.toLowerCase();
-    return filteredActivities.filter(activity =>
-      activity.title.toLowerCase().includes(searchTerm) ||
-      activity.description.toLowerCase().includes(searchTerm) ||
-      activity.assignedTo.toLowerCase().includes(searchTerm) ||
-      (activity.location && activity.location.toLowerCase().includes(searchTerm)) ||
-      activity.type.toLowerCase().includes(searchTerm)
-    );
-  }, [filteredActivities]);
+      const searchTerm = query.toLowerCase();
+      return filteredActivities.filter(
+        (activity) =>
+          activity.title.toLowerCase().includes(searchTerm) ||
+          activity.description.toLowerCase().includes(searchTerm) ||
+          activity.assignedTo.toLowerCase().includes(searchTerm) ||
+          (activity.location &&
+            activity.location.toLowerCase().includes(searchTerm)) ||
+          activity.type.toLowerCase().includes(searchTerm),
+      );
+    },
+    [filteredActivities],
+  );
 
   // ===== Statistics =====
   const getActivityStats = useCallback(() => {
@@ -302,15 +377,17 @@ export const ActivitiesProvider = ({
       byPriority: {} as Record<string, number>,
     };
 
-    filteredActivities.forEach(activity => {
+    filteredActivities.forEach((activity) => {
       // Count by type
       stats.byType[activity.type] = (stats.byType[activity.type] || 0) + 1;
 
       // Count by status
-      stats.byStatus[activity.status] = (stats.byStatus[activity.status] || 0) + 1;
+      stats.byStatus[activity.status] =
+        (stats.byStatus[activity.status] || 0) + 1;
 
       // Count by priority
-      stats.byPriority[activity.priority] = (stats.byPriority[activity.priority] || 0) + 1;
+      stats.byPriority[activity.priority] =
+        (stats.byPriority[activity.priority] || 0) + 1;
     });
 
     return stats;

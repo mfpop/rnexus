@@ -4,7 +4,7 @@
 export const formatCallDuration = (seconds: number): string => {
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = seconds % 60;
-  return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  return `${minutes.toString().padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
 };
 
 /**
@@ -29,18 +29,18 @@ export const formatCallDurationLong = (seconds: number): string => {
  */
 export const getCallStatusText = (status: string): string => {
   switch (status) {
-    case 'calling':
-      return 'Calling...';
-    case 'ringing':
-      return 'Incoming call';
-    case 'connected':
-      return 'Connected';
-    case 'ended':
-      return 'Call ended';
-    case 'declined':
-      return 'Call declined';
-    case 'busy':
-      return 'Busy';
+    case "calling":
+      return "Calling...";
+    case "ringing":
+      return "Incoming call";
+    case "connected":
+      return "Connected";
+    case "ended":
+      return "Call ended";
+    case "declined":
+      return "Call declined";
+    case "busy":
+      return "Busy";
     default:
       return status;
   }

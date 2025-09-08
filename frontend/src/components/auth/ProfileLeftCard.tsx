@@ -13,7 +13,8 @@ import AuthService from "../../lib/authService";
 import { computeProfileCompletion } from "../../lib/profileCompletion";
 
 // API configuration
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
 const ProfileLeftCard: React.FC = () => {
   const navigate = useNavigate();
@@ -31,20 +32,23 @@ const ProfileLeftCard: React.FC = () => {
   });
 
   const handleReturnToDashboard = () => {
-    navigate('/');
+    navigate("/");
   };
 
   const handleDownloadCV = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/user/profile/download-cv/`, {
-        method: "GET",
-        credentials: "include",
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/user/profile/download-cv/`,
+        {
+          method: "GET",
+          credentials: "include",
+        },
+      );
 
       if (response.ok) {
         // Get the filename from the response headers
-        const contentDisposition = response.headers.get('Content-Disposition');
-        let filename = 'CV.pdf';
+        const contentDisposition = response.headers.get("Content-Disposition");
+        let filename = "CV.pdf";
         if (contentDisposition) {
           const filenameMatch = contentDisposition.match(/filename="(.+)"/);
           if (filenameMatch && filenameMatch[1]) {
@@ -55,7 +59,7 @@ const ProfileLeftCard: React.FC = () => {
         // Create blob and download
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        const a = document.createElement("a");
         a.href = url;
         a.download = filename;
         document.body.appendChild(a);
@@ -64,12 +68,12 @@ const ProfileLeftCard: React.FC = () => {
         document.body.removeChild(a);
       } else {
         const error = await response.json();
-        console.error('CV download failed:', error);
-        alert('Failed to download CV. Please try again.');
+        console.error("CV download failed:", error);
+        alert("Failed to download CV. Please try again.");
       }
     } catch (error) {
-      console.error('CV download error:', error);
-      alert('Error downloading CV. Please try again.');
+      console.error("CV download error:", error);
+      alert("Error downloading CV. Please try again.");
     }
   };
 
@@ -89,8 +93,8 @@ const ProfileLeftCard: React.FC = () => {
         setDetails(details);
       }
     } catch (e: any) {
-      console.error('Profile completion fetch failed:', e);
-      setError('Unable to load profile completion');
+      console.error("Profile completion fetch failed:", e);
+      setError("Unable to load profile completion");
     } finally {
       setLoading(false);
     }
@@ -102,9 +106,9 @@ const ProfileLeftCard: React.FC = () => {
 
   React.useEffect(() => {
     const handler = () => loadCompletion();
-    (window as any).addEventListener('profile-updated', handler);
+    (window as any).addEventListener("profile-updated", handler);
     return () => {
-      (window as any).removeEventListener('profile-updated', handler);
+      (window as any).removeEventListener("profile-updated", handler);
     };
   }, [loadCompletion]);
 
@@ -125,7 +129,9 @@ const ProfileLeftCard: React.FC = () => {
             >
               <div className="flex items-center gap-3">
                 <FileText className="h-4 w-4 text-gray-600" />
-                <span className="text-sm font-medium text-gray-900">Download CV</span>
+                <span className="text-sm font-medium text-gray-900">
+                  Download CV
+                </span>
               </div>
               <div className="text-xs text-gray-500">PDF</div>
             </button>
@@ -135,7 +141,9 @@ const ProfileLeftCard: React.FC = () => {
             >
               <div className="flex items-center gap-3">
                 <Home className="h-4 w-4 text-gray-600" />
-                <span className="text-sm font-medium text-gray-900">Return to Dashboard</span>
+                <span className="text-sm font-medium text-gray-900">
+                  Return to Dashboard
+                </span>
               </div>
             </button>
           </div>
@@ -145,8 +153,12 @@ const ProfileLeftCard: React.FC = () => {
         <div>
           <div className="flex items-center gap-2 mb-3">
             <CheckCircle className="h-4 w-4 text-green-600" />
-            <h4 className="text-sm font-medium text-gray-900">Security Status</h4>
-            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium">Good</span>
+            <h4 className="text-sm font-medium text-gray-900">
+              Security Status
+            </h4>
+            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium">
+              Good
+            </span>
           </div>
           <p className="text-sm text-gray-600">
             Your account is protected with strong security measures.
@@ -160,31 +172,41 @@ const ProfileLeftCard: React.FC = () => {
               <User className="h-4 w-4 text-purple-500" />
               Profile Completion
             </h4>
-            <span className="text-sm font-medium text-gray-900">{loading ? '...' : `${percent}%`}</span>
+            <span className="text-sm font-medium text-gray-900">
+              {loading ? "..." : `${percent}%`}
+            </span>
           </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
-          <div
-            className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300 ease-in-out"
-            style={{ width: `${percent}%` }}
-          ></div>
-        </div>
+          <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
+            <div
+              className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300 ease-in-out"
+              style={{ width: `${percent}%` }}
+            ></div>
+          </div>
           <div className="space-y-1 text-xs text-gray-500">
             <div className="flex items-center gap-2">
-              <div className={`w-1.5 h-1.5 rounded-full ${details.basicInfo ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+              <div
+                className={`w-1.5 h-1.5 rounded-full ${details.basicInfo ? "bg-green-500" : "bg-gray-300"}`}
+              ></div>
               <span>Basic information completed</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className={`w-1.5 h-1.5 rounded-full ${details.contact ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+              <div
+                className={`w-1.5 h-1.5 rounded-full ${details.contact ? "bg-green-500" : "bg-gray-300"}`}
+              ></div>
               <span>Contact details added</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className={`w-1.5 h-1.5 rounded-full ${details.education ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
-              <span>{details.education ? 'Education provided' : 'Add more education details'}</span>
+              <div
+                className={`w-1.5 h-1.5 rounded-full ${details.education ? "bg-green-500" : "bg-yellow-500"}`}
+              ></div>
+              <span>
+                {details.education
+                  ? "Education provided"
+                  : "Add more education details"}
+              </span>
             </div>
           </div>
-          {error && (
-            <p className="text-xs text-red-600 mt-2">{error}</p>
-          )}
+          {error && <p className="text-xs text-red-600 mt-2">{error}</p>}
         </div>
 
         {/* Profile Tips */}
@@ -195,16 +217,27 @@ const ProfileLeftCard: React.FC = () => {
           </h4>
           <div className="space-y-3 text-xs text-gray-600">
             <div className="p-3 bg-gray-50 rounded-lg border-l-4 border-gray-300">
-              <p className="font-medium text-gray-800 mb-1">Complete Your Education</p>
-              <p>Add detailed information about your educational background to improve your profile visibility.</p>
+              <p className="font-medium text-gray-800 mb-1">
+                Complete Your Education
+              </p>
+              <p>
+                Add detailed information about your educational background to
+                improve your profile visibility.
+              </p>
             </div>
             <div className="p-3 bg-gray-50 rounded-lg border-l-4 border-gray-300">
               <p className="font-medium text-gray-800 mb-1">Professional Bio</p>
-              <p>Write a compelling bio that highlights your expertise and career achievements.</p>
+              <p>
+                Write a compelling bio that highlights your expertise and career
+                achievements.
+              </p>
             </div>
             <div className="p-3 bg-gray-50 rounded-lg border-l-4 border-gray-300">
               <p className="font-medium text-gray-800 mb-1">Work Experience</p>
-              <p>Document your work history with detailed descriptions to showcase your career progression.</p>
+              <p>
+                Document your work history with detailed descriptions to
+                showcase your career progression.
+              </p>
             </div>
           </div>
         </div>
@@ -216,7 +249,10 @@ const ProfileLeftCard: React.FC = () => {
             Privacy & Visibility
           </h4>
           <div className="text-xs text-gray-600 space-y-2">
-            <p>Control who can see your profile information using the visibility toggles in each section.</p>
+            <p>
+              Control who can see your profile information using the visibility
+              toggles in each section.
+            </p>
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-1">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>

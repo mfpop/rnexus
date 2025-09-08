@@ -1,9 +1,9 @@
 // src/components/auth/profile/AddressSection.tsx
 
-import React, { useState, useEffect } from 'react';
-import { MapPin } from 'lucide-react';
-import { Input } from '../../ui/bits';
-import { useQuery } from '@apollo/client';
+import React, { useState, useEffect } from "react";
+import { MapPin } from "lucide-react";
+import { Input } from "../../ui/bits";
+import { useQuery } from "@apollo/client";
 import {
   GET_ALL_COUNTRIES,
   GET_STATES_BY_COUNTRY,
@@ -19,9 +19,9 @@ import {
   Country,
   State,
   City,
-  ZipCode
-} from '../../../graphql/location';
-import { useAutosave } from './ProfileAutosaveProvider';
+  ZipCode,
+} from "../../../graphql/location";
+import { useAutosave } from "./ProfileAutosaveProvider";
 
 interface AddressData {
   country?: string;
@@ -51,28 +51,29 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
   const [zipcodes, setZipcodes] = useState<ZipCode[]>([]);
 
   // GraphQL queries for location data
-  const { data: countriesData, loading: countriesLoading } = useQuery<GetAllCountriesData>(GET_ALL_COUNTRIES);
-  const { data: statesData, loading: statesLoading } = useQuery<GetStatesByCountryData, GetStatesByCountryVariables>(
-    GET_STATES_BY_COUNTRY,
-    {
-      variables: { countryCode: localData.country || '' },
-      skip: !localData.country
-    }
-  );
-  const { data: citiesData, loading: citiesLoading } = useQuery<GetCitiesByStateData, GetCitiesByStateVariables>(
-    GET_CITIES_BY_STATE,
-    {
-      variables: { stateId: localData.state_province || '' },
-      skip: !localData.state_province
-    }
-  );
-  const { data: zipcodesData, loading: zipcodesLoading } = useQuery<GetZipcodesByCityData, GetZipcodesByCityVariables>(
-    GET_ZIPCODES_BY_CITY,
-    {
-      variables: { cityId: localData.city || '' },
-      skip: !localData.city
-    }
-  );
+  const { data: countriesData, loading: countriesLoading } =
+    useQuery<GetAllCountriesData>(GET_ALL_COUNTRIES);
+  const { data: statesData, loading: statesLoading } = useQuery<
+    GetStatesByCountryData,
+    GetStatesByCountryVariables
+  >(GET_STATES_BY_COUNTRY, {
+    variables: { countryCode: localData.country || "" },
+    skip: !localData.country,
+  });
+  const { data: citiesData, loading: citiesLoading } = useQuery<
+    GetCitiesByStateData,
+    GetCitiesByStateVariables
+  >(GET_CITIES_BY_STATE, {
+    variables: { stateId: localData.state_province || "" },
+    skip: !localData.state_province,
+  });
+  const { data: zipcodesData, loading: zipcodesLoading } = useQuery<
+    GetZipcodesByCityData,
+    GetZipcodesByCityVariables
+  >(GET_ZIPCODES_BY_CITY, {
+    variables: { cityId: localData.city || "" },
+    skip: !localData.city,
+  });
 
   // Update local state when props change
   useEffect(() => {
@@ -120,70 +121,70 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
   };
 
   const handleCountryChange = (countryId: string) => {
-    const selectedCountry = countries.find(c => c.id === countryId);
-    const countryCode = selectedCountry?.code || '';
+    const selectedCountry = countries.find((c) => c.id === countryId);
+    const countryCode = selectedCountry?.code || "";
 
     // Reset dependent fields
     const newData = {
       ...localData,
       country: countryCode,
-      state_province: '',
-      city: '',
-      zip_code: '',
+      state_province: "",
+      city: "",
+      zip_code: "",
     };
 
     setLocalData(newData);
-    onChange('country', countryCode);
-    onChange('state_province', '');
-    onChange('city', '');
-    onChange('zip_code', '');
+    onChange("country", countryCode);
+    onChange("state_province", "");
+    onChange("city", "");
+    onChange("zip_code", "");
 
     // Autosave country change
-    autosaveField('country', selectedCountry?.name || '');
+    autosaveField("country", selectedCountry?.name || "");
   };
 
   const handleStateChange = (stateId: string) => {
     const newData = {
       ...localData,
       state_province: stateId,
-      city: '',
-      zip_code: '',
+      city: "",
+      zip_code: "",
     };
 
     setLocalData(newData);
-    onChange('state_province', stateId);
-    onChange('city', '');
-    onChange('zip_code', '');
+    onChange("state_province", stateId);
+    onChange("city", "");
+    onChange("zip_code", "");
 
     // Autosave state change
-    const selectedState = states.find(s => s.id === stateId);
-    autosaveField('stateProvince', selectedState?.name || '');
+    const selectedState = states.find((s) => s.id === stateId);
+    autosaveField("stateProvince", selectedState?.name || "");
   };
 
   const handleCityChange = (cityId: string) => {
     const newData = {
       ...localData,
       city: cityId,
-      zip_code: '',
+      zip_code: "",
     };
 
     setLocalData(newData);
-    onChange('city', cityId);
-    onChange('zip_code', '');
+    onChange("city", cityId);
+    onChange("zip_code", "");
 
     // Autosave city change
-    const selectedCity = cities.find(c => c.id === cityId);
-    autosaveField('city', selectedCity?.name || '');
+    const selectedCity = cities.find((c) => c.id === cityId);
+    autosaveField("city", selectedCity?.name || "");
   };
 
   const handleZipcodeChange = (zipcodeId: string) => {
     const newData = { ...localData, zip_code: zipcodeId };
     setLocalData(newData);
-    onChange('zip_code', zipcodeId);
+    onChange("zip_code", zipcodeId);
 
     // Autosave zip code change
-    const selectedZipcode = zipcodes.find(z => z.id === zipcodeId);
-    autosaveField('zipCode', selectedZipcode?.code || '');
+    const selectedZipcode = zipcodes.find((z) => z.id === zipcodeId);
+    autosaveField("zipCode", selectedZipcode?.code || "");
   };
 
   return (
@@ -199,10 +200,15 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
           {/* Location Fields */}
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Country
+              </label>
               <div className="relative">
                 <select
-                  value={countries.find(c => c.code === localData.country)?.id || ""}
+                  value={
+                    countries.find((c) => c.code === localData.country)?.id ||
+                    ""
+                  }
                   onChange={(e) => handleCountryChange(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none bg-white"
                   disabled={countriesLoading}
@@ -215,14 +221,26 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
                   ))}
                 </select>
                 <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <svg
+                    className="w-4 h-4 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </div>
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">State/Province</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                State/Province
+              </label>
               <div className="relative">
                 <select
                   value={localData.state_province || ""}
@@ -238,14 +256,26 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
                   ))}
                 </select>
                 <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <svg
+                    className="w-4 h-4 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </div>
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                City
+              </label>
               <div className="relative">
                 <select
                   value={localData.city || ""}
@@ -261,8 +291,18 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
                   ))}
                 </select>
                 <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <svg
+                    className="w-4 h-4 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </div>
               </div>
@@ -272,7 +312,9 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
           {/* Address Details */}
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">ZIP/Postal Code</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                ZIP/Postal Code
+              </label>
               <div className="relative">
                 <select
                   value={localData.zip_code || ""}
@@ -288,28 +330,46 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
                   ))}
                 </select>
                 <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <svg
+                    className="w-4 h-4 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </div>
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Street Address</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Street Address
+              </label>
               <Input
                 type="text"
                 value={localData.street_address || ""}
-                onChange={(e) => handleFieldChange("street_address", e.target.value)}
+                onChange={(e) =>
+                  handleFieldChange("street_address", e.target.value)
+                }
                 className="w-full"
                 placeholder="Enter street address"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Apartment/Suite</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Apartment/Suite
+              </label>
               <Input
                 type="text"
                 value={localData.apartment_suite || ""}
-                onChange={(e) => handleFieldChange("apartment_suite", e.target.value)}
+                onChange={(e) =>
+                  handleFieldChange("apartment_suite", e.target.value)
+                }
                 className="w-full"
                 placeholder="Enter apartment/suite"
               />
@@ -320,15 +380,24 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
         {/* Address Summary */}
         {(localData.street_address || localData.apartment_suite) && (
           <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Address Summary</h4>
+            <h4 className="text-sm font-medium text-gray-700 mb-2">
+              Address Summary
+            </h4>
             <div className="text-sm text-gray-600 space-y-1">
               <p>{localData.street_address || "No street address"}</p>
-              <p>{localData.apartment_suite && `${localData.apartment_suite}, `}
-                 {cities.find(c => c.id === localData.city)?.name || "No city"},
-                 {states.find(s => s.id === localData.state_province)?.name || "No state"}
-                 {zipcodes.find(z => z.id === localData.zip_code)?.code && ` ${zipcodes.find(z => z.id === localData.zip_code)?.code}`}
+              <p>
+                {localData.apartment_suite && `${localData.apartment_suite}, `}
+                {cities.find((c) => c.id === localData.city)?.name || "No city"}
+                ,
+                {states.find((s) => s.id === localData.state_province)?.name ||
+                  "No state"}
+                {zipcodes.find((z) => z.id === localData.zip_code)?.code &&
+                  ` ${zipcodes.find((z) => z.id === localData.zip_code)?.code}`}
               </p>
-              <p>{countries.find(c => c.code === localData.country)?.name || "No country"}</p>
+              <p>
+                {countries.find((c) => c.code === localData.country)?.name ||
+                  "No country"}
+              </p>
             </div>
           </div>
         )}

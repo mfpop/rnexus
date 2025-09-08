@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
-import { useMutation } from '@apollo/client';
+import React, { useState } from "react";
+import { useMutation } from "@apollo/client";
 import {
   ThumbsUp,
   ThumbsDown,
   Bookmark,
   Share2,
   MessageCircle,
-  BookmarkCheck
-} from 'lucide-react';
-import { TOGGLE_LIKE, TOGGLE_BOOKMARK } from '../../graphql/newsInteractions';
-import { useAuth } from '../../contexts/AuthContext';
+  BookmarkCheck,
+} from "lucide-react";
+import { TOGGLE_LIKE, TOGGLE_BOOKMARK } from "../../graphql/newsInteractions";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface UpdateActionButtonsProps {
   updateId: string;
@@ -19,7 +19,11 @@ interface UpdateActionButtonsProps {
   bookmarksCount: number;
   userLikeStatus: string | null;
   isBookmarked: boolean;
-  onLikeChange?: (likesCount: number, dislikesCount: number, userLikeStatus: string | null) => void;
+  onLikeChange?: (
+    likesCount: number,
+    dislikesCount: number,
+    userLikeStatus: string | null,
+  ) => void;
   onBookmarkChange?: (isBookmarked: boolean, bookmarksCount: number) => void;
   onCommentsClick?: () => void;
   className?: string;
@@ -36,7 +40,7 @@ const UpdateActionButtons: React.FC<UpdateActionButtonsProps> = ({
   onLikeChange,
   onBookmarkChange,
   onCommentsClick,
-  className = ''
+  className = "",
 }) => {
   const { user } = useAuth();
   const [isLiking, setIsLiking] = useState(false);
@@ -53,19 +57,19 @@ const UpdateActionButtons: React.FC<UpdateActionButtonsProps> = ({
       const { data } = await toggleLike({
         variables: {
           updateId,
-          isLike
-        }
+          isLike,
+        },
       });
 
       if (data?.toggle_like?.success) {
         onLikeChange?.(
           data.toggle_like.likes_count,
           data.toggle_like.dislikes_count,
-          data.toggle_like.like_status
+          data.toggle_like.like_status,
         );
       }
     } catch (error) {
-      console.error('Error toggling like:', error);
+      console.error("Error toggling like:", error);
     } finally {
       setIsLiking(false);
     }
@@ -78,18 +82,18 @@ const UpdateActionButtons: React.FC<UpdateActionButtonsProps> = ({
     try {
       const { data } = await toggleBookmark({
         variables: {
-          updateId
-        }
+          updateId,
+        },
       });
 
       if (data?.toggle_bookmark?.success) {
         onBookmarkChange?.(
           data.toggle_bookmark.is_bookmarked,
-          data.toggle_bookmark.bookmarks_count
+          data.toggle_bookmark.bookmarks_count,
         );
       }
     } catch (error) {
-      console.error('Error toggling bookmark:', error);
+      console.error("Error toggling bookmark:", error);
     } finally {
       setIsBookmarking(false);
     }
@@ -99,12 +103,12 @@ const UpdateActionButtons: React.FC<UpdateActionButtonsProps> = ({
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Check out this update',
-          text: 'Look at this interesting update',
-          url: window.location.href
+          title: "Check out this update",
+          text: "Look at this interesting update",
+          url: window.location.href,
         });
       } catch (error) {
-        console.error('Error sharing:', error);
+        console.error("Error sharing:", error);
         // Fallback to clipboard
         navigator.clipboard.writeText(window.location.href);
       }
@@ -126,10 +130,10 @@ const UpdateActionButtons: React.FC<UpdateActionButtonsProps> = ({
           onClick={() => handleLike(true)}
           disabled={isLiking}
           className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm transition-colors ${
-            userLikeStatus === 'like'
-              ? 'bg-blue-100 text-blue-600 border border-blue-200'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200'
-          } ${isLiking ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+            userLikeStatus === "like"
+              ? "bg-blue-100 text-blue-600 border border-blue-200"
+              : "bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200"
+          } ${isLiking ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
         >
           <ThumbsUp size={16} />
           <span>{likesCount}</span>
@@ -139,10 +143,10 @@ const UpdateActionButtons: React.FC<UpdateActionButtonsProps> = ({
           onClick={() => handleLike(false)}
           disabled={isLiking}
           className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm transition-colors ${
-            userLikeStatus === 'dislike'
-              ? 'bg-red-100 text-red-600 border border-red-200'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200'
-          } ${isLiking ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+            userLikeStatus === "dislike"
+              ? "bg-red-100 text-red-600 border border-red-200"
+              : "bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200"
+          } ${isLiking ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
         >
           <ThumbsDown size={16} />
           <span>{dislikesCount}</span>
@@ -155,9 +159,9 @@ const UpdateActionButtons: React.FC<UpdateActionButtonsProps> = ({
         disabled={isBookmarking}
         className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm transition-colors ${
           isBookmarked
-            ? 'bg-yellow-100 text-yellow-600 border border-yellow-200'
-            : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200'
-        } ${isBookmarking ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+            ? "bg-yellow-100 text-yellow-600 border border-yellow-200"
+            : "bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200"
+        } ${isBookmarking ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
       >
         {isBookmarked ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
         <span>{bookmarksCount}</span>

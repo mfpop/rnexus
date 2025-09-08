@@ -49,7 +49,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ onClose }) => {
           ) : (
             systemMessages.map((msg) => (
               <div
-                key={msg.id}
+                key={msg.recipientId}
                 className={`p-3 rounded-lg border ${getMessageTypeStyles(msg.messageType)} ${msg.isRead ? "opacity-60" : ""}`}
               >
                 <div className="flex justify-between items-start">
@@ -69,7 +69,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ onClose }) => {
                       rel="noopener noreferrer"
                       className="text-blue-600 hover:underline text-sm"
                       onClick={async () => {
-                        await markSystemMessageAsRead(msg.id);
+                        await markSystemMessageAsRead(msg.recipientId);
                         onClose();
                       }}
                     >
@@ -78,7 +78,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ onClose }) => {
                   )}
                   {!msg.isRead && (
                     <button
-                      onClick={() => markSystemMessageAsRead(msg.id)}
+                      onClick={() => markSystemMessageAsRead(msg.recipientId)}
                       className="text-gray-600 hover:underline text-sm"
                     >
                       Mark as Read

@@ -3,7 +3,6 @@ import {
   TrendingUp,
   TrendingDown,
   Target,
-
   BarChart3,
   Activity,
   RefreshCw,
@@ -12,7 +11,6 @@ import {
   Settings,
   AlertTriangle,
   CheckCircle,
-
   Eye,
   Filter,
 } from "lucide-react";
@@ -38,13 +36,13 @@ const MetricsRightCard: React.FC<MetricsRightCardProps> = ({
   // const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
 
   // Simulate real-time data updates
-    useEffect(() => {
-      if (!selectedMetric || !isRealTime) return;
+  useEffect(() => {
+    if (!selectedMetric || !isRealTime) return;
 
-      // Placeholder for real-time update logic if needed in the future
+    // Placeholder for real-time update logic if needed in the future
 
-      return () => {};
-    }, [selectedMetric, isRealTime]);
+    return () => {};
+  }, [selectedMetric, isRealTime]);
 
   const formatValue = (value: number, unit: string) => {
     return `${value.toLocaleString()}${unit}`;

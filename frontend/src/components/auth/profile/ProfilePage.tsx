@@ -1,18 +1,27 @@
 // src/components/auth/profile/ProfilePage.tsx
 
-import React, { useState, useEffect } from 'react';
-import { User, MapPin, Phone, FileText, Briefcase, GraduationCap, Building, Shield } from 'lucide-react';
-import { useQuery } from '@apollo/client';
-import { GET_USER_PROFILE } from '../../../graphql/userProfile';
-import { ProfileAutosaveProvider } from './ProfileAutosaveProvider';
-import { PersonalInfoSection } from './PersonalInfoSection';
-import { AddressSection } from './AddressSection';
-import { ContactSection } from './ContactSection';
-import { BioSection } from './BioSection';
-import { ProfessionalSection } from './ProfessionalSection';
-import { EducationSection } from './EducationSection';
-import { WorkExperienceSection } from './WorkExperienceSection';
-import { SecuritySection } from './SecuritySection';
+import React, { useState, useEffect } from "react";
+import {
+  User,
+  MapPin,
+  Phone,
+  FileText,
+  Briefcase,
+  GraduationCap,
+  Building,
+  Shield,
+} from "lucide-react";
+import { useQuery } from "@apollo/client";
+import { GET_USER_PROFILE } from "../../../graphql/userProfile";
+import { ProfileAutosaveProvider } from "./ProfileAutosaveProvider";
+import { PersonalInfoSection } from "./PersonalInfoSection";
+import { AddressSection } from "./AddressSection";
+import { ContactSection } from "./ContactSection";
+import { BioSection } from "./BioSection";
+import { ProfessionalSection } from "./ProfessionalSection";
+import { EducationSection } from "./EducationSection";
+import { WorkExperienceSection } from "./WorkExperienceSection";
+import { SecuritySection } from "./SecuritySection";
 
 interface ProfileData {
   // Personal Info
@@ -33,9 +42,9 @@ interface ProfileData {
   // Contact
   phone?: string;
   phone_country_code?: string;
-  phone_type?: 'mobile' | 'home' | 'work' | 'other';
+  phone_type?: "mobile" | "home" | "work" | "other";
   secondary_phone?: string;
-  secondary_phone_type?: 'mobile' | 'home' | 'work' | 'other';
+  secondary_phone_type?: "mobile" | "home" | "work" | "other";
 
   // Bio
   bio?: string;
@@ -60,22 +69,22 @@ interface ProfileData {
 }
 
 const tabs = [
-  { id: 'personal', label: 'Personal Info', icon: User },
-  { id: 'address', label: 'Address', icon: MapPin },
-  { id: 'contact', label: 'Contact', icon: Phone },
-  { id: 'bio', label: 'Bio & Links', icon: FileText },
-  { id: 'professional', label: 'Current Role', icon: Briefcase },
-  { id: 'education', label: 'Education', icon: GraduationCap },
-  { id: 'experience', label: 'Work History', icon: Building },
-  { id: 'security', label: 'Security', icon: Shield }
+  { id: "personal", label: "Personal Info", icon: User },
+  { id: "address", label: "Address", icon: MapPin },
+  { id: "contact", label: "Contact", icon: Phone },
+  { id: "bio", label: "Bio & Links", icon: FileText },
+  { id: "professional", label: "Current Role", icon: Briefcase },
+  { id: "education", label: "Education", icon: GraduationCap },
+  { id: "experience", label: "Work History", icon: Building },
+  { id: "security", label: "Security", icon: Shield },
 ];
 
 export const ProfilePage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('personal');
+  const [activeTab, setActiveTab] = useState("personal");
   const [profileData, setProfileData] = useState<ProfileData>({});
 
   const { data, loading, error, refetch } = useQuery(GET_USER_PROFILE, {
-    fetchPolicy: 'cache-and-network'
+    fetchPolicy: "cache-and-network",
   });
 
   useEffect(() => {
@@ -85,36 +94,39 @@ export const ProfilePage: React.FC = () => {
   }, [data]);
 
   const handlePersonalInfoChange = (field: string, value: string) => {
-    setProfileData(prev => ({ ...prev, [field]: value }));
+    setProfileData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleAddressChange = (field: string, value: string) => {
-    setProfileData(prev => ({ ...prev, [field]: value }));
+    setProfileData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleContactChange = (field: string, value: string) => {
-    setProfileData(prev => ({ ...prev, [field]: value }));
+    setProfileData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleBioChange = (field: string, value: string) => {
-    setProfileData(prev => ({ ...prev, [field]: value }));
+    setProfileData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleProfessionalChange = (field: string, value: string | string[]) => {
-    setProfileData(prev => ({ ...prev, [field]: value }));
+  const handleProfessionalChange = (
+    field: string,
+    value: string | string[],
+  ) => {
+    setProfileData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleEducationChange = (field: string, value: any[]) => {
-    setProfileData(prev => ({ ...prev, [field]: value }));
+    setProfileData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleWorkExperienceChange = (field: string, value: any[]) => {
-    setProfileData(prev => ({ ...prev, [field]: value }));
+    setProfileData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handlePasswordChange = async (passwordData: any) => {
     // Handle password change separately as it might need different mutation
-    console.log('Password change requested:', passwordData);
+    console.log("Password change requested:", passwordData);
     // Implement password change logic here
   };
 
@@ -142,19 +154,19 @@ export const ProfilePage: React.FC = () => {
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'personal':
+      case "personal":
         return (
           <PersonalInfoSection
             data={{
-              first_name: profileData.first_name || '',
-              last_name: profileData.last_name || '',
-              email: profileData.email || ''
+              first_name: profileData.first_name || "",
+              last_name: profileData.last_name || "",
+              email: profileData.email || "",
             }}
             onChange={handlePersonalInfoChange}
           />
         );
 
-      case 'address':
+      case "address":
         return (
           <AddressSection
             data={{
@@ -163,13 +175,13 @@ export const ProfilePage: React.FC = () => {
               city: profileData.city,
               zip_code: profileData.zip_code,
               street_address: profileData.address_line_1,
-              apartment_suite: profileData.address_line_2
+              apartment_suite: profileData.address_line_2,
             }}
             onChange={handleAddressChange}
           />
         );
 
-      case 'contact':
+      case "contact":
         return (
           <ContactSection
             data={{
@@ -177,13 +189,13 @@ export const ProfilePage: React.FC = () => {
               phone_country_code: profileData.phone_country_code,
               phone_type: profileData.phone_type,
               secondary_phone: profileData.secondary_phone,
-              secondary_phone_type: profileData.secondary_phone_type
+              secondary_phone_type: profileData.secondary_phone_type,
             }}
             onChange={handleContactChange}
           />
         );
 
-      case 'bio':
+      case "bio":
         return (
           <BioSection
             data={{
@@ -192,13 +204,13 @@ export const ProfilePage: React.FC = () => {
               website: profileData.website,
               linkedin: profileData.linkedin,
               twitter: profileData.twitter,
-              github: profileData.github
+              github: profileData.github,
             }}
             onChange={handleBioChange}
           />
         );
 
-      case 'professional':
+      case "professional":
         return (
           <ProfessionalSection
             data={{
@@ -208,38 +220,34 @@ export const ProfilePage: React.FC = () => {
               industry: profileData.industry,
               years_experience: profileData.years_experience,
               skills: profileData.skills,
-              certifications: profileData.certifications
+              certifications: profileData.certifications,
             }}
             onChange={handleProfessionalChange}
           />
         );
 
-      case 'education':
+      case "education":
         return (
           <EducationSection
             data={{
-              education: profileData.education
+              education: profileData.education,
             }}
             onChange={handleEducationChange}
           />
         );
 
-      case 'experience':
+      case "experience":
         return (
           <WorkExperienceSection
             data={{
-              work_experience: profileData.work_experience
+              work_experience: profileData.work_experience,
             }}
             onChange={handleWorkExperienceChange}
           />
         );
 
-      case 'security':
-        return (
-          <SecuritySection
-            onPasswordChange={handlePasswordChange}
-          />
-        );
+      case "security":
+        return <SecuritySection onPasswordChange={handlePasswordChange} />;
 
       default:
         return null;
@@ -251,7 +259,9 @@ export const ProfilePage: React.FC = () => {
       <div className="max-w-4xl mx-auto p-6">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">Profile Settings</h1>
-          <p className="text-gray-600 mt-1">Manage your personal information and preferences</p>
+          <p className="text-gray-600 mt-1">
+            Manage your personal information and preferences
+          </p>
         </div>
 
         {/* Tab Navigation */}
@@ -266,8 +276,8 @@ export const ProfilePage: React.FC = () => {
                     onClick={() => setActiveTab(tab.id)}
                     className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center ${
                       activeTab === tab.id
-                        ? 'border-purple-500 text-purple-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        ? "border-purple-500 text-purple-600"
+                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                     }`}
                   >
                     <Icon className="w-4 h-4 mr-2" />
@@ -280,9 +290,7 @@ export const ProfilePage: React.FC = () => {
         </div>
 
         {/* Tab Content */}
-        <div className="bg-gray-50 min-h-96">
-          {renderTabContent()}
-        </div>
+        <div className="bg-gray-50 min-h-96">{renderTabContent()}</div>
       </div>
     </ProfileAutosaveProvider>
   );

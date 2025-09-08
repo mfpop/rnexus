@@ -9,7 +9,7 @@ import {
   Settings,
   AlertTriangle,
 } from "lucide-react";
-import { useActivities, Activity } from "./ActivitiesContext";
+import { useActivities, ActivityExtended } from "./ActivitiesContext";
 import { activitiesApi } from "../../lib/activitiesApi";
 
 interface CreateActivityModalProps {
@@ -47,37 +47,59 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-  type: "Projects",
-    priority: "medium" as Activity["priority"],
+    type: "Projects",
+    priority: "medium" as ActivityExtended["priority"],
     start_date: new Date(),
     due_date: new Date(Date.now() + 3600000), // 1 hour from now
-    owner: { id: "user-001", username: "mihai", email: "mihai@nexus.com" },
+    owner: { id: "", username: "", email: "" },
     project: undefined,
     production_reference: undefined,
     tags: [""],
     category: "",
     cost: 0,
-  risk_level: "low",
+    risk_level: "low",
     completion_criteria: [""],
     milestones: [],
     checklists: [],
     time_logs: [],
     notes: "",
-    created_by: { id: "user-001", username: "mihai", email: "mihai@nexus.com" },
+    created_by: { id: "", username: "", email: "" },
   });
 
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [checklists, setChecklists] = useState<Checklist[]>([]);
-  const [activeTab, setActiveTab] = useState<"basic" | "advanced" | "milestones" | "checklists">("basic");
+  const [activeTab, setActiveTab] = useState<
+    "basic" | "advanced" | "milestones" | "checklists"
+  >("basic");
 
   // Map to the Activity.type union defined in ActivitiesContext
-  const activityTypes: { value: Activity["type"]; label: string; icon: React.ReactNode }[] = [
-    { value: "Projects", label: "Standalone", icon: <Target className="h-4 w-4" /> },
-    { value: "Projects", label: "Project Related", icon: <User className="h-4 w-4" /> },
-    { value: "Production", label: "Production Related", icon: <AlertTriangle className="h-4 w-4" /> },
+  const activityTypes: {
+    value: ActivityExtended["type"];
+    label: string;
+    icon: React.ReactNode;
+  }[] = [
+    {
+      value: "Projects",
+      label: "Standalone",
+      icon: <Target className="h-4 w-4" />,
+    },
+    {
+      value: "Projects",
+      label: "Project Related",
+      icon: <User className="h-4 w-4" />,
+    },
+    {
+      value: "Production",
+      label: "Production Related",
+      icon: <AlertTriangle className="h-4 w-4" />,
+    },
   ];
 
-  const priorityLevels: { value: Activity["priority"]; label: string; color: string }[] = [
+  const priorityLevels: {
+    value: ActivityExtended["priority"];
+    label: string;
+    color: string;
+  }[] = [
     { value: "low", label: "Low", color: "bg-green-100 text-green-800" },
     { value: "medium", label: "Medium", color: "bg-blue-100 text-blue-800" },
     { value: "high", label: "High", color: "bg-amber-100 text-amber-800" },
@@ -87,35 +109,45 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
   // risk levels are application-defined strings; use a generic string type here
   const riskLevels: { value: string; label: string; color: string }[] = [
     { value: "low", label: "Low", color: "bg-green-100 text-green-800" },
-    { value: "medium", label: "Medium", color: "bg-yellow-100 text-yellow-800" },
+    {
+      value: "medium",
+      label: "Medium",
+      color: "bg-yellow-100 text-yellow-800",
+    },
     { value: "high", label: "High", color: "bg-orange-100 text-orange-800" },
     { value: "critical", label: "Critical", color: "bg-red-100 text-red-800" },
   ];
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleArrayInputChange = (field: string, index: number, value: string) => {
-    setFormData(prev => ({
+  const handleArrayInputChange = (
+    field: string,
+    index: number,
+    value: string,
+  ) => {
+    setFormData((prev) => ({
       ...prev,
-      [field]: (prev[field as keyof typeof prev] as string[]).map((item: string, i: number) =>
-        i === index ? value : item
-      )
+      [field]: (prev[field as keyof typeof prev] as string[]).map(
+        (item: string, i: number) => (i === index ? value : item),
+      ),
     }));
   };
 
   const addArrayItem = (field: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: [...(prev[field as keyof typeof prev] as string[]), ""]
+      [field]: [...(prev[field as keyof typeof prev] as string[]), ""],
     }));
   };
 
   const removeArrayItem = (field: string, index: number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: (prev[field as keyof typeof prev] as string[]).filter((_, i) => i !== index)
+      [field]: (prev[field as keyof typeof prev] as string[]).filter(
+        (_, i) => i !== index,
+      ),
     }));
   };
 
@@ -130,10 +162,17 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
     setMilestones([...milestones, newMilestone]);
   };
 
-  const updateMilestone = (index: number, field: keyof Milestone, value: any) => {
+  const updateMilestone = (
+    index: number,
+    field: keyof Milestone,
+    value: any,
+  ) => {
     const updatedMilestones = [...milestones];
     // ensure we keep a valid Milestone shape when updating a single field
-    updatedMilestones[index] = ({ ...updatedMilestones[index], [field]: value } as Milestone);
+    updatedMilestones[index] = {
+      ...updatedMilestones[index],
+      [field]: value,
+    } as Milestone;
     setMilestones(updatedMilestones);
   };
 
@@ -150,9 +189,16 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
     setChecklists([...checklists, newChecklist]);
   };
 
-  const updateChecklist = (checklistIndex: number, field: keyof Checklist, value: any) => {
+  const updateChecklist = (
+    checklistIndex: number,
+    field: keyof Checklist,
+    value: any,
+  ) => {
     const updatedChecklists = [...checklists];
-    updatedChecklists[checklistIndex] = ({ ...updatedChecklists[checklistIndex], [field]: value } as Checklist);
+    updatedChecklists[checklistIndex] = {
+      ...updatedChecklists[checklistIndex],
+      [field]: value,
+    } as Checklist;
     setChecklists(updatedChecklists);
   };
 
@@ -170,11 +216,19 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
     setChecklists(updatedChecklists);
   };
 
-  const updateChecklistItem = (checklistIndex: number, itemIndex: number, field: keyof ChecklistItem, value: any) => {
+  const updateChecklistItem = (
+    checklistIndex: number,
+    itemIndex: number,
+    field: keyof ChecklistItem,
+    value: any,
+  ) => {
     const updatedChecklists = [...checklists];
     const checklist = updatedChecklists[checklistIndex];
     if (!checklist || !checklist.items) return;
-    checklist.items[itemIndex] = ({ ...checklist.items[itemIndex], [field]: value } as ChecklistItem);
+    checklist.items[itemIndex] = {
+      ...checklist.items[itemIndex],
+      [field]: value,
+    } as ChecklistItem;
     setChecklists(updatedChecklists);
   };
 
@@ -196,13 +250,21 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
     // Filter out empty values from arrays
     const cleanFormData = {
       ...formData,
-      tags: formData.tags.filter(item => item.trim() !== ""),
-      completion_criteria: formData.completion_criteria.filter(item => item.trim() !== ""),
+      tags: formData.tags.filter((item) => item.trim() !== ""),
+      completion_criteria: formData.completion_criteria.filter(
+        (item) => item.trim() !== "",
+      ),
     };
 
     // Filter out empty milestones and checklists
-    const cleanMilestones = milestones.filter(m => m.title.trim() !== "" && m.description.trim() !== "");
-    const cleanChecklists = checklists.filter(c => c.title.trim() !== "" && c.items.some(item => item.description.trim() !== ""));
+    const cleanMilestones = milestones.filter(
+      (m) => m.title.trim() !== "" && m.description.trim() !== "",
+    );
+    const cleanChecklists = checklists.filter(
+      (c) =>
+        c.title.trim() !== "" &&
+        c.items.some((item) => item.description.trim() !== ""),
+    );
 
     // The ActivitiesContext Activity type is narrower than the UI payload.
     // Create a backend-friendly payload and call the API directly, then refresh context.
@@ -235,7 +297,7 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
         await refreshActivities();
       }
     } catch (err) {
-      console.error('Failed to create activity', err);
+      console.error("Failed to create activity", err);
     }
 
     onClose();
@@ -250,7 +312,7 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
       priority: "medium",
       start_date: new Date(),
       due_date: new Date(Date.now() + 3600000),
-      owner: { id: "user-001", username: "mihai", email: "mihai@nexus.com" },
+      owner: { id: "", username: "", email: "" },
       project: undefined,
       production_reference: undefined,
       tags: [""],
@@ -260,10 +322,14 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
       completion_criteria: [""],
       milestones: [],
       checklists: [],
-          time_logs: [],
-    notes: "",
-    created_by: { id: "user-001", username: "mihai", email: "mihai@nexus.com" },
-  });
+      time_logs: [],
+      notes: "",
+      created_by: {
+        id: "",
+        username: "",
+        email: "",
+      },
+    });
     setMilestones([]);
     setChecklists([]);
     setActiveTab("basic");
@@ -272,11 +338,16 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div data-testid="create-activity-modal" className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div
+      data-testid="create-activity-modal"
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
       <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">Create New Activity</h2>
+          <h2 className="text-xl font-semibold text-gray-900">
+            Create New Activity
+          </h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -288,10 +359,26 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
         {/* Tabs */}
         <div className="flex border-b border-gray-200">
           {[
-            { key: "basic", label: "Basic Info", icon: <User className="h-4 w-4" /> },
-            { key: "advanced", label: "Advanced", icon: <Settings className="h-4 w-4" /> },
-            { key: "milestones", label: "Milestones", icon: <Target className="h-4 w-4" /> },
-            { key: "checklists", label: "Checklists", icon: <CheckSquare className="h-4 w-4" /> },
+            {
+              key: "basic",
+              label: "Basic Info",
+              icon: <User className="h-4 w-4" />,
+            },
+            {
+              key: "advanced",
+              label: "Advanced",
+              icon: <Settings className="h-4 w-4" />,
+            },
+            {
+              key: "milestones",
+              label: "Milestones",
+              icon: <Target className="h-4 w-4" />,
+            },
+            {
+              key: "checklists",
+              label: "Checklists",
+              icon: <CheckSquare className="h-4 w-4" />,
+            },
           ].map((tab) => (
             <button
               key={tab.key}
@@ -322,7 +409,9 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
                       type="text"
                       required
                       value={formData.title}
-                      onChange={(e) => handleInputChange("title", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("title", e.target.value)
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="Enter activity title"
                     />
@@ -334,7 +423,9 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
                     <textarea
                       required
                       value={formData.description}
-                      onChange={(e) => handleInputChange("description", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("description", e.target.value)
+                      }
                       rows={3}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="Describe the activity"
@@ -351,7 +442,9 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
                     <select
                       required
                       value={formData.type}
-                      onChange={(e) => handleInputChange("type", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("type", e.target.value)
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                       {activityTypes.map((type) => (
@@ -368,7 +461,9 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
                     <select
                       required
                       value={formData.priority}
-                      onChange={(e) => handleInputChange("priority", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("priority", e.target.value)
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                       {priorityLevels.map((priority) => (
@@ -390,7 +485,12 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
                       type="datetime-local"
                       required
                       value={formData.start_date.toISOString().slice(0, 16)}
-                      onChange={(e) => handleInputChange("start_date", new Date(e.target.value))}
+                      onChange={(e) =>
+                        handleInputChange(
+                          "start_date",
+                          new Date(e.target.value),
+                        )
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -402,17 +502,13 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
                       type="datetime-local"
                       required
                       value={formData.due_date.toISOString().slice(0, 16)}
-                      onChange={(e) => handleInputChange("due_date", new Date(e.target.value))}
+                      onChange={(e) =>
+                        handleInputChange("due_date", new Date(e.target.value))
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                 </div>
-
-
-
-
-
-
 
                 {/* Notes */}
                 <div>
@@ -441,7 +537,9 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
                     <input
                       type="text"
                       value={formData.category}
-                      onChange={(e) => handleInputChange("category", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("category", e.target.value)
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="Enter category"
                     />
@@ -455,7 +553,12 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
                       min="0"
                       step="0.01"
                       value={formData.cost}
-                      onChange={(e) => handleInputChange("cost", parseFloat(e.target.value) || 0)}
+                      onChange={(e) =>
+                        handleInputChange(
+                          "cost",
+                          parseFloat(e.target.value) || 0,
+                        )
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="0.00"
                     />
@@ -468,8 +571,10 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
                     Risk Level
                   </label>
                   <select
-                                          value={formData.risk_level}
-                      onChange={(e) => handleInputChange("risk_level", e.target.value)}
+                    value={formData.risk_level}
+                    onChange={(e) =>
+                      handleInputChange("risk_level", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     {riskLevels.map((risk) => (
@@ -490,7 +595,9 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
                       <input
                         type="text"
                         value={tag}
-                        onChange={(e) => handleArrayInputChange("tags", index, e.target.value)}
+                        onChange={(e) =>
+                          handleArrayInputChange("tags", index, e.target.value)
+                        }
                         className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         placeholder="Enter tag"
                       />
@@ -515,8 +622,6 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
                   </button>
                 </div>
 
-
-
                 {/* Completion Criteria */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -527,14 +632,22 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
                       <input
                         type="text"
                         value={criteria}
-                        onChange={(e) => handleArrayInputChange("completion_criteria", index, e.target.value)}
+                        onChange={(e) =>
+                          handleArrayInputChange(
+                            "completion_criteria",
+                            index,
+                            e.target.value,
+                          )
+                        }
                         className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         placeholder="Enter completion criteria"
                       />
                       {formData.completion_criteria.length > 1 && (
                         <button
                           type="button"
-                          onClick={() => removeArrayItem("completion_criteria", index)}
+                          onClick={() =>
+                            removeArrayItem("completion_criteria", index)
+                          }
                           className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -557,7 +670,9 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
             {activeTab === "milestones" && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium text-gray-900">Milestones</h3>
+                  <h3 className="text-lg font-medium text-gray-900">
+                    Milestones
+                  </h3>
                   <button
                     type="button"
                     onClick={addMilestone}
@@ -577,9 +692,14 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
                 ) : (
                   <div className="space-y-4">
                     {milestones.map((milestone, index) => (
-                      <div key={milestone.id} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                      <div
+                        key={milestone.id}
+                        className="bg-gray-50 p-4 rounded-lg border border-gray-200"
+                      >
                         <div className="flex items-center justify-between mb-3">
-                          <h4 className="font-medium text-gray-900">Milestone {index + 1}</h4>
+                          <h4 className="font-medium text-gray-900">
+                            Milestone {index + 1}
+                          </h4>
                           <button
                             type="button"
                             onClick={() => removeMilestone(index)}
@@ -592,21 +712,37 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
                           <input
                             type="text"
                             value={milestone.title}
-                            onChange={(e) => updateMilestone(index, "title", e.target.value)}
+                            onChange={(e) =>
+                              updateMilestone(index, "title", e.target.value)
+                            }
                             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             placeholder="Milestone title"
                           />
                           <textarea
                             value={milestone.description}
-                            onChange={(e) => updateMilestone(index, "description", e.target.value)}
+                            onChange={(e) =>
+                              updateMilestone(
+                                index,
+                                "description",
+                                e.target.value,
+                              )
+                            }
                             rows={2}
                             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             placeholder="Milestone description"
                           />
                           <input
                             type="datetime-local"
-                            value={milestone.due_date.toISOString().slice(0, 16)}
-                            onChange={(e) => updateMilestone(index, "due_date", new Date(e.target.value))}
+                            value={milestone.due_date
+                              .toISOString()
+                              .slice(0, 16)}
+                            onChange={(e) =>
+                              updateMilestone(
+                                index,
+                                "due_date",
+                                new Date(e.target.value),
+                              )
+                            }
                             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                           />
                         </div>
@@ -620,7 +756,9 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
             {activeTab === "checklists" && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium text-gray-900">Checklists</h3>
+                  <h3 className="text-lg font-medium text-gray-900">
+                    Checklists
+                  </h3>
                   <button
                     type="button"
                     onClick={addChecklist}
@@ -640,12 +778,21 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
                 ) : (
                   <div className="space-y-4">
                     {checklists.map((checklist, checklistIndex) => (
-                      <div key={checklist.id} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                      <div
+                        key={checklist.id}
+                        className="bg-gray-50 p-4 rounded-lg border border-gray-200"
+                      >
                         <div className="flex items-center justify-between mb-3">
                           <input
                             type="text"
                             value={checklist.title}
-                            onChange={(e) => updateChecklist(checklistIndex, "title", e.target.value)}
+                            onChange={(e) =>
+                              updateChecklist(
+                                checklistIndex,
+                                "title",
+                                e.target.value,
+                              )
+                            }
                             className="text-lg font-medium text-gray-900 bg-transparent border-none focus:ring-0 px-0 py-0"
                             placeholder="Checklist title"
                           />
@@ -660,31 +807,64 @@ const CreateActivityModal: React.FC<CreateActivityModalProps> = ({
 
                         <div className="space-y-2">
                           {checklist.items.map((item, itemIndex) => (
-                            <div key={item.id} className="flex items-center gap-2">
+                            <div
+                              key={item.id}
+                              className="flex items-center gap-2"
+                            >
                               <input
                                 type="checkbox"
                                 checked={item.completed}
-                                onChange={(e) => updateChecklistItem(checklistIndex, itemIndex, "completed", e.target.checked)}
+                                onChange={(e) =>
+                                  updateChecklistItem(
+                                    checklistIndex,
+                                    itemIndex,
+                                    "completed",
+                                    e.target.checked,
+                                  )
+                                }
                                 className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                               />
                               <input
                                 type="text"
                                 value={item.description}
-                                onChange={(e) => updateChecklistItem(checklistIndex, itemIndex, "description", e.target.value)}
+                                onChange={(e) =>
+                                  updateChecklistItem(
+                                    checklistIndex,
+                                    itemIndex,
+                                    "description",
+                                    e.target.value,
+                                  )
+                                }
                                 className="flex-1 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 placeholder="Item description"
                               />
                               <input
                                 type="text"
                                 value={item.assignee?.username || ""}
-                                onChange={(e) => updateChecklistItem(checklistIndex, itemIndex, "assignee", { id: "user-001", username: e.target.value, email: "user@example.com" })}
+                                onChange={(e) =>
+                                  updateChecklistItem(
+                                    checklistIndex,
+                                    itemIndex,
+                                    "assignee",
+                                    {
+                                      id: "user-001",
+                                      username: e.target.value,
+                                      email: "user@example.com",
+                                    },
+                                  )
+                                }
                                 className="w-32 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 placeholder="Assigned to"
                               />
                               {checklist.items.length > 1 && (
                                 <button
                                   type="button"
-                                  onClick={() => removeChecklistItem(checklistIndex, itemIndex)}
+                                  onClick={() =>
+                                    removeChecklistItem(
+                                      checklistIndex,
+                                      itemIndex,
+                                    )
+                                  }
                                   className="p-1 text-red-600 hover:bg-red-100 rounded"
                                 >
                                   <Trash2 className="h-3 w-3" />

@@ -1,5 +1,18 @@
-import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
-import { Call, CallType, CallUser, CallControlsState, WebRTCConnection } from '../types/CallTypes';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useRef,
+  useEffect,
+} from "react";
+import {
+  Call,
+  CallType,
+  CallUser,
+  CallControlsState,
+  WebRTCConnection,
+} from "../types/CallTypes";
 
 interface CallContextType {
   // Current call state
@@ -30,11 +43,13 @@ const CallContext = createContext<CallContextType | undefined>(undefined);
 
 // WebRTC Configuration
 const ICE_SERVERS = [
-  { urls: 'stun:stun.l.google.com:19302' },
-  { urls: 'stun:stun1.l.google.com:19302' },
+  { urls: "stun:stun.l.google.com:19302" },
+  { urls: "stun:stun1.l.google.com:19302" },
 ];
 
-export const CallProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const CallProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [currentCall, setCurrentCall] = useState<Call | null>(null);
   const [callControls, setCallControls] = useState<CallControlsState>({
     muted: false,
@@ -60,20 +75,21 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({ children
         video: isVideoCall,
       };
 
-      const localStream = await navigator.mediaDevices.getUserMedia(constraints);
+      const localStream =
+        await navigator.mediaDevices.getUserMedia(constraints);
 
       // Create peer connection
       const peerConnection = new RTCPeerConnection({ iceServers: ICE_SERVERS });
 
       // Add local stream to peer connection
-      localStream.getTracks().forEach(track => {
+      localStream.getTracks().forEach((track) => {
         peerConnection.addTrack(track, localStream);
       });
 
       // Handle remote stream
       peerConnection.ontrack = (event) => {
         const [remoteStream] = event.streams;
-        setWebRTCConnection(prev => ({ ...prev, remoteStream }));
+        setWebRTCConnection((prev) => ({ ...prev, remoteStream }));
 
         if (remoteVideoRef.current && remoteStream) {
           remoteVideoRef.current.srcObject = remoteStream;
@@ -84,16 +100,16 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({ children
       peerConnection.onicecandidate = (event) => {
         if (event.candidate) {
           // Send ICE candidate to remote peer via signaling server
-          console.log('ICE Candidate:', event.candidate);
+          console.log("ICE Candidate:", event.candidate);
         }
       };
 
       // Handle connection state changes
       peerConnection.onconnectionstatechange = () => {
-        console.log('Connection State:', peerConnection.connectionState);
-        setWebRTCConnection(prev => ({
+        console.log("Connection State:", peerConnection.connectionState);
+        setWebRTCConnection((prev) => ({
           ...prev,
-          isConnected: peerConnection.connectionState === 'connected'
+          isConnected: peerConnection.connectionState === "connected",
         }));
       };
 
@@ -110,73 +126,83 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       return { localStream, peerConnection };
     } catch (error) {
-      console.error('Error initializing WebRTC:', error);
+      console.error("Error initializing WebRTC:", error);
       throw error;
     }
   }, []);
 
   // Start a call
-  const startCall = useCallback(async (receiver: CallUser, type: CallType) => {
-    try {
-      const callId = `call-${Date.now()}`;
-      const isVideoCall = type === 'video';
+  const startCall = useCallback(
+    async (receiver: CallUser, type: CallType) => {
+      try {
+        const callId = `call-${Date.now()}`;
+        const isVideoCall = type === "video";
 
-      // Initialize WebRTC
-      await initializeWebRTC(isVideoCall);
+        // Initialize WebRTC
+        await initializeWebRTC(isVideoCall);
 
-      const newCall: Call = {
-        id: callId,
-        type,
-        status: 'calling',
-        caller: {
-          id: 'current-user', // Should come from auth context
-          name: 'You',
-        },
-        receiver,
-        participants: [],
-        isIncoming: false,
-        startTime: new Date(),
-      };
+        const newCall: Call = {
+          id: callId,
+          type,
+          status: "calling",
+          caller: {
+            id: "current-user", // Should come from auth context
+            name: "You",
+          },
+          receiver,
+          participants: [],
+          isIncoming: false,
+          startTime: new Date(),
+        };
 
-      setCurrentCall(newCall);
-      setCallControls({
-        muted: false,
-        videoEnabled: isVideoCall,
-        screenSharing: false,
-        recording: false,
-      });
+        setCurrentCall(newCall);
+        setCallControls({
+          muted: false,
+          videoEnabled: isVideoCall,
+          screenSharing: false,
+          recording: false,
+        });
 
-      // Here you would send the call invitation via WebSocket/Socket.IO
-      console.log(`Starting ${type} call to ${receiver.name}...`);
+        // Here you would send the call invitation via WebSocket/Socket.IO
+        console.log(`Starting ${type} call to ${receiver.name}...`);
 
-      // Simulate call being answered after 3 seconds for demo
-      setTimeout(() => {
-        setCurrentCall(prev => prev ? { ...prev, status: 'connected' } : null);
-        startCallDurationTimer();
-      }, 3000);
-
-    } catch (error) {
-      console.error('Error starting call:', error);
-      alert('Failed to start call. Please check your camera/microphone permissions.');
-    }
-  }, [initializeWebRTC]);
+        // Simulate call being answered after 3 seconds for demo
+        setTimeout(() => {
+          setCurrentCall((prev) =>
+            prev ? { ...prev, status: "connected" } : null,
+          );
+          startCallDurationTimer();
+        }, 3000);
+      } catch (error) {
+        console.error("Error starting call:", error);
+        alert(
+          "Failed to start call. Please check your camera/microphone permissions.",
+        );
+      }
+    },
+    [initializeWebRTC],
+  );
 
   // Accept incoming call
   const acceptCall = useCallback(async () => {
-    if (!currentCall || currentCall.status !== 'ringing') return;
+    if (!currentCall || currentCall.status !== "ringing") return;
 
     try {
-      await initializeWebRTC(currentCall.type === 'video');
+      await initializeWebRTC(currentCall.type === "video");
 
-      setCurrentCall(prev => prev ? {
-        ...prev,
-        status: 'connected',
-        startTime: new Date()
-      } : null);
+      setCurrentCall((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: "connected",
+              startTime: new Date(),
+            }
+          : null,
+      );
 
       startCallDurationTimer();
     } catch (error) {
-      console.error('Error accepting call:', error);
+      console.error("Error accepting call:", error);
       await endCall();
     }
   }, [currentCall, initializeWebRTC]);
@@ -185,11 +211,15 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const declineCall = useCallback(async () => {
     if (!currentCall) return;
 
-    setCurrentCall(prev => prev ? {
-      ...prev,
-      status: 'declined',
-      endTime: new Date()
-    } : null);
+    setCurrentCall((prev) =>
+      prev
+        ? {
+            ...prev,
+            status: "declined",
+            endTime: new Date(),
+          }
+        : null,
+    );
 
     // Clean up after a short delay
     setTimeout(() => {
@@ -209,18 +239,22 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Clean up WebRTC connection
     if (webrtcConnection.localStream) {
-      webrtcConnection.localStream.getTracks().forEach(track => track.stop());
+      webrtcConnection.localStream.getTracks().forEach((track) => track.stop());
     }
 
     if (webrtcConnection.peerConnection) {
       webrtcConnection.peerConnection.close();
     }
 
-    setCurrentCall(prev => prev ? {
-      ...prev,
-      status: 'ended',
-      endTime: new Date()
-    } : null);
+    setCurrentCall((prev) =>
+      prev
+        ? {
+            ...prev,
+            status: "ended",
+            endTime: new Date(),
+          }
+        : null,
+    );
 
     setWebRTCConnection({ isConnected: false });
     setCallDuration(0);
@@ -237,7 +271,7 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const audioTrack = webrtcConnection.localStream.getAudioTracks()[0];
       if (audioTrack) {
         audioTrack.enabled = !audioTrack.enabled;
-        setCallControls(prev => ({ ...prev, muted: !audioTrack.enabled }));
+        setCallControls((prev) => ({ ...prev, muted: !audioTrack.enabled }));
       }
     }
   }, [webrtcConnection.localStream]);
@@ -248,7 +282,10 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const videoTrack = webrtcConnection.localStream.getVideoTracks()[0];
       if (videoTrack) {
         videoTrack.enabled = !videoTrack.enabled;
-        setCallControls(prev => ({ ...prev, videoEnabled: videoTrack.enabled }));
+        setCallControls((prev) => ({
+          ...prev,
+          videoEnabled: videoTrack.enabled,
+        }));
       }
     }
   }, [webrtcConnection.localStream]);
@@ -265,8 +302,9 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Replace video track with screen share
         if (webrtcConnection.peerConnection) {
-          const videoSender = webrtcConnection.peerConnection.getSenders()
-            .find(sender => sender.track?.kind === 'video');
+          const videoSender = webrtcConnection.peerConnection
+            .getSenders()
+            .find((sender) => sender.track?.kind === "video");
 
           const screenVideoTrack = screenStream.getVideoTracks()[0];
           if (videoSender && screenVideoTrack) {
@@ -274,19 +312,21 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
 
-        setCallControls(prev => ({ ...prev, screenSharing: true }));
+        setCallControls((prev) => ({ ...prev, screenSharing: true }));
 
         // Handle screen share end
         const screenVideoTrack = screenStream.getVideoTracks()[0];
         if (screenVideoTrack) {
           screenVideoTrack.onended = () => {
-            setCallControls(prev => ({ ...prev, screenSharing: false }));
+            setCallControls((prev) => ({ ...prev, screenSharing: false }));
             // Restore camera if video was enabled
             if (callControls.videoEnabled && webrtcConnection.localStream) {
-              const videoTrack = webrtcConnection.localStream.getVideoTracks()[0];
+              const videoTrack =
+                webrtcConnection.localStream.getVideoTracks()[0];
               if (videoTrack && webrtcConnection.peerConnection) {
-                const videoSender = webrtcConnection.peerConnection.getSenders()
-                  .find(sender => sender.track?.kind === 'video');
+                const videoSender = webrtcConnection.peerConnection
+                  .getSenders()
+                  .find((sender) => sender.track?.kind === "video");
                 if (videoSender) {
                   videoSender.replaceTrack(videoTrack);
                 }
@@ -298,44 +338,48 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Stop screen sharing
         if (webrtcConnection.localStream && webrtcConnection.peerConnection) {
           const videoTrack = webrtcConnection.localStream.getVideoTracks()[0];
-          const videoSender = webrtcConnection.peerConnection.getSenders()
-            .find(sender => sender.track?.kind === 'video');
+          const videoSender = webrtcConnection.peerConnection
+            .getSenders()
+            .find((sender) => sender.track?.kind === "video");
 
           if (videoSender && videoTrack) {
             await videoSender.replaceTrack(videoTrack);
           }
         }
-        setCallControls(prev => ({ ...prev, screenSharing: false }));
+        setCallControls((prev) => ({ ...prev, screenSharing: false }));
       }
     } catch (error) {
-      console.error('Error toggling screen share:', error);
+      console.error("Error toggling screen share:", error);
     }
   }, [callControls.screenSharing, callControls.videoEnabled, webrtcConnection]);
 
   // Simulate incoming call for testing
-  const simulateIncomingCall = useCallback((caller: CallUser, type: CallType) => {
-    const callId = `incoming-call-${Date.now()}`;
+  const simulateIncomingCall = useCallback(
+    (caller: CallUser, type: CallType) => {
+      const callId = `incoming-call-${Date.now()}`;
 
-    const incomingCall: Call = {
-      id: callId,
-      type,
-      status: 'ringing',
-      caller,
-      receiver: {
-        id: 'current-user',
-        name: 'You',
-      },
-      participants: [],
-      isIncoming: true,
-    };
+      const incomingCall: Call = {
+        id: callId,
+        type,
+        status: "ringing",
+        caller,
+        receiver: {
+          id: "current-user",
+          name: "You",
+        },
+        participants: [],
+        isIncoming: true,
+      };
 
-    setCurrentCall(incomingCall);
-  }, []);
+      setCurrentCall(incomingCall);
+    },
+    [],
+  );
 
   // Start call duration timer
   const startCallDurationTimer = useCallback(() => {
     durationIntervalRef.current = setInterval(() => {
-      setCallDuration(prev => prev + 1);
+      setCallDuration((prev) => prev + 1);
     }, 1000);
   }, []);
 
@@ -346,7 +390,9 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({ children
         clearInterval(durationIntervalRef.current);
       }
       if (webrtcConnection.localStream) {
-        webrtcConnection.localStream.getTracks().forEach(track => track.stop());
+        webrtcConnection.localStream
+          .getTracks()
+          .forEach((track) => track.stop());
       }
       if (webrtcConnection.peerConnection) {
         webrtcConnection.peerConnection.close();
@@ -354,7 +400,7 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, [webrtcConnection]);
 
-  const isCallActive = currentCall?.status === 'connected';
+  const isCallActive = currentCall?.status === "connected";
 
   const value: CallContextType = {
     currentCall,
@@ -378,7 +424,7 @@ export const CallProvider: React.FC<{ children: React.ReactNode }> = ({ children
 export const useCall = (): CallContextType => {
   const context = useContext(CallContext);
   if (!context) {
-    throw new Error('useCall must be used within a CallProvider');
+    throw new Error("useCall must be used within a CallProvider");
   }
   return context;
 };

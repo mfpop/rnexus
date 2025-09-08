@@ -152,22 +152,46 @@ const ProjectsRightCard: React.FC<ProjectsRightCardProps> = ({
         {/* Background decorative elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-20 -right-20 w-40 h-40 bg-purple-100 rounded-full opacity-20 animate-pulse"></div>
-          <div className="absolute top-1/4 -left-16 w-32 h-32 bg-pink-100 rounded-full opacity-30 animate-bounce" style={{ animationDuration: '3s' }}></div>
-          <div className="absolute bottom-1/4 -right-12 w-24 h-24 bg-blue-100 rounded-full opacity-25 animate-ping" style={{ animationDuration: '4s' }}></div>
-          <div className="absolute bottom-10 left-1/4 w-16 h-16 bg-indigo-100 rounded-full opacity-20 animate-pulse" style={{ animationDelay: '1s' }}></div>
-          <div className="absolute top-1/3 right-1/3 w-8 h-8 bg-orange-100 rounded-full opacity-30 animate-bounce" style={{ animationDuration: '2s', animationDelay: '0.5s' }}></div>
-          <div className="absolute bottom-1/3 left-1/3 w-12 h-12 bg-teal-100 rounded-full opacity-25 animate-ping" style={{ animationDuration: '3s', animationDelay: '1.5s' }}></div>
+          <div
+            className="absolute top-1/4 -left-16 w-32 h-32 bg-pink-100 rounded-full opacity-30 animate-bounce"
+            style={{ animationDuration: "3s" }}
+          ></div>
+          <div
+            className="absolute bottom-1/4 -right-12 w-24 h-24 bg-blue-100 rounded-full opacity-25 animate-ping"
+            style={{ animationDuration: "4s" }}
+          ></div>
+          <div
+            className="absolute bottom-10 left-1/4 w-16 h-16 bg-indigo-100 rounded-full opacity-20 animate-pulse"
+            style={{ animationDelay: "1s" }}
+          ></div>
+          <div
+            className="absolute top-1/3 right-1/3 w-8 h-8 bg-orange-100 rounded-full opacity-30 animate-bounce"
+            style={{ animationDuration: "2s", animationDelay: "0.5s" }}
+          ></div>
+          <div
+            className="absolute bottom-1/3 left-1/3 w-12 h-12 bg-teal-100 rounded-full opacity-25 animate-ping"
+            style={{ animationDuration: "3s", animationDelay: "1.5s" }}
+          ></div>
         </div>
 
         <div className="text-center max-w-md relative z-10">
           {/* Large Icon */}
           <div className="relative mb-8">
             <div className="w-32 h-32 bg-gradient-to-br from-purple-100 to-purple-200 rounded-full flex items-center justify-center mx-auto shadow-lg animate-pulse">
-              <Target className="h-16 w-16 text-purple-600 animate-bounce" style={{ animationDuration: '2s' }} />
+              <Target
+                className="h-16 w-16 text-purple-600 animate-bounce"
+                style={{ animationDuration: "2s" }}
+              />
             </div>
             {/* Decorative elements */}
-            <div className="absolute -top-2 -right-2 w-6 h-6 bg-blue-400 rounded-full opacity-60 animate-ping" style={{ animationDuration: '3s' }}></div>
-            <div className="absolute -bottom-1 -left-1 w-4 h-4 bg-pink-400 rounded-full opacity-60 animate-ping" style={{ animationDuration: '2s', animationDelay: '1s' }}></div>
+            <div
+              className="absolute -top-2 -right-2 w-6 h-6 bg-blue-400 rounded-full opacity-60 animate-ping"
+              style={{ animationDuration: "3s" }}
+            ></div>
+            <div
+              className="absolute -bottom-1 -left-1 w-4 h-4 bg-pink-400 rounded-full opacity-60 animate-ping"
+              style={{ animationDuration: "2s", animationDelay: "1s" }}
+            ></div>
           </div>
 
           {/* Main Message */}
@@ -184,28 +208,36 @@ const ProjectsRightCard: React.FC<ProjectsRightCardProps> = ({
               <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-2">
                 <TrendingUp className="h-5 w-5 text-green-600" />
               </div>
-              <h3 className="font-semibold text-gray-800 text-sm">Track Progress</h3>
+              <h3 className="font-semibold text-gray-800 text-sm">
+                Track Progress
+              </h3>
               <p className="text-xs text-gray-600">Monitor milestones</p>
             </div>
             <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
               <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
                 <Users className="h-5 w-5 text-blue-600" />
               </div>
-              <h3 className="font-semibold text-gray-800 text-sm">Team Management</h3>
+              <h3 className="font-semibold text-gray-800 text-sm">
+                Team Management
+              </h3>
               <p className="text-xs text-gray-600">Coordinate team members</p>
             </div>
             <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
               <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2">
                 <DollarSign className="h-5 w-5 text-purple-600" />
               </div>
-              <h3 className="font-semibold text-gray-800 text-sm">Budget Tracking</h3>
+              <h3 className="font-semibold text-gray-800 text-sm">
+                Budget Tracking
+              </h3>
               <p className="text-xs text-gray-600">Monitor expenses</p>
             </div>
             <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
               <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-2">
                 <AlertTriangle className="h-5 w-5 text-orange-600" />
               </div>
-              <h3 className="font-semibold text-gray-800 text-sm">Risk Management</h3>
+              <h3 className="font-semibold text-gray-800 text-sm">
+                Risk Management
+              </h3>
               <p className="text-xs text-gray-600">Identify & mitigate risks</p>
             </div>
           </div>

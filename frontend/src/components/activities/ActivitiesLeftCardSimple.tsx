@@ -1,10 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import {
-  Search,
-  RefreshCw,
-  Filter,
-  ArrowUpDown,
-} from "lucide-react";
+import { Search, RefreshCw, Filter, ArrowUpDown } from "lucide-react";
 import CreateActivityModal from "./CreateActivityModal";
 
 import { useActivities } from "./ActivitiesContext";
@@ -19,22 +14,27 @@ const ActivitiesLeftCardSimple: React.FC = () => {
     selectedActivity,
     setSelectedActivity = () => {},
     loading = false,
-    error
+    error,
   } = useActivities();
+
+  // Debug logging
+  console.log("DEBUG: ActivitiesLeftCardSimple - activities:", activities.length);
+  console.log("DEBUG: ActivitiesLeftCardSimple - loading:", loading);
+  console.log("DEBUG: ActivitiesLeftCardSimple - error:", error);
 
   // Helper function to convert backend types to display types
   const getDisplayType = (backendType: string): string => {
     const typeMap: Record<string, string> = {
-      'PROJECTS': 'Projects',
-      'TRAINING': 'Training',
-      'ADMIN_SYSTEMS': 'Admin & Systems',
-      'ENGINEERING': 'Engineering',
-      'QUALITY': 'Quality',
-      'PRODUCTION': 'Production',
-      'MAINTENANCE': 'Maintenance',
-      'LOGISTICS': 'Logistics',
-      'MEETINGS': 'Meetings',
-      'INSPECTION_AUDIT': 'Inspection & Audit'
+      PROJECTS: "Projects",
+      TRAINING: "Training",
+      ADMIN_SYSTEMS: "Admin & Systems",
+      ENGINEERING: "Engineering",
+      QUALITY: "Quality",
+      PRODUCTION: "Production",
+      MAINTENANCE: "Maintenance",
+      LOGISTICS: "Logistics",
+      MEETINGS: "Meetings",
+      INSPECTION_AUDIT: "Inspection & Audit",
     };
     return typeMap[backendType] || backendType;
   };
@@ -44,7 +44,9 @@ const ActivitiesLeftCardSimple: React.FC = () => {
     "all" | "today" | "upcoming" | "overdue"
   >("all");
 
-  const [sortBy, setSortBy] = useState<"title" | "status" | "priority" | "startTime" | "assignedTo">("startTime");
+  const [sortBy, setSortBy] = useState<
+    "title" | "status" | "priority" | "startTime" | "assignedTo"
+  >("startTime");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<string | null>(null);
@@ -59,12 +61,10 @@ const ActivitiesLeftCardSimple: React.FC = () => {
     recordsPerPage,
     goToPage,
     setRecordsPerPage,
-    updatePagination
+    updatePagination,
   } = usePagination();
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
-  const debugRef = useRef<{ lastAvailable?: number; lastCardHeight?: number }>({});
-  const [debug, setDebug] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Dynamically calculate optimal records per page based on actual DOM measurements
@@ -87,13 +87,13 @@ const ActivitiesLeftCardSimple: React.FC = () => {
         available = Math.max(0, container.clientHeight - listTop - 8);
       }
 
-      const sample = container.querySelector('.activity-card') as HTMLElement | null;
+      const sample = container.querySelector(
+        ".activity-card",
+      ) as HTMLElement | null;
       const cardHeight = sample ? sample.offsetHeight : DEFAULT_CARD_HEIGHT;
 
       const computed = Math.max(1, Math.floor(available / cardHeight));
 
-      debugRef.current.lastAvailable = available;
-      debugRef.current.lastCardHeight = cardHeight;
 
       setRecordsPerPage(computed);
     };
@@ -112,13 +112,13 @@ const ActivitiesLeftCardSimple: React.FC = () => {
       if (listRef.current) ro.observe(listRef.current);
     }
 
-    window.addEventListener('resize', scheduleCalc);
+    window.addEventListener("resize", scheduleCalc);
     scheduleCalc();
     const t = setTimeout(scheduleCalc, 300);
 
     return () => {
       clearTimeout(t);
-      window.removeEventListener('resize', scheduleCalc);
+      window.removeEventListener("resize", scheduleCalc);
       if (ro) {
         ro.disconnect();
         ro = null;
@@ -130,15 +130,27 @@ const ActivitiesLeftCardSimple: React.FC = () => {
   // Manufacturing activity types from the JSON file
   const manufacturingActivityTypes = [
     { type: "Production", examples: ["Assembly", "Setup", "Trials"] },
-    { type: "Maintenance", examples: ["Preventive", "Corrective", "Calibration"] },
-    { type: "Inspection & Audit", examples: ["Quality checks", "ISO", "Safety audits"] },
+    {
+      type: "Maintenance",
+      examples: ["Preventive", "Corrective", "Calibration"],
+    },
+    {
+      type: "Inspection & Audit",
+      examples: ["Quality checks", "ISO", "Safety audits"],
+    },
     { type: "Engineering", examples: ["Tooling", "Layout", "Process changes"] },
-    { type: "Logistics", examples: ["Material flow", "Inventory", "Warehouse"] },
+    {
+      type: "Logistics",
+      examples: ["Material flow", "Inventory", "Warehouse"],
+    },
     { type: "Quality", examples: ["RCA", "CAPA", "FMEA", "Control plans"] },
     { type: "Meetings", examples: ["Stand-ups", "Reviews", "Calls"] },
     { type: "Projects", examples: ["NPI", "Automation", "Lean/Six Sigma"] },
     { type: "Training", examples: ["Safety", "Technical", "Onboarding"] },
-    { type: "Admin & Systems", examples: ["Reports", "ERP/MES", "Documentation"] }
+    {
+      type: "Admin & Systems",
+      examples: ["Reports", "ERP/MES", "Documentation"],
+    },
   ];
 
   // Filter and sort activities based on current state
@@ -147,10 +159,13 @@ const ActivitiesLeftCardSimple: React.FC = () => {
 
     // Apply search filter
     if (searchQuery) {
-      filtered = filtered.filter(activity =>
-        activity.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        activity.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        activity.assignedTo.toLowerCase().includes(searchQuery.toLowerCase())
+      filtered = filtered.filter(
+        (activity) =>
+          activity.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          activity.description
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          activity.assignedTo.toLowerCase().includes(searchQuery.toLowerCase()),
       );
     }
 
@@ -161,21 +176,21 @@ const ActivitiesLeftCardSimple: React.FC = () => {
 
     switch (activeTab) {
       case "today":
-        filtered = filtered.filter(activity => {
+        filtered = filtered.filter((activity) => {
           const startDate = new Date(activity.startTime);
           return startDate >= today && startDate < tomorrow;
         });
         break;
       case "upcoming":
-        filtered = filtered.filter(activity => {
+        filtered = filtered.filter((activity) => {
           const startDate = new Date(activity.startTime);
           return startDate >= tomorrow;
         });
         break;
       case "overdue":
-        filtered = filtered.filter(activity => {
+        filtered = filtered.filter((activity) => {
           const endDate = new Date(activity.endTime);
-          return endDate < now && activity.status !== 'completed';
+          return endDate < now && activity.status !== "completed";
         });
         break;
       default:
@@ -186,42 +201,46 @@ const ActivitiesLeftCardSimple: React.FC = () => {
     if (selectedType) {
       // Map display type back to backend type for comparison
       const backendType = Object.keys({
-        'PROJECTS': 'Projects',
-        'TRAINING': 'Training',
-        'ADMIN_SYSTEMS': 'Admin & Systems',
-        'ENGINEERING': 'Engineering',
-        'QUALITY': 'Quality',
-        'PRODUCTION': 'Production',
-        'MAINTENANCE': 'Maintenance',
-        'LOGISTICS': 'Logistics',
-        'MEETINGS': 'Meetings',
-        'INSPECTION_AUDIT': 'Inspection & Audit'
-      }).find(key => {
+        PROJECTS: "Projects",
+        TRAINING: "Training",
+        ADMIN_SYSTEMS: "Admin & Systems",
+        ENGINEERING: "Engineering",
+        QUALITY: "Quality",
+        PRODUCTION: "Production",
+        MAINTENANCE: "Maintenance",
+        LOGISTICS: "Logistics",
+        MEETINGS: "Meetings",
+        INSPECTION_AUDIT: "Inspection & Audit",
+      }).find((key) => {
         const displayMap: Record<string, string> = {
-          'PROJECTS': 'Projects',
-          'TRAINING': 'Training',
-          'ADMIN_SYSTEMS': 'Admin & Systems',
-          'ENGINEERING': 'Engineering',
-          'QUALITY': 'Quality',
-          'PRODUCTION': 'Production',
-          'MAINTENANCE': 'Maintenance',
-          'LOGISTICS': 'Logistics',
-          'MEETINGS': 'Meetings',
-          'INSPECTION_AUDIT': 'Inspection & Audit'
+          PROJECTS: "Projects",
+          TRAINING: "Training",
+          ADMIN_SYSTEMS: "Admin & Systems",
+          ENGINEERING: "Engineering",
+          QUALITY: "Quality",
+          PRODUCTION: "Production",
+          MAINTENANCE: "Maintenance",
+          LOGISTICS: "Logistics",
+          MEETINGS: "Meetings",
+          INSPECTION_AUDIT: "Inspection & Audit",
         };
         return displayMap[key] === selectedType;
       });
-      filtered = filtered.filter(activity => activity.type === backendType);
+      filtered = filtered.filter((activity) => activity.type === backendType);
     }
 
     // Apply status filter
     if (selectedStatus) {
-      filtered = filtered.filter(activity => activity.status === selectedStatus);
+      filtered = filtered.filter(
+        (activity) => activity.status === selectedStatus,
+      );
     }
 
     // Apply priority filter
     if (selectedPriority) {
-      filtered = filtered.filter(activity => activity.priority === selectedPriority);
+      filtered = filtered.filter(
+        (activity) => activity.priority === selectedPriority,
+      );
     }
 
     // Sort activities
@@ -263,28 +282,47 @@ const ActivitiesLeftCardSimple: React.FC = () => {
     });
 
     return filtered;
-  }, [activities, searchQuery, activeTab, selectedType, selectedStatus, selectedPriority, sortBy, sortOrder]);
+  }, [
+    activities,
+    searchQuery,
+    activeTab,
+    selectedType,
+    selectedStatus,
+    selectedPriority,
+    sortBy,
+    sortOrder,
+  ]);
 
   // Pagination logic
   const startIndex = (currentPage - 1) * recordsPerPage;
   const endIndex = startIndex + recordsPerPage;
-  const paginatedActivities = filteredAndSortedActivities.slice(startIndex, endIndex);
+  const paginatedActivities = filteredAndSortedActivities.slice(
+    startIndex,
+    endIndex,
+  );
 
   // Update pagination context when data changes
   React.useEffect(() => {
     updatePagination({
       totalRecords: filteredAndSortedActivities.length,
-      totalPages: Math.max(1, Math.ceil(filteredAndSortedActivities.length / recordsPerPage)),
+      totalPages: Math.max(
+        1,
+        Math.ceil(filteredAndSortedActivities.length / recordsPerPage),
+      ),
     });
   }, [filteredAndSortedActivities.length, recordsPerPage, updatePagination]);
 
   // Reset to first page when filters change
   React.useEffect(() => {
     goToPage(1);
-  }, [searchQuery, activeTab, selectedType, selectedStatus, selectedPriority, goToPage]);
-
-
-
+  }, [
+    searchQuery,
+    activeTab,
+    selectedType,
+    selectedStatus,
+    selectedPriority,
+    goToPage,
+  ]);
 
   const getStatusBulletColor = (status: string) => {
     switch (status) {
@@ -330,8 +368,6 @@ const ActivitiesLeftCardSimple: React.FC = () => {
     }
   };
 
-
-
   const isToday = (date: Date) => {
     const today = new Date();
     return date.toDateString() === today.toDateString();
@@ -343,12 +379,6 @@ const ActivitiesLeftCardSimple: React.FC = () => {
     const nextWeek = new Date(now.getTime() + 86400000 * 7);
     return date > tomorrow && date <= nextWeek;
   };
-
-
-
-
-
-
 
   // Button handlers
   const handleFilterClick = () => {
@@ -370,10 +400,12 @@ const ActivitiesLeftCardSimple: React.FC = () => {
   };
 
   const getActiveFiltersCount = () => {
-    return [selectedProject, selectedType, selectedStatus, selectedPriority].filter(Boolean).length + selectedTags.length;
+    return (
+      [selectedProject, selectedType, selectedStatus, selectedPriority].filter(
+        Boolean,
+      ).length + selectedTags.length
+    );
   };
-
-
 
   // Close dropdowns when clicking outside
   React.useEffect(() => {
@@ -381,7 +413,11 @@ const ActivitiesLeftCardSimple: React.FC = () => {
       const target = event.target as Element;
 
       // Don't close if clicking inside the dropdown or button
-      if (target.closest('.filter-dropdown') || target.closest('.sort-dropdown') || target.closest('.tags-dropdown')) {
+      if (
+        target.closest(".filter-dropdown") ||
+        target.closest(".sort-dropdown") ||
+        target.closest(".tags-dropdown")
+      ) {
         return;
       }
 
@@ -392,8 +428,8 @@ const ActivitiesLeftCardSimple: React.FC = () => {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showFilterDropdown, showSortDropdown, showTagsDropdown]);
 
   return (
@@ -407,10 +443,10 @@ const ActivitiesLeftCardSimple: React.FC = () => {
               onClick={handleFilterClick}
               className={`p-1.5 rounded-lg transition-all duration-200 border ${
                 getActiveFiltersCount() > 0
-                  ? 'bg-blue-50 text-blue-700 border-blue-200 shadow-sm'
-                  : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                  ? "bg-blue-50 text-blue-700 border-blue-200 shadow-sm"
+                  : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
               }`}
-              title={`Filter${getActiveFiltersCount() > 0 ? ` (${getActiveFiltersCount()} active)` : ''}`}
+              title={`Filter${getActiveFiltersCount() > 0 ? ` (${getActiveFiltersCount()} active)` : ""}`}
             >
               <div className="relative">
                 <Filter className="h-4 w-4" />
@@ -428,16 +464,21 @@ const ActivitiesLeftCardSimple: React.FC = () => {
                 <div className="p-4 space-y-4">
                   {/* Type Filter */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Type
+                    </label>
                     <select
-                      value={selectedType || ''}
+                      value={selectedType || ""}
                       onChange={(e) => setSelectedType(e.target.value || null)}
                       onClick={(e) => e.stopPropagation()}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                       <option value="">All Types</option>
                       {manufacturingActivityTypes.map((activityType) => (
-                        <option key={activityType.type} value={activityType.type}>
+                        <option
+                          key={activityType.type}
+                          value={activityType.type}
+                        >
                           {activityType.type}
                         </option>
                       ))}
@@ -446,10 +487,14 @@ const ActivitiesLeftCardSimple: React.FC = () => {
 
                   {/* Status Filter */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Status
+                    </label>
                     <select
-                      value={selectedStatus || ''}
-                      onChange={(e) => setSelectedStatus(e.target.value || null)}
+                      value={selectedStatus || ""}
+                      onChange={(e) =>
+                        setSelectedStatus(e.target.value || null)
+                      }
                       onClick={(e) => e.stopPropagation()}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
@@ -463,10 +508,14 @@ const ActivitiesLeftCardSimple: React.FC = () => {
 
                   {/* Priority Filter */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Priority
+                    </label>
                     <select
-                      value={selectedPriority || ''}
-                      onChange={(e) => setSelectedPriority(e.target.value || null)}
+                      value={selectedPriority || ""}
+                      onChange={(e) =>
+                        setSelectedPriority(e.target.value || null)
+                      }
                       onClick={(e) => e.stopPropagation()}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
@@ -480,7 +529,9 @@ const ActivitiesLeftCardSimple: React.FC = () => {
 
                   {/* Tags Filter */}
                   <div className="relative tags-dropdown">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Tags</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Tags
+                    </label>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -488,18 +539,27 @@ const ActivitiesLeftCardSimple: React.FC = () => {
                       }}
                       className={`w-full px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 border flex items-center justify-between ${
                         selectedTags.length > 0
-                          ? 'bg-blue-50 text-blue-700 border-blue-200'
-                          : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                          ? "bg-blue-50 text-blue-700 border-blue-200"
+                          : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
                       }`}
                     >
                       <span>
                         {selectedTags.length === 0
                           ? "Select tags to filter..."
-                          : `${selectedTags.length} tag${selectedTags.length === 1 ? '' : 's'} selected`
-                        }
+                          : `${selectedTags.length} tag${selectedTags.length === 1 ? "" : "s"} selected`}
                       </span>
-                      <svg className={`w-4 h-4 transition-transform ${showTagsDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      <svg
+                        className={`w-4 h-4 transition-transform ${showTagsDropdown ? "rotate-180" : ""}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
                       </svg>
                     </button>
 
@@ -509,33 +569,98 @@ const ActivitiesLeftCardSimple: React.FC = () => {
                         <div className="p-4 space-y-3">
                           {/* Available tags for selection */}
                           {[
-                            { value: "Kaizen", label: "Kaizen", color: "bg-green-100 text-green-700", purpose: "Continuous improvement initiative" },
-                            { value: "RCA", label: "RCA", color: "bg-blue-100 text-blue-700", purpose: "Root cause analysis required" },
-                            { value: "CAPA", label: "CAPA", color: "bg-purple-100 text-purple-700", purpose: "Corrective/preventive action" },
-                            { value: "Blocked", label: "Blocked", color: "bg-red-100 text-red-700", purpose: "Activity is waiting on input or dependency" },
-                            { value: "Recurring", label: "Recurring", color: "bg-indigo-100 text-indigo-700", purpose: "Happens regularly (daily, weekly, etc.)" },
-                            { value: "Training", label: "Training", color: "bg-emerald-100 text-emerald-700", purpose: "Involves skill-building or onboarding" },
-                            { value: "Audit", label: "Audit", color: "bg-yellow-100 text-yellow-700", purpose: "Related to compliance or certification" },
-                            { value: "Gemba", label: "Gemba", color: "bg-orange-100 text-orange-700", purpose: "Requires shop floor observation" },
-                            { value: "5S", label: "5S", color: "bg-teal-100 text-teal-700", purpose: "Workplace organization or cleanup" },
-                            { value: "Documentation", label: "Documentation", color: "bg-gray-100 text-gray-700", purpose: "Involves updating or creating documents" }
+                            {
+                              value: "Kaizen",
+                              label: "Kaizen",
+                              color: "bg-green-100 text-green-700",
+                              purpose: "Continuous improvement initiative",
+                            },
+                            {
+                              value: "RCA",
+                              label: "RCA",
+                              color: "bg-blue-100 text-blue-700",
+                              purpose: "Root cause analysis required",
+                            },
+                            {
+                              value: "CAPA",
+                              label: "CAPA",
+                              color: "bg-purple-100 text-purple-700",
+                              purpose: "Corrective/preventive action",
+                            },
+                            {
+                              value: "Blocked",
+                              label: "Blocked",
+                              color: "bg-red-100 text-red-700",
+                              purpose:
+                                "Activity is waiting on input or dependency",
+                            },
+                            {
+                              value: "Recurring",
+                              label: "Recurring",
+                              color: "bg-indigo-100 text-indigo-700",
+                              purpose:
+                                "Happens regularly (daily, weekly, etc.)",
+                            },
+                            {
+                              value: "Training",
+                              label: "Training",
+                              color: "bg-emerald-100 text-emerald-700",
+                              purpose: "Involves skill-building or onboarding",
+                            },
+                            {
+                              value: "Audit",
+                              label: "Audit",
+                              color: "bg-yellow-100 text-yellow-700",
+                              purpose: "Related to compliance or certification",
+                            },
+                            {
+                              value: "Gemba",
+                              label: "Gemba",
+                              color: "bg-orange-100 text-orange-700",
+                              purpose: "Requires shop floor observation",
+                            },
+                            {
+                              value: "5S",
+                              label: "5S",
+                              color: "bg-teal-100 text-teal-700",
+                              purpose: "Workplace organization or cleanup",
+                            },
+                            {
+                              value: "Documentation",
+                              label: "Documentation",
+                              color: "bg-gray-100 text-gray-700",
+                              purpose:
+                                "Involves updating or creating documents",
+                            },
                           ].map((tag) => (
-                            <label key={tag.value} className="flex items-center gap-3 cursor-pointer group hover:bg-gray-50 p-2 rounded-md transition-colors">
+                            <label
+                              key={tag.value}
+                              className="flex items-center gap-3 cursor-pointer group hover:bg-gray-50 p-2 rounded-md transition-colors"
+                            >
                               <input
                                 type="checkbox"
                                 checked={selectedTags.includes(tag.value)}
                                 onChange={(e) => {
                                   if (e.target.checked) {
-                                    setSelectedTags([...selectedTags, tag.value]);
+                                    setSelectedTags([
+                                      ...selectedTags,
+                                      tag.value,
+                                    ]);
                                   } else {
-                                    setSelectedTags(selectedTags.filter(t => t !== tag.value));
+                                    setSelectedTags(
+                                      selectedTags.filter(
+                                        (t) => t !== tag.value,
+                                      ),
+                                    );
                                   }
                                 }}
                                 onClick={(e) => e.stopPropagation()}
                                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                               />
                               <div className="flex flex-col flex-1">
-                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${tag.color} inline-block`}>
+                                <span
+                                  className={`px-2 py-1 text-xs font-medium rounded-full ${tag.color} inline-block`}
+                                >
                                   {tag.label}
                                 </span>
                                 <span className="text-xs text-gray-500 mt-1">
@@ -586,7 +711,7 @@ const ActivitiesLeftCardSimple: React.FC = () => {
             <button
               onClick={handleSortClick}
               className="p-1.5 rounded-lg bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
-              title={`Sort by ${sortBy} (${sortOrder === 'asc' ? 'ascending' : 'descending'})`}
+              title={`Sort by ${sortBy} (${sortOrder === "asc" ? "ascending" : "descending"})`}
             >
               <ArrowUpDown className="h-4 w-4" />
             </button>
@@ -600,7 +725,7 @@ const ActivitiesLeftCardSimple: React.FC = () => {
                     { key: "title", label: "Title" },
                     { key: "status", label: "Status" },
                     { key: "priority", label: "Priority" },
-                    { key: "assignedTo", label: "Assigned To" }
+                    { key: "assignedTo", label: "Assigned To" },
                   ].map((option) => (
                     <button
                       key={option.key}
@@ -610,8 +735,8 @@ const ActivitiesLeftCardSimple: React.FC = () => {
                       }}
                       className={`w-full text-left px-3 py-2 text-sm rounded-md transition-colors ${
                         sortBy === option.key
-                          ? 'bg-blue-50 text-blue-700'
-                          : 'text-gray-700 hover:bg-gray-50'
+                          ? "bg-blue-50 text-blue-700"
+                          : "text-gray-700 hover:bg-gray-50"
                       }`}
                     >
                       {option.label}
@@ -621,7 +746,9 @@ const ActivitiesLeftCardSimple: React.FC = () => {
                   {/* Sort Order Toggle */}
                   <div className="border-t border-gray-100 pt-2 mt-2">
                     <button
-                      onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                      onClick={() =>
+                        setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+                      }
                       className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
                     >
                       {sortOrder === "asc" ? "↑ Ascending" : "↓ Descending"}
@@ -659,29 +786,41 @@ const ActivitiesLeftCardSimple: React.FC = () => {
         </div>
       </div>
       {/* Create Activity Modal */}
-      <CreateActivityModal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} />
+      <CreateActivityModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+      />
 
-      {/* Debug toggle */}
-      <div className={`absolute top-3 right-3 z-30 ${debug ? '' : 'pointer-events-none'}`}>
-        <button onClick={() => setDebug((d) => !d)} className="text-xs px-2 py-1 bg-white border rounded shadow-sm">
-          {debug ? 'Hide debug' : 'Show debug'}
-        </button>
-        {debug && (
-          <div className="mt-2 w-44 p-2 text-xs bg-white border rounded shadow">
-            <div>available: {debugRef.current.lastAvailable ?? '—'}</div>
-            <div>cardH: {debugRef.current.lastCardHeight ?? '—'}</div>
-            <div>recordsPerPage: {recordsPerPage}</div>
-          </div>
-        )}
-      </div>
 
       {/* Time-based Tabs */}
       <div className="flex border-b border-gray-200 overflow-x-auto bg-gray-50">
         {[
-          { key: "all", label: "All", count: filteredAndSortedActivities.length },
-          { key: "today", label: "Today", count: filteredAndSortedActivities.filter(a => isToday(a.startTime)).length },
-          { key: "upcoming", label: "Upcoming", count: filteredAndSortedActivities.filter(a => isUpcoming(a.startTime)).length },
-          { key: "overdue", label: "Overdue", count: filteredAndSortedActivities.filter(a => a.status === "overdue").length },
+          {
+            key: "all",
+            label: "All",
+            count: filteredAndSortedActivities.length,
+          },
+          {
+            key: "today",
+            label: "Today",
+            count: filteredAndSortedActivities.filter((a) =>
+              isToday(a.startTime),
+            ).length,
+          },
+          {
+            key: "upcoming",
+            label: "Upcoming",
+            count: filteredAndSortedActivities.filter((a) =>
+              isUpcoming(a.startTime),
+            ).length,
+          },
+          {
+            key: "overdue",
+            label: "Overdue",
+            count: filteredAndSortedActivities.filter(
+              (a) => a.status === "overdue",
+            ).length,
+          },
         ].map((tab) => (
           <button
             key={tab.key}
@@ -694,11 +833,13 @@ const ActivitiesLeftCardSimple: React.FC = () => {
           >
             <span>{tab.label}</span>
             {tab.count > 0 && (
-              <span className={`px-1.5 py-0.5 text-xs bg-gray-200 text-gray-600 rounded-full font-medium ${
-                activeTab === tab.key
-                  ? "bg-blue-100 text-blue-700"
-                  : "bg-gray-200 text-gray-600"
-              }`}>
+              <span
+                className={`px-1.5 py-0.5 text-xs bg-gray-200 text-gray-600 rounded-full font-medium ${
+                  activeTab === tab.key
+                    ? "bg-blue-100 text-blue-700"
+                    : "bg-gray-200 text-gray-600"
+                }`}
+              >
                 {tab.count}
               </span>
             )}
@@ -706,18 +847,35 @@ const ActivitiesLeftCardSimple: React.FC = () => {
         ))}
       </div>
 
-  {/* Activities List */}
-  <div ref={(el) => { listRef.current = el; }} className="flex-1 overflow-y-auto">
+      {/* Activities List */}
+      <div
+        ref={(el) => {
+          listRef.current = el;
+        }}
+        className="flex-1 overflow-y-auto"
+      >
         {loading ? (
           <div className="p-6 text-center text-gray-500">
             <RefreshCw className="h-8 w-8 text-blue-500 mb-3 animate-spin" />
-            <p className="text-sm font-medium text-gray-700">Loading activities...</p>
+            <p className="text-sm font-medium text-gray-700">
+              Loading activities...
+            </p>
           </div>
         ) : error ? (
           <div className="p-6 text-center text-red-500">
             <div className="h-8 w-8 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
-              <svg className="h-4 w-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              <svg
+                className="h-4 w-4 text-red-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+                />
               </svg>
             </div>
             <p className="text-sm font-medium text-red-700">Error: {error}</p>
@@ -725,70 +883,82 @@ const ActivitiesLeftCardSimple: React.FC = () => {
         ) : paginatedActivities.length === 0 ? (
           <div className="p-6 text-center text-gray-500">
             <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-              <svg className="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              <svg
+                className="h-4 w-4 text-gray-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
               </svg>
             </div>
-            <p className="text-sm font-medium text-gray-700">No activities found matching your criteria.</p>
+            <p className="text-sm font-medium text-gray-700">
+              No activities found matching your criteria.
+            </p>
           </div>
         ) : (
           <div className="flex flex-col space-y-2 px-1 py-3 flex-1 overflow-y-auto">
             {paginatedActivities.map((activity) => (
-            <div
-              key={activity.id}
-              onClick={() => setSelectedActivity(activity)}
-              className={`activity-card p-3 hover:bg-gray-50 cursor-pointer transition-all duration-200 border-b border-gray-100 flex flex-col justify-center ${
-                selectedActivity?.id === activity.id
-                  ? "bg-blue-50 border-l-4 border-l-blue-500 shadow-sm"
-                  : "hover:border-l-4 hover:border-l-gray-300"
-              }`}
-            >
-              {/* Status indicator and title row */}
-              <div className="flex items-start gap-2 mb-2">
-                {/* Compact status indicator */}
-                <div className="flex-shrink-0 mt-0.5">
-                  <div
-                    className={`w-2.5 h-2.5 rounded-full ${getStatusBulletColor(activity.status)}`}
-                    title={`Status: ${activity.status}`}
-                  />
-                </div>
+              <div
+                key={activity.id}
+                onClick={() => setSelectedActivity(activity)}
+                className={`activity-card p-3 hover:bg-gray-50 cursor-pointer transition-all duration-200 border-b border-gray-100 flex flex-col justify-center ${
+                  selectedActivity?.id === activity.id
+                    ? "bg-blue-50 border-l-4 border-l-blue-500 shadow-sm"
+                    : "hover:border-l-4 hover:border-l-gray-300"
+                }`}
+              >
+                {/* Status indicator and title row */}
+                <div className="flex items-start gap-2 mb-2">
+                  {/* Compact status indicator */}
+                  <div className="flex-shrink-0 mt-0.5">
+                    <div
+                      className={`w-2.5 h-2.5 rounded-full ${getStatusBulletColor(activity.status)}`}
+                      title={`Status: ${activity.status}`}
+                    />
+                  </div>
 
-                {/* Title with compact typography */}
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-semibold text-gray-900 leading-tight line-clamp-2">
-                    {activity.title}
-                  </h3>
-                </div>
-              </div>
-
-              {/* Assignment and category row with compact typography */}
-              <div className="flex items-center justify-between">
-                {/* Assignment info with compact hierarchy */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1 text-xs text-gray-600">
-                    <span className="font-medium text-gray-700">Assigned to:</span>
-                    <span className="font-semibold text-gray-800 truncate">
-                      {activity.assignedTo}
-                    </span>
+                  {/* Title with compact typography */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-semibold text-gray-900 leading-tight line-clamp-2">
+                      {activity.title}
+                    </h3>
                   </div>
                 </div>
 
-                {/* Category badge with compact styling */}
-                <div className="flex-shrink-0 ml-2">
-                  <span
-                    className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full ${getTypeColor(activity.type)}`}
-                  >
-                    {getDisplayType(activity.type)}
-                  </span>
+                {/* Assignment and category row with compact typography */}
+                <div className="flex items-center justify-between">
+                  {/* Assignment info with compact hierarchy */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1 text-xs text-gray-600">
+                      <span className="font-medium text-gray-700">
+                        Assigned to:
+                      </span>
+                      <span className="font-semibold text-gray-800 truncate">
+                        {activity.assignedTo}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Category badge with compact styling */}
+                  <div className="flex-shrink-0 ml-2">
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full ${getTypeColor(activity.type)}`}
+                    >
+                      {getDisplayType(activity.type)}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
           </div>
         )}
       </div>
-
-
     </div>
   );
 };

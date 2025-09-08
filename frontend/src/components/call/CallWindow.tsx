@@ -1,16 +1,20 @@
-import React, { useState } from 'react';
-import { X, Maximize2, Minimize2 } from 'lucide-react';
-import { useCall } from '../../contexts/CallContext';
-import { formatCallDuration } from '../../utils/callUtils';
-import CallVideo from './CallVideo';
-import CallControls from './CallControls';
-import Button from '../ui/Button';
+import React, { useState } from "react";
+import { X, Maximize2, Minimize2 } from "lucide-react";
+import { useCall } from "../../contexts/CallContext";
+import { formatCallDuration } from "../../utils/callUtils";
+import CallVideo from "./CallVideo";
+import CallControls from "./CallControls";
+import Button from "../ui/Button";
 
 const CallWindow: React.FC = () => {
   const { currentCall, endCall, callDuration } = useCall();
   const [isMinimized, setIsMinimized] = useState(false);
 
-  if (!currentCall || currentCall.status === 'ended' || currentCall.status === 'declined') {
+  if (
+    !currentCall ||
+    currentCall.status === "ended" ||
+    currentCall.status === "declined"
+  ) {
     return null;
   }
 
@@ -25,8 +29,10 @@ const CallWindow: React.FC = () => {
         <div className="flex items-center justify-between p-3 bg-gray-50 border-b">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-sm font-medium">{currentCall.receiver.name}</span>
-            {currentCall.status === 'connected' && (
+            <span className="text-sm font-medium">
+              {currentCall.receiver.name}
+            </span>
+            {currentCall.status === "connected" && (
               <span className="text-xs text-gray-500">
                 {formatCallDuration(callDuration)}
               </span>
@@ -56,7 +62,7 @@ const CallWindow: React.FC = () => {
 
         {/* Minimized Content */}
         <div className="p-2">
-          {currentCall.type === 'video' ? (
+          {currentCall.type === "video" ? (
             <CallVideo isMinimized={true} />
           ) : (
             <div className="w-80 h-20 bg-gray-100 rounded flex items-center justify-center">
@@ -66,7 +72,9 @@ const CallWindow: React.FC = () => {
                     {currentCall.receiver.name.charAt(0).toUpperCase()}
                   </span>
                 </div>
-                <p className="text-xs text-gray-600">{currentCall.receiver.name}</p>
+                <p className="text-xs text-gray-600">
+                  {currentCall.receiver.name}
+                </p>
               </div>
             </div>
           )}
@@ -85,11 +93,14 @@ const CallWindow: React.FC = () => {
           <div className="flex items-center gap-3">
             <div className="w-4 h-4 bg-green-500 rounded-full animate-pulse"></div>
             <div>
-              <h2 className="font-semibold text-gray-800">{currentCall.receiver.name}</h2>
+              <h2 className="font-semibold text-gray-800">
+                {currentCall.receiver.name}
+              </h2>
               <p className="text-sm text-gray-600">
-                {currentCall.status === 'calling' && 'Calling...'}
-                {currentCall.status === 'connected' && formatCallDuration(callDuration)}
-                {currentCall.status === 'ringing' && 'Ringing...'}
+                {currentCall.status === "calling" && "Calling..."}
+                {currentCall.status === "connected" &&
+                  formatCallDuration(callDuration)}
+                {currentCall.status === "ringing" && "Ringing..."}
               </p>
             </div>
           </div>
@@ -118,7 +129,7 @@ const CallWindow: React.FC = () => {
 
         {/* Call Content */}
         <div className="flex-1 relative">
-          {currentCall.type === 'video' ? (
+          {currentCall.type === "video" ? (
             <CallVideo isMinimized={false} />
           ) : (
             <div className="w-full h-96 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
@@ -128,11 +139,14 @@ const CallWindow: React.FC = () => {
                     {currentCall.receiver.name.charAt(0).toUpperCase()}
                   </span>
                 </div>
-                <h2 className="text-2xl font-semibold mb-2">{currentCall.receiver.name}</h2>
+                <h2 className="text-2xl font-semibold mb-2">
+                  {currentCall.receiver.name}
+                </h2>
                 <p className="text-lg opacity-90">
-                  {currentCall.status === 'calling' && 'Calling...'}
-                  {currentCall.status === 'connected' && formatCallDuration(callDuration)}
-                  {currentCall.status === 'ringing' && 'Ringing...'}
+                  {currentCall.status === "calling" && "Calling..."}
+                  {currentCall.status === "connected" &&
+                    formatCallDuration(callDuration)}
+                  {currentCall.status === "ringing" && "Ringing..."}
                 </p>
               </div>
             </div>

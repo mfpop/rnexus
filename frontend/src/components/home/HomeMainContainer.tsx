@@ -40,9 +40,7 @@ const HomeMainContainer: React.FC<HomeMainContainerProps> = ({
       leftTitle={homePageConfig.title}
       leftSubtitle={homePageConfig.subtitle}
       leftFooter={homePageConfig.footer}
-      leftContent={
-        <HomeLeftCard />
-      }
+      leftContent={<HomeLeftCard />}
       // Right Card Configuration
       rightTitle={homePageConfig.rightTitle}
       rightSubtitle={homePageConfig.rightSubtitle}

@@ -1,8 +1,12 @@
-export { default as NewsLeftCardSimple } from './NewsLeftCardSimple';
-export { default as NewsLeftCardWrapper } from './NewsLeftCardWrapper';
-export { default as NewsRightCard } from './NewsRightCard';
-export { default as NewsContext, useNewsContext, NewsProvider } from './NewsContextNew';
-export type { Update, UpdateExtended } from './NewsContextNew';
+export { default as NewsLeftCardSimple } from "./NewsLeftCardSimple";
+export { default as NewsLeftCardWrapper } from "./NewsLeftCardWrapper";
+export { default as NewsRightCard } from "./NewsRightCard";
+export {
+  default as NewsContext,
+  useNewsContext,
+  NewsProvider,
+} from "./NewsContextNew";
+export type { Update, UpdateExtended } from "./NewsContextNew";
 
 // Legacy types for backward compatibility - need to be defined here
 export interface UpdateContent {

@@ -45,7 +45,6 @@ const RightSidebarTemplate: React.FC<RightSidebarTemplateProps> = ({
   onDatabaseClick,
   userRole = "admin", // Default to admin for demo
 }) => {
-
   // Show database button only for admin and staff
   const canAccessDatabase = userRole === "admin" || userRole === "staff";
   const shouldShowDatabaseButton = showDatabaseButton && canAccessDatabase;
@@ -76,8 +75,8 @@ const RightSidebarTemplate: React.FC<RightSidebarTemplateProps> = ({
                 size="icon"
                 className={`${button.height} w-12 transition-colors ${
                   button.disabled
-                    ? 'text-gray-300 cursor-not-allowed'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
+                    ? "text-gray-300 cursor-not-allowed"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-800"
                 }`}
                 title={button.title}
                 onClick={button.disabled ? undefined : button.onClick}
@@ -100,8 +99,8 @@ const RightSidebarTemplate: React.FC<RightSidebarTemplateProps> = ({
                 size="icon"
                 className={`${button.height} w-12 transition-colors ${
                   button.disabled
-                    ? 'text-gray-300 cursor-not-allowed'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
+                    ? "text-gray-300 cursor-not-allowed"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-800"
                 }`}
                 title={button.title}
                 onClick={button.disabled ? undefined : button.onClick}

@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { CheckCircle, XCircle, Info, AlertTriangle, X, Bell } from "lucide-react";
+import {
+  CheckCircle,
+  XCircle,
+  Info,
+  AlertTriangle,
+  X,
+  Bell,
+} from "lucide-react";
 
 export type NotificationType = "success" | "error" | "info" | "warning";
 

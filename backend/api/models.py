@@ -541,6 +541,17 @@ class Chat(models.Model):
     last_activity = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
 
+    # Archive fields
+    is_archived = models.BooleanField(default=False)
+    archived_at = models.DateTimeField(null=True, blank=True)
+    archived_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="archived_chats",
+    )
+
     # Group chat specific fields
     created_by = models.ForeignKey(
         User,
@@ -598,6 +609,22 @@ class Chat(models.Model):
         self.last_message = message
         self.last_activity = message.timestamp
         self.save(update_fields=["last_message", "last_activity"])
+
+    def archive(self, user):
+        """Archive the chat"""
+        from django.utils import timezone
+
+        self.is_archived = True
+        self.archived_at = timezone.now()
+        self.archived_by = user
+        self.save(update_fields=["is_archived", "archived_at", "archived_by"])
+
+    def unarchive(self):
+        """Unarchive the chat"""
+        self.is_archived = False
+        self.archived_at = None
+        self.archived_by = None
+        self.save(update_fields=["is_archived", "archived_at", "archived_by"])
 
 
 class Message(models.Model):
@@ -1240,6 +1267,10 @@ class Contact(models.Model):
     def __str__(self):
         return f"{self.first_name} {self.last_name} - {self.subject} ({self.get_status_display()})"
 
+    def get_status_display(self) -> str:
+        """Return the human-readable status display"""
+        return dict(self.STATUS_CHOICES).get(self.status, self.status)
+
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}"
 
@@ -1477,4 +1508,41 @@ class NewsUpdateNew(models.Model):
         if self.expires_at:
             return timezone.now() > self.expires_at
         return False
-        self.save(update_fields=["assigned_to"])
+
+
+class UserFavorite(models.Model):
+    """Model for storing user favorites/starred contacts"""
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="favorites")
+    favorite_user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="favorited_by"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "favorite_user")
+        verbose_name = "User Favorite"
+        verbose_name_plural = "User Favorites"
+        db_table = "api_userfavorite"
+
+    def __str__(self):
+        return f"{self.user.username} favorites {self.favorite_user.username}"
+
+
+class UserBlock(models.Model):
+    """Model for storing user blocks"""
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="blocks")
+    blocked_user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="blocked_by"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "blocked_user")
+        verbose_name = "User Block"
+        verbose_name_plural = "User Blocks"
+        db_table = "api_userblock"
+
+    def __str__(self):
+        return f"{self.user.username} blocks {self.blocked_user.username}"

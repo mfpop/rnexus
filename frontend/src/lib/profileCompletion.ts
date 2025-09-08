@@ -28,9 +28,22 @@ export interface CompletionResult {
   };
 }
 
-export function computeProfileCompletion(p: ProfileLike | null | undefined): CompletionResult {
+export function computeProfileCompletion(
+  p: ProfileLike | null | undefined,
+): CompletionResult {
   if (!p) {
-    return { percent: 0, details: { basicInfo: false, contact: false, address: false, professional: false, education: false, work: false, bio: false } };
+    return {
+      percent: 0,
+      details: {
+        basicInfo: false,
+        contact: false,
+        address: false,
+        professional: false,
+        education: false,
+        work: false,
+        bio: false,
+      },
+    };
   }
 
   const val = (s?: string) => !!(s && String(s).trim().length > 0);
@@ -45,7 +58,9 @@ export function computeProfileCompletion(p: ProfileLike | null | undefined): Com
   const W_BIO = 5;
 
   // Basic: first_name, last_name, email
-  const basicCount = [val(p.first_name), val(p.last_name), val(p.email)].filter(Boolean).length;
+  const basicCount = [val(p.first_name), val(p.last_name), val(p.email)].filter(
+    Boolean,
+  ).length;
   const basicScore = (basicCount / 3) * W_BASIC;
   const basicInfo = basicCount === 3;
 
@@ -54,7 +69,13 @@ export function computeProfileCompletion(p: ProfileLike | null | undefined): Com
   const contactScore = contact ? W_CONTACT : 0;
 
   // Address: street, city, state, zip, country — partial credit
-  const addrFields = [p.street_address, p.city, p.state_province, p.zip_code, p.country];
+  const addrFields = [
+    p.street_address,
+    p.city,
+    p.state_province,
+    p.zip_code,
+    p.country,
+  ];
   const addrCount = addrFields.map(val).filter(Boolean).length;
   const addressScore = (addrCount / 5) * W_ADDRESS;
 
@@ -78,7 +99,15 @@ export function computeProfileCompletion(p: ProfileLike | null | undefined): Com
 
   const percent = Math.min(
     100,
-    Math.round(basicScore + contactScore + addressScore + professionalScore + educationScore + workScore + bioScore)
+    Math.round(
+      basicScore +
+        contactScore +
+        addressScore +
+        professionalScore +
+        educationScore +
+        workScore +
+        bioScore,
+    ),
   );
 
   return {

@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Query to get all departments
 export const GET_ALL_DEPARTMENTS = gql`

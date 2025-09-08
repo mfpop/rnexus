@@ -13,7 +13,7 @@ interface HelpMainContainerProps {
 const HelpMainContainer: React.FC<HelpMainContainerProps> = ({
   pageConfig,
   expandedCard,
-  handleExpandClick
+  handleExpandClick,
 }) => {
   const { selectedSection, selectedSubsection } = useHelpContext();
 
@@ -21,29 +21,31 @@ const HelpMainContainer: React.FC<HelpMainContainerProps> = ({
   const dynamicTitle = useMemo(() => {
     const sectionTitles: Record<string, string> = {
       "getting-started": "Getting Started",
-      "navigation": "Navigation Guide",
-      "dashboard": "Dashboard Features",
-      "communication": "Team Communication",
-      "production": "Production Management",
+      navigation: "Navigation Guide",
+      dashboard: "Dashboard Features",
+      communication: "Team Communication",
+      production: "Production Management",
       "project-management": "Project Management",
-      "activities": "Activity Management",
+      activities: "Activity Management",
       "news-updates": "News & Updates",
       "system-admin": "System Administration",
       "account-settings": "Account & Settings",
-      "troubleshooting": "Troubleshooting",
-      "support": "Support & Contact"
+      troubleshooting: "Troubleshooting",
+      support: "Support & Contact",
     };
     return sectionTitles[selectedSection] || selectedSection;
   }, [selectedSection]);
 
   const dynamicSubtitle = useMemo(() => {
     const subsectionTitles: Record<string, string> = {
-      "welcome": "Welcome to Nexus LMD",
+      welcome: "Welcome to Nexus LMD",
       "first-login": "First Login",
       "navigation-basics": "Navigation Basics",
-      "dashboard-overview": "Dashboard Overview"
+      "dashboard-overview": "Dashboard Overview",
     };
-    return selectedSubsection ? (subsectionTitles[selectedSubsection] || selectedSubsection) : "Step-by-step guides and tutorials";
+    return selectedSubsection
+      ? subsectionTitles[selectedSubsection] || selectedSubsection
+      : "Step-by-step guides and tutorials";
   }, [selectedSubsection]);
 
   return (

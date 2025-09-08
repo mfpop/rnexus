@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { CheckCircle, AlertCircle, X } from 'lucide-react';
-import { cn } from '../../../lib/bits-ui';
+import React, { useEffect, useState } from "react";
+import { CheckCircle, AlertCircle, X } from "lucide-react";
+import { cn } from "../../../lib/bits-ui";
 
 interface NotificationToastProps {
-  type: 'success' | 'error';
+  type: "success" | "error";
   message: string;
   isVisible: boolean;
   onClose: () => void;
@@ -15,7 +15,7 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({
   message,
   isVisible,
   onClose,
-  duration = 3000
+  duration = 3000,
 }) => {
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -33,16 +33,26 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({
 
   if (!isVisible && !isAnimating) return null;
 
-  const icon = type === 'success' ? <CheckCircle className="h-5 w-5" /> : <AlertCircle className="h-5 w-5" />;
-  const bgColor = type === 'success' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-700';
+  const icon =
+    type === "success" ? (
+      <CheckCircle className="h-5 w-5" />
+    ) : (
+      <AlertCircle className="h-5 w-5" />
+    );
+  const bgColor =
+    type === "success"
+      ? "bg-green-50 border-green-200 text-green-700"
+      : "bg-red-50 border-red-200 text-red-700";
 
   return (
     <div className="fixed top-4 right-4 z-50 max-w-sm">
       <div
         className={cn(
-          'flex items-center gap-3 p-4 border rounded-lg shadow-lg transition-all duration-300',
+          "flex items-center gap-3 p-4 border rounded-lg shadow-lg transition-all duration-300",
           bgColor,
-          isAnimating ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
+          isAnimating
+            ? "translate-x-0 opacity-100"
+            : "translate-x-full opacity-0",
         )}
       >
         {icon}

@@ -10,7 +10,7 @@ interface NamePhoneData {
   preferred_name: string;
   phone: string;
   phone_country_code: string;
-  phone_type: 'mobile' | 'home' | 'work' | 'other';
+  phone_type: "mobile" | "home" | "work" | "other";
   secondary_phone: string;
 }
 
@@ -20,7 +20,11 @@ interface NamePhoneFormProps {
   className?: string;
 }
 
-const NamePhoneForm: React.FC<NamePhoneFormProps> = ({ value, onChange, className = "" }) => {
+const NamePhoneForm: React.FC<NamePhoneFormProps> = ({
+  value,
+  onChange,
+  className = "",
+}) => {
   const [phoneError, setPhoneError] = useState("");
   const [secondaryPhoneError, setSecondaryPhoneError] = useState("");
 
@@ -117,21 +121,24 @@ const NamePhoneForm: React.FC<NamePhoneFormProps> = ({ value, onChange, classNam
   ];
 
   const phoneTypes = [
-    { value: 'mobile', label: 'Mobile', icon: '📱' },
-    { value: 'home', label: 'Home', icon: '🏠' },
-    { value: 'work', label: 'Work', icon: '💼' },
-    { value: 'other', label: 'Other', icon: '📞' },
+    { value: "mobile", label: "Mobile", icon: "📱" },
+    { value: "home", label: "Home", icon: "🏠" },
+    { value: "work", label: "Work", icon: "💼" },
+    { value: "other", label: "Other", icon: "📞" },
   ];
 
-  const handleFieldChange = (field: keyof NamePhoneData, fieldValue: string) => {
+  const handleFieldChange = (
+    field: keyof NamePhoneData,
+    fieldValue: string,
+  ) => {
     const newValue = { ...value, [field]: fieldValue };
     onChange(newValue);
 
     // Clear phone errors when user starts typing
-    if (field === 'phone' && phoneError) {
+    if (field === "phone" && phoneError) {
       setPhoneError("");
     }
-    if (field === 'secondary_phone' && secondaryPhoneError) {
+    if (field === "secondary_phone" && secondaryPhoneError) {
       setSecondaryPhoneError("");
     }
   };
@@ -140,10 +147,13 @@ const NamePhoneForm: React.FC<NamePhoneFormProps> = ({ value, onChange, classNam
     if (!phone) return "";
 
     // Remove all non-digit characters for validation
-    const digitsOnly = phone.replace(/\D/g, '');
+    const digitsOnly = phone.replace(/\D/g, "");
 
     // Country-specific validation patterns
-    const patterns: Record<string, { min: number; max: number; format: string }> = {
+    const patterns: Record<
+      string,
+      { min: number; max: number; format: string }
+    > = {
       "+1": { min: 10, max: 10, format: "(XXX) XXX-XXXX" }, // US/Canada
       "+52": { min: 10, max: 10, format: "XXX XXX XXXX" }, // Mexico
       "+44": { min: 10, max: 11, format: "XXXX XXXXXX" }, // UK
@@ -262,7 +272,7 @@ const NamePhoneForm: React.FC<NamePhoneFormProps> = ({ value, onChange, classNam
     return placeholders[countryCode] || "Enter phone number";
   };
 
-    return (
+  return (
     <div className={`space-y-4 ${className}`}>
       {/* Name Section */}
       <div className="space-y-3">
@@ -322,7 +332,9 @@ const NamePhoneForm: React.FC<NamePhoneFormProps> = ({ value, onChange, classNam
             <Input
               type="text"
               value={value.maternal_last_name}
-              onChange={(e) => handleFieldChange("maternal_last_name", e.target.value)}
+              onChange={(e) =>
+                handleFieldChange("maternal_last_name", e.target.value)
+              }
               className="w-full"
               placeholder="López"
             />
@@ -337,7 +349,9 @@ const NamePhoneForm: React.FC<NamePhoneFormProps> = ({ value, onChange, classNam
             <Input
               type="text"
               value={value.preferred_name}
-              onChange={(e) => handleFieldChange("preferred_name", e.target.value)}
+              onChange={(e) =>
+                handleFieldChange("preferred_name", e.target.value)
+              }
               className="w-full"
               placeholder="Johnny, J.C., etc."
             />
@@ -363,7 +377,9 @@ const NamePhoneForm: React.FC<NamePhoneFormProps> = ({ value, onChange, classNam
               <div className="w-32">
                 <select
                   value={value.phone_country_code}
-                  onChange={(e) => handleFieldChange("phone_country_code", e.target.value)}
+                  onChange={(e) =>
+                    handleFieldChange("phone_country_code", e.target.value)
+                  }
                   className="w-full h-8 px-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   {countryCodes.map((country) => (
@@ -380,7 +396,7 @@ const NamePhoneForm: React.FC<NamePhoneFormProps> = ({ value, onChange, classNam
                   type="tel"
                   value={value.phone}
                   onChange={(e) => handlePhoneChange(e.target.value)}
-                  className={`w-full ${phoneError ? 'border-red-500' : ''}`}
+                  className={`w-full ${phoneError ? "border-red-500" : ""}`}
                   placeholder={getPhonePlaceholder(value.phone_country_code)}
                 />
               </div>
@@ -389,7 +405,9 @@ const NamePhoneForm: React.FC<NamePhoneFormProps> = ({ value, onChange, classNam
               <div className="w-32">
                 <select
                   value={value.phone_type}
-                  onChange={(e) => handleFieldChange("phone_type", e.target.value as any)}
+                  onChange={(e) =>
+                    handleFieldChange("phone_type", e.target.value as any)
+                  }
                   className="w-full h-8 px-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   {phoneTypes.map((type) => (
@@ -414,7 +432,9 @@ const NamePhoneForm: React.FC<NamePhoneFormProps> = ({ value, onChange, classNam
               <div className="w-32">
                 <select
                   value={value.phone_country_code}
-                  onChange={(e) => handleFieldChange("phone_country_code", e.target.value)}
+                  onChange={(e) =>
+                    handleFieldChange("phone_country_code", e.target.value)
+                  }
                   className="w-full h-8 px-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   {countryCodes.map((country) => (
@@ -429,7 +449,7 @@ const NamePhoneForm: React.FC<NamePhoneFormProps> = ({ value, onChange, classNam
                   type="tel"
                   value={value.secondary_phone}
                   onChange={(e) => handleSecondaryPhoneChange(e.target.value)}
-                  className={`w-full ${secondaryPhoneError ? 'border-red-500' : ''}`}
+                  className={`w-full ${secondaryPhoneError ? "border-red-500" : ""}`}
                   placeholder={getPhonePlaceholder(value.phone_country_code)}
                 />
               </div>
@@ -440,8 +460,7 @@ const NamePhoneForm: React.FC<NamePhoneFormProps> = ({ value, onChange, classNam
           </div>
         </div>
       </div>
-
-          </div>
+    </div>
   );
 };
 

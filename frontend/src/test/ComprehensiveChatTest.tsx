@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import ChatRightCard from '../components/chat/ChatRightCard';
-import { ChatProvider } from '../contexts/ChatContext';
-
-
+import React, { useState, useEffect } from "react";
+import ChatRightCard from "../components/chat/ChatRightCard";
+import { ChatProvider } from "../contexts/ChatContext";
 
 const ComprehensiveChatTest: React.FC = () => {
   const [testResults, setTestResults] = useState<string[]>([]);
@@ -57,20 +55,27 @@ const ComprehensiveChatTest: React.FC = () => {
             🧪 Comprehensive Chat Functionality Test
           </h1>
           <p className="text-gray-600 mb-4">
-            This test validates all the enhanced chat features including advanced UI,
-            quick replies, typing indicators, settings panel, and more.
+            This test validates all the enhanced chat features including
+            advanced UI, quick replies, typing indicators, settings panel, and
+            more.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             {testResults.map((result, index) => (
-              <div key={index} className="p-3 bg-green-50 border border-green-200 rounded-lg">
+              <div
+                key={index}
+                className="p-3 bg-green-50 border border-green-200 rounded-lg"
+              >
                 <span className="text-green-800 text-sm">{result}</span>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden" style={{ height: '600px' }}>
+        <div
+          className="bg-white rounded-lg shadow-lg overflow-hidden"
+          style={{ height: "600px" }}
+        >
           <ChatProvider>
             <ChatRightCard />
           </ChatProvider>
@@ -92,7 +97,9 @@ const ComprehensiveChatTest: React.FC = () => {
             </div>
 
             <div className="p-4 border border-gray-200 rounded-lg">
-              <h3 className="font-semibold text-gray-700 mb-2">Interactive Features</h3>
+              <h3 className="font-semibold text-gray-700 mb-2">
+                Interactive Features
+              </h3>
               <ul className="text-sm text-gray-600 space-y-1">
                 <li>• Quick replies</li>
                 <li>• Typing indicators</li>
@@ -102,7 +109,9 @@ const ComprehensiveChatTest: React.FC = () => {
             </div>
 
             <div className="p-4 border border-gray-200 rounded-lg">
-              <h3 className="font-semibold text-gray-700 mb-2">Communication Features</h3>
+              <h3 className="font-semibold text-gray-700 mb-2">
+                Communication Features
+              </h3>
               <ul className="text-sm text-gray-600 space-y-1">
                 <li>• Voice recording</li>
                 <li>• File uploads</li>

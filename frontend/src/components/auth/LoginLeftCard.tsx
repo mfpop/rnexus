@@ -53,27 +53,42 @@ const LoginLeftCard: React.FC = () => {
         </div>
 
         <p className="text-sm text-gray-700 leading-relaxed mb-3">
-          Access your Nexus LMD dashboard with confidence — advanced security, role-based controls and reliable audit trails keep your operations safe.
+          Access your Nexus LMD dashboard with confidence — advanced security,
+          role-based controls and reliable audit trails keep your operations
+          safe.
         </p>
 
         <div className="flex items-center gap-2 text-xs text-gray-600">
           <CheckCircle2 className="h-4 w-4 text-green-500" />
-          <span>Recommended: enable two-factor authentication for added protection</span>
+          <span>
+            Recommended: enable two-factor authentication for added protection
+          </span>
         </div>
       </div>
 
       {/* Security Features */}
       <div className="flex-1 mb-4">
-        <h3 className="text-base font-semibold text-gray-800 mb-3">Security Features</h3>
+        <h3 className="text-base font-semibold text-gray-800 mb-3">
+          Security Features
+        </h3>
         <div className="space-y-3">
           {securityFeatures.map((feature) => (
-            <div key={feature.id} className="flex items-start gap-2 p-2 rounded-lg hover:bg-gray-50 transition-colors">
-              <div className={`p-1.5 rounded bg-gray-100 ${feature.color} flex-shrink-0`}>
+            <div
+              key={feature.id}
+              className="flex items-start gap-2 p-2 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <div
+                className={`p-1.5 rounded bg-gray-100 ${feature.color} flex-shrink-0`}
+              >
                 {feature.icon}
               </div>
               <div className="flex-1">
-                <h4 className="text-sm font-medium text-gray-800">{feature.title}</h4>
-                <p className="text-xs text-gray-600 leading-relaxed">{feature.description}</p>
+                <h4 className="text-sm font-medium text-gray-800">
+                  {feature.title}
+                </h4>
+                <p className="text-xs text-gray-600 leading-relaxed">
+                  {feature.description}
+                </p>
               </div>
             </div>
           ))}
@@ -83,11 +98,28 @@ const LoginLeftCard: React.FC = () => {
       {/* Quick Links & Support */}
       <div className="mt-3 pt-3 border-t border-gray-100">
         <div className="flex flex-col gap-2">
-          <a href="/register" className="text-sm text-blue-600 hover:text-blue-500 font-medium">Create a new account</a>
-          <a href="/reset-password" className="text-sm text-gray-600 hover:text-gray-800">Forgot password?</a>
-          <a href="/contact" className="text-sm text-gray-600 hover:text-gray-800">Contact support</a>
+          <a
+            href="/register"
+            className="text-sm text-blue-600 hover:text-blue-500 font-medium"
+          >
+            Create a new account
+          </a>
+          <a
+            href="/reset-password"
+            className="text-sm text-gray-600 hover:text-gray-800"
+          >
+            Forgot password?
+          </a>
+          <a
+            href="/contact"
+            className="text-sm text-gray-600 hover:text-gray-800"
+          >
+            Contact support
+          </a>
         </div>
-        <div className="mt-3 text-xs text-gray-500">Need help signing in? Reach out to your administrator or support.</div>
+        <div className="mt-3 text-xs text-gray-500">
+          Need help signing in? Reach out to your administrator or support.
+        </div>
       </div>
     </div>
   );

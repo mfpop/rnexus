@@ -2,8 +2,7 @@ import { useEffect, useRef, useCallback } from "react";
 import AuthService from "./authService";
 
 interface SystemMessage {
-  id: string;
-  recipient_id: string;
+  recipientId: string;
   title?: string;
   message: string;
   messageType: "info" | "warning" | "error" | "success";
@@ -21,15 +20,20 @@ const useSystemMessageWebSocket = (
   onMessage?: (message: SystemMessage) => void,
   onOpen?: () => void,
   onClose?: () => void,
-  onError?: (event: Event) => void
+  onError?: (event: Event) => void,
 ): UseSystemMessageWebSocketReturn => {
   const wsRef = useRef<WebSocket | null>(null);
   const isConnectingRef = useRef(false);
-  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
   const isMountedRef = useRef(true);
 
   const connect = useCallback(() => {
-    if (isConnectingRef.current || wsRef.current?.readyState === WebSocket.OPEN) {
+    if (
+      isConnectingRef.current ||
+      wsRef.current?.readyState === WebSocket.OPEN
+    ) {
       return;
     }
 
@@ -94,8 +98,7 @@ const useSystemMessageWebSocket = (
           if (data.type === "system_message") {
             // Map backend snake_case to frontend camelCase
             const systemMessage: SystemMessage = {
-              id: data.message.id,
-              recipient_id: data.message.recipient_id,
+              recipientId: data.message.recipient_id,
               title: data.message.title,
               message: data.message.message,
               messageType: data.message.message_type,

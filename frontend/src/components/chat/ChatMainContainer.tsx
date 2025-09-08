@@ -39,7 +39,7 @@ const ChatMainContainer: React.FC<ChatMainContainerProps> = ({
   const chatPageConfig = {
     leftTitle: "Team Communication",
     leftSubtitle: "Contacts, groups, and favorites",
-    leftFooter: <PaginationFooterWrapper />, // Use shared pagination footer
+    leftFooter: <PaginationFooterWrapper />,
     rightTitle: selectedContact ? selectedContact.name : "Chat Window",
     rightSubtitle: selectedContact
       ? selectedContact.isGroup

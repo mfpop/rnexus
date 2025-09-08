@@ -1,8 +1,8 @@
 // src/components/auth/profile/BioSection.tsx
 
-import React, { useState, useEffect } from 'react';
-import { FileText } from 'lucide-react';
-import { useAutosave } from './ProfileAutosaveProvider';
+import React, { useState, useEffect } from "react";
+import { FileText } from "lucide-react";
+import { useAutosave } from "./ProfileAutosaveProvider";
 
 interface BioData {
   bio?: string;
@@ -22,7 +22,7 @@ interface BioSectionProps {
 export const BioSection: React.FC<BioSectionProps> = ({
   data,
   onChange,
-  errors = {}
+  errors = {},
 }) => {
   const { autosaveField, isAutosaving } = useAutosave();
   const [localData, setLocalData] = useState<BioData>(data);
@@ -52,32 +52,46 @@ export const BioSection: React.FC<BioSectionProps> = ({
       <div className="p-4">
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Short Bio</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Short Bio
+            </label>
             <textarea
               value={localData.short_bio || ""}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleFieldChange("short_bio", e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                handleFieldChange("short_bio", e.target.value)
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
               placeholder="Brief description about yourself"
               rows={2}
             />
-            {errors['short_bio'] && <p className="text-red-500 text-sm mt-1">{errors['short_bio']}</p>}
+            {errors["short_bio"] && (
+              <p className="text-red-500 text-sm mt-1">{errors["short_bio"]}</p>
+            )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Full Biography</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Full Biography
+            </label>
             <textarea
               value={localData.bio || ""}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleFieldChange("bio", e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                handleFieldChange("bio", e.target.value)
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
               placeholder="Detailed biography"
               rows={4}
             />
-            {errors['bio'] && <p className="text-red-500 text-sm mt-1">{errors['bio']}</p>}
+            {errors["bio"] && (
+              <p className="text-red-500 text-sm mt-1">{errors["bio"]}</p>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Website</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Website
+              </label>
               <input
                 type="url"
                 value={localData.website || ""}
@@ -85,10 +99,14 @@ export const BioSection: React.FC<BioSectionProps> = ({
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="https://yourwebsite.com"
               />
-              {errors['website'] && <p className="text-red-500 text-sm mt-1">{errors['website']}</p>}
+              {errors["website"] && (
+                <p className="text-red-500 text-sm mt-1">{errors["website"]}</p>
+              )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">LinkedIn</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                LinkedIn
+              </label>
               <input
                 type="url"
                 value={localData.linkedin || ""}
@@ -96,10 +114,16 @@ export const BioSection: React.FC<BioSectionProps> = ({
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="https://linkedin.com/in/yourprofile"
               />
-              {errors['linkedin'] && <p className="text-red-500 text-sm mt-1">{errors['linkedin']}</p>}
+              {errors["linkedin"] && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors["linkedin"]}
+                </p>
+              )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Twitter</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Twitter
+              </label>
               <input
                 type="url"
                 value={localData.twitter || ""}
@@ -107,10 +131,14 @@ export const BioSection: React.FC<BioSectionProps> = ({
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="https://twitter.com/yourhandle"
               />
-              {errors['twitter'] && <p className="text-red-500 text-sm mt-1">{errors['twitter']}</p>}
+              {errors["twitter"] && (
+                <p className="text-red-500 text-sm mt-1">{errors["twitter"]}</p>
+              )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">GitHub</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                GitHub
+              </label>
               <input
                 type="url"
                 value={localData.github || ""}
@@ -118,7 +146,9 @@ export const BioSection: React.FC<BioSectionProps> = ({
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="https://github.com/yourusername"
               />
-              {errors['github'] && <p className="text-red-500 text-sm mt-1">{errors['github']}</p>}
+              {errors["github"] && (
+                <p className="text-red-500 text-sm mt-1">{errors["github"]}</p>
+              )}
             </div>
           </div>
         </div>

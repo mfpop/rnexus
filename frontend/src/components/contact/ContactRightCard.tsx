@@ -155,10 +155,10 @@ const ContactRightCard: React.FC = () => {
         }
       `;
 
-      const response = await fetch('/graphql/', {
-        method: 'POST',
+      const response = await fetch("/graphql/", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           query: mutation,
@@ -170,7 +170,7 @@ const ContactRightCard: React.FC = () => {
             subject: formData.subject,
             message: formData.message,
             inquiryType: formData.inquiryType,
-            phone: formData.phone || '',
+            phone: formData.phone || "",
           },
         }),
       });
@@ -178,19 +178,24 @@ const ContactRightCard: React.FC = () => {
       const result = await response.json();
 
       if (result.errors) {
-        throw new Error(result.errors[0].message || 'GraphQL error occurred');
+        throw new Error(result.errors[0].message || "GraphQL error occurred");
       }
 
       if (!result.data?.createContact?.ok) {
-        const errors = result.data?.createContact?.errors || ['Failed to send message'];
-        throw new Error(errors.join(', '));
+        const errors = result.data?.createContact?.errors || [
+          "Failed to send message",
+        ];
+        throw new Error(errors.join(", "));
       }
 
       // Handle successful form submission
       setIsSubmitted(true);
     } catch (error) {
       setErrors({
-        submit: error instanceof Error ? error.message : "Failed to send message. Please try again."
+        submit:
+          error instanceof Error
+            ? error.message
+            : "Failed to send message. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -229,7 +234,8 @@ const ContactRightCard: React.FC = () => {
             Message Sent Successfully!
           </h2>
           <p className="text-gray-600 text-base leading-relaxed">
-            Thank you for reaching out! We've received your message and will get back to you within 24 hours.
+            Thank you for reaching out! We've received your message and will get
+            back to you within 24 hours.
           </p>
         </div>
 
@@ -312,7 +318,8 @@ const ContactRightCard: React.FC = () => {
           Send us a Message
         </h2>
         <p className="text-gray-600 text-base leading-relaxed max-w-md mx-auto">
-          We'd love to hear from you. Send us a message and we'll respond as soon as possible.
+          We'd love to hear from you. Send us a message and we'll respond as
+          soon as possible.
         </p>
       </div>
 
@@ -559,7 +566,9 @@ const ContactRightCard: React.FC = () => {
             <div className="w-20 h-1.5 bg-gray-200 rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300"
-                style={{ width: `${Math.min((formData.message.length / 500) * 100, 100)}%` }}
+                style={{
+                  width: `${Math.min((formData.message.length / 500) * 100, 100)}%`,
+                }}
               ></div>
             </div>
           </div>

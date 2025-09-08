@@ -1,16 +1,16 @@
 // src/components/auth/profile/ContactSection.tsx
 
-import React, { useState, useEffect } from 'react';
-import { Phone } from 'lucide-react';
-import { Input } from '../../ui/bits';
-import { useAutosave } from './ProfileAutosaveProvider';
+import React, { useState, useEffect } from "react";
+import { Phone } from "lucide-react";
+import { Input } from "../../ui/bits";
+import { useAutosave } from "./ProfileAutosaveProvider";
 
 interface ContactData {
   phone?: string;
   phone_country_code?: string;
-  phone_type?: 'mobile' | 'home' | 'work' | 'other';
+  phone_type?: "mobile" | "home" | "work" | "other";
   secondary_phone?: string;
-  secondary_phone_type?: 'mobile' | 'home' | 'work' | 'other';
+  secondary_phone_type?: "mobile" | "home" | "work" | "other";
 }
 
 interface ContactSectionProps {
@@ -22,7 +22,7 @@ interface ContactSectionProps {
 export const ContactSection: React.FC<ContactSectionProps> = ({
   data,
   onChange,
-  errors = {}
+  errors = {},
 }) => {
   const { autosaveField, isAutosaving } = useAutosave();
   const [localData, setLocalData] = useState<ContactData>(data);
@@ -52,7 +52,9 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
       <div className="p-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Primary Phone</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Primary Phone
+            </label>
             <Input
               type="tel"
               value={localData.phone || ""}
@@ -60,10 +62,14 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
               className="w-full"
               placeholder="Enter phone number"
             />
-            {errors['phone'] && <p className="text-red-500 text-sm mt-1">{errors['phone']}</p>}
+            {errors["phone"] && (
+              <p className="text-red-500 text-sm mt-1">{errors["phone"]}</p>
+            )}
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Phone Type</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Phone Type
+            </label>
             <select
               value={localData.phone_type || "mobile"}
               onChange={(e) => handleFieldChange("phone_type", e.target.value)}
@@ -76,21 +82,33 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Secondary Phone</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Secondary Phone
+            </label>
             <Input
               type="tel"
               value={localData.secondary_phone || ""}
-              onChange={(e) => handleFieldChange("secondary_phone", e.target.value)}
+              onChange={(e) =>
+                handleFieldChange("secondary_phone", e.target.value)
+              }
               className="w-full"
               placeholder="Enter secondary phone"
             />
-            {errors['secondary_phone'] && <p className="text-red-500 text-sm mt-1">{errors['secondary_phone']}</p>}
+            {errors["secondary_phone"] && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors["secondary_phone"]}
+              </p>
+            )}
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Secondary Phone Type</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Secondary Phone Type
+            </label>
             <select
               value={localData.secondary_phone_type || "mobile"}
-              onChange={(e) => handleFieldChange("secondary_phone_type", e.target.value)}
+              onChange={(e) =>
+                handleFieldChange("secondary_phone_type", e.target.value)
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             >
               <option value="mobile">Mobile</option>

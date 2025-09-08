@@ -16,11 +16,7 @@ const NewsLeftCardWrapper: React.FC = () => {
   } catch (error) {
     // If context is not available, show a loading state or error
     console.error("NewsProvider not available:", error);
-    return (
-      <div className="p-4 text-center text-gray-500">
-        Loading news...
-      </div>
-    );
+    return <div className="p-4 text-center text-gray-500">Loading news...</div>;
   }
 };
 

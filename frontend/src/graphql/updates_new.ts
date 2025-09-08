@@ -1,7 +1,7 @@
 // GraphQL Queries for News/Updates (Compatible with existing schema)
 // This file contains backward-compatible queries using existing GraphQL fields
 
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // =====================================================
 // Update Fragments (Compatible with existing schema)

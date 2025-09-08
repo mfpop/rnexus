@@ -1,14 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
-import {
-  Smile,
-  Paperclip,
-  Camera,
-  Mic,
-  Send,
-  X
-} from 'lucide-react';
-import Button from '../ui/Button';
-import { Message } from './MessageTypes';
+import React, { useState, useRef, useEffect } from "react";
+import { Smile, Paperclip, Camera, Mic, Send, X } from "lucide-react";
+import Button from "../ui/Button";
+import { Message } from "./MessageTypes";
 
 interface MessageInputProps {
   message: string;
@@ -63,10 +56,12 @@ const MessageInput: React.FC<MessageInputProps> = ({
 
   // Auto-resize textarea
   useEffect(() => {
-    const textarea = document.getElementById('message-input') as HTMLTextAreaElement;
+    const textarea = document.getElementById(
+      "message-input",
+    ) as HTMLTextAreaElement;
     if (textarea) {
-      textarea.style.height = 'auto';
-      textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+      textarea.style.height = "auto";
+      textarea.style.height = Math.min(textarea.scrollHeight, 120) + "px";
       setInputHeight(Math.min(textarea.scrollHeight, 120));
     }
   }, [message]);
@@ -79,29 +74,59 @@ const MessageInput: React.FC<MessageInputProps> = ({
 
   // Popular emojis for quick access
   const popularEmojis = [
-    '😀', '😂', '🥰', '😍', '😎', '🤔', '😢', '😡', '😴', '🤗',
-    '👍', '👎', '❤️', '💔', '🎉', '🎊', '🔥', '💯', '✨', '🌟',
-    '🙏', '👏', '💪', '🤝', '👋', '💋', '🌹', '🍕', '☕', '🍺'
+    "😀",
+    "😂",
+    "🥰",
+    "😍",
+    "😎",
+    "🤔",
+    "😢",
+    "😡",
+    "😴",
+    "🤗",
+    "👍",
+    "👎",
+    "❤️",
+    "💔",
+    "🎉",
+    "🎊",
+    "🔥",
+    "💯",
+    "✨",
+    "🌟",
+    "🙏",
+    "👏",
+    "💪",
+    "🤝",
+    "👋",
+    "💋",
+    "🌹",
+    "🍕",
+    "☕",
+    "🍺",
   ];
 
   // Emoji categories with proper emoji sequences
   const emojiCategories = [
     {
-      name: 'Smileys & Emotions',
-      emojis: '😀😃😄😁😆😅😂🤣😊😇🙂🙃😉😌😍🥰😘😗😙😚😋😛😝😜🤪🤨🧐🤓😎🤩🥳😏😒😞😔😟😕🙁☹️😣😖😫😩🥺😢😭😤😠😡🤬🤯😳🥵🥶😱😨😰😥😓🤗🤔🤭🤫🤥😶😐😑😯😦😧😮😲🥱😴🤤😪😵🤐🥴🤢🤮🤧😷🤒🤕'
+      name: "Smileys & Emotions",
+      emojis:
+        "😀😃😄😁😆😅😂🤣😊😇🙂🙃😉😌😍🥰😘😗😙😚😋😛😝😜🤪🤨🧐🤓😎🤩🥳😏😒😞😔😟😕🙁☹️😣😖😫😩🥺😢😭😤😠😡🤬🤯😳🥵🥶😱😨😰😥😓🤗🤔🤭🤫🤥😶😐😑😯😦😧😮😲🥱😴🤤😪😵🤐🥴🤢🤮🤧😷🤒🤕",
     },
     {
-      name: 'Hearts & Love',
-      emojis: '❤️🧡💛💚💙💜🖤🤍🤎💔❣️💕💞💓💗💖💘💝💟'
+      name: "Hearts & Love",
+      emojis: "❤️🧡💛💚💙💜🖤🤍🤎💔❣️💕💞💓💗💖💘💝💟",
     },
     {
-      name: 'Gestures & Body',
-      emojis: '👍👎👌✌️🤞🤟🤘🤙👈👉👆🖕👇☝️👋🤚🖐️✋🖖👌🤌🤏🤙🤝🙏✍️💪🦾🦿🦵🦶👂🦻👃🧠🫀🫁🦷🦴👀👁️👅👄💋🩸'
+      name: "Gestures & Body",
+      emojis:
+        "👍👎👌✌️🤞🤟🤘🤙👈👉👆🖕👇☝️👋🤚🖐️✋🖖👌🤌🤏🤙🤝🙏✍️💪🦾🦿🦵🦶👂🦻👃🧠🫀🫁🦷🦴👀👁️👅👄💋🩸",
     },
     {
-      name: 'Celebrations',
-      emojis: '🎉🎊🎈🎂🎁🎄🎃🎗️🏆🥇🥈🥉🎖️🏅🎟️🎫🎠🎡🎢🎪🎭🎨🎬🎤🎧🎼🎹🥁🎷🎺🎸🪕🎻🎯🎲🎮🎰🧩🎨📱📲💻⌨️🖥️🖨️🖱️🖲️🕹️🎮🎲♟️🎭🖼️🎨🎬🎤🎧🎼🎹🥁🎷🎺🎸🪕🎻🎯🎲🎮🎰🧩'
-    }
+      name: "Celebrations",
+      emojis:
+        "🎉🎊🎈🎂🎁🎄🎃🎗️🏆🥇🥈🥉🎖️🏅🎟️🎫🎠🎡🎢🎪🎭🎨🎬🎤🎧🎼🎹🥁🎷🎺🎸🪕🎻🎯🎲🎮🎰🧩🎨📱📲💻⌨️🖥️🖨️🖱️🖲️🕹️🎮🎲♟️🎭🖼️🎨🎬🎤🎧🎼🎹🥁🎷🎺🎸🪕🎻🎯🎲🎮🎰🧩",
+    },
   ];
 
   const handleEmojiClick = (emoji: string) => {
@@ -111,25 +136,29 @@ const MessageInput: React.FC<MessageInputProps> = ({
   const handleCategoryClick = (emojis: string) => {
     // Add multiple emojis from the category
     const emojiArray = Array.from(emojis);
-    const randomEmojis = emojiArray
-      .sort(() => 0.5 - Math.random())
-      .slice(0, 3); // Add 3 random emojis from the category
+    const randomEmojis = emojiArray.sort(() => 0.5 - Math.random()).slice(0, 3); // Add 3 random emojis from the category
 
-    randomEmojis.forEach(emoji => addEmoji(emoji));
+    randomEmojis.forEach((emoji) => addEmoji(emoji));
   };
 
   const handleClickOutside = (event: MouseEvent) => {
-    if (emojiDropdownRef.current && !emojiDropdownRef.current.contains(event.target as Node)) {
+    if (
+      emojiDropdownRef.current &&
+      !emojiDropdownRef.current.contains(event.target as Node)
+    ) {
       setEmojiDropdownOpen(false);
     }
-    if (attachmentDropdownRef.current && !attachmentDropdownRef.current.contains(event.target as Node)) {
+    if (
+      attachmentDropdownRef.current &&
+      !attachmentDropdownRef.current.contains(event.target as Node)
+    ) {
       setAttachmentDropdownOpen(false);
     }
   };
 
   useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
@@ -143,7 +172,9 @@ const MessageInput: React.FC<MessageInputProps> = ({
                 Replying to {replyToMessage.senderName}
               </div>
               <div className="text-sm text-gray-700 truncate">
-                {replyToMessage.type === 'text' ? replyToMessage.content : `📎 ${replyToMessage.type}`}
+                {replyToMessage.type === "text"
+                  ? replyToMessage.content
+                  : `📎 ${replyToMessage.type}`}
               </div>
             </div>
             <button
@@ -165,7 +196,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
             value={message}
             onChange={handleInputChange}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
+              if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
                 handleSendMessage(e);
               }
@@ -183,7 +214,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
                 type="button"
                 onClick={() => setEmojiDropdownOpen(!emojiDropdownOpen)}
                 className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
-                title="Add emoji">
+                title="Add emoji"
+              >
                 <Smile className="h-5 w-5 text-gray-500 hover:text-[#25d366]" />
               </button>
 
@@ -191,7 +223,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
               {emojiDropdownOpen && (
                 <div
                   ref={emojiDropdownRef}
-                  className="absolute bottom-full left-0 mb-2 w-80 bg-white border border-gray-200 shadow-xl rounded-xl p-3 z-50">
+                  className="absolute bottom-full left-0 mb-2 w-80 bg-white border border-gray-200 shadow-xl rounded-xl p-3 z-50"
+                >
                   <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
                     Quick Emojis
                   </div>
@@ -222,7 +255,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
                       >
                         <span>{category.name}</span>
                         <span className="text-lg">
-                          {Array.from(category.emojis).slice(0, 3).join('')}
+                          {Array.from(category.emojis).slice(0, 3).join("")}
                         </span>
                       </button>
                     ))}
@@ -238,9 +271,12 @@ const MessageInput: React.FC<MessageInputProps> = ({
             <div className="relative">
               <button
                 type="button"
-                onClick={() => setAttachmentDropdownOpen(!attachmentDropdownOpen)}
+                onClick={() =>
+                  setAttachmentDropdownOpen(!attachmentDropdownOpen)
+                }
                 className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
-                title="Attach file or media">
+                title="Attach file or media"
+              >
                 <Paperclip className="h-5 w-5 text-gray-500 hover:text-[#25d366]" />
               </button>
 
@@ -248,7 +284,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
               {attachmentDropdownOpen && (
                 <div
                   ref={attachmentDropdownRef}
-                  className="absolute bottom-full right-0 mb-2 w-64 bg-white border border-gray-200 shadow-xl rounded-xl p-3 z-50">
+                  className="absolute bottom-full right-0 mb-2 w-64 bg-white border border-gray-200 shadow-xl rounded-xl p-3 z-50"
+                >
                   <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
                     Attach Media
                   </div>
@@ -256,7 +293,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       className="px-3 py-3 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer rounded-lg flex flex-col items-center text-center"
-                      onClick={() => handleFileUpload('image/*')}>
+                      onClick={() => handleFileUpload("image/*")}
+                    >
                       <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-2">
                         <Camera className="h-6 w-6 text-blue-600" />
                       </div>
@@ -265,7 +303,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
 
                     <button
                       className="px-3 py-3 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer rounded-lg flex flex-col items-center text-center"
-                      onClick={() => handleFileUpload('video/*')}>
+                      onClick={() => handleFileUpload("video/*")}
+                    >
                       <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-2">
                         <Mic className="h-6 w-6 text-red-600" />
                       </div>
@@ -274,7 +313,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
 
                     <button
                       className="px-3 py-3 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer rounded-lg flex flex-col items-center text-center"
-                      onClick={() => handleFileUpload('audio/*')}>
+                      onClick={() => handleFileUpload("audio/*")}
+                    >
                       <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-2">
                         <Mic className="h-6 w-6 text-purple-600" />
                       </div>
@@ -283,7 +323,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
 
                     <button
                       className="px-3 py-3 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer rounded-lg flex flex-col items-center text-center"
-                      onClick={() => handleFileUpload('.pdf,.doc,.docx,.txt')}>
+                      onClick={() => handleFileUpload(".pdf,.doc,.docx,.txt")}
+                    >
                       <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-2">
                         <Paperclip className="h-6 w-6 text-green-600" />
                       </div>
@@ -298,7 +339,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
                     onClick={() => {
                       handlePhotoCapture();
                       setAttachmentDropdownOpen(false);
-                    }}>
+                    }}
+                  >
                     <Camera className="h-4 w-4 mr-2 text-[#25d366]" />
                     Take Photo
                   </button>
@@ -312,7 +354,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
         {message.trim() ? (
           <Button
             type="submit"
-            className="p-3 bg-[#25d366] hover:bg-[#128c7e] text-white rounded-full transition-all flex-shrink-0 min-h-[40px] flex items-center justify-center shadow-lg hover:shadow-xl">
+            className="p-3 bg-[#25d366] hover:bg-[#128c7e] text-white rounded-full transition-all flex-shrink-0 min-h-[40px] flex items-center justify-center shadow-lg hover:shadow-xl"
+          >
             <Send className="h-5 w-5" />
           </Button>
         ) : isRecording ? (
@@ -330,7 +373,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
               type="button"
               className="p-2 bg-red-500 hover:bg-red-600 text-white rounded-full transition-colors flex-shrink-0"
               onClick={stopVoiceRecording}
-              title="Stop recording">
+              title="Stop recording"
+            >
               <div className="w-3 h-3 bg-white rounded-sm"></div>
             </button>
           </div>
@@ -342,7 +386,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
             onMouseDown={startVoiceRecording}
             onTouchStart={startVoiceRecording}
             onMouseUp={stopVoiceRecording}
-            onTouchEnd={stopVoiceRecording}>
+            onTouchEnd={stopVoiceRecording}
+          >
             <Mic className="h-5 w-5 text-gray-500 hover:text-[#25d366]" />
           </button>
         )}

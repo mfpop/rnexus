@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = "http://localhost:8000";
 
 export interface LoginCredentials {
   username: string;
@@ -23,24 +23,27 @@ export interface LoginResponse {
 }
 
 export class AuthService {
-  private static TOKEN_KEY = 'authToken';
-  private static USER_KEY = 'authUser';
-  private static REMEMBER_ME_KEY = 'authRememberMe';
+  private static TOKEN_KEY = "authToken";
+  private static USER_KEY = "authUser";
+  private static REMEMBER_ME_KEY = "authRememberMe";
 
   // Login user and store token
-  static async login(credentials: LoginCredentials, rememberMe: boolean = false): Promise<LoginResponse> {
+  static async login(
+    credentials: LoginCredentials,
+    rememberMe: boolean = false,
+  ): Promise<LoginResponse> {
     try {
       const response = await fetch(`${API_BASE_URL}/api/login/`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(credentials),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Login failed');
+        throw new Error(errorData.error || "Login failed");
       }
 
       const data: LoginResponse = await response.json();
@@ -61,10 +64,10 @@ export class AuthService {
 
         return data;
       } else {
-        throw new Error(data.error || 'Login failed');
+        throw new Error(data.error || "Login failed");
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error("Login error:", error);
       throw error;
     }
   }
@@ -75,15 +78,15 @@ export class AuthService {
       const token = this.getToken();
       if (token) {
         await fetch(`${API_BASE_URL}/api/logout/`, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
         });
       }
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     } finally {
       // Always clear both storage types
       localStorage.removeItem(this.TOKEN_KEY);
@@ -97,7 +100,7 @@ export class AuthService {
   // Get stored token
   static getToken(): string | null {
     // Check if remember me is enabled
-    const rememberMe = localStorage.getItem(this.REMEMBER_ME_KEY) === 'true';
+    const rememberMe = localStorage.getItem(this.REMEMBER_ME_KEY) === "true";
 
     if (rememberMe) {
       return localStorage.getItem(this.TOKEN_KEY);
@@ -108,7 +111,7 @@ export class AuthService {
 
   // Get stored user data
   static getUser(): User | null {
-    const rememberMe = localStorage.getItem(this.REMEMBER_ME_KEY) === 'true';
+    const rememberMe = localStorage.getItem(this.REMEMBER_ME_KEY) === "true";
 
     if (rememberMe) {
       const userStr = localStorage.getItem(this.USER_KEY);
@@ -128,8 +131,8 @@ export class AuthService {
   static getAuthHeaders(): Record<string, string> {
     const token = this.getToken();
     return {
-      'Content-Type': 'application/json',
-      ...(token && { 'Authorization': `Bearer ${token}` }),
+      "Content-Type": "application/json",
+      ...(token && { Authorization: `Bearer ${token}` }),
     };
   }
 
@@ -139,31 +142,40 @@ export class AuthService {
       const token = this.getToken();
       if (!token) return false;
 
-  console.debug('DEBUG: validateToken - token presence:', !!token);
-  console.debug('DEBUG: validateToken - auth headers present:', !!this.getAuthHeaders());
+      console.debug("DEBUG: validateToken - token presence:", !!token);
+      console.debug(
+        "DEBUG: validateToken - auth headers present:",
+        !!this.getAuthHeaders(),
+      );
 
       const response = await fetch(`${API_BASE_URL}/api/auth/user/`, {
         headers: this.getAuthHeaders(),
       });
 
-  console.debug('DEBUG: validateToken - Response status:', response.status);
-  console.debug('DEBUG: validateToken - Response headers present:', !!response.headers);
+      console.debug("DEBUG: validateToken - Response status:", response.status);
+      console.debug(
+        "DEBUG: validateToken - Response headers present:",
+        !!response.headers,
+      );
 
       if (!response.ok) {
         const errorText = await response.text();
-  console.debug('DEBUG: validateToken - Error response (trimmed):', errorText?.slice?.(0, 200));
+        console.debug(
+          "DEBUG: validateToken - Error response (trimmed):",
+          errorText?.slice?.(0, 200),
+        );
       }
 
       return response.ok;
     } catch (error) {
-      console.error('Token validation error:', error);
+      console.error("Token validation error:", error);
       return false;
     }
   }
 
   // Check if remember me is enabled
   static isRememberMeEnabled(): boolean {
-    return localStorage.getItem(this.REMEMBER_ME_KEY) === 'true';
+    return localStorage.getItem(this.REMEMBER_ME_KEY) === "true";
   }
 }
 

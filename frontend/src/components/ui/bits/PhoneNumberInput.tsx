@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
 interface PhoneNumberInputProps {
   value: string;
@@ -13,14 +13,14 @@ export const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({
   onChange,
   placeholder = "Enter phone number",
   className = "",
-  disabled = false
+  disabled = false,
 }) => {
   const [displayValue, setDisplayValue] = useState("");
 
   // Format the phone number for display
   const formatPhoneNumber = (phoneNumber: string): string => {
     // Remove all non-digits
-    const cleaned = phoneNumber.replace(/\D/g, '');
+    const cleaned = phoneNumber.replace(/\D/g, "");
 
     // Format as xxx-xxx-xxxx
     if (cleaned.length <= 3) {
@@ -37,7 +37,7 @@ export const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({
     const input = e.target.value;
 
     // Remove all non-digits from input
-    const cleaned = input.replace(/\D/g, '');
+    const cleaned = input.replace(/\D/g, "");
 
     // Limit to 10 digits
     if (cleaned.length <= 10) {
@@ -63,8 +63,8 @@ export const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({
   // Handle paste events
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
-    const pastedText = e.clipboardData.getData('text/plain');
-    const cleaned = pastedText.replace(/\D/g, '').slice(0, 10);
+    const pastedText = e.clipboardData.getData("text/plain");
+    const cleaned = pastedText.replace(/\D/g, "").slice(0, 10);
 
     if (cleaned.length > 0) {
       const formatted = formatPhoneNumber(cleaned);

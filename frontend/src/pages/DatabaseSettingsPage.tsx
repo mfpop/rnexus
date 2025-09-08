@@ -1,24 +1,33 @@
 import React, { useState } from "react";
-import { Database, Server, CheckCircle, AlertCircle, Settings, ArrowLeft } from "lucide-react";
+import {
+  Database,
+  Server,
+  CheckCircle,
+  AlertCircle,
+  Settings,
+  ArrowLeft,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const DatabaseSettingsPage: React.FC = () => {
   const navigate = useNavigate();
-  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'testing'>('connected');
+  const [connectionStatus, setConnectionStatus] = useState<
+    "connected" | "disconnected" | "testing"
+  >("connected");
   const [autoBackup, setAutoBackup] = useState(true);
   const [queryLogging, setQueryLogging] = useState(false);
 
   const handleTestConnection = () => {
-    setConnectionStatus('testing');
+    setConnectionStatus("testing");
     // Simulate connection test
     setTimeout(() => {
-      setConnectionStatus('connected');
+      setConnectionStatus("connected");
     }, 2000);
   };
 
   const handleManualBackup = () => {
     // Implement manual backup logic
-    alert('Manual backup initiated!');
+    alert("Manual backup initiated!");
   };
 
   return (
@@ -39,8 +48,12 @@ const DatabaseSettingsPage: React.FC = () => {
               <Database className="h-8 w-8 text-emerald-600" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Database Settings</h1>
-              <p className="text-gray-600">Configure database connections and manage your data</p>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Database Settings
+              </h1>
+              <p className="text-gray-600">
+                Configure database connections and manage your data
+              </p>
             </div>
           </div>
         </div>
@@ -48,48 +61,61 @@ const DatabaseSettingsPage: React.FC = () => {
         <div className="grid gap-6">
           {/* Connection Status */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Connection Status</h2>
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              Connection Status
+            </h2>
 
-            <div className={`flex items-center justify-between p-4 rounded-lg border ${
-              connectionStatus === 'connected'
-                ? 'bg-green-50 border-green-200'
-                : connectionStatus === 'disconnected'
-                ? 'bg-red-50 border-red-200'
-                : 'bg-yellow-50 border-yellow-200'
-            }`}>
+            <div
+              className={`flex items-center justify-between p-4 rounded-lg border ${
+                connectionStatus === "connected"
+                  ? "bg-green-50 border-green-200"
+                  : connectionStatus === "disconnected"
+                    ? "bg-red-50 border-red-200"
+                    : "bg-yellow-50 border-yellow-200"
+              }`}
+            >
               <div className="flex items-center gap-3">
-                {connectionStatus === 'connected' && <CheckCircle className="h-5 w-5 text-green-600" />}
-                {connectionStatus === 'disconnected' && <AlertCircle className="h-5 w-5 text-red-600" />}
-                {connectionStatus === 'testing' && <Settings className="h-5 w-5 text-yellow-600 animate-spin" />}
+                {connectionStatus === "connected" && (
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                )}
+                {connectionStatus === "disconnected" && (
+                  <AlertCircle className="h-5 w-5 text-red-600" />
+                )}
+                {connectionStatus === "testing" && (
+                  <Settings className="h-5 w-5 text-yellow-600 animate-spin" />
+                )}
 
                 <div>
                   <p className="text-sm font-medium text-gray-700">
                     PostgreSQL Database
                   </p>
                   <p className="text-xs text-gray-500">
-                    {connectionStatus === 'connected' && 'Connected to nexus_db on localhost:5432'}
-                    {connectionStatus === 'disconnected' && 'Connection failed'}
-                    {connectionStatus === 'testing' && 'Testing connection...'}
+                    {connectionStatus === "connected" &&
+                      "Connected to nexus_db on localhost:5432"}
+                    {connectionStatus === "disconnected" && "Connection failed"}
+                    {connectionStatus === "testing" && "Testing connection..."}
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
-                <span className={`px-3 py-1 text-xs font-medium rounded-full ${
-                  connectionStatus === 'connected'
-                    ? 'bg-green-100 text-green-800'
-                    : connectionStatus === 'disconnected'
-                    ? 'bg-red-100 text-red-800'
-                    : 'bg-yellow-100 text-yellow-800'
-                }`}>
-                  {connectionStatus === 'connected' && 'Active'}
-                  {connectionStatus === 'disconnected' && 'Offline'}
-                  {connectionStatus === 'testing' && 'Testing'}
+                <span
+                  className={`px-3 py-1 text-xs font-medium rounded-full ${
+                    connectionStatus === "connected"
+                      ? "bg-green-100 text-green-800"
+                      : connectionStatus === "disconnected"
+                        ? "bg-red-100 text-red-800"
+                        : "bg-yellow-100 text-yellow-800"
+                  }`}
+                >
+                  {connectionStatus === "connected" && "Active"}
+                  {connectionStatus === "disconnected" && "Offline"}
+                  {connectionStatus === "testing" && "Testing"}
                 </span>
 
                 <button
                   onClick={handleTestConnection}
-                  disabled={connectionStatus === 'testing'}
+                  disabled={connectionStatus === "testing"}
                   className="px-4 py-2 bg-emerald-600 text-white text-sm rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   Test Connection
@@ -100,7 +126,9 @@ const DatabaseSettingsPage: React.FC = () => {
 
           {/* Database Configuration */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Database Configuration</h2>
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              Database Configuration
+            </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -155,7 +183,9 @@ const DatabaseSettingsPage: React.FC = () => {
 
           {/* Performance Settings */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Performance Settings</h2>
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              Performance Settings
+            </h2>
 
             <div className="space-y-4">
               <div>
@@ -164,7 +194,9 @@ const DatabaseSettingsPage: React.FC = () => {
                 </label>
                 <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
                   <option value="5">5 connections</option>
-                  <option value="10" selected>10 connections</option>
+                  <option value="10" selected>
+                    10 connections
+                  </option>
                   <option value="20">20 connections</option>
                   <option value="50">50 connections</option>
                 </select>
@@ -176,7 +208,9 @@ const DatabaseSettingsPage: React.FC = () => {
                 </label>
                 <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
                   <option value="30">30 seconds</option>
-                  <option value="60" selected>60 seconds</option>
+                  <option value="60" selected>
+                    60 seconds
+                  </option>
                   <option value="120">2 minutes</option>
                   <option value="300">5 minutes</option>
                 </select>
@@ -206,7 +240,9 @@ const DatabaseSettingsPage: React.FC = () => {
 
           {/* Backup & Maintenance */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Backup & Maintenance</h2>
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              Backup & Maintenance
+            </h2>
 
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -235,7 +271,9 @@ const DatabaseSettingsPage: React.FC = () => {
                 </label>
                 <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
                   <option value="7">7 days</option>
-                  <option value="30" selected>30 days</option>
+                  <option value="30" selected>
+                    30 days
+                  </option>
                   <option value="90">90 days</option>
                   <option value="365">1 year</option>
                 </select>
@@ -260,7 +298,9 @@ const DatabaseSettingsPage: React.FC = () => {
 
           {/* Database Statistics */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Database Statistics</h2>
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              Database Statistics
+            </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-gray-50 p-4 rounded-lg">

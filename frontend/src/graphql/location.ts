@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Query to get all countries
 export const GET_ALL_COUNTRIES = gql`

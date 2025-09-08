@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Smartphone, Home, Building2, Phone } from 'lucide-react';
-import { cn } from '../../../lib/bits-ui';
+import React, { useState, useRef, useEffect } from "react";
+import { ChevronDown, Smartphone, Home, Building2, Phone } from "lucide-react";
+import { cn } from "../../../lib/bits-ui";
 
 interface PhoneTypeOption {
   value: string;
@@ -15,31 +15,40 @@ interface PhoneTypeDropdownProps {
 }
 
 const phoneTypeOptions: PhoneTypeOption[] = [
-  { value: 'mobile', label: 'Mobile', icon: <Smartphone className="w-4 h-4" /> },
-  { value: 'home', label: 'Home', icon: <Home className="w-4 h-4" /> },
-  { value: 'work', label: 'Work', icon: <Building2 className="w-4 h-4" /> },
-  { value: 'other', label: 'Other', icon: <Phone className="w-4 h-4" /> },
+  {
+    value: "mobile",
+    label: "Mobile",
+    icon: <Smartphone className="w-4 h-4" />,
+  },
+  { value: "home", label: "Home", icon: <Home className="w-4 h-4" /> },
+  { value: "work", label: "Work", icon: <Building2 className="w-4 h-4" /> },
+  { value: "other", label: "Other", icon: <Phone className="w-4 h-4" /> },
 ];
 
 export const PhoneTypeDropdown: React.FC<PhoneTypeDropdownProps> = ({
   value,
   onChange,
-  className
+  className,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const selectedOption = phoneTypeOptions.find(option => option.value === value) || phoneTypeOptions[0];
+  const selectedOption =
+    phoneTypeOptions.find((option) => option.value === value) ||
+    phoneTypeOptions[0];
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleSelect = (optionValue: string) => {
@@ -63,7 +72,9 @@ export const PhoneTypeDropdown: React.FC<PhoneTypeDropdownProps> = ({
           {selectedOption.icon}
           <span>{selectedOption.label}</span>
         </div>
-        <ChevronDown className={cn("w-4 h-4 transition-transform", isOpen && "rotate-180")} />
+        <ChevronDown
+          className={cn("w-4 h-4 transition-transform", isOpen && "rotate-180")}
+        />
       </button>
 
       {isOpen && (
@@ -75,7 +86,7 @@ export const PhoneTypeDropdown: React.FC<PhoneTypeDropdownProps> = ({
               onClick={() => handleSelect(option.value)}
               className={cn(
                 "w-full px-3 py-2 text-left text-sm flex items-center gap-2 hover:bg-gray-50 transition-colors",
-                option.value === value && "bg-blue-50 text-blue-600"
+                option.value === value && "bg-blue-50 text-blue-600",
               )}
             >
               {option.icon}

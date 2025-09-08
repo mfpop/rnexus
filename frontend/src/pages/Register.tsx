@@ -1,52 +1,247 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Button from "../components/ui/Button";
-import { Eye, EyeOff, Mail, Lock, User, Shield } from "lucide-react";
+import { UserPlus, Shield, AlertCircle } from "lucide-react";
+import { AuthForm, FormField } from "../components/ui/AuthForm";
+import { useMutation } from "@apollo/client";
+import { REGISTER_USER } from "../graphql/userRegistration";
 
+/**
+ * Register - Enhanced registration page with improved validation and UX
+ */
 const Register: React.FC = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    acceptTerms: false,
-    acceptMarketing: false,
-  });
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [registerUser, { loading: isLoading }] = useMutation(REGISTER_USER);
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [acceptMarketing, setAcceptMarketing] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
+  // Define form fields with validation
+  const formFields: FormField[] = [
+    {
+      name: "avatar",
+      label: "Profile Picture",
+      type: "file",
+      placeholder: "Choose a profile picture",
+      required: false,
+      accept: "image/*",
+      maxSize: 5 * 1024 * 1024, // 5MB
+    },
+    {
+      name: "firstName",
+      label: "First Name",
+      type: "text",
+      placeholder: "Enter your first name",
+      required: true,
+      icon: <UserPlus className="h-5 w-5 text-blue-400" />,
+      validation: {
+        minLength: 2,
+        maxLength: 50,
+      },
+    },
+    {
+      name: "lastName",
+      label: "Last Name",
+      type: "text",
+      placeholder: "Enter your last name",
+      required: true,
+      icon: <UserPlus className="h-5 w-5 text-blue-400" />,
+      validation: {
+        minLength: 2,
+        maxLength: 50,
+      },
+    },
+    {
+      name: "email",
+      label: "Email Address",
+      type: "email",
+      placeholder: "Enter your email address",
+      required: true,
+      icon: <UserPlus className="h-5 w-5 text-blue-400" />,
+      validation: {
+        pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        custom: (value: string) => {
+          if (value && !value.includes("@")) {
+            return "Please enter a valid email address";
+          }
+          return null;
+        },
+      },
+    },
+    {
+      name: "password",
+      label: "Password",
+      type: "password",
+      placeholder: "Create a strong password",
+      required: true,
+      icon: <Shield className="h-5 w-5 text-blue-400" />,
+      validation: {
+        minLength: 8,
+        custom: (value: string) => {
+          if (value && value.length >= 8) {
+            const hasUpperCase = /[A-Z]/.test(value);
+            const hasLowerCase = /[a-z]/.test(value);
+            const hasNumbers = /\d/.test(value);
+            const hasNonalphas = /\W/.test(value);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+            if (!hasUpperCase || !hasLowerCase || !hasNumbers || !hasNonalphas) {
+              return "Password must contain uppercase, lowercase, number, and special character";
+            }
+          }
+          return null;
+        },
+      },
+    },
+    {
+      name: "confirmPassword",
+      label: "Confirm Password",
+      type: "password",
+      placeholder: "Confirm your password",
+      required: true,
+      icon: <Shield className="h-5 w-5 text-blue-400" />,
+    },
+  ];
 
-    if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match");
+  const handleSubmit = async (formData: Record<string, string | File>) => {
+    // Validate terms acceptance
+    if (!acceptTerms) {
+      setErrors({ terms: "You must accept the Terms of Service and Privacy Policy" });
       return;
     }
 
-    if (!formData.acceptTerms) {
-      alert("Please accept the terms and conditions");
+    // Validate password confirmation
+    const password = formData["password"] as string;
+    const confirmPassword = formData["confirmPassword"] as string;
+    if (password !== confirmPassword) {
+      setErrors({ confirmPassword: "Passwords do not match" });
       return;
     }
 
-    setIsLoading(true);
+    setErrors({});
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      navigate("/");
-    }, 2000);
+    try {
+      // Handle avatar upload if provided
+      let avatarBase64 = null;
+      if (formData["avatar"] instanceof File) {
+        const avatarFile = formData["avatar"] as File;
+        // Convert file to base64 for upload
+        avatarBase64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(avatarFile);
+        });
+      }
+
+      // Call GraphQL mutation
+      const { data } = await registerUser({
+        variables: {
+          email: formData["email"] as string,
+          password: password,
+          firstName: formData["firstName"] as string,
+          lastName: formData["lastName"] as string,
+          avatar: avatarBase64,
+        },
+      });
+
+      if (data?.registerUser?.ok) {
+        // Registration successful
+        navigate("/login", {
+          state: {
+            message: "Registration successful! Please check your email to verify your account.",
+            type: "success"
+          }
+        });
+      } else {
+        // Registration failed
+        const errorMessage = data?.registerUser?.errors?.[0] || "Registration failed. Please try again.";
+        setErrors({ submit: errorMessage });
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      setErrors({
+        submit: error instanceof Error
+          ? error.message
+          : "Registration failed. Please try again.",
+      });
+    }
   };
+
+  const footerContent = (
+    <div className="space-y-4">
+      {/* Terms and Conditions */}
+      <div className="space-y-3">
+        <label className="flex items-start">
+          <input
+            type="checkbox"
+            checked={acceptTerms}
+            onChange={(e) => setAcceptTerms(e.target.checked)}
+            required
+            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+            disabled={isLoading}
+          />
+          <span className="ml-2 text-sm text-gray-700">
+            I agree to the{" "}
+            <Link
+              to="/terms"
+              className="text-blue-600 hover:text-blue-700 font-medium"
+            >
+              Terms of Service
+            </Link>{" "}
+            and{" "}
+            <Link
+              to="/privacy"
+              className="text-blue-600 hover:text-blue-700 font-medium"
+            >
+              Privacy Policy
+            </Link>
+            <span className="text-red-500 ml-1">*</span>
+          </span>
+        </label>
+
+        <label className="flex items-start">
+          <input
+            type="checkbox"
+            checked={acceptMarketing}
+            onChange={(e) => setAcceptMarketing(e.target.checked)}
+            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+            disabled={isLoading}
+          />
+          <span className="ml-2 text-sm text-gray-700">
+            I would like to receive updates about new features and product announcements
+          </span>
+        </label>
+      </div>
+
+      {/* Terms Error */}
+      {errors["terms"] && (
+        <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <AlertCircle className="h-4 w-4" />
+          <span>{errors["terms"]}</span>
+        </div>
+      )}
+
+      {/* Submit Error */}
+      {errors["submit"] && (
+        <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <AlertCircle className="h-4 w-4" />
+          <span>{errors["submit"]}</span>
+        </div>
+      )}
+
+      {/* Login Link */}
+      <div className="text-center pt-4">
+        <p className="text-sm text-gray-600">
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
+          >
+            Sign in here
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
 
   return (
     <div className="flex items-center justify-center min-h-full py-4">
@@ -64,214 +259,14 @@ const Register: React.FC = () => {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Name Fields */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label
-                htmlFor="firstName"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                First Name
-              </label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-400" />
-                <input
-                  type="text"
-                  id="firstName"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors bg-white"
-                  placeholder="First name"
-                />
-              </div>
-            </div>
-            <div>
-              <label
-                htmlFor="lastName"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Last Name
-              </label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-400" />
-                <input
-                  type="text"
-                  id="lastName"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors bg-white"
-                  placeholder="Last name"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Email Field */}
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Email Address
-            </label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-400" />
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                required
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors bg-white"
-                placeholder="Enter your email"
-              />
-            </div>
-          </div>
-
-          {/* Password Field */}
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Password
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-400" />
-              <input
-                type={showPassword ? "text" : "password"}
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                required
-                minLength={8}
-                className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors bg-white"
-                placeholder="Create a password"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                {showPassword ? (
-                  <EyeOff className="h-5 w-5" />
-                ) : (
-                  <Eye className="h-5 w-5" />
-                )}
-              </button>
-            </div>
-            <p className="text-xs text-gray-500 mt-1">
-              Must be at least 8 characters long
-            </p>
-          </div>
-
-          {/* Confirm Password Field */}
-          <div>
-            <label
-              htmlFor="confirmPassword"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Confirm Password
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-400" />
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                id="confirmPassword"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-                required
-                className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors bg-white"
-                placeholder="Confirm your password"
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                {showConfirmPassword ? (
-                  <EyeOff className="h-5 w-5" />
-                ) : (
-                  <Eye className="h-5 w-5" />
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* Terms and Conditions */}
-          <div className="space-y-3">
-            <label className="flex items-start">
-              <input
-                type="checkbox"
-                name="acceptTerms"
-                checked={formData.acceptTerms}
-                onChange={handleInputChange}
-                required
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
-              />
-              <span className="ml-2 text-sm text-gray-700">
-                I agree to the{" "}
-                <Link
-                  to="/terms"
-                  className="text-blue-600 hover:text-blue-700 font-medium"
-                >
-                  Terms of Service
-                </Link>{" "}
-                and{" "}
-                <Link
-                  to="/privacy"
-                  className="text-blue-600 hover:text-blue-700 font-medium"
-                >
-                  Privacy Policy
-                </Link>
-              </span>
-            </label>
-
-            <label className="flex items-start">
-              <input
-                type="checkbox"
-                name="acceptMarketing"
-                checked={formData.acceptMarketing}
-                onChange={handleInputChange}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
-              />
-              <span className="ml-2 text-sm text-gray-700">
-                I would like to receive updates about new features and product
-                announcements
-              </span>
-            </label>
-          </div>
-
-          {/* Submit Button */}
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg transition-colors disabled:opacity-50 text-lg"
-          >
-            {isLoading ? "Creating account..." : "Create Account"}
-          </Button>
-        </form>
-
-        {/* Login Link */}
-        <div className="text-center">
-          <p className="text-sm text-gray-600">
-            Already have an account?{" "}
-            <Link
-              to="/login"
-              className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
-            >
-              Sign in
-            </Link>
-          </p>
-        </div>
+        <AuthForm
+          fields={formFields}
+          onSubmit={handleSubmit}
+          submitButtonText="Create Account"
+          submitButtonIcon={<UserPlus className="h-5 w-5" />}
+          isLoading={isLoading}
+          footer={footerContent}
+        />
       </div>
     </div>
   );

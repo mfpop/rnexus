@@ -1,5 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Search, Newspaper, MessageSquare, AlertTriangle, Filter, Clock, ArrowUpDown } from "lucide-react";
+import {
+  Search,
+  Newspaper,
+  MessageSquare,
+  AlertTriangle,
+  Filter,
+  Clock,
+  ArrowUpDown,
+} from "lucide-react";
 import { useNewsContext } from "./NewsContextNew";
 import { useAuth } from "../../contexts/AuthContext";
 import { usePagination } from "../../contexts/PaginationContext";
@@ -9,7 +17,7 @@ import { usePagination } from "../../contexts/PaginationContext";
  * This is the left card content that appears in StableLayout for the news page
  */
 const NewsLeftCardSimple: React.FC = () => {
-  console.log('NewsLeftCardSimple component rendering');
+  console.log("NewsLeftCardSimple component rendering");
 
   const {
     selectedUpdate,
@@ -20,7 +28,7 @@ const NewsLeftCardSimple: React.FC = () => {
     refreshUpdates,
     filterUpdates,
     deleteUpdate,
-    processedUpdates
+    processedUpdates,
   } = useNewsContext();
   const { isAuthenticated } = useAuth();
   const {
@@ -29,7 +37,7 @@ const NewsLeftCardSimple: React.FC = () => {
     recordsPerPage,
     goToPage,
     setRecordsPerPage,
-    updatePagination
+    updatePagination,
   } = usePagination();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -37,12 +45,16 @@ const NewsLeftCardSimple: React.FC = () => {
   const [activeStatus, setActiveStatus] = useState<string>("all");
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
-  const [sortBy, setSortBy] = useState<"date" | "type" | "priority" | "title">("date");
+  const [sortBy, setSortBy] = useState<"date" | "type" | "priority" | "title">(
+    "date",
+  );
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
-  const debugRef = useRef<{ lastAvailable?: number; lastCardHeight?: number }>({});
+  const debugRef = useRef<{ lastAvailable?: number; lastCardHeight?: number }>(
+    {},
+  );
   const [debug, setDebug] = useState(false);
 
   // Close dropdown when clicking outside
@@ -50,19 +62,20 @@ const NewsLeftCardSimple: React.FC = () => {
     const handleClickOutside = (event: MouseEvent) => {
       // Close filter and sort dropdowns when clicking outside
       const target = event.target as Element;
-      if (!target.closest('.filter-dropdown') && !target.closest('.sort-dropdown')) {
+      if (
+        !target.closest(".filter-dropdown") &&
+        !target.closest(".sort-dropdown")
+      ) {
         setShowFilterDropdown(false);
         setShowSortDropdown(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
-
 
   // Load updates when authentication state changes
   useEffect(() => {
@@ -79,20 +92,20 @@ const NewsLeftCardSimple: React.FC = () => {
   useEffect(() => {
     const handleDeleteEvent = () => {
       if (selectedUpdate && selectedUpdate.can_delete) {
-        if (confirm('Are you sure you want to delete this update?')) {
+        if (confirm("Are you sure you want to delete this update?")) {
           deleteUpdate(selectedUpdate.id);
         }
       } else {
-        alert('No update selected or you do not have permission to delete');
+        alert("No update selected or you do not have permission to delete");
       }
     };
 
     // Add event listeners
-    window.addEventListener('news:delete', handleDeleteEvent);
+    window.addEventListener("news:delete", handleDeleteEvent);
 
     // Cleanup event listeners
     return () => {
-      window.removeEventListener('news:delete', handleDeleteEvent);
+      window.removeEventListener("news:delete", handleDeleteEvent);
     };
   }, [selectedUpdate, deleteUpdate]);
 
@@ -119,15 +132,22 @@ const NewsLeftCardSimple: React.FC = () => {
         const listTop = Math.max(0, listRect.top - containerRect.top);
 
         // Try to measure tabs height if present (keep tabs outside scroll area ideally)
-        const tabsEl = container.querySelector('.news-tabs') as HTMLElement | null;
+        const tabsEl = container.querySelector(
+          ".news-tabs",
+        ) as HTMLElement | null;
         const tabsHeight = tabsEl ? tabsEl.getBoundingClientRect().height : 0;
 
         // Subtract listTop (distance from top of container to list), tabsHeight and extra bottom padding
-        available = Math.max(0, container.clientHeight - listTop - tabsHeight - 12);
+        available = Math.max(
+          0,
+          container.clientHeight - listTop - tabsHeight - 12,
+        );
       }
 
       // Try to measure a rendered card height
-      const sample = container.querySelector('.news-card') as HTMLElement | null;
+      const sample = container.querySelector(
+        ".news-card",
+      ) as HTMLElement | null;
       const cardHeight = sample ? sample.offsetHeight : DEFAULT_CARD_HEIGHT;
 
       // Compute how many can fit
@@ -156,7 +176,7 @@ const NewsLeftCardSimple: React.FC = () => {
     }
 
     // Also listen to window resize as fallback
-    window.addEventListener('resize', scheduleCalc);
+    window.addEventListener("resize", scheduleCalc);
 
     // Run once after mount and after a short delay to allow content to render
     scheduleCalc();
@@ -164,7 +184,7 @@ const NewsLeftCardSimple: React.FC = () => {
 
     return () => {
       clearTimeout(t);
-      window.removeEventListener('resize', scheduleCalc);
+      window.removeEventListener("resize", scheduleCalc);
       if (ro) {
         ro.disconnect();
         ro = null;
@@ -173,7 +193,7 @@ const NewsLeftCardSimple: React.FC = () => {
     };
   }, []);
 
-  console.log('After useEffect, recordsPerPage:', recordsPerPage);
+  console.log("After useEffect, recordsPerPage:", recordsPerPage);
 
   const getTypeColor = (type: string) => {
     switch (type) {
@@ -214,8 +234,6 @@ const NewsLeftCardSimple: React.FC = () => {
     }
   };
 
-
-
   const formatTimeAgo = (timestamp: string) => {
     const now = new Date();
     const updateTime = new Date(timestamp);
@@ -230,11 +248,11 @@ const NewsLeftCardSimple: React.FC = () => {
   };
 
   const handleTypeFilter = async (type: string) => {
-    console.log('=== TAB CLICKED ===');
-    console.log('Filtering by type:', type);
-    console.log('Current activeType:', activeType);
-    console.log('Current activeStatus:', activeStatus);
-    console.log('Current searchQuery:', searchQuery);
+    console.log("=== TAB CLICKED ===");
+    console.log("Filtering by type:", type);
+    console.log("Current activeType:", activeType);
+    console.log("Current activeStatus:", activeStatus);
+    console.log("Current searchQuery:", searchQuery);
     setActiveType(type);
     await filterUpdates(type, activeStatus, searchQuery);
     // Reset to first page when filter changes
@@ -266,7 +284,9 @@ const NewsLeftCardSimple: React.FC = () => {
     setShowFilterDropdown(false);
   };
 
-  const handleSortChange = (newSortBy: "date" | "type" | "priority" | "title") => {
+  const handleSortChange = (
+    newSortBy: "date" | "type" | "priority" | "title",
+  ) => {
     setSortBy(newSortBy);
     setShowSortDropdown(false);
     // Apply sorting logic here
@@ -279,17 +299,24 @@ const NewsLeftCardSimple: React.FC = () => {
 
   // Filter updates based on search and filters
   const filteredUpdates = updates.filter((update) => {
-    const matchesSearch = searchQuery === "" ||
+    const matchesSearch =
+      searchQuery === "" ||
       update.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       update.author.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = activeType === "all" || update.type === activeType;
-    const matchesStatus = activeStatus === "all" || update.status === activeStatus;
+    const matchesStatus =
+      activeStatus === "all" || update.status === activeStatus;
 
     return matchesSearch && matchesType && matchesStatus;
   });
 
   // Debug data for tabs
-  console.log('NewsLeftCardSimple - updates:', updates.length, 'filteredUpdates:', filteredUpdates.length);
+  console.log(
+    "NewsLeftCardSimple - updates:",
+    updates.length,
+    "filteredUpdates:",
+    filteredUpdates.length,
+  );
 
   // Pagination logic
   // Calculate start and end indices for current page
@@ -298,20 +325,23 @@ const NewsLeftCardSimple: React.FC = () => {
   const paginatedUpdates = filteredUpdates.slice(startIndex, endIndex);
 
   // Debug pagination
-  console.log('Pagination debug:', {
+  console.log("Pagination debug:", {
     filteredUpdatesLength: filteredUpdates.length,
     currentPage,
     recordsPerPage,
     startIndex,
     endIndex,
-    paginatedUpdatesLength: paginatedUpdates.length
+    paginatedUpdatesLength: paginatedUpdates.length,
   });
 
   // Update pagination context when data changes
   useEffect(() => {
     updatePagination({
       totalRecords: filteredUpdates.length,
-      totalPages: Math.max(1, Math.ceil(filteredUpdates.length / recordsPerPage)),
+      totalPages: Math.max(
+        1,
+        Math.ceil(filteredUpdates.length / recordsPerPage),
+      ),
     });
   }, [filteredUpdates.length, recordsPerPage, updatePagination]);
 
@@ -326,10 +356,10 @@ const NewsLeftCardSimple: React.FC = () => {
               onClick={handleFilterClick}
               className={`p-1.5 rounded-lg transition-all duration-200 border ${
                 activeType !== "all" || activeStatus !== "all"
-                  ? 'bg-blue-50 text-blue-700 border-blue-200 shadow-sm'
-                  : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                  ? "bg-blue-50 text-blue-700 border-blue-200 shadow-sm"
+                  : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
               }`}
-              title={`Filter${activeType !== "all" || activeStatus !== "all" ? ` (active)` : ''}`}
+              title={`Filter${activeType !== "all" || activeStatus !== "all" ? ` (active)` : ""}`}
             >
               <div className="relative">
                 <Filter className="h-4 w-4" />
@@ -347,13 +377,19 @@ const NewsLeftCardSimple: React.FC = () => {
                 <div className="p-3 space-y-3">
                   {/* Type Filter */}
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-2">Type</label>
+                    <label className="block text-xs font-medium text-gray-700 mb-2">
+                      Type
+                    </label>
                     <div className="space-y-1">
                       {[
                         { key: "all", icon: Filter, label: "All Types" },
                         { key: "news", icon: Newspaper, label: "News" },
-                        { key: "communication", icon: MessageSquare, label: "Communication" },
-                        { key: "alert", icon: AlertTriangle, label: "Alerts" }
+                        {
+                          key: "communication",
+                          icon: MessageSquare,
+                          label: "Communication",
+                        },
+                        { key: "alert", icon: AlertTriangle, label: "Alerts" },
                       ].map(({ key, icon: Icon, label }) => (
                         <button
                           key={key}
@@ -363,8 +399,8 @@ const NewsLeftCardSimple: React.FC = () => {
                           }}
                           className={`w-full text-left px-2 py-1.5 text-xs rounded-md transition-colors flex items-center gap-2 ${
                             activeType === key
-                              ? 'bg-blue-50 text-blue-700'
-                              : 'text-gray-700 hover:bg-gray-50'
+                              ? "bg-blue-50 text-blue-700"
+                              : "text-gray-700 hover:bg-gray-50"
                           }`}
                         >
                           <Icon className="h-3 w-3" />
@@ -376,13 +412,15 @@ const NewsLeftCardSimple: React.FC = () => {
 
                   {/* Status Filter */}
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-2">Status</label>
+                    <label className="block text-xs font-medium text-gray-700 mb-2">
+                      Status
+                    </label>
                     <div className="space-y-1">
                       {[
                         { key: "all", label: "All Statuses" },
                         { key: "published", label: "Published" },
                         { key: "draft", label: "Draft" },
-                        { key: "archived", label: "Archived" }
+                        { key: "archived", label: "Archived" },
                       ].map(({ key, label }) => (
                         <button
                           key={key}
@@ -392,8 +430,8 @@ const NewsLeftCardSimple: React.FC = () => {
                           }}
                           className={`w-full text-left px-2 py-1.5 text-xs rounded-md transition-colors ${
                             activeStatus === key
-                              ? 'bg-blue-50 text-blue-700'
-                              : 'text-gray-700 hover:bg-gray-50'
+                              ? "bg-blue-50 text-blue-700"
+                              : "text-gray-700 hover:bg-gray-50"
                           }`}
                         >
                           {label}
@@ -411,7 +449,7 @@ const NewsLeftCardSimple: React.FC = () => {
             <button
               onClick={handleSortClick}
               className="p-1.5 rounded-lg bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
-              title={`Sort by ${sortBy} (${sortOrder === 'asc' ? 'ascending' : 'descending'})`}
+              title={`Sort by ${sortBy} (${sortOrder === "asc" ? "ascending" : "descending"})`}
             >
               <ArrowUpDown className="h-4 w-4" />
             </button>
@@ -424,15 +462,15 @@ const NewsLeftCardSimple: React.FC = () => {
                     { key: "date", label: "Date" },
                     { key: "type", label: "Type" },
                     { key: "priority", label: "Priority" },
-                    { key: "title", label: "Title" }
+                    { key: "title", label: "Title" },
                   ].map((option) => (
                     <button
                       key={option.key}
                       onClick={() => handleSortChange(option.key as any)}
                       className={`w-full text-left px-2 py-1.5 text-xs rounded-md transition-colors ${
                         sortBy === option.key
-                          ? 'bg-blue-50 text-blue-700'
-                          : 'text-gray-700 hover:bg-gray-50'
+                          ? "bg-blue-50 text-blue-700"
+                          : "text-gray-700 hover:bg-gray-50"
                       }`}
                     >
                       {option.label}
@@ -463,7 +501,10 @@ const NewsLeftCardSimple: React.FC = () => {
               placeholder="Search updates..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch((e.target as HTMLInputElement).value)}
+              onKeyPress={(e) =>
+                e.key === "Enter" &&
+                handleSearch((e.target as HTMLInputElement).value)
+              }
               className="w-full pl-9 pr-4 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             />
           </div>
@@ -476,14 +517,16 @@ const NewsLeftCardSimple: React.FC = () => {
           onClick={() => setDebug((d) => !d)}
           className="text-xs px-2 py-1 bg-white border rounded shadow-sm"
         >
-          {debug ? 'Hide debug' : 'Show debug'}
+          {debug ? "Hide debug" : "Show debug"}
         </button>
         {debug && (
           <div className="mt-2 w-44 p-2 text-xs bg-white border rounded shadow">
-            <div>available: {debugRef.current.lastAvailable ?? '—'}</div>
-            <div>cardH: {debugRef.current.lastCardHeight ?? '—'}</div>
+            <div>available: {debugRef.current.lastAvailable ?? "—"}</div>
+            <div>cardH: {debugRef.current.lastCardHeight ?? "—"}</div>
             <div>recordsPerPage: {recordsPerPage}</div>
-            <div className="mt-1 text-[10px] text-gray-500">Tip: Resize container to recalc</div>
+            <div className="mt-1 text-[10px] text-gray-500">
+              Tip: Resize container to recalc
+            </div>
           </div>
         )}
       </div>
@@ -492,26 +535,46 @@ const NewsLeftCardSimple: React.FC = () => {
       <div className="news-tabs border-b border-gray-200 bg-gray-50 min-h-[40px]">
         <div className="flex overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 p-2">
           {[
-            { key: "all", label: "All", count: processedUpdates.length, type: "all" },
-            { key: "news", label: "News", count: processedUpdates.filter(u => u.type === "news").length, type: "news" },
-            { key: "communication", label: "Communications", count: processedUpdates.filter(u => u.type === "communication").length, type: "communication" },
-            { key: "alert", label: "Alerts", count: processedUpdates.filter(u => u.type === "alert").length, type: "alert" },
+            {
+              key: "all",
+              label: "All",
+              count: processedUpdates.length,
+              type: "all",
+            },
+            {
+              key: "news",
+              label: "News",
+              count: processedUpdates.filter((u) => u.type === "news").length,
+              type: "news",
+            },
+            {
+              key: "communication",
+              label: "Communications",
+              count: processedUpdates.filter((u) => u.type === "communication")
+                .length,
+              type: "communication",
+            },
+            {
+              key: "alert",
+              label: "Alerts",
+              count: processedUpdates.filter((u) => u.type === "alert").length,
+              type: "alert",
+            },
           ].map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => handleTypeFilter(tab.key)}
-            className={`flex-shrink-0 px-4 py-2 text-sm font-medium transition-all duration-300 ease-in-out border-b-2 flex items-center gap-2 relative overflow-hidden ${
-              activeType === tab.key
-                ? "text-gray-900 border-blue-500 bg-white shadow-md"
-                : "text-gray-600 hover:text-gray-900 border-transparent hover:bg-white/80 hover:border-gray-300 hover:shadow-sm"
-            }`}
-          >
-            <span>{tab.label}</span>
-          </button>
-        ))}
+            <button
+              key={tab.key}
+              onClick={() => handleTypeFilter(tab.key)}
+              className={`flex-shrink-0 px-4 py-2 text-sm font-medium transition-all duration-300 ease-in-out border-b-2 flex items-center gap-2 relative overflow-hidden ${
+                activeType === tab.key
+                  ? "text-gray-900 border-blue-500 bg-white shadow-md"
+                  : "text-gray-600 hover:text-gray-900 border-transparent hover:bg-white/80 hover:border-gray-300 hover:shadow-sm"
+              }`}
+            >
+              <span>{tab.label}</span>
+            </button>
+          ))}
         </div>
       </div>
-
 
       {/* Error Display */}
       {error && (
@@ -534,20 +597,34 @@ const NewsLeftCardSimple: React.FC = () => {
         ) : paginatedUpdates.length === 0 ? (
           <div className="p-6 text-center text-gray-500 flex-1 flex flex-col justify-center">
             <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-              <svg className="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              <svg
+                className="h-4 w-4 text-gray-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
               </svg>
             </div>
             <p className="text-sm text-gray-700">
-              {searchQuery || activeType !== 'all' || activeStatus !== 'all'
-                ? 'No updates found matching your filters.'
-                : 'No updates available.'
-              }
+              {searchQuery || activeType !== "all" || activeStatus !== "all"
+                ? "No updates found matching your filters."
+                : "No updates available."}
             </p>
           </div>
         ) : (
           <div className="flex flex-col h-full">
-            <div ref={(el) => { listRef.current = el; }} className="flex flex-col space-y-2 px-1 py-3 flex-1 overflow-y-auto">
+            <div
+              ref={(el) => {
+                listRef.current = el;
+              }}
+              className="flex flex-col space-y-2 px-1 py-3 flex-1 overflow-y-auto"
+            >
               {paginatedUpdates.map((update) => (
                 <div
                   key={update.id}
@@ -581,7 +658,9 @@ const NewsLeftCardSimple: React.FC = () => {
                     {/* Author info with compact hierarchy */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1 text-xs text-gray-600">
-                        <span className="font-medium text-gray-700">Author:</span>
+                        <span className="font-medium text-gray-700">
+                          Author:
+                        </span>
                         <span className="font-semibold text-gray-800 truncate">
                           {update.author}
                         </span>
@@ -594,14 +673,20 @@ const NewsLeftCardSimple: React.FC = () => {
                       <span
                         className={`inline-flex items-center text-xs font-medium ${getTypeColor(update.type)}`}
                       >
-                        {update.type.charAt(0).toUpperCase() + update.type.slice(1)}
+                        {update.type.charAt(0).toUpperCase() +
+                          update.type.slice(1)}
                       </span>
 
                       {/* Status indicator */}
                       {update.status && (
                         <div className="flex items-center gap-1">
-                          <div className={`w-2 h-2 rounded-full ${getStatusColor(update.status)}`} title={`Status: ${update.status}`} />
-                          <span className="text-xs text-gray-600 capitalize">{update.status}</span>
+                          <div
+                            className={`w-2 h-2 rounded-full ${getStatusColor(update.status)}`}
+                            title={`Status: ${update.status}`}
+                          />
+                          <span className="text-xs text-gray-600 capitalize">
+                            {update.status}
+                          </span>
                         </div>
                       )}
 
@@ -621,7 +706,8 @@ const NewsLeftCardSimple: React.FC = () => {
             {/* Pagination Footer */}
             <div className="mt-auto">
               <div className="text-xs text-center text-gray-500 py-2">
-                Page {currentPage} of {totalPages} • {filteredUpdates.length} total records
+                Page {currentPage} of {totalPages} • {filteredUpdates.length}{" "}
+                total records
               </div>
             </div>
           </div>

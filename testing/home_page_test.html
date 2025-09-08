@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Page Navigation Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .test-container {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+        .test-result {
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .pass {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .fail {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .navigation-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .nav-link {
+            display: block;
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-decoration: none;
+            color: #333;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .nav-link:hover {
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <h1>Nexus LMD Home Page Navigation Test</h1>
+
+    <div class="test-container">
+        <h2>Test Environment</h2>
+        <div id="environment-info" class="test-result info">
+            <strong>Frontend:</strong> <a href="http://localhost:5175" target="_blank">http://localhost:5175</a><br>
+            <strong>Backend:</strong> <a href="http://localhost:8001" target="_blank">http://localhost:8001</a><br>
+            <strong>Test Date:</strong> <span id="test-date"></span>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2>Home Page Navigation Links</h2>
+        <p>Click each link to test navigation functionality:</p>
+
+        <div class="navigation-links">
+            <a href="http://localhost:5175/" class="nav-link" target="_blank">🏠 Home</a>
+            <a href="http://localhost:5175/news" class="nav-link" target="_blank">📰 News & Updates</a>
+            <a href="http://localhost:5175/activities" class="nav-link" target="_blank">📋 Activity Management</a>
+            <a href="http://localhost:5175/production" class="nav-link" target="_blank">🏭 Production Monitoring</a>
+            <a href="http://localhost:5175/chat" class="nav-link" target="_blank">💬 Chat & Communication</a>
+            <a href="http://localhost:5175/system" class="nav-link" target="_blank">🖥️ System Administration</a>
+            <a href="http://localhost:5175/settings" class="nav-link" target="_blank">⚙️ Settings & Configuration</a>
+            <a href="http://localhost:5175/help" class="nav-link" target="_blank">❓ Help & Support</a>
+            <a href="http://localhost:5175/contact" class="nav-link" target="_blank">📞 Contact</a>
+            <a href="http://localhost:5175/projects" class="nav-link" target="_blank">📁 Projects</a>
+            <a href="http://localhost:5175/metrics" class="nav-link" target="_blank">📊 Metrics</a>
+            <a href="http://localhost:5175/about" class="nav-link" target="_blank">ℹ️ About</a>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2>Automated Tests</h2>
+        <button onclick="testHomePage()">Test Home Page Load</button>
+        <button onclick="testAllRoutes()">Test All Routes</button>
+        <button onclick="clearResults()">Clear Results</button>
+
+        <div id="test-results" style="margin-top: 20px;"></div>
+    </div>
+
+    <div class="test-container">
+        <h2>Manual Test Checklist</h2>
+        <div style="columns: 2; gap: 20px;">
+            <label><input type="checkbox"> Home page loads without errors</label><br>
+            <label><input type="checkbox"> Left navigation panel displays</label><br>
+            <label><input type="checkbox"> Right dashboard content shows</label><br>
+            <label><input type="checkbox"> Stats grid displays (4 items)</label><br>
+            <label><input type="checkbox"> Activities section shows (9 items)</label><br>
+            <label><input type="checkbox"> Innovations section displays</label><br>
+            <label><input type="checkbox"> All navigation links work</label><br>
+            <label><input type="checkbox"> Hover effects function properly</label><br>
+            <label><input type="checkbox"> Layout is responsive</label><br>
+            <label><input type="checkbox"> No console errors</label><br>
+            <label><input type="checkbox"> Authentication state works</label><br>
+            <label><input type="checkbox"> Routing transitions smooth</label><br>
+        </div>
+    </div>
+
+    <script>
+        // Set current date
+        document.getElementById('test-date').textContent = new Date().toLocaleString();
+
+        function addResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('test-results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${type}`;
+            resultDiv.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            resultsDiv.appendChild(resultDiv);
+        }
+
+        function clearResults() {
+            document.getElementById('test-results').innerHTML = '';
+        }
+
+        async function testHomePage() {
+            addResult('Testing home page load...', 'info');
+
+            try {
+                const response = await fetch('http://localhost:5175/');
+                if (response.ok) {
+                    addResult('✅ Home page responds successfully (Status: ' + response.status + ')', 'pass');
+                } else {
+                    addResult('❌ Home page returned error (Status: ' + response.status + ')', 'fail');
+                }
+            } catch (error) {
+                addResult('❌ Failed to connect to home page: ' + error.message, 'fail');
+            }
+        }
+
+        async function testAllRoutes() {
+            const routes = [
+                '/',
+                '/news',
+                '/activities',
+                '/production',
+                '/chat',
+                '/system',
+                '/settings',
+                '/help',
+                '/contact',
+                '/projects',
+                '/metrics',
+                '/about'
+            ];
+
+            addResult('Testing all routes...', 'info');
+
+            for (const route of routes) {
+                try {
+                    const response = await fetch('http://localhost:5175' + route);
+                    if (response.ok) {
+                        addResult(`✅ Route ${route} - OK (${response.status})`, 'pass');
+                    } else {
+                        addResult(`❌ Route ${route} - Error (${response.status})`, 'fail');
+                    }
+                } catch (error) {
+                    addResult(`❌ Route ${route} - Failed: ${error.message}`, 'fail');
+                }
+
+                // Small delay between requests
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+
+            addResult('Route testing complete!', 'info');
+        }
+
+        // Auto-test on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testHomePage();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

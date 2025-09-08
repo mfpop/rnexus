@@ -1,7 +1,7 @@
 // GraphQL Queries and Mutations for News/Update Interactions
 // Like, Bookmark, Share, and Comments functionality
 
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // =====================================================
 // Fragments
@@ -118,8 +118,16 @@ export const TOGGLE_BOOKMARK = gql`
 
 // Create comment
 export const CREATE_COMMENT = gql`
-  mutation CreateComment($updateId: String!, $content: String!, $parentCommentId: Int) {
-    create_comment(update_id: $updateId, content: $content, parent_comment_id: $parentCommentId) {
+  mutation CreateComment(
+    $updateId: String!
+    $content: String!
+    $parentCommentId: Int
+  ) {
+    create_comment(
+      update_id: $updateId
+      content: $content
+      parent_comment_id: $parentCommentId
+    ) {
       success
       message
       comment {

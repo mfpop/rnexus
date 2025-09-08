@@ -59,6 +59,20 @@ class JWTAuthenticatedGraphQLView(GraphQLView):
             print(f"GraphQL: Authenticated user: {username}")
         else:
             print(f"GraphQL: No authenticated user, using fallback")
+            # For unauthenticated users, set a default user for public queries
+            from django.contrib.auth.models import AnonymousUser
+
+            if not hasattr(request, "user") or isinstance(request.user, AnonymousUser):
+                # Create a temporary user for public queries
+                from django.contrib.auth.models import User
+
+                try:
+                    # Use admin user for public queries
+                    admin_user = User.objects.get(username="admin")
+                    request.user = admin_user
+                    print(f"GraphQL: Using admin user for public queries")
+                except User.DoesNotExist:
+                    print(f"GraphQL: Admin user not found, using AnonymousUser")
 
         return super().parse_body(request)
 

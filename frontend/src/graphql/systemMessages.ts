@@ -3,7 +3,7 @@ import { gql } from "@apollo/client";
 export const GET_SYSTEM_MESSAGES = gql`
   query GetSystemMessages($isRead: Boolean) {
     systemMessages(isRead: $isRead) {
-      id
+      recipientId
       title
       message
       messageType
@@ -19,7 +19,7 @@ export const MARK_SYSTEM_MESSAGE_AS_READ = gql`
     markSystemMessageAsRead(messageId: $messageId) {
       ok
       systemMessage {
-        id
+        recipientId
         isRead
       }
     }

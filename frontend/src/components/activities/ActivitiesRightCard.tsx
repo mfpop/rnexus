@@ -18,7 +18,6 @@ import {
 import { Activity, useActivities } from ".";
 import { activitiesApi } from "../../lib/activitiesApi";
 
-
 interface ActivitiesRightCardProps {
   selectedActivity: Activity | null;
 }
@@ -33,7 +32,7 @@ interface Comment {
 
 interface Toast {
   id: string;
-  type: 'success' | 'error' | 'info';
+  type: "success" | "error" | "info";
   message: string;
 }
 
@@ -46,9 +45,19 @@ interface Toast {
 const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
   selectedActivity,
 }) => {
-  const { selectedActivity: contextActivity, setSelectedActivity, refreshActivities } = useActivities();
+  const {
+    selectedActivity: contextActivity,
+    setSelectedActivity,
+    refreshActivities,
+  } = useActivities();
   const [activeSection, setActiveSection] = useState<
-    "participants" | "tasks" | "equipment" | "dependencies" | "notes" | "attachments" | "history"
+    | "participants"
+    | "tasks"
+    | "equipment"
+    | "dependencies"
+    | "notes"
+    | "attachments"
+    | "history"
   >("participants");
   const [newComment, setNewComment] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -78,23 +87,27 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
   const currentActivity = contextActivity || selectedActivity;
 
   // Debug logging to understand the synchronization issue
-  console.debug('ActivitiesRightCard - contextActivity:', contextActivity?.id);
-  console.debug('ActivitiesRightCard - selectedActivity (prop):', selectedActivity?.id);
-  console.debug('ActivitiesRightCard - currentActivity (resolved):', currentActivity?.id);
+  console.debug("ActivitiesRightCard - contextActivity:", contextActivity?.id);
+  console.debug(
+    "ActivitiesRightCard - selectedActivity (prop):",
+    selectedActivity?.id,
+  );
+  console.debug(
+    "ActivitiesRightCard - currentActivity (resolved):",
+    currentActivity?.id,
+  );
 
   // Effect to handle context activity changes
   React.useEffect(() => {
     // Keep silent in production; use debug in dev
-    console.debug('ActivitiesRightCard - contextActivity changed');
+    console.debug("ActivitiesRightCard - contextActivity changed");
   }, [contextActivity]);
 
-
-
   // Toast notification functions
-  const addToast = (type: Toast['type'], message: string) => {
+  const addToast = (type: Toast["type"], message: string) => {
     const id = Date.now().toString();
     const newToast: Toast = { id, type, message };
-    setToasts(prev => [...prev, newToast]);
+    setToasts((prev) => [...prev, newToast]);
 
     // Auto-remove toast after 5 seconds
     setTimeout(() => {
@@ -103,7 +116,7 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
   };
 
   const removeToast = (id: string) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id));
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
   };
 
   // Helper function to convert backend activity response to frontend format
@@ -114,8 +127,12 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
     type: backendActivity.type,
     status: backendActivity.status,
     priority: backendActivity.priority,
-    startTime: backendActivity.startTime ? new Date(backendActivity.startTime) : new Date(),
-    endTime: backendActivity.endTime ? new Date(backendActivity.endTime) : new Date(),
+    startTime: backendActivity.startTime
+      ? new Date(backendActivity.startTime)
+      : new Date(),
+    endTime: backendActivity.endTime
+      ? new Date(backendActivity.endTime)
+      : new Date(),
     assignedTo: backendActivity.assignedTo,
     assignedBy: backendActivity.assignedBy,
     location: backendActivity.location,
@@ -126,9 +143,9 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
 
     // Required fields for ActivityExtended compatibility
     durationHours: Math.max(backendActivity.estimatedDuration ?? 0, 0),
-    statusDisplay: backendActivity.status || 'planned',
-    priorityDisplay: backendActivity.priority || 'medium',
-    fullName: backendActivity.assignedBy || 'Unknown User',
+    statusDisplay: backendActivity.status || "planned",
+    priorityDisplay: backendActivity.priority || "medium",
+    fullName: backendActivity.assignedBy || "Unknown User",
     createdAt: backendActivity.createdAt || new Date().toISOString(),
     updatedAt: backendActivity.updatedAt || new Date().toISOString(),
 
@@ -139,12 +156,19 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
   });
 
   const handleStartActivity = async (activityId: string) => {
-    if (!currentActivity || !currentActivity.id || !currentActivity.status) return;
+    if (!currentActivity || !currentActivity.id || !currentActivity.status)
+      return;
 
     // Additional safety check: only allow starting activities that are planned
-    if (currentActivity.status !== 'planned') {
-      addToast('error', `Cannot start activity: Activity must be planned (current status: ${currentActivity.status})`);
-      console.warn('Attempted to start activity with invalid status:', currentActivity.status);
+    if (currentActivity.status !== "planned") {
+      addToast(
+        "error",
+        `Cannot start activity: Activity must be planned (current status: ${currentActivity.status})`,
+      );
+      console.warn(
+        "Attempted to start activity with invalid status:",
+        currentActivity.status,
+      );
       return;
     }
 
@@ -154,40 +178,57 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
 
       // The backend returns { success: true, activity: {...}, message: "..." }
       if (response && response.success && response.activity) {
-        console.debug('Start activity - Before update - currentActivity:', currentActivity?.id);
-        console.debug('Start activity - API response data:', response.activity.id);
+        console.debug(
+          "Start activity - Before update - currentActivity:",
+          currentActivity?.id,
+        );
+        console.debug(
+          "Start activity - API response data:",
+          response.activity.id,
+        );
 
         // Convert backend response to frontend format and update the selected activity
         const convertedActivity = convertBackendActivity(response.activity);
         setSelectedActivity(convertedActivity);
-        console.debug('Start activity - After setSelectedActivity');
+        console.debug("Start activity - After setSelectedActivity");
 
         // Refresh the activities list to update the left card
         // This will also rehydrate the selected activity to keep it in sync
         await refreshActivities();
 
-        addToast('success', 'Activity started successfully!');
-        console.debug('Activity started successfully');
+        addToast("success", "Activity started successfully!");
+        console.debug("Activity started successfully");
       } else {
-        addToast('error', `Failed to start activity: ${response.error || 'Invalid response format'}`);
-        console.error('Failed to start activity:', response);
+        addToast(
+          "error",
+          `Failed to start activity: ${response.error || "Invalid response format"}`,
+        );
+        console.error("Failed to start activity:", response);
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      addToast('error', `Error starting activity: ${errorMessage}`);
-      console.error('Error starting activity:', error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error occurred";
+      addToast("error", `Error starting activity: ${errorMessage}`);
+      console.error("Error starting activity:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handlePauseActivity = async (activityId: string) => {
-    if (!currentActivity || !currentActivity.id || !currentActivity.status) return;
+    if (!currentActivity || !currentActivity.id || !currentActivity.status)
+      return;
 
     // Additional safety check: only allow pausing activities that are in-progress
-    if (currentActivity.status !== 'in-progress') {
-      addToast('error', `Cannot pause activity: Activity must be in progress (current status: ${currentActivity.status})`);
-      console.warn('Attempted to pause activity with invalid status:', currentActivity.status);
+    if (currentActivity.status !== "in-progress") {
+      addToast(
+        "error",
+        `Cannot pause activity: Activity must be in progress (current status: ${currentActivity.status})`,
+      );
+      console.warn(
+        "Attempted to pause activity with invalid status:",
+        currentActivity.status,
+      );
       return;
     }
 
@@ -205,28 +246,36 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
         // This will also rehydrate the selected activity to keep it in sync
         await refreshActivities();
 
-        addToast('success', 'Activity paused successfully!');
-        console.log('Activity paused successfully:', convertedActivity);
+        addToast("success", "Activity paused successfully!");
+        console.log("Activity paused successfully:", convertedActivity);
       } else {
-        addToast('error', `Failed to pause activity: ${response.error || 'Invalid response format'}`);
-        console.error('Failed to pause activity:', response);
+        addToast(
+          "error",
+          `Failed to pause activity: ${response.error || "Invalid response format"}`,
+        );
+        console.error("Failed to pause activity:", response);
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      addToast('error', `Error pausing activity: ${errorMessage}`);
-      console.error('Error pausing activity:', error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error occurred";
+      addToast("error", `Error pausing activity: ${errorMessage}`);
+      console.error("Error pausing activity:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleCompleteActivity = async (activityId: string) => {
-    if (!currentActivity || !currentActivity.id || !currentActivity.status) return;
+    if (!currentActivity || !currentActivity.id || !currentActivity.status)
+      return;
 
     // Additional safety check: only allow completing activities that are not already completed
-    if (currentActivity.status === 'completed') {
-      addToast('error', `Cannot complete activity: Activity is already completed`);
-      console.warn('Attempted to complete already completed activity');
+    if (currentActivity.status === "completed") {
+      addToast(
+        "error",
+        `Cannot complete activity: Activity is already completed`,
+      );
+      console.warn("Attempted to complete already completed activity");
       return;
     }
 
@@ -244,24 +293,29 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
         // This will also rehydrate the selected activity to keep it in sync
         await refreshActivities();
 
-        addToast('success', 'Activity completed successfully!');
-        console.log('Activity completed successfully:', convertedActivity);
+        addToast("success", "Activity completed successfully!");
+        console.log("Activity completed successfully:", convertedActivity);
         setShowCompleteConfirm(false); // Close confirmation dialog
       } else {
-        addToast('error', `Failed to complete activity: ${response.error || 'Invalid response format'}`);
-        console.error('Failed to complete activity:', response);
+        addToast(
+          "error",
+          `Failed to complete activity: ${response.error || "Invalid response format"}`,
+        );
+        console.error("Failed to complete activity:", response);
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      addToast('error', `Error completing activity: ${errorMessage}`);
-      console.error('Error completing activity:', error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error occurred";
+      addToast("error", `Error completing activity: ${errorMessage}`);
+      console.error("Error completing activity:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleCompleteClick = () => {
-    if (!currentActivity || !currentActivity.id || !currentActivity.status) return;
+    if (!currentActivity || !currentActivity.id || !currentActivity.status)
+      return;
     setShowCompleteConfirm(true);
   };
 
@@ -272,7 +326,8 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
   };
 
   const handleExportActivity = async () => {
-    if (!currentActivity || !currentActivity.id || !currentActivity.status) return;
+    if (!currentActivity || !currentActivity.id || !currentActivity.status)
+      return;
 
     setIsLoading(true);
     try {
@@ -299,13 +354,13 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
 
       // Convert to JSON and create downloadable file
       const dataStr = JSON.stringify(reportData, null, 2);
-      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const dataBlob = new Blob([dataStr], { type: "application/json" });
 
       // Create download link
       const url = URL.createObjectURL(dataBlob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.download = `activity-${currentActivity.title.replace(/\s+/g, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.json`;
+      link.download = `activity-${currentActivity.title.replace(/\s+/g, "-").toLowerCase()}-${new Date().toISOString().split("T")[0]}.json`;
 
       // Trigger download
       document.body.appendChild(link);
@@ -315,11 +370,11 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
       // Clean up
       URL.revokeObjectURL(url);
 
-      addToast('success', 'Activity exported successfully!');
-      console.log('Activity exported successfully');
+      addToast("success", "Activity exported successfully!");
+      console.log("Activity exported successfully");
     } catch (error) {
-      addToast('error', 'Error exporting activity. Please try again.');
-      console.error('Error exporting activity:', error);
+      addToast("error", "Error exporting activity. Please try again.");
+      console.error("Error exporting activity:", error);
     } finally {
       setIsLoading(false);
     }
@@ -334,8 +389,6 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
       minute: "2-digit",
     });
   };
-
-
 
   const handleCommentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -367,22 +420,46 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
         {/* Background decorative elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-20 -right-20 w-40 h-40 bg-blue-100 rounded-full opacity-20 animate-pulse"></div>
-          <div className="absolute top-1/4 -left-16 w-32 h-32 bg-teal-100 rounded-full opacity-30 animate-bounce" style={{ animationDuration: '3s' }}></div>
-          <div className="absolute bottom-1/4 -right-12 w-24 h-24 bg-purple-100 rounded-full opacity-25 animate-ping" style={{ animationDuration: '4s' }}></div>
-          <div className="absolute bottom-10 left-1/4 w-16 h-16 bg-green-100 rounded-full opacity-20 animate-pulse" style={{ animationDelay: '1s' }}></div>
-          <div className="absolute top-1/3 right-1/3 w-8 h-8 bg-orange-100 rounded-full opacity-30 animate-bounce" style={{ animationDuration: '2s', animationDelay: '0.5s' }}></div>
-          <div className="absolute bottom-1/3 left-1/3 w-12 h-12 bg-pink-100 rounded-full opacity-25 animate-ping" style={{ animationDuration: '3s', animationDelay: '1.5s' }}></div>
+          <div
+            className="absolute top-1/4 -left-16 w-32 h-32 bg-teal-100 rounded-full opacity-30 animate-bounce"
+            style={{ animationDuration: "3s" }}
+          ></div>
+          <div
+            className="absolute bottom-1/4 -right-12 w-24 h-24 bg-purple-100 rounded-full opacity-25 animate-ping"
+            style={{ animationDuration: "4s" }}
+          ></div>
+          <div
+            className="absolute bottom-10 left-1/4 w-16 h-16 bg-green-100 rounded-full opacity-20 animate-pulse"
+            style={{ animationDelay: "1s" }}
+          ></div>
+          <div
+            className="absolute top-1/3 right-1/3 w-8 h-8 bg-orange-100 rounded-full opacity-30 animate-bounce"
+            style={{ animationDuration: "2s", animationDelay: "0.5s" }}
+          ></div>
+          <div
+            className="absolute bottom-1/3 left-1/3 w-12 h-12 bg-pink-100 rounded-full opacity-25 animate-ping"
+            style={{ animationDuration: "3s", animationDelay: "1.5s" }}
+          ></div>
         </div>
 
         <div className="text-center max-w-md relative z-10">
           {/* Large Icon */}
           <div className="relative mb-8">
             <div className="w-32 h-32 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center mx-auto shadow-lg animate-pulse">
-              <Calendar className="h-16 w-16 text-blue-600 animate-bounce" style={{ animationDuration: '2s' }} />
+              <Calendar
+                className="h-16 w-16 text-blue-600 animate-bounce"
+                style={{ animationDuration: "2s" }}
+              />
             </div>
             {/* Decorative elements */}
-            <div className="absolute -top-2 -right-2 w-6 h-6 bg-teal-400 rounded-full opacity-60 animate-ping" style={{ animationDuration: '3s' }}></div>
-            <div className="absolute -bottom-1 -left-1 w-4 h-4 bg-purple-400 rounded-full opacity-60 animate-ping" style={{ animationDuration: '2s', animationDelay: '1s' }}></div>
+            <div
+              className="absolute -top-2 -right-2 w-6 h-6 bg-teal-400 rounded-full opacity-60 animate-ping"
+              style={{ animationDuration: "3s" }}
+            ></div>
+            <div
+              className="absolute -bottom-1 -left-1 w-4 h-4 bg-purple-400 rounded-full opacity-60 animate-ping"
+              style={{ animationDuration: "2s", animationDelay: "1s" }}
+            ></div>
           </div>
 
           {/* Main Message */}
@@ -395,32 +472,59 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
 
           {/* Feature Cards */}
           <div className="grid grid-cols-2 gap-4 mb-8">
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 hover:scale-105 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+            <div
+              className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 hover:scale-105 animate-fade-in"
+              style={{ animationDelay: "0.1s" }}
+            >
               <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse">
                 <CheckCircle className="h-5 w-5 text-green-600" />
               </div>
-              <h3 className="font-semibold text-gray-800 text-sm">Track Progress</h3>
+              <h3 className="font-semibold text-gray-800 text-sm">
+                Track Progress
+              </h3>
               <p className="text-xs text-gray-600">Monitor activity status</p>
             </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 hover:scale-105 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse" style={{ animationDelay: '0.5s' }}>
+            <div
+              className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 hover:scale-105 animate-fade-in"
+              style={{ animationDelay: "0.2s" }}
+            >
+              <div
+                className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse"
+                style={{ animationDelay: "0.5s" }}
+              >
                 <Users className="h-5 w-5 text-blue-600" />
               </div>
-              <h3 className="font-semibold text-gray-800 text-sm">Team Collaboration</h3>
+              <h3 className="font-semibold text-gray-800 text-sm">
+                Team Collaboration
+              </h3>
               <p className="text-xs text-gray-600">Work together efficiently</p>
             </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 hover:scale-105 animate-fade-in" style={{ animationDelay: '0.3s' }}>
-              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse" style={{ animationDelay: '1s' }}>
+            <div
+              className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 hover:scale-105 animate-fade-in"
+              style={{ animationDelay: "0.3s" }}
+            >
+              <div
+                className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse"
+                style={{ animationDelay: "1s" }}
+              >
                 <MessageSquare className="h-5 w-5 text-purple-600" />
               </div>
               <h3 className="font-semibold text-gray-800 text-sm">Comments</h3>
               <p className="text-xs text-gray-600">Share updates & feedback</p>
             </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 hover:scale-105 animate-fade-in" style={{ animationDelay: '0.4s' }}>
-              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse" style={{ animationDelay: '1.5s' }}>
+            <div
+              className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 hover:scale-105 animate-fade-in"
+              style={{ animationDelay: "0.4s" }}
+            >
+              <div
+                className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse"
+                style={{ animationDelay: "1.5s" }}
+              >
                 <Download className="h-5 w-5 text-orange-600" />
               </div>
-              <h3 className="font-semibold text-gray-800 text-sm">File Sharing</h3>
+              <h3 className="font-semibold text-gray-800 text-sm">
+                File Sharing
+              </h3>
               <p className="text-xs text-gray-600">Attach documents</p>
             </div>
           </div>
@@ -436,7 +540,11 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
   }
 
   // Additional safety check for critical properties
-  if (!currentActivity.status || !currentActivity.title || !currentActivity.id) {
+  if (
+    !currentActivity.status ||
+    !currentActivity.title ||
+    !currentActivity.id
+  ) {
     return (
       <div className="h-full flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -470,18 +578,23 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
 
               {/* Activity Status Indicator */}
               <div className="flex items-center gap-2">
-                <span className={`px-2 py-1 text-xs font-medium rounded-full border ${
-                  currentActivity.status === 'completed'
-                    ? 'bg-green-100 text-green-800 border-green-200'
-                    : currentActivity.status === 'in-progress'
-                    ? 'bg-blue-100 text-blue-800 border-blue-200'
-                    : currentActivity.status === 'planned'
-                    ? 'bg-gray-100 text-gray-800 border-gray-200'
-                    : currentActivity.status === 'cancelled'
-                    ? 'bg-red-100 text-red-800 border-red-200'
-                    : 'bg-yellow-100 text-yellow-800 border-yellow-200'
-                }`}>
-                  {currentActivity.status ? currentActivity.status.charAt(0).toUpperCase() + currentActivity.status.slice(1).replace('-', ' ') : 'Unknown'}
+                <span
+                  className={`px-2 py-1 text-xs font-medium rounded-full border ${
+                    currentActivity.status === "completed"
+                      ? "bg-green-100 text-green-800 border-green-200"
+                      : currentActivity.status === "in-progress"
+                        ? "bg-blue-100 text-blue-800 border-blue-200"
+                        : currentActivity.status === "planned"
+                          ? "bg-gray-100 text-gray-800 border-gray-200"
+                          : currentActivity.status === "cancelled"
+                            ? "bg-red-100 text-red-800 border-red-200"
+                            : "bg-yellow-100 text-yellow-800 border-yellow-200"
+                  }`}
+                >
+                  {currentActivity.status
+                    ? currentActivity.status.charAt(0).toUpperCase() +
+                      currentActivity.status.slice(1).replace("-", " ")
+                    : "Unknown"}
                 </span>
               </div>
 
@@ -490,24 +603,33 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
                 <button
                   onClick={() => {
                     // Double-check the status before allowing the action
-                    if (currentActivity?.status === 'planned' && !isLoading) {
+                    if (currentActivity?.status === "planned" && !isLoading) {
                       handleStartActivity(currentActivity.id);
                     } else {
-                      console.warn('Start button clicked but activity cannot be started:', currentActivity?.status);
+                      console.warn(
+                        "Start button clicked but activity cannot be started:",
+                        currentActivity?.status,
+                      );
                     }
                   }}
-                  disabled={!currentActivity.status || currentActivity.status !== 'planned' || isLoading}
+                  disabled={
+                    !currentActivity.status ||
+                    currentActivity.status !== "planned" ||
+                    isLoading
+                  }
                   className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors border flex items-center gap-2 ${
-                    !currentActivity.status || currentActivity.status !== 'planned' || isLoading
-                      ? 'bg-gray-50 text-gray-400 border-gray-100 cursor-not-allowed'
-                      : 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200'
+                    !currentActivity.status ||
+                    currentActivity.status !== "planned" ||
+                    isLoading
+                      ? "bg-gray-50 text-gray-400 border-gray-100 cursor-not-allowed"
+                      : "bg-green-100 text-green-700 border-green-200 hover:bg-green-200"
                   }`}
                   title={
                     !currentActivity.status
-                      ? 'Activity status unknown'
-                      : currentActivity.status !== 'planned'
-                      ? 'Can only start planned activities'
-                      : 'Start this activity'
+                      ? "Activity status unknown"
+                      : currentActivity.status !== "planned"
+                        ? "Can only start planned activities"
+                        : "Start this activity"
                   }
                 >
                   {isLoading ? (
@@ -520,24 +642,36 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
                 <button
                   onClick={() => {
                     // Double-check the status before allowing the action
-                    if (currentActivity?.status === 'in-progress' && !isLoading) {
+                    if (
+                      currentActivity?.status === "in-progress" &&
+                      !isLoading
+                    ) {
                       handlePauseActivity(currentActivity.id);
                     } else {
-                      console.warn('Pause button clicked but activity cannot be paused:', currentActivity?.status);
+                      console.warn(
+                        "Pause button clicked but activity cannot be paused:",
+                        currentActivity?.status,
+                      );
                     }
                   }}
-                  disabled={!currentActivity.status || currentActivity.status !== 'in-progress' || isLoading}
+                  disabled={
+                    !currentActivity.status ||
+                    currentActivity.status !== "in-progress" ||
+                    isLoading
+                  }
                   className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors border flex items-center gap-2 ${
-                    !currentActivity.status || currentActivity.status !== 'in-progress' || isLoading
-                      ? 'bg-gray-50 text-gray-400 border-gray-100 cursor-not-allowed'
-                      : 'bg-yellow-100 text-yellow-700 border-yellow-200 hover:bg-yellow-200'
+                    !currentActivity.status ||
+                    currentActivity.status !== "in-progress" ||
+                    isLoading
+                      ? "bg-gray-50 text-gray-400 border-gray-100 cursor-not-allowed"
+                      : "bg-yellow-100 text-yellow-700 border-yellow-200 hover:bg-yellow-200"
                   }`}
                   title={
                     !currentActivity.status
-                      ? 'Activity status unknown'
-                      : currentActivity.status !== 'in-progress'
-                      ? 'Can only pause activities in progress'
-                      : 'Pause this activity'
+                      ? "Activity status unknown"
+                      : currentActivity.status !== "in-progress"
+                        ? "Can only pause activities in progress"
+                        : "Pause this activity"
                   }
                 >
                   {isLoading ? (
@@ -550,24 +684,33 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
                 <button
                   onClick={() => {
                     // Double-check the status before allowing the action
-                    if (currentActivity?.status !== 'completed' && !isLoading) {
+                    if (currentActivity?.status !== "completed" && !isLoading) {
                       handleCompleteClick();
                     } else {
-                      console.warn('Complete button clicked but activity cannot be completed:', currentActivity?.status);
+                      console.warn(
+                        "Complete button clicked but activity cannot be completed:",
+                        currentActivity?.status,
+                      );
                     }
                   }}
-                  disabled={!currentActivity.status || currentActivity.status === 'completed' || isLoading}
+                  disabled={
+                    !currentActivity.status ||
+                    currentActivity.status === "completed" ||
+                    isLoading
+                  }
                   className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors border flex items-center gap-2 ${
-                    !currentActivity.status || currentActivity.status === 'completed' || isLoading
-                      ? 'bg-gray-50 text-gray-400 border-gray-100 cursor-not-allowed'
-                      : 'bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200'
+                    !currentActivity.status ||
+                    currentActivity.status === "completed" ||
+                    isLoading
+                      ? "bg-gray-50 text-gray-400 border-gray-100 cursor-not-allowed"
+                      : "bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200"
                   }`}
                   title={
                     !currentActivity.status
-                      ? 'Activity status unknown'
-                      : currentActivity.status === 'completed'
-                      ? 'Activity already completed'
-                      : 'Mark this activity as completed'
+                      ? "Activity status unknown"
+                      : currentActivity.status === "completed"
+                        ? "Activity already completed"
+                        : "Mark this activity as completed"
                   }
                 >
                   {isLoading ? (
@@ -582,8 +725,8 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
                   disabled={isLoading}
                   className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors border flex items-center gap-2 ${
                     isLoading
-                      ? 'bg-gray-50 text-gray-400 border-gray-100 cursor-not-allowed'
-                      : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200'
+                      ? "bg-gray-50 text-gray-400 border-gray-100 cursor-not-allowed"
+                      : "bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200"
                   }`}
                   title="Export activity data as JSON file"
                 >
@@ -630,12 +773,14 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
               {/* Activity Details Card - 40% width (2/5 columns) - RIGHT SIDE */}
               <div className="col-span-2 bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
                 {/* Card Content - Two columns: left (scheduled, priority, status) and right (start, end, duration) */}
-                                  <div className="grid grid-cols-2 gap-x-16">
+                <div className="grid grid-cols-2 gap-x-16">
                   {/* Left Column */}
                   <div className="space-y-2">
                     {/* Scheduled */}
                     <div className="flex justify-between">
-                      <span className="text-sm text-gray-600 font-medium">Scheduled:</span>
+                      <span className="text-sm text-gray-600 font-medium">
+                        Scheduled:
+                      </span>
                       <span className="text-sm text-gray-900">
                         {formatTimeAgo(currentActivity.startTime)}
                       </span>
@@ -643,7 +788,9 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
 
                     {/* Priority */}
                     <div className="flex justify-between">
-                      <span className="text-sm text-gray-600 font-medium">Priority:</span>
+                      <span className="text-sm text-gray-600 font-medium">
+                        Priority:
+                      </span>
                       <span className="text-sm text-gray-900 capitalize">
                         {currentActivity.priority}
                       </span>
@@ -651,7 +798,9 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
 
                     {/* Status */}
                     <div className="flex justify-between">
-                      <span className="text-sm text-gray-600 font-medium">Status:</span>
+                      <span className="text-sm text-gray-600 font-medium">
+                        Status:
+                      </span>
                       <span className="text-sm text-gray-900 capitalize">
                         {currentActivity.status}
                       </span>
@@ -662,7 +811,9 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
                   <div className="space-y-2">
                     {/* Start Date */}
                     <div className="flex justify-between">
-                      <span className="text-sm text-gray-600 font-medium">Start:</span>
+                      <span className="text-sm text-gray-600 font-medium">
+                        Start:
+                      </span>
                       <span className="text-sm text-gray-900">
                         {formatDateTime(currentActivity.startTime)}
                       </span>
@@ -670,7 +821,9 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
 
                     {/* Due Date */}
                     <div className="flex justify-between">
-                      <span className="text-sm text-gray-600 font-medium">Due:</span>
+                      <span className="text-sm text-gray-600 font-medium">
+                        Due:
+                      </span>
                       <span className="text-sm text-gray-900">
                         {formatDateTime(currentActivity.endTime)}
                       </span>
@@ -678,20 +831,20 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
 
                     {/* Duration */}
                     <div className="flex justify-between">
-                      <span className="text-sm text-gray-600 font-medium">Duration:</span>
+                      <span className="text-sm text-gray-600 font-medium">
+                        Duration:
+                      </span>
                       <span className="text-sm text-gray-900">
-                        {currentActivity.actualDuration ? `${currentActivity.actualDuration} min` : `${currentActivity.estimatedDuration} min`}
+                        {currentActivity.actualDuration
+                          ? `${currentActivity.actualDuration} min`
+                          : `${currentActivity.estimatedDuration} min`}
                       </span>
                     </div>
                   </div>
                 </div>
-
-
               </div>
             </div>
           </div>
-
-
         </div>
       </div>
 
@@ -774,19 +927,35 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
             <div className="w-32 bg-gray-200 rounded-full h-2">
               <div
                 className={`h-2 rounded-full transition-all duration-300 ${
-                  currentActivity.status === 'completed' ? 'bg-green-500' :
-                  currentActivity.status === 'in-progress' ? 'bg-blue-500' :
-                  currentActivity.status === 'planned' ? 'bg-gray-300' : 'bg-yellow-500'
+                  currentActivity.status === "completed"
+                    ? "bg-green-500"
+                    : currentActivity.status === "in-progress"
+                      ? "bg-blue-500"
+                      : currentActivity.status === "planned"
+                        ? "bg-gray-300"
+                        : "bg-yellow-500"
                 }`}
-                style={{ width: `${currentActivity.status === 'completed' ? 100 :
-                               currentActivity.status === 'in-progress' ? 65 :
-                               currentActivity.status === 'planned' ? 0 : 25}%` }}
+                style={{
+                  width: `${
+                    currentActivity.status === "completed"
+                      ? 100
+                      : currentActivity.status === "in-progress"
+                        ? 65
+                        : currentActivity.status === "planned"
+                          ? 0
+                          : 25
+                  }%`,
+                }}
               ></div>
             </div>
             <span className="text-sm text-gray-600 font-medium">
-              {currentActivity.status === 'completed' ? '100%' :
-               currentActivity.status === 'in-progress' ? '65%' :
-               currentActivity.status === 'planned' ? '0%' : '25%'}
+              {currentActivity.status === "completed"
+                ? "100%"
+                : currentActivity.status === "in-progress"
+                  ? "65%"
+                  : currentActivity.status === "planned"
+                    ? "0%"
+                    : "25%"}
             </span>
           </div>
         </div>
@@ -811,12 +980,15 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-gray-500 rounded-full flex items-center justify-center text-white font-medium">
                     {currentActivity.assignedTo
-                      ? currentActivity.assignedTo.split(" ").map((n) => n[0]).join("")
+                      ? currentActivity.assignedTo
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")
                       : "NA"}
                   </div>
                   <div className="flex-1">
                     <div className="font-medium text-gray-900">
-                      {currentActivity.assignedTo || 'Not assigned'}
+                      {currentActivity.assignedTo || "Not assigned"}
                     </div>
                     <div className="text-sm text-gray-600">
                       Primary Assignee
@@ -829,12 +1001,15 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-gray-500 rounded-full flex items-center justify-center text-white font-medium">
                     {currentActivity.assignedBy
-                      ? currentActivity.assignedBy.split(" ").map((n) => n[0]).join("")
+                      ? currentActivity.assignedBy
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")
                       : "NA"}
                   </div>
                   <div className="flex-1">
                     <div className="font-medium text-gray-900">
-                      {currentActivity.assignedBy || 'Not specified'}
+                      {currentActivity.assignedBy || "Not specified"}
                     </div>
                     <div className="text-sm text-gray-600">Assigned By</div>
                   </div>
@@ -843,8 +1018,6 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
             </div>
           </div>
         )}
-
-
 
         {activeSection === "tasks" && (
           <div className="space-y-6">
@@ -867,11 +1040,17 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
                 <div className="p-4 border border-gray-200 rounded-lg">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-medium text-gray-900">Review Documentation</div>
-                      <div className="text-sm text-gray-600">Review and approve related documents</div>
+                      <div className="font-medium text-gray-900">
+                        Review Documentation
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        Review and approve related documents
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full">In Progress</span>
+                      <span className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full">
+                        In Progress
+                      </span>
                       <span className="text-sm text-gray-600">75%</span>
                     </div>
                   </div>
@@ -880,11 +1059,17 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
                 <div className="p-4 border border-gray-200 rounded-lg">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-medium text-gray-900">Equipment Setup</div>
-                      <div className="text-sm text-gray-600">Prepare and configure required equipment</div>
+                      <div className="font-medium text-gray-900">
+                        Equipment Setup
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        Prepare and configure required equipment
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full">Planned</span>
+                      <span className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full">
+                        Planned
+                      </span>
                       <span className="text-sm text-gray-600">0%</span>
                     </div>
                   </div>
@@ -901,8 +1086,12 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
                     <CheckCircle className="h-4 w-4 text-green-600" />
                   </div>
                   <div className="flex-1">
-                    <div className="font-medium text-gray-900">Planning Complete</div>
-                    <div className="text-sm text-gray-600">Initial planning and scheduling completed</div>
+                    <div className="font-medium text-gray-900">
+                      Planning Complete
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      Initial planning and scheduling completed
+                    </div>
                   </div>
                   <div className="text-sm text-gray-500">Completed</div>
                 </div>
@@ -912,8 +1101,12 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
                     <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
                   </div>
                   <div className="flex-1">
-                    <div className="font-medium text-gray-900">Execution Phase</div>
-                    <div className="text-sm text-gray-600">Main activity execution in progress</div>
+                    <div className="font-medium text-gray-900">
+                      Execution Phase
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      Main activity execution in progress
+                    </div>
                   </div>
                   <div className="text-sm text-gray-500">Current</div>
                 </div>
@@ -923,8 +1116,12 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
                     <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
                   </div>
                   <div className="flex-1">
-                    <div className="font-medium text-gray-900">Review & Approval</div>
-                    <div className="text-sm text-gray-600">Final review and stakeholder approval</div>
+                    <div className="font-medium text-gray-900">
+                      Review & Approval
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      Final review and stakeholder approval
+                    </div>
                   </div>
                   <div className="text-sm text-gray-500">Pending</div>
                 </div>
@@ -942,7 +1139,9 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
             {/* Equipment List */}
             <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
               <div className="flex items-center justify-between mb-4">
-                <h4 className="font-medium text-gray-900">Required Equipment</h4>
+                <h4 className="font-medium text-gray-900">
+                  Required Equipment
+                </h4>
                 <button className="flex items-center gap-2 px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
                   <Plus className="h-4 w-4" />
                   <span>Add Equipment</span>
@@ -950,16 +1149,26 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
               </div>
 
               <div className="space-y-3">
-                {currentActivity.equipment && currentActivity.equipment.length > 0 ? (
+                {currentActivity.equipment &&
+                currentActivity.equipment.length > 0 ? (
                   currentActivity.equipment.map((equipment, index) => (
-                    <div key={index} className="p-4 border border-gray-200 rounded-lg">
+                    <div
+                      key={index}
+                      className="p-4 border border-gray-200 rounded-lg"
+                    >
                       <div className="flex items-center justify-between">
                         <div>
-                          <div className="font-medium text-gray-900">{equipment}</div>
-                          <div className="text-sm text-gray-600">Equipment required for this activity</div>
+                          <div className="font-medium text-gray-900">
+                            {equipment}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            Equipment required for this activity
+                          </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full">Available</span>
+                          <span className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full">
+                            Available
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -974,24 +1183,37 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
 
             {/* Resource Allocation */}
             <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-              <h4 className="font-medium text-gray-900 mb-4">Resource Allocation</h4>
+              <h4 className="font-medium text-gray-900 mb-4">
+                Resource Allocation
+              </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <div className="text-sm text-gray-600 mb-1">Human Resources</div>
+                  <div className="text-sm text-gray-600 mb-1">
+                    Human Resources
+                  </div>
                   <div className="font-medium text-gray-900">
-                    {currentActivity.assignedTo ? '1 person assigned' : 'No one assigned'}
+                    {currentActivity.assignedTo
+                      ? "1 person assigned"
+                      : "No one assigned"}
                   </div>
                 </div>
 
                 <div>
-                  <div className="text-sm text-gray-600 mb-1">Equipment Resources</div>
+                  <div className="text-sm text-gray-600 mb-1">
+                    Equipment Resources
+                  </div>
                   <div className="font-medium text-gray-900">
-                    {currentActivity.equipment ? currentActivity.equipment.length : 0} items
+                    {currentActivity.equipment
+                      ? currentActivity.equipment.length
+                      : 0}{" "}
+                    items
                   </div>
                 </div>
 
                 <div>
-                  <div className="text-sm text-gray-600 mb-1">Time Allocation</div>
+                  <div className="text-sm text-gray-600 mb-1">
+                    Time Allocation
+                  </div>
                   <div className="font-medium text-gray-900">
                     {currentActivity.estimatedDuration} minutes
                   </div>
@@ -1000,7 +1222,7 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
                 <div>
                   <div className="text-sm text-gray-600 mb-1">Location</div>
                   <div className="font-medium text-gray-900">
-                    {currentActivity.location || 'Not specified'}
+                    {currentActivity.location || "Not specified"}
                   </div>
                 </div>
               </div>
@@ -1025,16 +1247,26 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
               </div>
 
               <div className="space-y-3">
-                {currentActivity.dependencies && currentActivity.dependencies.length > 0 ? (
+                {currentActivity.dependencies &&
+                currentActivity.dependencies.length > 0 ? (
                   currentActivity.dependencies.map((dependency, index) => (
-                    <div key={index} className="p-4 border border-gray-200 rounded-lg">
+                    <div
+                      key={index}
+                      className="p-4 border border-gray-200 rounded-lg"
+                    >
                       <div className="flex items-center justify-between">
                         <div>
-                          <div className="font-medium text-gray-900">{dependency}</div>
-                          <div className="text-sm text-gray-600">Must be completed before this activity</div>
+                          <div className="font-medium text-gray-900">
+                            {dependency}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            Must be completed before this activity
+                          </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full">Completed</span>
+                          <span className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full">
+                            Completed
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -1049,17 +1281,26 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
 
             {/* Impact Analysis */}
             <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-              <h4 className="font-medium text-gray-900 mb-4">Impact Analysis</h4>
+              <h4 className="font-medium text-gray-900 mb-4">
+                Impact Analysis
+              </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <div className="text-sm text-gray-600 mb-1">Blocking Activities</div>
+                  <div className="text-sm text-gray-600 mb-1">
+                    Blocking Activities
+                  </div>
                   <div className="font-medium text-gray-900">
-                    {currentActivity.dependencies ? currentActivity.dependencies.length : 0} activities
+                    {currentActivity.dependencies
+                      ? currentActivity.dependencies.length
+                      : 0}{" "}
+                    activities
                   </div>
                 </div>
 
                 <div>
-                  <div className="text-sm text-gray-600 mb-1">Dependent Activities</div>
+                  <div className="text-sm text-gray-600 mb-1">
+                    Dependent Activities
+                  </div>
                   <div className="font-medium text-gray-900">
                     {/* This would come from a reverse lookup in the database */}
                     '0 activities'
@@ -1067,16 +1308,24 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
                 </div>
 
                 <div>
-                  <div className="text-sm text-gray-600 mb-1">Critical Path</div>
+                  <div className="text-sm text-gray-600 mb-1">
+                    Critical Path
+                  </div>
                   <div className="font-medium text-gray-900">
-                    {currentActivity.dependencies && currentActivity.dependencies.length > 0 ? 'Yes' : 'No'}
+                    {currentActivity.dependencies &&
+                    currentActivity.dependencies.length > 0
+                      ? "Yes"
+                      : "No"}
                   </div>
                 </div>
 
                 <div>
                   <div className="text-sm text-gray-600 mb-1">Risk Level</div>
                   <div className="font-medium text-gray-900">
-                    {currentActivity.dependencies && currentActivity.dependencies.length > 0 ? 'Medium' : 'Low'}
+                    {currentActivity.dependencies &&
+                    currentActivity.dependencies.length > 0
+                      ? "Medium"
+                      : "Low"}
                   </div>
                 </div>
               </div>
@@ -1151,11 +1400,11 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
                           <span className="font-medium text-gray-900">
                             {comment.author}
                           </span>
-                                                   <span className="text-sm text-gray-500">
-                           {comment.timestamp.toString()}
-                         </span>
+                          <span className="text-sm text-gray-500">
+                            {comment.timestamp.toString()}
+                          </span>
                         </div>
-                                                 <p className="text-gray-700">{comment.content}</p>
+                        <p className="text-gray-700">{comment.content}</p>
                       </div>
                     </div>
                   </div>
@@ -1177,7 +1426,8 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
               </button>
             </div>
 
-            {currentActivity.attachments && currentActivity.attachments.length > 0 ? (
+            {currentActivity.attachments &&
+            currentActivity.attachments.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {currentActivity.attachments.map((attachment) => (
                   <div
@@ -1238,7 +1488,9 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
                   </div>
                   <div className="flex-1">
                     <div className="font-medium text-gray-900">Created</div>
-                    <div className="text-sm text-gray-600">Activity was created and assigned</div>
+                    <div className="text-sm text-gray-600">
+                      Activity was created and assigned
+                    </div>
                   </div>
                   <div className="text-sm text-gray-500">Initial</div>
                 </div>
@@ -1249,32 +1501,38 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
                   </div>
                   <div className="flex-1">
                     <div className="font-medium text-gray-900">Scheduled</div>
-                    <div className="text-sm text-gray-600">Activity was scheduled for execution</div>
+                    <div className="text-sm text-gray-600">
+                      Activity was scheduled for execution
+                    </div>
                   </div>
                   <div className="text-sm text-gray-500">Planned</div>
                 </div>
 
-                {currentActivity.status === 'in-progress' && (
+                {currentActivity.status === "in-progress" && (
                   <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                     <div className="w-6 h-6 bg-green-200 rounded-full flex items-center justify-center">
                       <div className="w-2 h-2 bg-green-600 rounded-full"></div>
                     </div>
                     <div className="flex-1">
                       <div className="font-medium text-gray-900">Started</div>
-                      <div className="text-sm text-gray-600">Activity execution began</div>
+                      <div className="text-sm text-gray-600">
+                        Activity execution began
+                      </div>
                     </div>
                     <div className="text-sm text-gray-500">In Progress</div>
                   </div>
                 )}
 
-                {currentActivity.status === 'completed' && (
+                {currentActivity.status === "completed" && (
                   <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                     <div className="w-6 h-6 bg-purple-200 rounded-full flex items-center justify-center">
                       <div className="w-2 h-2 bg-purple-600 rounded-full"></div>
                     </div>
                     <div className="flex-1">
                       <div className="font-medium text-gray-900">Completed</div>
-                      <div className="text-sm text-gray-600">Activity was successfully completed</div>
+                      <div className="text-sm text-gray-600">
+                        Activity was successfully completed
+                      </div>
                     </div>
                     <div className="text-sm text-gray-500">Completed</div>
                   </div>
@@ -1284,21 +1542,29 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
 
             {/* Performance Metrics */}
             <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-              <h4 className="font-medium text-gray-900 mb-4">Performance Metrics</h4>
+              <h4 className="font-medium text-gray-900 mb-4">
+                Performance Metrics
+              </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <div className="text-sm text-gray-600 mb-1">Efficiency</div>
                   <div className="font-medium text-gray-900">
-                    {currentActivity.actualDuration && currentActivity.estimatedDuration
-                      ? Math.round((currentActivity.estimatedDuration / currentActivity.actualDuration) * 100)
-                      : 'N/A'}%
+                    {currentActivity.actualDuration &&
+                    currentActivity.estimatedDuration
+                      ? Math.round(
+                          (currentActivity.estimatedDuration /
+                            currentActivity.actualDuration) *
+                            100,
+                        )
+                      : "N/A"}
+                    %
                   </div>
                 </div>
 
                 <div>
                   <div className="text-sm text-gray-600 mb-1">On Time</div>
                   <div className="font-medium text-gray-900">
-                    {currentActivity.status === 'completed' ? 'Yes' : 'Pending'}
+                    {currentActivity.status === "completed" ? "Yes" : "Pending"}
                   </div>
                 </div>
               </div>
@@ -1313,11 +1579,11 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
           <div
             key={toast.id}
             className={`flex items-center gap-3 p-4 rounded-lg shadow-lg max-w-md transform transition-all duration-300 ${
-              toast.type === 'success'
-                ? 'bg-green-500 text-white border border-green-600'
-                : toast.type === 'error'
-                ? 'bg-red-500 text-white border border-red-600'
-                : 'bg-blue-500 text-white border border-blue-600'
+              toast.type === "success"
+                ? "bg-green-500 text-white border border-green-600"
+                : toast.type === "error"
+                  ? "bg-red-500 text-white border border-red-600"
+                  : "bg-blue-500 text-white border border-blue-600"
             }`}
           >
             <span className="flex-1">{toast.message}</span>
@@ -1339,7 +1605,8 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
               Confirm Activity Completion
             </h3>
             <p className="text-gray-700 mb-6">
-              Are you sure you want to mark this activity as completed? This action cannot be undone.
+              Are you sure you want to mark this activity as completed? This
+              action cannot be undone.
             </p>
             <div className="flex justify-end gap-3">
               <button
@@ -1356,7 +1623,7 @@ const ActivitiesRightCard: React.FC<ActivitiesRightCardProps> = ({
                 {isLoading ? (
                   <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
                 ) : (
-                  'Complete Activity'
+                  "Complete Activity"
                 )}
               </button>
             </div>

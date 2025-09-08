@@ -1,12 +1,18 @@
-
 export interface BaseMessage {
   id: number;
   senderId: number;
   senderName: string;
   timestamp: string; // GraphQL returns ISO string timestamps
-  type: 'text' | 'image' | 'audio' | 'video' | 'document' | 'location' | 'contact';
+  type:
+    | "text"
+    | "image"
+    | "audio"
+    | "video"
+    | "document"
+    | "location"
+    | "contact";
   content: string;
-  status?: 'sending' | 'sent' | 'delivered' | 'read';
+  status?: "sending" | "sent" | "delivered" | "read";
   replyTo?: Message | null;
   forwarded?: boolean;
   forwardedFrom?: string;
@@ -15,11 +21,11 @@ export interface BaseMessage {
 }
 
 export interface TextMessage extends BaseMessage {
-  type: 'text';
+  type: "text";
 }
 
 export interface ImageMessage extends BaseMessage {
-  type: 'image';
+  type: "image";
   imageUrl: string;
   fileName: string;
   caption?: string;
@@ -28,7 +34,7 @@ export interface ImageMessage extends BaseMessage {
 }
 
 export interface AudioMessage extends BaseMessage {
-  type: 'audio';
+  type: "audio";
   audioUrl: string;
   duration: number;
   waveform?: number[];
@@ -36,7 +42,7 @@ export interface AudioMessage extends BaseMessage {
 }
 
 export interface VideoMessage extends BaseMessage {
-  type: 'video';
+  type: "video";
   videoUrl: string;
   thumbnailUrl: string;
   fileName: string;
@@ -46,7 +52,7 @@ export interface VideoMessage extends BaseMessage {
 }
 
 export interface DocumentMessage extends BaseMessage {
-  type: 'document';
+  type: "document";
   documentUrl: string;
   fileName: string;
   fileSize: number;
@@ -55,7 +61,7 @@ export interface DocumentMessage extends BaseMessage {
 }
 
 export interface LocationMessage extends BaseMessage {
-  type: 'location';
+  type: "location";
   latitude: number;
   longitude: number;
   address?: string;
@@ -64,20 +70,27 @@ export interface LocationMessage extends BaseMessage {
 }
 
 export interface ContactMessage extends BaseMessage {
-  type: 'contact';
+  type: "contact";
   contactName: string;
   phoneNumber: string;
   avatarUrl?: string;
   email?: string;
 }
 
-export type Message = TextMessage | ImageMessage | AudioMessage | VideoMessage | DocumentMessage | LocationMessage | ContactMessage;
+export type Message =
+  | TextMessage
+  | ImageMessage
+  | AudioMessage
+  | VideoMessage
+  | DocumentMessage
+  | LocationMessage
+  | ContactMessage;
 
 // Chat interface to match the database structure
 export interface Chat {
   id: string;
   name: string;
-  type: 'user' | 'group';
+  type: "user" | "group";
   lastMessage?: Message | null;
   lastActivity: string; // GraphQL returns ISO string timestamps
   unreadCount: number;

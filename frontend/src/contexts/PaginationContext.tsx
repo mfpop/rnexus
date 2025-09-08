@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  ReactNode,
+} from "react";
 
 interface PaginationState {
   currentPage: number;
@@ -25,12 +31,14 @@ interface PaginationContextType {
   resetPagination: () => void;
 }
 
-const PaginationContext = createContext<PaginationContextType | undefined>(undefined);
+const PaginationContext = createContext<PaginationContextType | undefined>(
+  undefined,
+);
 
 export const usePagination = () => {
   const context = useContext(PaginationContext);
   if (context === undefined) {
-    throw new Error('usePagination must be used within a PaginationProvider');
+    throw new Error("usePagination must be used within a PaginationProvider");
   }
   return context;
 };
@@ -39,47 +47,52 @@ interface PaginationProviderProps {
   children: ReactNode;
 }
 
-export const PaginationProvider: React.FC<PaginationProviderProps> = ({ children }) => {
+export const PaginationProvider: React.FC<PaginationProviderProps> = ({
+  children,
+}) => {
   const [paginationState, setPaginationState] = useState<PaginationState>({
     currentPage: 1,
     totalPages: 1,
     totalRecords: 0,
-    recordsPerPage: 5, // Reduced from 6 to 5 to ensure pagination shows with 27 users
+    recordsPerPage: 10, // Default to 10 records per page
   });
 
   // Navigation functions
   const goToPage = useCallback((page: number) => {
-    setPaginationState(prev => {
+    setPaginationState((prev) => {
       const newPage = Math.max(1, Math.min(page, prev.totalPages));
       return { ...prev, currentPage: newPage };
     });
   }, []);
 
   const goToNextPage = useCallback(() => {
-    setPaginationState(prev => {
+    setPaginationState((prev) => {
       const nextPage = Math.min(prev.currentPage + 1, prev.totalPages);
       return { ...prev, currentPage: nextPage };
     });
   }, []);
 
   const goToPreviousPage = useCallback(() => {
-    setPaginationState(prev => {
+    setPaginationState((prev) => {
       const prevPage = Math.max(prev.currentPage - 1, 1);
       return { ...prev, currentPage: prevPage };
     });
   }, []);
 
   const goToFirstPage = useCallback(() => {
-    setPaginationState(prev => ({ ...prev, currentPage: 1 }));
+    setPaginationState((prev) => ({ ...prev, currentPage: 1 }));
   }, []);
 
   const goToLastPage = useCallback(() => {
-    setPaginationState(prev => ({ ...prev, currentPage: prev.totalPages }));
+    setPaginationState((prev) => ({ ...prev, currentPage: prev.totalPages }));
   }, []);
 
   const setRecordsPerPage = useCallback((recordsPerPage: number) => {
-    setPaginationState(prev => {
-      const newTotalPages = Math.max(1, Math.ceil(prev.totalRecords / recordsPerPage));
+    setPaginationState((prev) => {
+      const newTotalPages = Math.max(
+        1,
+        Math.ceil(prev.totalRecords / recordsPerPage),
+      );
       const newCurrentPage = Math.min(prev.currentPage, newTotalPages);
       return {
         ...prev,
@@ -91,7 +104,7 @@ export const PaginationProvider: React.FC<PaginationProviderProps> = ({ children
   }, []);
 
   const updatePagination = useCallback((data: Partial<PaginationState>) => {
-    setPaginationState(prev => {
+    setPaginationState((prev) => {
       const newState = { ...prev, ...data };
 
       // Ensure currentPage is within valid range

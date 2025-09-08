@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { ChevronDown, MapPin, Globe, Building, Mail, AlertCircle } from "lucide-react";
+import {
+  ChevronDown,
+  MapPin,
+  Globe,
+  Building,
+  Mail,
+  AlertCircle,
+} from "lucide-react";
 import { Input } from "../ui/bits";
 
 interface Country {
@@ -37,7 +44,11 @@ interface AddressFormProps {
   className?: string;
 }
 
-const AddressForm: React.FC<AddressFormProps> = ({ value, onChange, className = "" }) => {
+const AddressForm: React.FC<AddressFormProps> = ({
+  value,
+  onChange,
+  className = "",
+}) => {
   const [countries, setCountries] = useState<Country[]>([]);
   const [states, setStates] = useState<StateProvince[]>([]);
   const [cities, setCities] = useState<CityTown[]>([]);
@@ -81,7 +92,7 @@ const AddressForm: React.FC<AddressFormProps> = ({ value, onChange, className = 
   }, [value.state_province]);
 
   const loadCountries = async () => {
-    setLoading(prev => ({ ...prev, countries: true }));
+    setLoading((prev) => ({ ...prev, countries: true }));
     try {
       const response = await fetch("https://restcountries.com/v3.1/all");
       if (response.ok) {
@@ -100,16 +111,19 @@ const AddressForm: React.FC<AddressFormProps> = ({ value, onChange, className = 
       }
     } catch (error) {
       console.error("Failed to load countries:", error);
-      setErrors(prev => ({ ...prev, countries: "Failed to load countries. Please refresh the page." }));
+      setErrors((prev) => ({
+        ...prev,
+        countries: "Failed to load countries. Please refresh the page.",
+      }));
       // Fallback to common countries
       setCountries(getFallbackCountries());
     } finally {
-      setLoading(prev => ({ ...prev, countries: false }));
+      setLoading((prev) => ({ ...prev, countries: false }));
     }
   };
 
   const loadStates = async (countryName: string) => {
-    setLoading(prev => ({ ...prev, states: true }));
+    setLoading((prev) => ({ ...prev, states: true }));
     try {
       // Try to use real API first (you'll need to sign up for a free API key)
       // const apiKey = process.env.REACT_APP_GEONAMES_USERNAME || 'demo';
@@ -120,15 +134,18 @@ const AddressForm: React.FC<AddressFormProps> = ({ value, onChange, className = 
       setStates(mockStates);
     } catch (error) {
       console.error("Failed to load states:", error);
-      setErrors(prev => ({ ...prev, states: "Failed to load states. Please try again." }));
+      setErrors((prev) => ({
+        ...prev,
+        states: "Failed to load states. Please try again.",
+      }));
       setStates([]);
     } finally {
-      setLoading(prev => ({ ...prev, states: false }));
+      setLoading((prev) => ({ ...prev, states: false }));
     }
   };
 
   const loadCities = async (stateName: string) => {
-    setLoading(prev => ({ ...prev, cities: true }));
+    setLoading((prev) => ({ ...prev, cities: true }));
     try {
       // Try to use real API first
       // const apiKey = process.env.REACT_APP_GEONAMES_USERNAME || 'demo';
@@ -139,10 +156,13 @@ const AddressForm: React.FC<AddressFormProps> = ({ value, onChange, className = 
       setCities(mockCities);
     } catch (error) {
       console.error("Failed to load cities:", error);
-      setErrors(prev => ({ ...prev, cities: "Failed to load cities. Please try again." }));
+      setErrors((prev) => ({
+        ...prev,
+        cities: "Failed to load cities. Please try again.",
+      }));
       setCities([]);
     } finally {
-      setLoading(prev => ({ ...prev, cities: false }));
+      setLoading((prev) => ({ ...prev, cities: false }));
     }
   };
 
@@ -201,7 +221,7 @@ const AddressForm: React.FC<AddressFormProps> = ({ value, onChange, className = 
         { geonameId: 49, name: "Wisconsin", adminName1: "WI" },
         { geonameId: 50, name: "Wyoming", adminName1: "WY" },
       ],
-      "Canada": [
+      Canada: [
         { geonameId: 51, name: "Alberta", adminName1: "AB" },
         { geonameId: 52, name: "British Columbia", adminName1: "BC" },
         { geonameId: 53, name: "Manitoba", adminName1: "MB" },
@@ -222,7 +242,7 @@ const AddressForm: React.FC<AddressFormProps> = ({ value, onChange, className = 
         { geonameId: 66, name: "Wales", adminName1: "WLS" },
         { geonameId: 67, name: "Northern Ireland", adminName1: "NIR" },
       ],
-      "Germany": [
+      Germany: [
         { geonameId: 68, name: "Baden-Württemberg", adminName1: "BW" },
         { geonameId: 69, name: "Bavaria", adminName1: "BY" },
         { geonameId: 70, name: "Berlin", adminName1: "BE" },
@@ -240,7 +260,7 @@ const AddressForm: React.FC<AddressFormProps> = ({ value, onChange, className = 
         { geonameId: 82, name: "Schleswig-Holstein", adminName1: "SH" },
         { geonameId: 83, name: "Thuringia", adminName1: "TH" },
       ],
-      "France": [
+      France: [
         { geonameId: 84, name: "Auvergne-Rhône-Alpes", adminName1: "ARA" },
         { geonameId: 85, name: "Bourgogne-Franche-Comté", adminName1: "BFC" },
         { geonameId: 86, name: "Bretagne", adminName1: "BRE" },
@@ -253,9 +273,13 @@ const AddressForm: React.FC<AddressFormProps> = ({ value, onChange, className = 
         { geonameId: 93, name: "Nouvelle-Aquitaine", adminName1: "NAQ" },
         { geonameId: 94, name: "Occitanie", adminName1: "OCC" },
         { geonameId: 95, name: "Pays de la Loire", adminName1: "PDL" },
-        { geonameId: 96, name: "Provence-Alpes-Côte d'Azur", adminName1: "PAC" },
+        {
+          geonameId: 96,
+          name: "Provence-Alpes-Côte d'Azur",
+          adminName1: "PAC",
+        },
       ],
-      "Mexico": [
+      Mexico: [
         { geonameId: 100, name: "Aguascalientes", adminName1: "AGU" },
         { geonameId: 101, name: "Baja California", adminName1: "BCN" },
         { geonameId: 102, name: "Baja California Sur", adminName1: "BCS" },
@@ -297,119 +321,519 @@ const AddressForm: React.FC<AddressFormProps> = ({ value, onChange, className = 
     const cityMap: Record<string, CityTown[]> = {
       // US Cities
       "New York": [
-        { geonameId: 101, name: "New York City", adminName1: "NY", adminName2: "New York" },
-        { geonameId: 102, name: "Buffalo", adminName1: "NY", adminName2: "Erie" },
-        { geonameId: 103, name: "Rochester", adminName1: "NY", adminName2: "Monroe" },
-        { geonameId: 104, name: "Yonkers", adminName1: "NY", adminName2: "Westchester" },
-        { geonameId: 105, name: "Syracuse", adminName1: "NY", adminName2: "Onondaga" },
+        {
+          geonameId: 101,
+          name: "New York City",
+          adminName1: "NY",
+          adminName2: "New York",
+        },
+        {
+          geonameId: 102,
+          name: "Buffalo",
+          adminName1: "NY",
+          adminName2: "Erie",
+        },
+        {
+          geonameId: 103,
+          name: "Rochester",
+          adminName1: "NY",
+          adminName2: "Monroe",
+        },
+        {
+          geonameId: 104,
+          name: "Yonkers",
+          adminName1: "NY",
+          adminName2: "Westchester",
+        },
+        {
+          geonameId: 105,
+          name: "Syracuse",
+          adminName1: "NY",
+          adminName2: "Onondaga",
+        },
       ],
-      "California": [
-        { geonameId: 201, name: "Los Angeles", adminName1: "CA", adminName2: "Los Angeles" },
-        { geonameId: 202, name: "San Francisco", adminName1: "CA", adminName2: "San Francisco" },
-        { geonameId: 203, name: "San Diego", adminName1: "CA", adminName2: "San Diego" },
-        { geonameId: 204, name: "San Jose", adminName1: "CA", adminName2: "Santa Clara" },
-        { geonameId: 205, name: "Sacramento", adminName1: "CA", adminName2: "Sacramento" },
+      California: [
+        {
+          geonameId: 201,
+          name: "Los Angeles",
+          adminName1: "CA",
+          adminName2: "Los Angeles",
+        },
+        {
+          geonameId: 202,
+          name: "San Francisco",
+          adminName1: "CA",
+          adminName2: "San Francisco",
+        },
+        {
+          geonameId: 203,
+          name: "San Diego",
+          adminName1: "CA",
+          adminName2: "San Diego",
+        },
+        {
+          geonameId: 204,
+          name: "San Jose",
+          adminName1: "CA",
+          adminName2: "Santa Clara",
+        },
+        {
+          geonameId: 205,
+          name: "Sacramento",
+          adminName1: "CA",
+          adminName2: "Sacramento",
+        },
       ],
-      "Texas": [
-        { geonameId: 301, name: "Houston", adminName1: "TX", adminName2: "Harris" },
-        { geonameId: 302, name: "Dallas", adminName1: "TX", adminName2: "Dallas" },
-        { geonameId: 303, name: "Austin", adminName1: "TX", adminName2: "Travis" },
-        { geonameId: 304, name: "San Antonio", adminName1: "TX", adminName2: "Bexar" },
-        { geonameId: 305, name: "Fort Worth", adminName1: "TX", adminName2: "Tarrant" },
+      Texas: [
+        {
+          geonameId: 301,
+          name: "Houston",
+          adminName1: "TX",
+          adminName2: "Harris",
+        },
+        {
+          geonameId: 302,
+          name: "Dallas",
+          adminName1: "TX",
+          adminName2: "Dallas",
+        },
+        {
+          geonameId: 303,
+          name: "Austin",
+          adminName1: "TX",
+          adminName2: "Travis",
+        },
+        {
+          geonameId: 304,
+          name: "San Antonio",
+          adminName1: "TX",
+          adminName2: "Bexar",
+        },
+        {
+          geonameId: 305,
+          name: "Fort Worth",
+          adminName1: "TX",
+          adminName2: "Tarrant",
+        },
       ],
       // Canadian Cities
-      "Ontario": [
-        { geonameId: 401, name: "Toronto", adminName1: "ON", adminName2: "Toronto" },
-        { geonameId: 402, name: "Ottawa", adminName1: "ON", adminName2: "Ottawa" },
-        { geonameId: 403, name: "Mississauga", adminName1: "ON", adminName2: "Peel" },
-        { geonameId: 404, name: "Brampton", adminName1: "ON", adminName2: "Peel" },
-        { geonameId: 405, name: "Hamilton", adminName1: "ON", adminName2: "Hamilton" },
+      Ontario: [
+        {
+          geonameId: 401,
+          name: "Toronto",
+          adminName1: "ON",
+          adminName2: "Toronto",
+        },
+        {
+          geonameId: 402,
+          name: "Ottawa",
+          adminName1: "ON",
+          adminName2: "Ottawa",
+        },
+        {
+          geonameId: 403,
+          name: "Mississauga",
+          adminName1: "ON",
+          adminName2: "Peel",
+        },
+        {
+          geonameId: 404,
+          name: "Brampton",
+          adminName1: "ON",
+          adminName2: "Peel",
+        },
+        {
+          geonameId: 405,
+          name: "Hamilton",
+          adminName1: "ON",
+          adminName2: "Hamilton",
+        },
       ],
-      "Quebec": [
-        { geonameId: 501, name: "Montreal", adminName1: "QC", adminName2: "Montreal" },
-        { geonameId: 502, name: "Quebec City", adminName1: "QC", adminName2: "Quebec" },
-        { geonameId: 503, name: "Laval", adminName1: "QC", adminName2: "Laval" },
-        { geonameId: 504, name: "Gatineau", adminName1: "QC", adminName2: "Gatineau" },
-        { geonameId: 505, name: "Longueuil", adminName1: "QC", adminName2: "Longueuil" },
+      Quebec: [
+        {
+          geonameId: 501,
+          name: "Montreal",
+          adminName1: "QC",
+          adminName2: "Montreal",
+        },
+        {
+          geonameId: 502,
+          name: "Quebec City",
+          adminName1: "QC",
+          adminName2: "Quebec",
+        },
+        {
+          geonameId: 503,
+          name: "Laval",
+          adminName1: "QC",
+          adminName2: "Laval",
+        },
+        {
+          geonameId: 504,
+          name: "Gatineau",
+          adminName1: "QC",
+          adminName2: "Gatineau",
+        },
+        {
+          geonameId: 505,
+          name: "Longueuil",
+          adminName1: "QC",
+          adminName2: "Longueuil",
+        },
       ],
       // UK Cities
-      "England": [
-        { geonameId: 601, name: "London", adminName1: "ENG", adminName2: "Greater London" },
-        { geonameId: 602, name: "Birmingham", adminName1: "ENG", adminName2: "West Midlands" },
-        { geonameId: 603, name: "Manchester", adminName1: "ENG", adminName2: "Greater Manchester" },
-        { geonameId: 604, name: "Liverpool", adminName1: "ENG", adminName2: "Merseyside" },
-        { geonameId: 605, name: "Leeds", adminName1: "ENG", adminName2: "West Yorkshire" },
+      England: [
+        {
+          geonameId: 601,
+          name: "London",
+          adminName1: "ENG",
+          adminName2: "Greater London",
+        },
+        {
+          geonameId: 602,
+          name: "Birmingham",
+          adminName1: "ENG",
+          adminName2: "West Midlands",
+        },
+        {
+          geonameId: 603,
+          name: "Manchester",
+          adminName1: "ENG",
+          adminName2: "Greater Manchester",
+        },
+        {
+          geonameId: 604,
+          name: "Liverpool",
+          adminName1: "ENG",
+          adminName2: "Merseyside",
+        },
+        {
+          geonameId: 605,
+          name: "Leeds",
+          adminName1: "ENG",
+          adminName2: "West Yorkshire",
+        },
       ],
       // Mexican Cities
       "Ciudad de México": [
-        { geonameId: 701, name: "Mexico City", adminName1: "CDMX", adminName2: "Cuauhtémoc" },
-        { geonameId: 702, name: "Iztapalapa", adminName1: "CDMX", adminName2: "Iztapalapa" },
-        { geonameId: 703, name: "Gustavo A. Madero", adminName1: "CDMX", adminName2: "Gustavo A. Madero" },
-        { geonameId: 704, name: "Álvaro Obregón", adminName1: "CDMX", adminName2: "Álvaro Obregón" },
-        { geonameId: 705, name: "Coyoacán", adminName1: "CDMX", adminName2: "Coyoacán" },
+        {
+          geonameId: 701,
+          name: "Mexico City",
+          adminName1: "CDMX",
+          adminName2: "Cuauhtémoc",
+        },
+        {
+          geonameId: 702,
+          name: "Iztapalapa",
+          adminName1: "CDMX",
+          adminName2: "Iztapalapa",
+        },
+        {
+          geonameId: 703,
+          name: "Gustavo A. Madero",
+          adminName1: "CDMX",
+          adminName2: "Gustavo A. Madero",
+        },
+        {
+          geonameId: 704,
+          name: "Álvaro Obregón",
+          adminName1: "CDMX",
+          adminName2: "Álvaro Obregón",
+        },
+        {
+          geonameId: 705,
+          name: "Coyoacán",
+          adminName1: "CDMX",
+          adminName2: "Coyoacán",
+        },
       ],
-      "Jalisco": [
-        { geonameId: 801, name: "Guadalajara", adminName1: "JAL", adminName2: "Guadalajara" },
-        { geonameId: 802, name: "Zapopan", adminName1: "JAL", adminName2: "Zapopan" },
-        { geonameId: 803, name: "San Pedro Tlaquepaque", adminName1: "JAL", adminName2: "San Pedro Tlaquepaque" },
-        { geonameId: 804, name: "Tlaquepaque", adminName1: "JAL", adminName2: "Tlaquepaque" },
-        { geonameId: 805, name: "Tonalá", adminName1: "JAL", adminName2: "Tonalá" },
+      Jalisco: [
+        {
+          geonameId: 801,
+          name: "Guadalajara",
+          adminName1: "JAL",
+          adminName2: "Guadalajara",
+        },
+        {
+          geonameId: 802,
+          name: "Zapopan",
+          adminName1: "JAL",
+          adminName2: "Zapopan",
+        },
+        {
+          geonameId: 803,
+          name: "San Pedro Tlaquepaque",
+          adminName1: "JAL",
+          adminName2: "San Pedro Tlaquepaque",
+        },
+        {
+          geonameId: 804,
+          name: "Tlaquepaque",
+          adminName1: "JAL",
+          adminName2: "Tlaquepaque",
+        },
+        {
+          geonameId: 805,
+          name: "Tonalá",
+          adminName1: "JAL",
+          adminName2: "Tonalá",
+        },
       ],
       "Nuevo León": [
-        { geonameId: 901, name: "Monterrey", adminName1: "NLE", adminName2: "Monterrey" },
-        { geonameId: 902, name: "San Nicolás de los Garza", adminName1: "NLE", adminName2: "San Nicolás de los Garza" },
-        { geonameId: 903, name: "Guadalupe", adminName1: "NLE", adminName2: "Guadalupe" },
-        { geonameId: 904, name: "Santa Catarina", adminName1: "NLE", adminName2: "Santa Catarina" },
-        { geonameId: 905, name: "San Pedro Garza García", adminName1: "NLE", adminName2: "San Pedro Garza García" },
+        {
+          geonameId: 901,
+          name: "Monterrey",
+          adminName1: "NLE",
+          adminName2: "Monterrey",
+        },
+        {
+          geonameId: 902,
+          name: "San Nicolás de los Garza",
+          adminName1: "NLE",
+          adminName2: "San Nicolás de los Garza",
+        },
+        {
+          geonameId: 903,
+          name: "Guadalupe",
+          adminName1: "NLE",
+          adminName2: "Guadalupe",
+        },
+        {
+          geonameId: 904,
+          name: "Santa Catarina",
+          adminName1: "NLE",
+          adminName2: "Santa Catarina",
+        },
+        {
+          geonameId: 905,
+          name: "San Pedro Garza García",
+          adminName1: "NLE",
+          adminName2: "San Pedro Garza García",
+        },
       ],
-      "Puebla": [
-        { geonameId: 1001, name: "Puebla", adminName1: "PUE", adminName2: "Puebla" },
-        { geonameId: 1002, name: "Amozoc", adminName1: "PUE", adminName2: "Amozoc" },
-        { geonameId: 1003, name: "Atlixco", adminName1: "PUE", adminName2: "Atlixco" },
-        { geonameId: 1004, name: "Cuautlancingo", adminName1: "PUE", adminName2: "Cuautlancingo" },
-        { geonameId: 1005, name: "San Pedro Cholula", adminName1: "PUE", adminName2: "San Pedro Cholula" },
+      Puebla: [
+        {
+          geonameId: 1001,
+          name: "Puebla",
+          adminName1: "PUE",
+          adminName2: "Puebla",
+        },
+        {
+          geonameId: 1002,
+          name: "Amozoc",
+          adminName1: "PUE",
+          adminName2: "Amozoc",
+        },
+        {
+          geonameId: 1003,
+          name: "Atlixco",
+          adminName1: "PUE",
+          adminName2: "Atlixco",
+        },
+        {
+          geonameId: 1004,
+          name: "Cuautlancingo",
+          adminName1: "PUE",
+          adminName2: "Cuautlancingo",
+        },
+        {
+          geonameId: 1005,
+          name: "San Pedro Cholula",
+          adminName1: "PUE",
+          adminName2: "San Pedro Cholula",
+        },
       ],
       "Baja California": [
-        { geonameId: 1101, name: "Tijuana", adminName1: "BCN", adminName2: "Tijuana" },
-        { geonameId: 1102, name: "Mexicali", adminName1: "BCN", adminName2: "Mexicali" },
-        { geonameId: 1103, name: "Ensenada", adminName1: "BCN", adminName2: "Ensenada" },
-        { geonameId: 1104, name: "Tecate", adminName1: "BCN", adminName2: "Tecate" },
-        { geonameId: 1105, name: "Playas de Rosarito", adminName1: "BCN", adminName2: "Playas de Rosarito" },
+        {
+          geonameId: 1101,
+          name: "Tijuana",
+          adminName1: "BCN",
+          adminName2: "Tijuana",
+        },
+        {
+          geonameId: 1102,
+          name: "Mexicali",
+          adminName1: "BCN",
+          adminName2: "Mexicali",
+        },
+        {
+          geonameId: 1103,
+          name: "Ensenada",
+          adminName1: "BCN",
+          adminName2: "Ensenada",
+        },
+        {
+          geonameId: 1104,
+          name: "Tecate",
+          adminName1: "BCN",
+          adminName2: "Tecate",
+        },
+        {
+          geonameId: 1105,
+          name: "Playas de Rosarito",
+          adminName1: "BCN",
+          adminName2: "Playas de Rosarito",
+        },
       ],
       "Quintana Roo": [
-        { geonameId: 1201, name: "Cancún", adminName1: "ROO", adminName2: "Benito Juárez" },
-        { geonameId: 1202, name: "Chetumal", adminName1: "ROO", adminName2: "Othón P. Blanco" },
-        { geonameId: 1203, name: "Playa del Carmen", adminName1: "ROO", adminName2: "Solidaridad" },
-        { geonameId: 1204, name: "Cozumel", adminName1: "ROO", adminName2: "Cozumel" },
-        { geonameId: 1205, name: "Tulum", adminName1: "ROO", adminName2: "Tulum" },
+        {
+          geonameId: 1201,
+          name: "Cancún",
+          adminName1: "ROO",
+          adminName2: "Benito Juárez",
+        },
+        {
+          geonameId: 1202,
+          name: "Chetumal",
+          adminName1: "ROO",
+          adminName2: "Othón P. Blanco",
+        },
+        {
+          geonameId: 1203,
+          name: "Playa del Carmen",
+          adminName1: "ROO",
+          adminName2: "Solidaridad",
+        },
+        {
+          geonameId: 1204,
+          name: "Cozumel",
+          adminName1: "ROO",
+          adminName2: "Cozumel",
+        },
+        {
+          geonameId: 1205,
+          name: "Tulum",
+          adminName1: "ROO",
+          adminName2: "Tulum",
+        },
       ],
-      "Yucatán": [
-        { geonameId: 1301, name: "Mérida", adminName1: "YUC", adminName2: "Mérida" },
-        { geonameId: 1302, name: "Valladolid", adminName1: "YUC", adminName2: "Valladolid" },
-        { geonameId: 1303, name: "Progreso", adminName1: "YUC", adminName2: "Progreso" },
-        { geonameId: 1304, name: "Tekax", adminName1: "YUC", adminName2: "Tekax" },
-        { geonameId: 1305, name: "Umán", adminName1: "YUC", adminName2: "Umán" },
+      Yucatán: [
+        {
+          geonameId: 1301,
+          name: "Mérida",
+          adminName1: "YUC",
+          adminName2: "Mérida",
+        },
+        {
+          geonameId: 1302,
+          name: "Valladolid",
+          adminName1: "YUC",
+          adminName2: "Valladolid",
+        },
+        {
+          geonameId: 1303,
+          name: "Progreso",
+          adminName1: "YUC",
+          adminName2: "Progreso",
+        },
+        {
+          geonameId: 1304,
+          name: "Tekax",
+          adminName1: "YUC",
+          adminName2: "Tekax",
+        },
+        {
+          geonameId: 1305,
+          name: "Umán",
+          adminName1: "YUC",
+          adminName2: "Umán",
+        },
       ],
-      "Guanajuato": [
-        { geonameId: 1401, name: "León", adminName1: "GUA", adminName2: "León" },
-        { geonameId: 1402, name: "Irapuato", adminName1: "GUA", adminName2: "Irapuato" },
-        { geonameId: 1403, name: "Celaya", adminName1: "GUA", adminName2: "Celaya" },
-        { geonameId: 1404, name: "Salamanca", adminName1: "GUA", adminName2: "Salamanca" },
-        { geonameId: 1405, name: "San Miguel de Allende", adminName1: "GUA", adminName2: "San Miguel de Allende" },
+      Guanajuato: [
+        {
+          geonameId: 1401,
+          name: "León",
+          adminName1: "GUA",
+          adminName2: "León",
+        },
+        {
+          geonameId: 1402,
+          name: "Irapuato",
+          adminName1: "GUA",
+          adminName2: "Irapuato",
+        },
+        {
+          geonameId: 1403,
+          name: "Celaya",
+          adminName1: "GUA",
+          adminName2: "Celaya",
+        },
+        {
+          geonameId: 1404,
+          name: "Salamanca",
+          adminName1: "GUA",
+          adminName2: "Salamanca",
+        },
+        {
+          geonameId: 1405,
+          name: "San Miguel de Allende",
+          adminName1: "GUA",
+          adminName2: "San Miguel de Allende",
+        },
       ],
-      "Chihuahua": [
-        { geonameId: 1501, name: "Ciudad Juárez", adminName1: "CHH", adminName2: "Juárez" },
-        { geonameId: 1502, name: "Chihuahua", adminName1: "CHH", adminName2: "Chihuahua" },
-        { geonameId: 1503, name: "Cuauhtémoc", adminName1: "CHH", adminName2: "Cuauhtémoc" },
-        { geonameId: 1504, name: "Delicias", adminName1: "CHH", adminName2: "Delicias" },
-        { geonameId: 1505, name: "Hidalgo del Parral", adminName1: "CHH", adminName2: "Hidalgo del Parral" },
+      Chihuahua: [
+        {
+          geonameId: 1501,
+          name: "Ciudad Juárez",
+          adminName1: "CHH",
+          adminName2: "Juárez",
+        },
+        {
+          geonameId: 1502,
+          name: "Chihuahua",
+          adminName1: "CHH",
+          adminName2: "Chihuahua",
+        },
+        {
+          geonameId: 1503,
+          name: "Cuauhtémoc",
+          adminName1: "CHH",
+          adminName2: "Cuauhtémoc",
+        },
+        {
+          geonameId: 1504,
+          name: "Delicias",
+          adminName1: "CHH",
+          adminName2: "Delicias",
+        },
+        {
+          geonameId: 1505,
+          name: "Hidalgo del Parral",
+          adminName1: "CHH",
+          adminName2: "Hidalgo del Parral",
+        },
       ],
-      "Sonora": [
-        { geonameId: 1601, name: "Hermosillo", adminName1: "SON", adminName2: "Hermosillo" },
-        { geonameId: 1602, name: "Ciudad Obregón", adminName1: "SON", adminName2: "Cajeme" },
-        { geonameId: 1603, name: "Nogales", adminName1: "SON", adminName2: "Nogales" },
-        { geonameId: 1604, name: "San Luis Río Colorado", adminName1: "SON", adminName2: "San Luis Río Colorado" },
-        { geonameId: 1605, name: "Puerto Peñasco", adminName1: "SON", adminName2: "Puerto Peñasco" },
+      Sonora: [
+        {
+          geonameId: 1601,
+          name: "Hermosillo",
+          adminName1: "SON",
+          adminName2: "Hermosillo",
+        },
+        {
+          geonameId: 1602,
+          name: "Ciudad Obregón",
+          adminName1: "SON",
+          adminName2: "Cajeme",
+        },
+        {
+          geonameId: 1603,
+          name: "Nogales",
+          adminName1: "SON",
+          adminName2: "Nogales",
+        },
+        {
+          geonameId: 1604,
+          name: "San Luis Río Colorado",
+          adminName1: "SON",
+          adminName2: "San Luis Río Colorado",
+        },
+        {
+          geonameId: 1605,
+          name: "Puerto Peñasco",
+          adminName1: "SON",
+          adminName2: "Puerto Peñasco",
+        },
       ],
     };
     return cityMap[stateName] || [];
@@ -428,12 +852,15 @@ const AddressForm: React.FC<AddressFormProps> = ({ value, onChange, className = 
     { name: "Mexico", cca2: "MX", cca3: "MEX", flag: "🇲🇽" },
   ];
 
-  const handleFieldChange = (field: keyof AddressFormData, fieldValue: string) => {
+  const handleFieldChange = (
+    field: keyof AddressFormData,
+    fieldValue: string,
+  ) => {
     const newValue = { ...value, [field]: fieldValue };
     onChange(newValue);
     // Clear errors when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: "" }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
@@ -442,14 +869,14 @@ const AddressForm: React.FC<AddressFormProps> = ({ value, onChange, className = 
 
     const patterns: Record<string, RegExp> = {
       "United States": /^\d{5}(-\d{4})?$/,
-      "Canada": /^[A-Za-z]\d[A-Za-z] \d[A-Za-z]\d$/,
+      Canada: /^[A-Za-z]\d[A-Za-z] \d[A-Za-z]\d$/,
       "United Kingdom": /^[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}$/i,
-      "Germany": /^\d{5}$/,
-      "France": /^\d{5}$/,
-      "Australia": /^\d{4}$/,
-      "Japan": /^\d{3}-\d{4}$/,
-      "India": /^\d{6}$/,
-      "Mexico": /^\d{5}$/,
+      Germany: /^\d{5}$/,
+      France: /^\d{5}$/,
+      Australia: /^\d{4}$/,
+      Japan: /^\d{3}-\d{4}$/,
+      India: /^\d{6}$/,
+      Mexico: /^\d{5}$/,
     };
 
     const pattern = patterns[country];
@@ -462,21 +889,21 @@ const AddressForm: React.FC<AddressFormProps> = ({ value, onChange, className = 
 
   const handleZipCodeChange = (zipCode: string) => {
     const error = validateZipCode(zipCode, value.country);
-    setErrors(prev => ({ ...prev, zip_code: error }));
+    setErrors((prev) => ({ ...prev, zip_code: error }));
     handleFieldChange("zip_code", zipCode);
   };
 
   const getZipCodePlaceholder = (country: string) => {
     const placeholders: Record<string, string> = {
       "United States": "12345 or 12345-6789",
-      "Canada": "A1A 1A1",
+      Canada: "A1A 1A1",
       "United Kingdom": "SW1A 1AA",
-      "Germany": "12345",
-      "France": "12345",
-      "Australia": "1234",
-      "Japan": "123-4567",
-      "India": "123456",
-      "Mexico": "12345",
+      Germany: "12345",
+      France: "12345",
+      Australia: "1234",
+      Japan: "123-4567",
+      India: "123456",
+      Mexico: "12345",
     };
     return placeholders[country] || "Enter postal code";
   };
@@ -535,11 +962,13 @@ const AddressForm: React.FC<AddressFormProps> = ({ value, onChange, className = 
           </select>
           <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
         </div>
-        {loading['countries'] && <p className="text-sm text-gray-500 mt-1">Loading countries...</p>}
-        {errors['countries'] && (
+        {loading["countries"] && (
+          <p className="text-sm text-gray-500 mt-1">Loading countries...</p>
+        )}
+        {errors["countries"] && (
           <p className="text-sm text-red-500 mt-1 flex items-center">
             <AlertCircle className="w-4 h-4 mr-1" />
-            {errors['countries']}
+            {errors["countries"]}
           </p>
         )}
       </div>
@@ -552,7 +981,9 @@ const AddressForm: React.FC<AddressFormProps> = ({ value, onChange, className = 
         <div className="relative">
           <select
             value={value.state_province}
-            onChange={(e) => handleFieldChange("state_province", e.target.value)}
+            onChange={(e) =>
+              handleFieldChange("state_province", e.target.value)
+            }
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
             disabled={!value.country || loading.states}
           >
@@ -565,14 +996,20 @@ const AddressForm: React.FC<AddressFormProps> = ({ value, onChange, className = 
           </select>
           <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
         </div>
-        {loading['states'] && <p className="text-sm text-gray-500 mt-1">Loading states...</p>}
-        {errors['states'] && (
+        {loading["states"] && (
+          <p className="text-sm text-gray-500 mt-1">Loading states...</p>
+        )}
+        {errors["states"] && (
           <p className="text-sm text-red-500 mt-1 flex items-center">
             <AlertCircle className="w-4 h-4 mr-1" />
-            {errors['states']}
+            {errors["states"]}
           </p>
         )}
-        {!value.country && <p className="text-sm text-gray-400 mt-1">Please select a country first</p>}
+        {!value.country && (
+          <p className="text-sm text-gray-400 mt-1">
+            Please select a country first
+          </p>
+        )}
       </div>
 
       {/* City Selection */}
@@ -596,14 +1033,20 @@ const AddressForm: React.FC<AddressFormProps> = ({ value, onChange, className = 
           </select>
           <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
         </div>
-        {loading['cities'] && <p className="text-sm text-gray-500 mt-1">Loading cities...</p>}
-        {errors['cities'] && (
+        {loading["cities"] && (
+          <p className="text-sm text-gray-500 mt-1">Loading cities...</p>
+        )}
+        {errors["cities"] && (
           <p className="text-sm text-red-500 mt-1 flex items-center">
             <AlertCircle className="w-4 h-4 mr-1" />
-            {errors['cities']}
+            {errors["cities"]}
           </p>
         )}
-        {!value.state_province && <p className="text-sm text-gray-400 mt-1">Please select a state/province first</p>}
+        {!value.state_province && (
+          <p className="text-sm text-gray-400 mt-1">
+            Please select a state/province first
+          </p>
+        )}
       </div>
 
       {/* ZIP/Postal Code */}
@@ -616,22 +1059,28 @@ const AddressForm: React.FC<AddressFormProps> = ({ value, onChange, className = 
           type="text"
           value={value.zip_code}
           onChange={(e) => handleZipCodeChange(e.target.value)}
-          className={`w-full ${errors['zip_code'] ? 'border-red-500' : ''}`}
+          className={`w-full ${errors["zip_code"] ? "border-red-500" : ""}`}
           placeholder={getZipCodePlaceholder(value.country)}
         />
-        {errors['zip_code'] && (
+        {errors["zip_code"] && (
           <p className="text-sm text-red-500 mt-1 flex items-center">
             <AlertCircle className="w-4 h-4 mr-1" />
-            {errors['zip_code']}
+            {errors["zip_code"]}
           </p>
         )}
-        {!value.city && <p className="text-sm text-gray-400 mt-1">Please select a city first</p>}
+        {!value.city && (
+          <p className="text-sm text-gray-400 mt-1">
+            Please select a city first
+          </p>
+        )}
       </div>
 
       {/* Address Preview */}
       {value.street_address && value.city && value.country && (
         <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Address Preview:</h4>
+          <h4 className="text-sm font-medium text-gray-700 mb-2">
+            Address Preview:
+          </h4>
           <p className="text-sm text-gray-600">
             {value.street_address}
             {value.apartment_suite && `, ${value.apartment_suite}`}
@@ -647,11 +1096,21 @@ const AddressForm: React.FC<AddressFormProps> = ({ value, onChange, className = 
       <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
         <p className="text-xs text-blue-700">
           <strong>Note:</strong> This form uses the free{" "}
-          <a href="https://restcountries.com/" target="_blank" rel="noopener noreferrer" className="underline">
+          <a
+            href="https://restcountries.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline"
+          >
             REST Countries API
           </a>{" "}
           for country data. For production use, consider integrating with{" "}
-          <a href="https://www.geonames.org/" target="_blank" rel="noopener noreferrer" className="underline">
+          <a
+            href="https://www.geonames.org/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline"
+          >
             GeoNames
           </a>{" "}
           for comprehensive state/province and city data.

@@ -51,7 +51,7 @@ const LoginRightCard: React.FC = () => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.username) {
+    if (!formData.username.trim()) {
       newErrors["username"] = "Username is required";
     }
 
@@ -83,7 +83,10 @@ const LoginRightCard: React.FC = () => {
     } catch (error) {
       console.error("Login error:", error);
       setErrors({
-        submit: error instanceof Error ? error.message : "Login failed. Please check your credentials."
+        submit:
+          error instanceof Error
+            ? error.message
+            : "Login failed. Please check your credentials.",
       });
     } finally {
       setIsLoading(false);
@@ -125,10 +128,16 @@ const LoginRightCard: React.FC = () => {
               className="w-full pl-10 pr-4 py-3"
               placeholder="Enter your username"
               disabled={isLoading}
+              required
+              aria-describedby={errors["username"] ? "username-error" : undefined}
             />
           </div>
           {errors["username"] && (
-            <div className="flex items-center gap-2 mt-2 text-red-600 text-sm">
+            <div
+              id="username-error"
+              className="flex items-center gap-2 mt-2 text-red-600 text-sm"
+              role="alert"
+            >
               <AlertCircle className="h-4 w-4" />
               <span>{errors["username"]}</span>
             </div>
@@ -154,25 +163,32 @@ const LoginRightCard: React.FC = () => {
               value={formData.password}
               onChange={handleInputChange}
               variant={errors["password"] ? "error" : "default"}
-              className="w-full pl-12 py-3"
+              className="w-full pl-10 pr-12 py-3"
               placeholder="Enter your password"
               disabled={isLoading}
+              required
+              aria-describedby={errors["password"] ? "password-error" : undefined}
             />
             <button
               type="button"
-              className="absolute inset-y-0 right-0 pr-3 flex items-center"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center hover:text-gray-600 transition-colors"
               onClick={() => setShowPassword(!showPassword)}
               disabled={isLoading}
+              aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? (
-                <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                <EyeOff className="h-5 w-5 text-gray-400" />
               ) : (
-                <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                <Eye className="h-5 w-5 text-gray-400" />
               )}
             </button>
           </div>
           {errors["password"] && (
-            <div className="flex items-center gap-2 mt-2 text-red-600 text-sm">
+            <div
+              id="password-error"
+              className="flex items-center gap-2 mt-2 text-red-600 text-sm"
+              role="alert"
+            >
               <AlertCircle className="h-4 w-4" />
               <span>{errors["password"]}</span>
             </div>
@@ -188,12 +204,16 @@ const LoginRightCard: React.FC = () => {
               onChange={handleRememberMeChange}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               disabled={isLoading}
+              aria-describedby="remember-me-label"
             />
-            <span className="ml-2 text-sm text-gray-600">Remember me</span>
+            <span id="remember-me-label" className="ml-2 text-sm text-gray-600">
+              Remember me
+            </span>
           </label>
           <a
             href="/reset-password"
-            className="text-sm text-blue-600 hover:text-blue-500 transition-colors"
+            className="text-sm text-blue-600 hover:text-blue-500 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded px-1"
+            aria-label="Forgot password? Click to reset"
           >
             Forgot password?
           </a>
@@ -201,7 +221,10 @@ const LoginRightCard: React.FC = () => {
 
         {/* Submit Error */}
         {errors["submit"] && (
-          <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div
+            className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm"
+            role="alert"
+          >
             <AlertCircle className="h-4 w-4" />
             <span>{errors["submit"]}</span>
           </div>
@@ -211,16 +234,20 @@ const LoginRightCard: React.FC = () => {
         <Button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-3 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-3 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          aria-describedby={isLoading ? "login-loading" : undefined}
         >
           {isLoading ? (
             <div className="flex items-center justify-center gap-2">
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              <span>Signing in...</span>
+              <div
+                className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+                aria-hidden="true"
+              />
+              <span id="login-loading">Signing in...</span>
             </div>
           ) : (
             <div className="flex items-center justify-center gap-2">
-              <LogIn className="h-5 w-5" />
+              <LogIn className="h-5 w-5" aria-hidden="true" />
               <span>Sign In</span>
             </div>
           )}
@@ -233,7 +260,8 @@ const LoginRightCard: React.FC = () => {
           Don't have an account?{" "}
           <a
             href="/register"
-            className="text-blue-600 hover:text-blue-500 font-medium transition-colors"
+            className="text-blue-600 hover:text-blue-500 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded px-1"
+            aria-label="Don't have an account? Click to register"
           >
             Sign up here
           </a>

@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Query to get user profile data
 export const GET_USER_PROFILE = gql`
@@ -11,6 +11,8 @@ export const GET_USER_PROFILE = gql`
         firstName
         lastName
         isActive
+        dateJoined
+        lastLogin
       }
       middleName
       maternalLastName
@@ -34,8 +36,6 @@ export const GET_USER_PROFILE = gql`
       profileVisibility
       avatar
       avatarUrl
-      createdAt
-      updatedAt
     }
   }
 `;
@@ -126,8 +126,6 @@ export const UPDATE_USER_PROFILE = gql`
         profileVisibility
         avatar
         avatarUrl
-        createdAt
-        updatedAt
       }
       errors
     }
@@ -137,7 +135,10 @@ export const UPDATE_USER_PROFILE = gql`
 // Mutation to change password
 export const CHANGE_PASSWORD = gql`
   mutation ChangePassword($currentPassword: String!, $newPassword: String!) {
-    changePassword(currentPassword: $currentPassword, newPassword: $newPassword) {
+    changePassword(
+      currentPassword: $currentPassword
+      newPassword: $newPassword
+    ) {
       ok
       errors
     }
@@ -191,6 +192,8 @@ export interface User {
   firstName: string;
   lastName: string;
   isActive: boolean;
+  dateJoined: string;
+  lastLogin?: string;
 }
 
 export interface UserProfile {
@@ -218,8 +221,6 @@ export interface UserProfile {
   profileVisibility?: any;
   avatar?: string;
   avatarUrl?: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface GetUserProfileData {

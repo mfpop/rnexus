@@ -1,1 +1,1 @@
-export { default as TeamsLeftCard } from './TeamsLeftCard';
+export { default as TeamsLeftCard } from "./TeamsLeftCard";

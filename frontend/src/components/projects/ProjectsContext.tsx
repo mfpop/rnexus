@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
-import { useQuery } from '@apollo/client';
-import { GET_ALL_PROJECTS } from '../../graphql/projects';
+import { useQuery } from "@apollo/client";
+import { GET_ALL_PROJECTS } from "../../graphql/projects";
 
 interface Project {
   id: string;
@@ -65,8 +65,8 @@ export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({
 
   // Use GraphQL query for projects
   const { data, loading, error, refetch } = useQuery(GET_ALL_PROJECTS, {
-    fetchPolicy: 'cache-and-network',
-    errorPolicy: 'all',
+    fetchPolicy: "cache-and-network",
+    errorPolicy: "all",
   });
 
   // Convert GraphQL data to our Project interface
@@ -77,7 +77,7 @@ export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({
     status: gqlProject.status as Project["status"],
     priority: gqlProject.priority as Project["priority"],
     progress: gqlProject.progress,
-    manager: gqlProject.assignedBy || 'Unknown Manager',
+    manager: gqlProject.assignedBy || "Unknown Manager",
     team: gqlProject.assignedTo ? [gqlProject.assignedTo] : [],
     startDate: new Date(gqlProject.startTime),
     endDate: new Date(gqlProject.endTime),
@@ -87,7 +87,9 @@ export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({
     tasks: [], // Would need to be added to backend model
   });
 
-  const projects = data?.allProjects ? data.allProjects.map(convertGraphQLProject) : [];
+  const projects = data?.allProjects
+    ? data.allProjects.map(convertGraphQLProject)
+    : [];
 
   const refetchProjects = () => {
     refetch();
@@ -101,7 +103,7 @@ export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({
         projects,
         loading,
         error,
-        refetchProjects
+        refetchProjects,
       }}
     >
       {children}

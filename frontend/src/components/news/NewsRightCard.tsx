@@ -29,7 +29,7 @@ import { Tag, TagApiService } from "../../lib/updateApi";
  * Full-featured update reader with comments and interactions
  */
 const NewsRightCard: React.FC = () => {
-  console.log('🔍 NewsRightCard component rendering');
+  console.log("🔍 NewsRightCard component rendering");
 
   const {
     selectedUpdate,
@@ -39,16 +39,23 @@ const NewsRightCard: React.FC = () => {
     deleteComment,
     createUpdate,
     editUpdate,
-    deleteUpdate
+    deleteUpdate,
   } = useNewsContext();
 
   // Debug logging to help identify the issue
   React.useEffect(() => {
-    console.log('🔍 NewsRightCard - selectedUpdate:', selectedUpdate);
+    console.log("🔍 NewsRightCard - selectedUpdate:", selectedUpdate);
     if (selectedUpdate) {
-      console.log('Selected update tags:', selectedUpdate.tags, 'Type:', typeof selectedUpdate.tags, 'Is Array:', Array.isArray(selectedUpdate.tags));
+      console.log(
+        "Selected update tags:",
+        selectedUpdate.tags,
+        "Type:",
+        typeof selectedUpdate.tags,
+        "Is Array:",
+        Array.isArray(selectedUpdate.tags),
+      );
     } else {
-      console.log('🔍 No selected update - showing empty state');
+      console.log("🔍 No selected update - showing empty state");
     }
   }, [selectedUpdate]);
   const { user } = useAuth();
@@ -76,13 +83,13 @@ const NewsRightCard: React.FC = () => {
 
   // Form states for create/edit
   const [formData, setFormData] = useState({
-    title: '',
-    type: 'news' as 'news' | 'communication' | 'alert',
-    summary: '',
-    body: '',
+    title: "",
+    type: "news" as "news" | "communication" | "alert",
+    summary: "",
+    body: "",
     tags: [] as number[], // Now stores tag IDs instead of strings
-    icon: '📰',
-    priority: 0
+    icon: "📰",
+    priority: 0,
   });
 
   // Load available tags on component mount (only if authenticated)
@@ -108,10 +115,13 @@ const NewsRightCard: React.FC = () => {
   // Filter tags based on search query
   useEffect(() => {
     if (tagSearchQuery.trim()) {
-      const filtered = availableTags.filter(tag =>
-        tag.name.toLowerCase().includes(tagSearchQuery.toLowerCase()) ||
-        tag.description.toLowerCase().includes(tagSearchQuery.toLowerCase()) ||
-        tag.category.toLowerCase().includes(tagSearchQuery.toLowerCase())
+      const filtered = availableTags.filter(
+        (tag) =>
+          tag.name.toLowerCase().includes(tagSearchQuery.toLowerCase()) ||
+          tag.description
+            .toLowerCase()
+            .includes(tagSearchQuery.toLowerCase()) ||
+          tag.category.toLowerCase().includes(tagSearchQuery.toLowerCase()),
       );
       setFilteredTags(filtered);
     } else {
@@ -123,14 +133,14 @@ const NewsRightCard: React.FC = () => {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
-      if (showTagSelector && !target.closest('.tag-selector')) {
+      if (showTagSelector && !target.closest(".tag-selector")) {
         setShowTagSelector(false);
         setTagSearchQuery("");
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showTagSelector]);
 
   // Update bookmark state when selectedUpdate changes
@@ -152,13 +162,13 @@ const NewsRightCard: React.FC = () => {
   useEffect(() => {
     if (editingUpdate) {
       setFormData({
-        title: editingUpdate.title || '',
-        type: editingUpdate.type || 'news',
-        summary: editingUpdate.summary || '',
-        body: editingUpdate.content?.body || '',
+        title: editingUpdate.title || "",
+        type: editingUpdate.type || "news",
+        summary: editingUpdate.summary || "",
+        body: editingUpdate.content?.body || "",
         tags: editingUpdate.tags || [], // This should now be an array of tag IDs
-        icon: editingUpdate.icon || '📰',
-        priority: editingUpdate.priority || 0
+        icon: editingUpdate.icon || "📰",
+        priority: editingUpdate.priority || 0,
       });
     }
   }, [editingUpdate]);
@@ -181,7 +191,7 @@ const NewsRightCard: React.FC = () => {
         setEditingUpdate(selectedUpdate);
         setShowEditForm(true);
       } else {
-        alert('No update selected or you do not have permission to edit');
+        alert("No update selected or you do not have permission to edit");
       }
     };
 
@@ -189,16 +199,22 @@ const NewsRightCard: React.FC = () => {
       // Handle save based on current form state
       if (showCreateForm) {
         // Submit the create form
-        const form = document.querySelector('form');
+        const form = document.querySelector("form");
         if (form) {
-          const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+          const submitEvent = new Event("submit", {
+            bubbles: true,
+            cancelable: true,
+          });
           form.dispatchEvent(submitEvent);
         }
       } else if (showEditForm && editingUpdate) {
         // Submit the edit form
-        const form = document.querySelector('form');
+        const form = document.querySelector("form");
         if (form) {
-          const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+          const submitEvent = new Event("submit", {
+            bubbles: true,
+            cancelable: true,
+          });
           form.dispatchEvent(submitEvent);
         }
       }
@@ -210,28 +226,28 @@ const NewsRightCard: React.FC = () => {
 
     const handleDeleteEvent = () => {
       if (selectedUpdate && selectedUpdate.can_delete) {
-        if (confirm('Are you sure you want to delete this update?')) {
+        if (confirm("Are you sure you want to delete this update?")) {
           deleteUpdate(selectedUpdate.id);
         }
       } else {
-        alert('No update selected or you do not have permission to delete');
+        alert("No update selected or you do not have permission to delete");
       }
     };
 
     // Add event listeners
-    window.addEventListener('news:create', handleCreateEvent);
-    window.addEventListener('news:edit', handleEditEvent);
-    window.addEventListener('news:save', handleSaveEvent);
-    window.addEventListener('news:cancel', handleCancelEvent);
-    window.addEventListener('news:delete', handleDeleteEvent);
+    window.addEventListener("news:create", handleCreateEvent);
+    window.addEventListener("news:edit", handleEditEvent);
+    window.addEventListener("news:save", handleSaveEvent);
+    window.addEventListener("news:cancel", handleCancelEvent);
+    window.addEventListener("news:delete", handleDeleteEvent);
 
     // Cleanup event listeners
     return () => {
-      window.removeEventListener('news:create', handleCreateEvent);
-      window.removeEventListener('news:edit', handleEditEvent);
-      window.removeEventListener('news:save', handleSaveEvent);
-      window.removeEventListener('news:cancel', handleCancelEvent);
-      window.removeEventListener('news:delete', handleDeleteEvent);
+      window.removeEventListener("news:create", handleCreateEvent);
+      window.removeEventListener("news:edit", handleEditEvent);
+      window.removeEventListener("news:save", handleSaveEvent);
+      window.removeEventListener("news:cancel", handleCancelEvent);
+      window.removeEventListener("news:delete", handleDeleteEvent);
     };
   }, [selectedUpdate, deleteUpdate]);
 
@@ -249,8 +265,9 @@ const NewsRightCard: React.FC = () => {
           author: "Mike Davis",
           created_at: new Date(Date.now() - 1800000).toISOString(),
           can_edit: user?.username === "Mike Davis" || user?.is_staff || false,
-          can_delete: user?.username === "Mike Davis" || user?.is_staff || false,
-          replies: []
+          can_delete:
+            user?.username === "Mike Davis" || user?.is_staff || false,
+          replies: [],
         },
         {
           id: 2,
@@ -265,15 +282,17 @@ const NewsRightCard: React.FC = () => {
               content: "Thanks Lisa! We'll keep everyone updated.",
               author: "Sarah Johnson",
               created_at: new Date(Date.now() - 2700000).toISOString(),
-                              can_edit: user?.username === "Sarah Johnson" || user?.is_staff || false,
-                can_delete: user?.username === "Sarah Johnson" || user?.is_staff || false,
-              replies: []
-            }
-          ]
-        }
+              can_edit:
+                user?.username === "Sarah Johnson" || user?.is_staff || false,
+              can_delete:
+                user?.username === "Sarah Johnson" || user?.is_staff || false,
+              replies: [],
+            },
+          ],
+        },
       ]);
     } catch (error) {
-      console.error('Error loading comments:', error);
+      console.error("Error loading comments:", error);
     } finally {
       setLoadingComments(false);
     }
@@ -282,16 +301,46 @@ const NewsRightCard: React.FC = () => {
   const loadAvailableTags = async () => {
     try {
       setLoadingTags(true);
-      const tags = await TagApiService.getTags('', '', true);
+      const tags = await TagApiService.getTags("", "", true);
       setAvailableTags(tags);
       setFilteredTags(tags);
     } catch (error) {
-      console.error('Error loading tags:', error);
+      console.error("Error loading tags:", error);
       // Set some default tags if loading fails
       const defaultTags = [
-        { id: 1, name: 'efficiency', description: 'Production efficiency', category: 'production', color: '#10B981', is_active: true, usage_count: 0, created_at: '', updated_at: '' },
-        { id: 2, name: 'quality', description: 'Quality control', category: 'production', color: '#3B82F6', is_active: true, usage_count: 0, created_at: '', updated_at: '' },
-        { id: 3, name: 'safety', description: 'Safety protocols', category: 'production', color: '#EF4444', is_active: true, usage_count: 0, created_at: '', updated_at: '' },
+        {
+          id: 1,
+          name: "efficiency",
+          description: "Production efficiency",
+          category: "production",
+          color: "#10B981",
+          is_active: true,
+          usage_count: 0,
+          created_at: "",
+          updated_at: "",
+        },
+        {
+          id: 2,
+          name: "quality",
+          description: "Quality control",
+          category: "production",
+          color: "#3B82F6",
+          is_active: true,
+          usage_count: 0,
+          created_at: "",
+          updated_at: "",
+        },
+        {
+          id: 3,
+          name: "safety",
+          description: "Safety protocols",
+          category: "production",
+          color: "#EF4444",
+          is_active: true,
+          usage_count: 0,
+          created_at: "",
+          updated_at: "",
+        },
       ];
       setAvailableTags(defaultTags);
       setFilteredTags(defaultTags);
@@ -343,7 +392,7 @@ const NewsRightCard: React.FC = () => {
       setNewComment("");
       await loadComments(); // Refresh comments
     } catch (error) {
-      console.error('Error creating comment:', error);
+      console.error("Error creating comment:", error);
     }
   };
 
@@ -351,12 +400,16 @@ const NewsRightCard: React.FC = () => {
     if (!replyContent.trim() || !selectedUpdate) return;
 
     try {
-      await createComment(selectedUpdate.id, replyContent.trim(), parentCommentId);
+      await createComment(
+        selectedUpdate.id,
+        replyContent.trim(),
+        parentCommentId,
+      );
       setReplyContent("");
       setReplyingTo(null);
       await loadComments(); // Refresh comments
     } catch (error) {
-      console.error('Error creating reply:', error);
+      console.error("Error creating reply:", error);
     }
   };
 
@@ -369,18 +422,18 @@ const NewsRightCard: React.FC = () => {
       setEditCommentContent("");
       await loadComments(); // Refresh comments
     } catch (error) {
-      console.error('Error editing comment:', error);
+      console.error("Error editing comment:", error);
     }
   };
 
   const handleCommentDelete = async (commentId: number) => {
-    if (!confirm('Are you sure you want to delete this comment?')) return;
+    if (!confirm("Are you sure you want to delete this comment?")) return;
 
     try {
       await deleteComment(commentId);
       await loadComments(); // Refresh comments
     } catch (error) {
-      console.error('Error deleting comment:', error);
+      console.error("Error deleting comment:", error);
     }
   };
 
@@ -425,13 +478,13 @@ const NewsRightCard: React.FC = () => {
 
   const resetForm = () => {
     setFormData({
-      title: '',
-      type: 'news',
-      summary: '',
-      body: '',
+      title: "",
+      type: "news",
+      summary: "",
+      body: "",
       tags: [],
-      icon: '📰',
-      priority: 0
+      icon: "📰",
+      priority: 0,
     });
     setShowCreateForm(false);
     setShowEditForm(false);
@@ -443,8 +496,12 @@ const NewsRightCard: React.FC = () => {
 
   const handleCreateUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.title.trim() || !formData.summary.trim() || !formData.body.trim()) {
-      alert('Please fill in all required fields');
+    if (
+      !formData.title.trim() ||
+      !formData.summary.trim() ||
+      !formData.body.trim()
+    ) {
+      alert("Please fill in all required fields");
       return;
     }
 
@@ -452,13 +509,13 @@ const NewsRightCard: React.FC = () => {
       setIsLoading(true);
       await createUpdate({
         ...formData,
-        author: user?.username || 'Unknown',
-        tags: formData.tags // Now passes array of tag IDs
+        author: user?.username || "Unknown",
+        tags: formData.tags, // Now passes array of tag IDs
       });
       resetForm();
     } catch (error) {
-      console.error('Error creating update:', error);
-      alert('Failed to create update');
+      console.error("Error creating update:", error);
+      alert("Failed to create update");
     } finally {
       setIsLoading(false);
     }
@@ -466,8 +523,13 @@ const NewsRightCard: React.FC = () => {
 
   const handleEditUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingUpdate || !formData.title.trim() || !formData.summary.trim() || !formData.body.trim()) {
-      alert('Please fill in all required fields');
+    if (
+      !editingUpdate ||
+      !formData.title.trim() ||
+      !formData.summary.trim() ||
+      !formData.body.trim()
+    ) {
+      alert("Please fill in all required fields");
       return;
     }
 
@@ -475,12 +537,12 @@ const NewsRightCard: React.FC = () => {
       setIsLoading(true);
       await editUpdate(editingUpdate.id, {
         ...formData,
-        tags: formData.tags // Now passes array of tag IDs
+        tags: formData.tags, // Now passes array of tag IDs
       });
       resetForm();
     } catch (error) {
-      console.error('Error editing update:', error);
-      alert('Failed to edit update');
+      console.error("Error editing update:", error);
+      alert("Failed to edit update");
     } finally {
       setIsLoading(false);
     }
@@ -488,9 +550,9 @@ const NewsRightCard: React.FC = () => {
 
   const addTag = (tagId: number) => {
     if (!formData.tags.includes(tagId)) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        tags: [...prev.tags, tagId]
+        tags: [...prev.tags, tagId],
       }));
     }
     setShowTagSelector(false);
@@ -498,14 +560,14 @@ const NewsRightCard: React.FC = () => {
   };
 
   const removeTag = (tagIdToRemove: number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      tags: prev.tags.filter(tagId => tagId !== tagIdToRemove)
+      tags: prev.tags.filter((tagId) => tagId !== tagIdToRemove),
     }));
   };
 
   const getTagById = (tagId: number): Tag | undefined => {
-    return availableTags.find(tag => tag.id === tagId);
+    return availableTags.find((tag) => tag.id === tagId);
   };
 
   const renderComment = (comment: UpdateComment, isReply = false) => (
@@ -573,7 +635,9 @@ const NewsRightCard: React.FC = () => {
 
           <div className="flex items-center gap-4">
             <button
-              onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
+              onClick={() =>
+                setReplyingTo(replyingTo === comment.id ? null : comment.id)
+              }
               className="text-sm text-gray-500 hover:text-blue-600 transition-colors flex items-center gap-1"
             >
               <Reply className="h-3 w-3" />
@@ -614,33 +678,58 @@ const NewsRightCard: React.FC = () => {
       </div>
 
       {/* Render replies */}
-      {comment.replies && comment.replies.map((reply) => renderComment(reply, true))}
+      {comment.replies &&
+        comment.replies.map((reply) => renderComment(reply, true))}
     </div>
   );
 
   if (!selectedUpdate) {
-    console.log('🔍 Rendering empty state for news page');
+    console.log("🔍 Rendering empty state for news page");
     return (
       <div className="h-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-white p-8 relative overflow-hidden">
         {/* Background decorative elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-20 -right-20 w-40 h-40 bg-green-100 rounded-full opacity-20 animate-pulse"></div>
-          <div className="absolute top-1/4 -left-16 w-32 h-32 bg-blue-100 rounded-full opacity-30 animate-bounce" style={{ animationDuration: '3s' }}></div>
-          <div className="absolute bottom-1/4 -right-12 w-24 h-24 bg-purple-100 rounded-full opacity-25 animate-ping" style={{ animationDuration: '4s' }}></div>
-          <div className="absolute bottom-10 left-1/4 w-16 h-16 bg-teal-100 rounded-full opacity-20 animate-pulse" style={{ animationDelay: '1s' }}></div>
-          <div className="absolute top-1/3 right-1/3 w-8 h-8 bg-orange-100 rounded-full opacity-30 animate-bounce" style={{ animationDuration: '2s', animationDelay: '0.5s' }}></div>
-          <div className="absolute bottom-1/3 left-1/3 w-12 h-12 bg-pink-100 rounded-full opacity-25 animate-ping" style={{ animationDuration: '3s', animationDelay: '1.5s' }}></div>
+          <div
+            className="absolute top-1/4 -left-16 w-32 h-32 bg-blue-100 rounded-full opacity-30 animate-bounce"
+            style={{ animationDuration: "3s" }}
+          ></div>
+          <div
+            className="absolute bottom-1/4 -right-12 w-24 h-24 bg-purple-100 rounded-full opacity-25 animate-ping"
+            style={{ animationDuration: "4s" }}
+          ></div>
+          <div
+            className="absolute bottom-10 left-1/4 w-16 h-16 bg-teal-100 rounded-full opacity-20 animate-pulse"
+            style={{ animationDelay: "1s" }}
+          ></div>
+          <div
+            className="absolute top-1/3 right-1/3 w-8 h-8 bg-orange-100 rounded-full opacity-30 animate-bounce"
+            style={{ animationDuration: "2s", animationDelay: "0.5s" }}
+          ></div>
+          <div
+            className="absolute bottom-1/3 left-1/3 w-12 h-12 bg-pink-100 rounded-full opacity-25 animate-ping"
+            style={{ animationDuration: "3s", animationDelay: "1.5s" }}
+          ></div>
         </div>
 
         <div className="text-center max-w-md relative z-10">
           {/* Large Icon */}
           <div className="relative mb-8">
             <div className="w-32 h-32 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center mx-auto shadow-lg animate-pulse">
-              <FileText className="h-16 w-16 text-blue-600 animate-bounce" style={{ animationDuration: '2s' }} />
+              <FileText
+                className="h-16 w-16 text-blue-600 animate-bounce"
+                style={{ animationDuration: "2s" }}
+              />
             </div>
             {/* Decorative elements */}
-            <div className="absolute -top-2 -right-2 w-6 h-6 bg-red-400 rounded-full opacity-60 animate-ping" style={{ animationDuration: '3s' }}></div>
-            <div className="absolute -bottom-1 -left-1 w-4 h-4 bg-green-400 rounded-full opacity-60 animate-ping" style={{ animationDuration: '2s', animationDelay: '1s' }}></div>
+            <div
+              className="absolute -top-2 -right-2 w-6 h-6 bg-red-400 rounded-full opacity-60 animate-ping"
+              style={{ animationDuration: "3s" }}
+            ></div>
+            <div
+              className="absolute -bottom-1 -left-1 w-4 h-4 bg-green-400 rounded-full opacity-60 animate-ping"
+              style={{ animationDuration: "2s", animationDelay: "1s" }}
+            ></div>
           </div>
 
           {/* Main Message */}
@@ -648,34 +737,60 @@ const NewsRightCard: React.FC = () => {
             News & Communications
           </h2>
           <p className="text-lg text-gray-600 mb-8">
-            Select a news item, communication, or alert from the left to view details
+            Select a news item, communication, or alert from the left to view
+            details
           </p>
 
           {/* Feature Cards */}
           <div className="grid grid-cols-2 gap-4 mb-8">
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 hover:scale-105 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+            <div
+              className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 hover:scale-105 animate-fade-in"
+              style={{ animationDelay: "0.1s" }}
+            >
               <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse">
                 <FileText className="h-5 w-5 text-blue-600" />
               </div>
-              <h3 className="font-semibold text-gray-800 text-sm">Latest News</h3>
+              <h3 className="font-semibold text-gray-800 text-sm">
+                Latest News
+              </h3>
               <p className="text-xs text-gray-600">Company updates</p>
             </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 hover:scale-105 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse" style={{ animationDelay: '0.5s' }}>
+            <div
+              className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 hover:scale-105 animate-fade-in"
+              style={{ animationDelay: "0.2s" }}
+            >
+              <div
+                className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse"
+                style={{ animationDelay: "0.5s" }}
+              >
                 <MessageCircle className="h-5 w-5 text-green-600" />
               </div>
-              <h3 className="font-semibold text-gray-800 text-sm">Communications</h3>
+              <h3 className="font-semibold text-gray-800 text-sm">
+                Communications
+              </h3>
               <p className="text-xs text-gray-600">Team messages</p>
             </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 hover:scale-105 animate-fade-in" style={{ animationDelay: '0.3s' }}>
-              <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse" style={{ animationDelay: '1s' }}>
+            <div
+              className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 hover:scale-105 animate-fade-in"
+              style={{ animationDelay: "0.3s" }}
+            >
+              <div
+                className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse"
+                style={{ animationDelay: "1s" }}
+              >
                 <AlertCircle className="h-5 w-5 text-red-600" />
               </div>
               <h3 className="font-semibold text-gray-800 text-sm">Alerts</h3>
               <p className="text-xs text-gray-600">Important notices</p>
             </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 hover:scale-105 animate-fade-in" style={{ animationDelay: '0.4s' }}>
-              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse" style={{ animationDelay: '1.5s' }}>
+            <div
+              className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 hover:scale-105 animate-fade-in"
+              style={{ animationDelay: "0.4s" }}
+            >
+              <div
+                className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2 animate-pulse"
+                style={{ animationDelay: "1.5s" }}
+              >
                 <ThumbsUp className="h-5 w-5 text-purple-600" />
               </div>
               <h3 className="font-semibold text-gray-800 text-sm">Engage</h3>
@@ -704,10 +819,14 @@ const NewsRightCard: React.FC = () => {
               <h1 className="text-xl font-semibold text-gray-900">
                 {selectedUpdate.title}
               </h1>
-              <span className={`inline-block w-3 h-3 rounded-full ${getStatusColor(selectedUpdate.status)}`}></span>
+              <span
+                className={`inline-block w-3 h-3 rounded-full ${getStatusColor(selectedUpdate.status)}`}
+              ></span>
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-600">
-              <span className={`text-xs font-medium ${getTypeColor(selectedUpdate.type)}`}>
+              <span
+                className={`text-xs font-medium ${getTypeColor(selectedUpdate.type)}`}
+              >
                 {selectedUpdate.type}
               </span>
               <span>•</span>
@@ -730,23 +849,27 @@ const NewsRightCard: React.FC = () => {
             <button
               onClick={() => handleLike(true)}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-                selectedUpdate.user_like_status === 'like'
+                selectedUpdate.user_like_status === "like"
                   ? "bg-green-100 text-green-700 border border-green-200"
                   : "bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200"
               }`}
             >
-              <ThumbsUp className={`h-4 w-4 ${selectedUpdate.user_like_status === 'like' ? "fill-current" : ""}`} />
+              <ThumbsUp
+                className={`h-4 w-4 ${selectedUpdate.user_like_status === "like" ? "fill-current" : ""}`}
+              />
               <span>{selectedUpdate.likes_count || 0}</span>
             </button>
             <button
               onClick={() => handleLike(false)}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-                selectedUpdate.user_like_status === 'dislike'
+                selectedUpdate.user_like_status === "dislike"
                   ? "bg-red-100 text-red-700 border border-red-200"
                   : "bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200"
               }`}
             >
-              <ThumbsDown className={`h-4 w-4 ${selectedUpdate.user_like_status === 'dislike' ? "fill-current" : ""}`} />
+              <ThumbsDown
+                className={`h-4 w-4 ${selectedUpdate.user_like_status === "dislike" ? "fill-current" : ""}`}
+              />
               <span>{selectedUpdate.dislikes_count || 0}</span>
             </button>
           </div>
@@ -759,7 +882,9 @@ const NewsRightCard: React.FC = () => {
                 : "bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200"
             }`}
           >
-            <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-current" : ""}`} />
+            <Bookmark
+              className={`h-4 w-4 ${isBookmarked ? "fill-current" : ""}`}
+            />
             <span>Bookmark</span>
           </button>
 
@@ -767,8 +892,6 @@ const NewsRightCard: React.FC = () => {
             <Share2 className="h-4 w-4" />
             <span>Share</span>
           </button>
-
-
         </div>
       </div>
 
@@ -777,7 +900,7 @@ const NewsRightCard: React.FC = () => {
         <div className="p-4 border-b border-gray-200 bg-blue-50">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-md font-medium text-gray-900">
-              {showCreateForm ? 'Create New Update' : 'Edit Update'}
+              {showCreateForm ? "Create New Update" : "Edit Update"}
             </h3>
             <button
               onClick={resetForm}
@@ -787,19 +910,29 @@ const NewsRightCard: React.FC = () => {
             </button>
           </div>
 
-          <form onSubmit={showCreateForm ? handleCreateUpdate : handleEditUpdate} className="space-y-3">
+          <form
+            onSubmit={showCreateForm ? handleCreateUpdate : handleEditUpdate}
+            className="space-y-3"
+          >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <input
                 type="text"
                 placeholder="Title *"
                 value={formData.title}
-                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, title: e.target.value }))
+                }
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
               <select
                 value={formData.type}
-                onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as any }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    type: e.target.value as any,
+                  }))
+                }
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="news">News</option>
@@ -811,7 +944,9 @@ const NewsRightCard: React.FC = () => {
             <textarea
               placeholder="Summary *"
               value={formData.summary}
-              onChange={(e) => setFormData(prev => ({ ...prev, summary: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, summary: e.target.value }))
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               rows={2}
               required
@@ -820,7 +955,9 @@ const NewsRightCard: React.FC = () => {
             <textarea
               placeholder="Body *"
               value={formData.body}
-              onChange={(e) => setFormData(prev => ({ ...prev, body: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, body: e.target.value }))
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               rows={4}
               required
@@ -831,14 +968,21 @@ const NewsRightCard: React.FC = () => {
                 type="text"
                 placeholder="Icon (emoji)"
                 value={formData.icon}
-                onChange={(e) => setFormData(prev => ({ ...prev, icon: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, icon: e.target.value }))
+                }
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               <input
                 type="number"
                 placeholder="Priority"
                 value={formData.priority}
-                onChange={(e) => setFormData(prev => ({ ...prev, priority: parseInt(e.target.value) || 0 }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    priority: parseInt(e.target.value) || 0,
+                  }))
+                }
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               <div className="relative tag-selector">
@@ -847,7 +991,9 @@ const NewsRightCard: React.FC = () => {
                   onClick={() => setShowTagSelector(!showTagSelector)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-left bg-white hover:bg-gray-50 transition-colors"
                 >
-                  {formData.tags.length > 0 ? `${formData.tags.length} tag(s) selected` : 'Select tags...'}
+                  {formData.tags.length > 0
+                    ? `${formData.tags.length} tag(s) selected`
+                    : "Select tags..."}
                 </button>
 
                 {/* Tag Selector Dropdown */}
@@ -873,8 +1019,18 @@ const NewsRightCard: React.FC = () => {
                           className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors disabled:opacity-50"
                           title="Refresh tags"
                         >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                            />
                           </svg>
                         </button>
                       </div>
@@ -897,8 +1053,8 @@ const NewsRightCard: React.FC = () => {
                             onClick={() => addTag(tag.id)}
                             className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                               formData.tags.includes(tag.id)
-                                ? 'bg-blue-100 text-blue-800'
-                                : 'hover:bg-gray-100 text-gray-700'
+                                ? "bg-blue-100 text-blue-800"
+                                : "hover:bg-gray-100 text-gray-700"
                             }`}
                           >
                             <div className="flex items-center gap-2">
@@ -923,7 +1079,7 @@ const NewsRightCard: React.FC = () => {
                       ) : (
                         <div className="text-center py-4 text-gray-500 text-sm">
                           {tagSearchQuery ? (
-                            'No tags found matching your search'
+                            "No tags found matching your search"
                           ) : availableTags.length === 0 ? (
                             <div className="space-y-2">
                               <p>No tags available</p>
@@ -936,7 +1092,7 @@ const NewsRightCard: React.FC = () => {
                               </button>
                             </div>
                           ) : (
-                            'No tags match your current filters'
+                            "No tags match your current filters"
                           )}
                         </div>
                       )}
@@ -947,25 +1103,27 @@ const NewsRightCard: React.FC = () => {
             </div>
 
             {/* Tags display */}
-            {formData.tags && Array.isArray(formData.tags) && formData.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {formData.tags.map((tagId, index) => (
-                  <span
-                    key={index}
-                    className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-sm flex items-center gap-1"
-                  >
-                    {getTagById(tagId)?.name}
-                    <button
-                      type="button"
-                      onClick={() => removeTag(tagId)}
-                      className="text-blue-600 hover:text-blue-800"
+            {formData.tags &&
+              Array.isArray(formData.tags) &&
+              formData.tags.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {formData.tags.map((tagId, index) => (
+                    <span
+                      key={index}
+                      className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-sm flex items-center gap-1"
                     >
-                      ✕
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
+                      {getTagById(tagId)?.name}
+                      <button
+                        type="button"
+                        onClick={() => removeTag(tagId)}
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
 
             <div className="text-center text-sm text-gray-500">
               {isLoading ? (
@@ -986,7 +1144,9 @@ const NewsRightCard: React.FC = () => {
         {/* Summary */}
         <div className="mb-6">
           <h2 className="text-lg font-medium text-gray-900 mb-2">Summary</h2>
-          <p className="text-gray-700 leading-relaxed">{selectedUpdate.summary}</p>
+          <p className="text-gray-700 leading-relaxed">
+            {selectedUpdate.summary}
+          </p>
         </div>
 
         {/* Main Content */}
@@ -1000,115 +1160,142 @@ const NewsRightCard: React.FC = () => {
         </div>
 
         {/* Media */}
-        {selectedUpdate.media && Array.isArray(selectedUpdate.media) && selectedUpdate.media.length > 0 && (
-          <div className="mb-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-3">Media</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {selectedUpdate.media.map((item, index) => (
-                <div key={index} className="border border-gray-200 rounded-lg overflow-hidden">
-                  {item.type === "image" ? (
-                    <img
-                      src={item.url}
-                      alt={item.label}
-                      className="w-full h-48 object-cover"
-                    />
-                  ) : (
-                    <div className="p-4 bg-gray-50 flex items-center justify-center h-48">
-                      <ImageIcon className="h-12 w-12 text-gray-400" />
-                    </div>
-                  )}
-                  <div className="p-3 bg-white">
-                    <p className="text-sm text-gray-700 font-medium">{item.label}</p>
-                    {item.thumbnailUrl && (
-                      <p className="text-xs text-gray-500">Thumbnail available</p>
+        {selectedUpdate.media &&
+          Array.isArray(selectedUpdate.media) &&
+          selectedUpdate.media.length > 0 && (
+            <div className="mb-6">
+              <h2 className="text-lg font-medium text-gray-900 mb-3">Media</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {selectedUpdate.media.map((item, index) => (
+                  <div
+                    key={index}
+                    className="border border-gray-200 rounded-lg overflow-hidden"
+                  >
+                    {item.type === "image" ? (
+                      <img
+                        src={item.url}
+                        alt={item.label}
+                        className="w-full h-48 object-cover"
+                      />
+                    ) : (
+                      <div className="p-4 bg-gray-50 flex items-center justify-center h-48">
+                        <ImageIcon className="h-12 w-12 text-gray-400" />
+                      </div>
                     )}
+                    <div className="p-3 bg-white">
+                      <p className="text-sm text-gray-700 font-medium">
+                        {item.label}
+                      </p>
+                      {item.thumbnailUrl && (
+                        <p className="text-xs text-gray-500">
+                          Thumbnail available
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Attachments */}
-        {selectedUpdate.attachments && Array.isArray(selectedUpdate.attachments) && selectedUpdate.attachments.length > 0 && (
-          <div className="mb-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-3">Attachments</h2>
-            <div className="space-y-2">
-              {selectedUpdate.attachments.map((attachment, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <FileText className="h-5 w-5 text-gray-500" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{attachment.name}</p>
-                      <p className="text-xs text-gray-500">{attachment.type.toUpperCase()}</p>
+        {selectedUpdate.attachments &&
+          Array.isArray(selectedUpdate.attachments) &&
+          selectedUpdate.attachments.length > 0 && (
+            <div className="mb-6">
+              <h2 className="text-lg font-medium text-gray-900 mb-3">
+                Attachments
+              </h2>
+              <div className="space-y-2">
+                {selectedUpdate.attachments.map((attachment, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <FileText className="h-5 w-5 text-gray-500" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">
+                          {attachment.name}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {attachment.type.toUpperCase()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={attachment.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                      <a
+                        href={attachment.url}
+                        download
+                        className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
+                      >
+                        <Download className="h-4 w-4" />
+                      </a>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <a
-                      href={attachment.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                    </a>
-                    <a
-                      href={attachment.url}
-                      download
-                      className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
-                    >
-                      <Download className="h-4 w-4" />
-                    </a>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Tags */}
-        {selectedUpdate.tags && Array.isArray(selectedUpdate.tags) && selectedUpdate.tags.length > 0 && (
-          <div className="mb-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-3">Tags</h2>
-            <div className="flex flex-wrap gap-2">
-              {selectedUpdate.tags.map((tag, index) => (
-                <span
-                  key={index}
-                  className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
-                >
-                  {typeof tag === 'number' ? getTagById(tag)?.name : tag}
-                </span>
-              ))}
+        {selectedUpdate.tags &&
+          Array.isArray(selectedUpdate.tags) &&
+          selectedUpdate.tags.length > 0 && (
+            <div className="mb-6">
+              <h2 className="text-lg font-medium text-gray-900 mb-3">Tags</h2>
+              <div className="flex flex-wrap gap-2">
+                {selectedUpdate.tags.map((tag, index) => (
+                  <span
+                    key={index}
+                    className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                  >
+                    {typeof tag === "number" ? getTagById(tag)?.name : tag}
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Related Updates */}
-        {selectedUpdate.related && Array.isArray(selectedUpdate.related) && selectedUpdate.related.length > 0 && (
-          <div className="mb-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-3">Related Updates</h2>
-            <div className="space-y-2">
-              {selectedUpdate.related.map((relatedId, index) => (
-                <div
-                  key={index}
-                  className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
-                >
-                  <p className="text-sm text-gray-700">Related Update: {relatedId}</p>
-                </div>
-              ))}
+        {selectedUpdate.related &&
+          Array.isArray(selectedUpdate.related) &&
+          selectedUpdate.related.length > 0 && (
+            <div className="mb-6">
+              <h2 className="text-lg font-medium text-gray-900 mb-3">
+                Related Updates
+              </h2>
+              <div className="space-y-2">
+                {selectedUpdate.related.map((relatedId, index) => (
+                  <div
+                    key={index}
+                    className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                  >
+                    <p className="text-sm text-gray-700">
+                      Related Update: {relatedId}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Comments Section */}
         <div className="border-t border-gray-200 pt-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <h2 className="text-lg font-medium text-gray-900">Comments</h2>
-              <span className="text-sm text-gray-500">({selectedUpdate.comments_count || 0})</span>
+              <span className="text-sm text-gray-500">
+                ({selectedUpdate.comments_count || 0})
+              </span>
             </div>
             <button
               onClick={() => setShowComments(!showComments)}
@@ -1134,7 +1321,7 @@ const NewsRightCard: React.FC = () => {
               <form onSubmit={handleCommentSubmit} className="mb-6">
                 <div className="flex gap-3">
                   <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                    {user?.username?.charAt(0).toUpperCase() || 'U'}
+                    {user?.username?.charAt(0).toUpperCase() || "U"}
                   </div>
                   <div className="flex-1">
                     <textarea

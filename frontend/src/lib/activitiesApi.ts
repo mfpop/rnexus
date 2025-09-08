@@ -1,7 +1,8 @@
-import { Activity } from '../components/activities/ActivitiesContext';
-import AuthService from './authService';
+import { ActivityExtended } from "../components/activities/ActivitiesContext";
+import AuthService from "./authService";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
 // API Response types
 // Backend API Response types (matches actual backend response structure)
@@ -31,13 +32,13 @@ class ActivitiesApiClient {
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
-    console.log('🔍 ActivitiesApi - Making request to:', url);
+    console.log("🔍 ActivitiesApi - Making request to:", url);
 
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     };
 
     // Handle different header types
@@ -50,21 +51,21 @@ class ActivitiesApiClient {
         options.headers.forEach(([key, value]) => {
           headers[key] = value;
         });
-      } else if (typeof options.headers === 'object') {
+      } else if (typeof options.headers === "object") {
         Object.assign(headers, options.headers);
       }
     }
 
     const token = AuthService.getToken();
-    console.log('🔍 ActivitiesApi - Token exists:', !!token);
+    console.log("🔍 ActivitiesApi - Token exists:", !!token);
     if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-      console.log('🔍 ActivitiesApi - Authorization header set');
+      headers["Authorization"] = `Bearer ${token}`;
+      console.log("🔍 ActivitiesApi - Authorization header set");
     } else {
-      console.log('🔍 ActivitiesApi - No token available');
+      console.log("🔍 ActivitiesApi - No token available");
     }
 
-    console.log('🔍 ActivitiesApi - Request headers:', headers);
+    console.log("🔍 ActivitiesApi - Request headers:", headers);
 
     try {
       const response = await fetch(url, {
@@ -72,67 +73,87 @@ class ActivitiesApiClient {
         headers,
       });
 
-      console.log('🔍 ActivitiesApi - Response status:', response.status);
-      console.log('🔍 ActivitiesApi - Response headers:', Object.fromEntries(response.headers.entries()));
+      console.log("🔍 ActivitiesApi - Response status:", response.status);
+      console.log(
+        "🔍 ActivitiesApi - Response headers:",
+        Object.fromEntries(response.headers.entries()),
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log('🔍 ActivitiesApi - Response data:', data);
+      console.log("🔍 ActivitiesApi - Response data:", data);
       return data;
     } catch (error) {
-      console.error('ActivitiesApi - Request failed:', error);
+      console.error("ActivitiesApi - Request failed:", error);
       throw error;
     }
   }
 
   // Activities API
-  async getActivities(): Promise<BackendApiResponse<Activity>> {
-    return this.request<BackendApiResponse<Activity>>('/activities/');
+  async getActivities(): Promise<BackendApiResponse<ActivityExtended>> {
+    return this.request<BackendApiResponse<ActivityExtended>>("/activities/");
   }
 
-  async getActivity(id: string): Promise<Activity> {
-    return this.request<Activity>(`/activities/${id}/`);
+  async getActivity(id: string): Promise<ActivityExtended> {
+    return this.request<ActivityExtended>(`/activities/${id}/`);
   }
 
-  async createActivity(activityData: Partial<Activity>): Promise<Activity> {
-    return this.request<Activity>('/activities/', {
-      method: 'POST',
+  async createActivity(activityData: Partial<ActivityExtended>): Promise<ActivityExtended> {
+    return this.request<ActivityExtended>("/activities/", {
+      method: "POST",
       body: JSON.stringify(activityData),
     });
   }
 
-  async updateActivity(id: string, activityData: Partial<Activity>): Promise<Activity> {
-    return this.request<Activity>(`/activities/${id}/`, {
-      method: 'PUT',
+  async updateActivity(
+    id: string,
+    activityData: Partial<ActivityExtended>,
+  ): Promise<ActivityExtended> {
+    return this.request<ActivityExtended>(`/activities/${id}/`, {
+      method: "PUT",
       body: JSON.stringify(activityData),
     });
   }
 
-  async deleteActivity(id: string): Promise<{ success: boolean; message?: string }> {
-    return this.request<{ success: boolean; message?: string }>(`/activities/${id}/`, {
-      method: 'DELETE',
-    });
+  async deleteActivity(
+    id: string,
+  ): Promise<{ success: boolean; message?: string }> {
+    return this.request<{ success: boolean; message?: string }>(
+      `/activities/${id}/`,
+      {
+        method: "DELETE",
+      },
+    );
   }
 
   async startActivity(id: string): Promise<BackendActivityActionResponse> {
-    return this.request<BackendActivityActionResponse>(`/activities/${id}/start/`, {
-      method: 'POST',
-    });
+    return this.request<BackendActivityActionResponse>(
+      `/activities/${id}/start/`,
+      {
+        method: "POST",
+      },
+    );
   }
 
   async pauseActivity(id: string): Promise<BackendActivityActionResponse> {
-    return this.request<BackendActivityActionResponse>(`/activities/${id}/pause/`, {
-      method: 'POST',
-    });
+    return this.request<BackendActivityActionResponse>(
+      `/activities/${id}/pause/`,
+      {
+        method: "POST",
+      },
+    );
   }
 
   async completeActivity(id: string): Promise<BackendActivityActionResponse> {
-    return this.request<BackendActivityActionResponse>(`/activities/${id}/complete/`, {
-      method: 'POST',
-    });
+    return this.request<BackendActivityActionResponse>(
+      `/activities/${id}/complete/`,
+      {
+        method: "POST",
+      },
+    );
   }
 
   // Utility methods
@@ -140,16 +161,16 @@ class ActivitiesApiClient {
     // Store token using AuthService
     const rememberMe = AuthService.isRememberMeEnabled();
     if (rememberMe) {
-      localStorage.setItem('authToken', token);
+      localStorage.setItem("authToken", token);
     } else {
-      sessionStorage.setItem('authToken', token);
+      sessionStorage.setItem("authToken", token);
     }
   }
 
   clearAuthToken() {
     // Clear token from both storage types
-    localStorage.removeItem('authToken');
-    sessionStorage.removeItem('authToken');
+    localStorage.removeItem("authToken");
+    sessionStorage.removeItem("authToken");
   }
 
   isAuthenticated(): boolean {

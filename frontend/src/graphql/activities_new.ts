@@ -3,7 +3,7 @@
  * Provides comprehensive activity management capabilities using existing GraphQL fields
  */
 
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // =====================================================
 // Activity Fragments

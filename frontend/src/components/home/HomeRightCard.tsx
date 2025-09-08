@@ -4,8 +4,6 @@ import {
   BarChart3,
   TrendingUp,
   Users,
-  Clock,
-  CheckCircle2,
   Zap,
   Target,
   Lightbulb,
@@ -54,81 +52,8 @@ const HomeRightCard: React.FC = () => {
     },
   ];
 
-  // Activities data from home.md - exact current records (9 total)
-  const activities = [
-    {
-      id: 1,
-      title: "Production Line A - Maintenance Complete",
-      status: "completed",
-      priority: "high",
-      timestamp: "2 hours ago",
-      icon: <CheckCircle2 className="h-4 w-4" />,
-    },
-    {
-      id: 2,
-      title: "Quality Check - Batch #1234 Passed",
-      status: "completed",
-      priority: "medium",
-      timestamp: "4 hours ago",
-      icon: <CheckCircle2 className="h-4 w-4" />,
-    },
-    {
-      id: 3,
-      title: "Equipment Calibration - Machine B3",
-      status: "in-progress",
-      priority: "high",
-      timestamp: "6 hours ago",
-      icon: <Clock className="h-4 w-4" />,
-    },
-    {
-      id: 4,
-      title: "Team Meeting - Weekly Review",
-      status: "scheduled",
-      priority: "medium",
-      timestamp: "1 day ago",
-      icon: <Users className="h-4 w-4" />,
-    },
-    {
-      id: 5,
-      title: "Inventory Update - Raw Materials",
-      status: "completed",
-      priority: "low",
-      timestamp: "1 day ago",
-      icon: <CheckCircle2 className="h-4 w-4" />,
-    },
-    {
-      id: 6,
-      title: "Safety Inspection - Area C",
-      status: "completed",
-      priority: "high",
-      timestamp: "2 days ago",
-      icon: <CheckCircle2 className="h-4 w-4" />,
-    },
-    {
-      id: 7,
-      title: "Production Planning - Next Quarter",
-      status: "in-progress",
-      priority: "medium",
-      timestamp: "3 days ago",
-      icon: <Clock className="h-4 w-4" />,
-    },
-    {
-      id: 8,
-      title: "Training Session - New Protocols",
-      status: "scheduled",
-      priority: "low",
-      timestamp: "1 week ago",
-      icon: <Users className="h-4 w-4" />,
-    },
-    {
-      id: 9,
-      title: "Energy Audit - Building Systems",
-      status: "in-progress",
-      priority: "medium",
-      timestamp: "30 minutes ago",
-      icon: <Clock className="h-4 w-4" />,
-    },
-  ];
+  // Activities data - should come from GraphQL/backend
+  const activities: any[] = [];
 
   // Innovations data from home.md - exact current content plus new project and activities cards
   const innovations = [
@@ -207,7 +132,10 @@ const HomeRightCard: React.FC = () => {
   };
 
   return (
-    <div data-testid="home-rightcard" className="space-y-6 p-4 h-full w-full flex flex-col">
+    <div
+      data-testid="home-rightcard"
+      className="space-y-6 p-4 h-full w-full flex flex-col"
+    >
       {/* 1. Stats Grid - Exact structure from home.md */}
       <div className="grid grid-cols-4 gap-2 mb-6 w-full">
         {stats.map((stat) => (

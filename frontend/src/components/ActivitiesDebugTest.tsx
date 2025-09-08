@@ -1,17 +1,17 @@
-import React, { useEffect } from 'react';
-import { useQuery } from '@apollo/client';
-import { GET_ALL_ACTIVITIES } from '../graphql/activities';
+import React, { useEffect } from "react";
+import { useQuery } from "@apollo/client";
+import { GET_ALL_ACTIVITIES } from "../graphql/activities";
 
 const ActivitiesDebugTest: React.FC = () => {
   const { data, loading, error } = useQuery(GET_ALL_ACTIVITIES, {
-    fetchPolicy: 'cache-and-network',
-    errorPolicy: 'all'
+    fetchPolicy: "cache-and-network",
+    errorPolicy: "all",
   });
 
   useEffect(() => {
-    console.log('🔍 ActivitiesDebugTest - Data:', data);
-    console.log('🔍 ActivitiesDebugTest - Loading:', loading);
-    console.log('🔍 ActivitiesDebugTest - Error:', error);
+    console.log("🔍 ActivitiesDebugTest - Data:", data);
+    console.log("🔍 ActivitiesDebugTest - Loading:", loading);
+    console.log("🔍 ActivitiesDebugTest - Error:", error);
   }, [data, loading, error]);
 
   if (loading) return <div>Loading activities...</div>;

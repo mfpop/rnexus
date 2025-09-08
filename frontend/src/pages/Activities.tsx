@@ -1,8 +1,5 @@
 import React from "react";
-import {
-  ActivitiesRightCard,
-  useActivities,
-} from "../components/activities";
+import { ActivitiesRightCard, useActivities } from "../components/activities";
 
 /**
  * ActivitiesPage - Activities page right-side content for StableLayout integration

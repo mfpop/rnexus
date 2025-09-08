@@ -1,12 +1,12 @@
-import React from 'react';
-import { Phone, PhoneOff, Video } from 'lucide-react';
-import { useCall } from '../../contexts/CallContext';
-import Button from '../ui/Button';
+import React from "react";
+import { Phone, PhoneOff, Video } from "lucide-react";
+import { useCall } from "../../contexts/CallContext";
+import Button from "../ui/Button";
 
 const IncomingCallModal: React.FC = () => {
   const { currentCall, acceptCall, declineCall } = useCall();
 
-  if (!currentCall || currentCall.status !== 'ringing') {
+  if (!currentCall || currentCall.status !== "ringing") {
     return null;
   }
 
@@ -32,9 +32,7 @@ const IncomingCallModal: React.FC = () => {
         <h2 className="text-xl font-semibold text-gray-800 mb-2">
           {currentCall.caller.name}
         </h2>
-        <p className="text-gray-600 mb-6">
-          Incoming {currentCall.type} call
-        </p>
+        <p className="text-gray-600 mb-6">Incoming {currentCall.type} call</p>
 
         {/* Call Actions */}
         <div className="flex justify-center gap-6">
@@ -57,7 +55,7 @@ const IncomingCallModal: React.FC = () => {
             onClick={acceptCall}
             title="Accept call"
           >
-            {currentCall.type === 'video' ? (
+            {currentCall.type === "video" ? (
               <Video className="h-6 w-6" />
             ) : (
               <Phone className="h-6 w-6" />
@@ -67,7 +65,7 @@ const IncomingCallModal: React.FC = () => {
 
         {/* Call Type Indicator */}
         <div className="mt-4 text-sm text-gray-500">
-          {currentCall.type === 'video' ? '📹 Video Call' : '📞 Voice Call'}
+          {currentCall.type === "video" ? "📹 Video Call" : "📞 Voice Call"}
         </div>
       </div>
     </div>

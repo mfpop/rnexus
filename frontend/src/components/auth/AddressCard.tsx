@@ -1,6 +1,6 @@
-import React from 'react';
+import React from "react";
 import { Input } from "../ui/bits";
-import { useQuery } from '@apollo/client';
+import { useQuery } from "@apollo/client";
 import {
   GET_ALL_COUNTRIES,
   GET_STATES_BY_COUNTRY,
@@ -17,7 +17,7 @@ import {
   State,
   City,
   ZipCode,
-} from '../../graphql/location';
+} from "../../graphql/location";
 
 interface AddressData {
   country: string;
@@ -37,31 +37,32 @@ interface AddressCardProps {
 const AddressCard: React.FC<AddressCardProps> = ({
   addressData,
   onAddressChange,
-  errors = {}
+  errors = {},
 }) => {
   // Location data queries
-  const { data: countriesData, loading: countriesLoading } = useQuery<GetAllCountriesData>(GET_ALL_COUNTRIES);
-  const { data: statesData, loading: statesLoading } = useQuery<GetStatesByCountryData, GetStatesByCountryVariables>(
-    GET_STATES_BY_COUNTRY,
-    {
-      variables: { countryCode: addressData.country },
-      skip: !addressData.country
-    }
-  );
-  const { data: citiesData, loading: citiesLoading } = useQuery<GetCitiesByStateData, GetCitiesByStateVariables>(
-    GET_CITIES_BY_STATE,
-    {
-      variables: { stateId: addressData.state_province },
-      skip: !addressData.state_province
-    }
-  );
-  const { data: zipcodesData, loading: zipcodesLoading } = useQuery<GetZipcodesByCityData, GetZipcodesByCityVariables>(
-    GET_ZIPCODES_BY_CITY,
-    {
-      variables: { cityId: addressData.city },
-      skip: !addressData.city
-    }
-  );
+  const { data: countriesData, loading: countriesLoading } =
+    useQuery<GetAllCountriesData>(GET_ALL_COUNTRIES);
+  const { data: statesData, loading: statesLoading } = useQuery<
+    GetStatesByCountryData,
+    GetStatesByCountryVariables
+  >(GET_STATES_BY_COUNTRY, {
+    variables: { countryCode: addressData.country },
+    skip: !addressData.country,
+  });
+  const { data: citiesData, loading: citiesLoading } = useQuery<
+    GetCitiesByStateData,
+    GetCitiesByStateVariables
+  >(GET_CITIES_BY_STATE, {
+    variables: { stateId: addressData.state_province },
+    skip: !addressData.state_province,
+  });
+  const { data: zipcodesData, loading: zipcodesLoading } = useQuery<
+    GetZipcodesByCityData,
+    GetZipcodesByCityVariables
+  >(GET_ZIPCODES_BY_CITY, {
+    variables: { cityId: addressData.city },
+    skip: !addressData.city,
+  });
 
   // Extract data from queries
   const countries: Country[] = countriesData?.allCountries || [];
@@ -72,43 +73,48 @@ const AddressCard: React.FC<AddressCardProps> = ({
   // Handle country change
   const handleCountryChange = (countryId: string) => {
     const selectedCountry = countries.find((c: Country) => c.id === countryId);
-    onAddressChange('country', selectedCountry?.code || '');
+    onAddressChange("country", selectedCountry?.code || "");
     // Reset dependent fields
-    onAddressChange('state_province', '');
-    onAddressChange('city', '');
-    onAddressChange('zip_code', '');
+    onAddressChange("state_province", "");
+    onAddressChange("city", "");
+    onAddressChange("zip_code", "");
   };
 
   // Handle state change
   const handleStateChange = (stateId: string) => {
-    onAddressChange('state_province', stateId);
+    onAddressChange("state_province", stateId);
     // Reset dependent fields
-    onAddressChange('city', '');
-    onAddressChange('zip_code', '');
+    onAddressChange("city", "");
+    onAddressChange("zip_code", "");
   };
 
   // Handle city change
   const handleCityChange = (cityId: string) => {
-    onAddressChange('city', cityId);
+    onAddressChange("city", cityId);
     // Reset dependent field
-    onAddressChange('zip_code', '');
+    onAddressChange("zip_code", "");
   };
 
   // Handle zip code change
   const handleZipCodeChange = (zipcodeId: string) => {
-    onAddressChange('zip_code', zipcodeId);
+    onAddressChange("zip_code", zipcodeId);
   };
 
   // Handle text input changes
-  const handleTextChange = (field: keyof AddressData) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    onAddressChange(field, e.target.value);
-  };
+  const handleTextChange =
+    (field: keyof AddressData) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      onAddressChange(field, e.target.value);
+    };
 
   return (
     <div className="bg-white rounded-lg border border-gray-200">
       <div className="p-4 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900">Address Information</h3>
-        <p className="text-sm text-gray-600 mt-1">Enter your complete address details</p>
+        <h3 className="text-lg font-semibold text-gray-900">
+          Address Information
+        </h3>
+        <p className="text-sm text-gray-600 mt-1">
+          Enter your complete address details
+        </p>
       </div>
 
       <div className="p-4 space-y-4">
@@ -133,8 +139,8 @@ const AddressCard: React.FC<AddressCardProps> = ({
           {countriesLoading && (
             <p className="text-xs text-gray-500 mt-1">Loading countries...</p>
           )}
-          {errors['country'] && (
-            <p className="text-red-500 text-xs mt-1">{errors['country']}</p>
+          {errors["country"] && (
+            <p className="text-red-500 text-xs mt-1">{errors["country"]}</p>
           )}
         </div>
 
@@ -160,10 +166,14 @@ const AddressCard: React.FC<AddressCardProps> = ({
             <p className="text-xs text-gray-500 mt-1">Loading states...</p>
           )}
           {!addressData.country && (
-            <p className="text-xs text-gray-500 mt-1">Please select a country first</p>
+            <p className="text-xs text-gray-500 mt-1">
+              Please select a country first
+            </p>
           )}
-          {errors['state_province'] && (
-            <p className="text-red-500 text-xs mt-1">{errors['state_province']}</p>
+          {errors["state_province"] && (
+            <p className="text-red-500 text-xs mt-1">
+              {errors["state_province"]}
+            </p>
           )}
         </div>
 
@@ -189,10 +199,12 @@ const AddressCard: React.FC<AddressCardProps> = ({
             <p className="text-xs text-gray-500 mt-1">Loading cities...</p>
           )}
           {!addressData.state_province && (
-            <p className="text-xs text-gray-500 mt-1">Please select a state/province first</p>
+            <p className="text-xs text-gray-500 mt-1">
+              Please select a state/province first
+            </p>
           )}
-          {errors['city'] && (
-            <p className="text-red-500 text-xs mt-1">{errors['city']}</p>
+          {errors["city"] && (
+            <p className="text-red-500 text-xs mt-1">{errors["city"]}</p>
           )}
         </div>
 
@@ -218,10 +230,12 @@ const AddressCard: React.FC<AddressCardProps> = ({
             <p className="text-xs text-gray-500 mt-1">Loading ZIP codes...</p>
           )}
           {!addressData.city && (
-            <p className="text-xs text-gray-500 mt-1">Please select a city first</p>
+            <p className="text-xs text-gray-500 mt-1">
+              Please select a city first
+            </p>
           )}
-          {errors['zip_code'] && (
-            <p className="text-red-500 text-xs mt-1">{errors['zip_code']}</p>
+          {errors["zip_code"] && (
+            <p className="text-red-500 text-xs mt-1">{errors["zip_code"]}</p>
           )}
         </div>
 
@@ -233,12 +247,14 @@ const AddressCard: React.FC<AddressCardProps> = ({
           <Input
             type="text"
             value={addressData.street_address}
-            onChange={handleTextChange('street_address')}
+            onChange={handleTextChange("street_address")}
             className="w-full"
             placeholder="Enter street address"
           />
-          {errors['street_address'] && (
-            <p className="text-red-500 text-xs mt-1">{errors['street_address']}</p>
+          {errors["street_address"] && (
+            <p className="text-red-500 text-xs mt-1">
+              {errors["street_address"]}
+            </p>
           )}
         </div>
 
@@ -250,19 +266,23 @@ const AddressCard: React.FC<AddressCardProps> = ({
           <Input
             type="text"
             value={addressData.apartment_suite}
-            onChange={handleTextChange('apartment_suite')}
+            onChange={handleTextChange("apartment_suite")}
             className="w-full"
             placeholder="Enter apartment/suite (optional)"
           />
-          {errors['apartment_suite'] && (
-            <p className="text-red-500 text-xs mt-1">{errors['apartment_suite']}</p>
+          {errors["apartment_suite"] && (
+            <p className="text-red-500 text-xs mt-1">
+              {errors["apartment_suite"]}
+            </p>
           )}
         </div>
 
         {/* Address Summary */}
         {(addressData.street_address || addressData.apartment_suite) && (
           <div className="mt-4 p-3 bg-gray-50 rounded-md">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Address Summary:</h4>
+            <h4 className="text-sm font-medium text-gray-700 mb-2">
+              Address Summary:
+            </h4>
             <div className="text-sm text-gray-600">
               {addressData.street_address && (
                 <div>{addressData.street_address}</div>
@@ -273,15 +293,17 @@ const AddressCard: React.FC<AddressCardProps> = ({
               {cities.find((c: City) => c.id === addressData.city)?.name && (
                 <div>
                   {cities.find((c: City) => c.id === addressData.city)?.name}
-                  {states.find((s: State) => s.id === addressData.state_province)?.name &&
-                    `, ${states.find((s: State) => s.id === addressData.state_province)?.name}`
-                  }
-                  {countries.find((c: Country) => c.code === addressData.country)?.name &&
-                    `, ${countries.find((c: Country) => c.code === addressData.country)?.name}`
-                  }
-                  {zipcodes.find((z: ZipCode) => z.id === addressData.zip_code)?.code &&
-                    ` ${zipcodes.find((z: ZipCode) => z.id === addressData.zip_code)?.code}`
-                  }
+                  {states.find(
+                    (s: State) => s.id === addressData.state_province,
+                  )?.name &&
+                    `, ${states.find((s: State) => s.id === addressData.state_province)?.name}`}
+                  {countries.find(
+                    (c: Country) => c.code === addressData.country,
+                  )?.name &&
+                    `, ${countries.find((c: Country) => c.code === addressData.country)?.name}`}
+                  {zipcodes.find((z: ZipCode) => z.id === addressData.zip_code)
+                    ?.code &&
+                    ` ${zipcodes.find((z: ZipCode) => z.id === addressData.zip_code)?.code}`}
                 </div>
               )}
             </div>

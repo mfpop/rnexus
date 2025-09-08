@@ -7,12 +7,7 @@ import tseslint from "typescript-eslint";
 export default tseslint.config(
   // 1) Global ignores to keep linting fast and focused on source files
   {
-    ignores: [
-      "dist/**",
-      "node_modules/**",
-      "public/**",
-      "e2e/**",
-    ],
+    ignores: ["dist/**", "node_modules/**", "public/**", "e2e/**"],
   },
   // 2) Base recommended configs
   js.configs.recommended,
@@ -41,15 +36,15 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       // Avoid warnings that would fail CI due to --max-warnings=0
       "react-refresh/only-export-components": "off",
-  // React hooks dependency rule is often noisy in complex apps; keep off until code is refactored
-  "react-hooks/exhaustive-deps": "off",
+      // React hooks dependency rule is often noisy in complex apps; keep off until code is refactored
+      "react-hooks/exhaustive-deps": "off",
       // Relax a few TS rules that became overly strict with newer versions
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-unused-vars": "off",
       "@typescript-eslint/no-empty-object-type": "off",
-  // Turn off a few stylistic core rules to avoid CI noise after upgrades
-  "no-useless-catch": "off",
-  "no-case-declarations": "off",
+      // Turn off a few stylistic core rules to avoid CI noise after upgrades
+      "no-useless-catch": "off",
+      "no-case-declarations": "off",
     },
   },
   // 4) Node/config files: allow Node globals and require()
