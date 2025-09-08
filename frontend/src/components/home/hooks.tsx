@@ -159,12 +159,29 @@ export const useHomeActivities = (): ActivityItem[] => {
   });
 
   return useMemo(() => {
-    if (loading || error || !data?.allActivities) {
+    console.log("DEBUG: useHomeActivities - loading:", loading);
+    console.log("DEBUG: useHomeActivities - error:", error);
+    console.log("DEBUG: useHomeActivities - data:", data);
+
+    if (loading) {
+      console.log("DEBUG: useHomeActivities - still loading...");
       return [];
     }
 
+    if (error) {
+      console.error("DEBUG: useHomeActivities - error occurred:", error);
+      return [];
+    }
+
+    if (!data?.allActivities) {
+      console.log("DEBUG: useHomeActivities - no activities data");
+      return [];
+    }
+
+    console.log("DEBUG: useHomeActivities - found activities:", data.allActivities.length);
+
     // Transform GraphQL activities to ActivityItem format
-    return data.allActivities.slice(0, 6).map((activity: any) => ({
+    const transformedActivities = data.allActivities.slice(0, 6).map((activity: any) => ({
       id: activity.id,
       title: activity.title,
       status: mapActivityStatus(activity.status),
@@ -175,6 +192,9 @@ export const useHomeActivities = (): ActivityItem[] => {
       assignee: activity.assignedTo,
       category: activity.type,
     }));
+
+    console.log("DEBUG: useHomeActivities - transformed activities:", transformedActivities);
+    return transformedActivities;
   }, [data, loading, error]);
 };
 

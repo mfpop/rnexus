@@ -9,6 +9,7 @@ import {
   Lightbulb,
   FolderKanban,
 } from "lucide-react";
+import { useHomeActivities } from "./hooks";
 
 /**
  * HomeRightCard - Home page specific right card content component
@@ -52,8 +53,8 @@ const HomeRightCard: React.FC = () => {
     },
   ];
 
-  // Activities data - should come from GraphQL/backend
-  const activities: any[] = [];
+  // Activities data from GraphQL/backend
+  const activities = useHomeActivities();
 
   // Innovations data from home.md - exact current content plus new project and activities cards
   const innovations = [
