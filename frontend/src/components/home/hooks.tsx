@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useQuery } from "@apollo/client";
 import {
   Activity,
   BarChart3,
@@ -23,6 +24,7 @@ import {
   ActivityItem,
   InnovationCard
 } from "./types";
+import { GET_ALL_ACTIVITIES } from "../../graphql/activities";
 
 /**
  * Custom hook for home page navigation data
@@ -148,10 +150,119 @@ export const useHomeStats = (): StatCard[] => {
 
 /**
  * Custom hook for home page activities data
- * Returns empty array - activities should come from GraphQL/backend
+ * Fetches activities from GraphQL API and transforms them for display
  */
 export const useHomeActivities = (): ActivityItem[] => {
-  return useMemo(() => [], []);
+  const { data, loading, error } = useQuery(GET_ALL_ACTIVITIES, {
+    fetchPolicy: "cache-and-network",
+    errorPolicy: "all",
+  });
+
+  return useMemo(() => {
+    if (loading || error || !data?.allActivities) {
+      return [];
+    }
+
+    // Transform GraphQL activities to ActivityItem format
+    return data.allActivities.slice(0, 6).map((activity: any) => ({
+      id: activity.id,
+      title: activity.title,
+      status: mapActivityStatus(activity.status),
+      priority: mapActivityPriority(activity.priority),
+      timestamp: formatTimestamp(activity.createdAt || activity.updatedAt),
+      icon: getActivityIcon(activity.type),
+      description: activity.description,
+      assignee: activity.assignedTo,
+      category: activity.type,
+    }));
+  }, [data, loading, error]);
+};
+
+// Helper function to map GraphQL status to ActivityItem status
+const mapActivityStatus = (status: string): 'completed' | 'in-progress' | 'scheduled' | 'cancelled' => {
+  switch (status?.toLowerCase()) {
+    case 'completed':
+    case 'done':
+    case 'finished':
+      return 'completed';
+    case 'in-progress':
+    case 'in_progress':
+    case 'active':
+    case 'ongoing':
+      return 'in-progress';
+    case 'scheduled':
+    case 'pending':
+    case 'planned':
+      return 'scheduled';
+    case 'cancelled':
+    case 'canceled':
+    case 'abandoned':
+      return 'cancelled';
+    default:
+      return 'scheduled';
+  }
+};
+
+// Helper function to map GraphQL priority to ActivityItem priority
+const mapActivityPriority = (priority: string): 'high' | 'medium' | 'low' => {
+  switch (priority?.toLowerCase()) {
+    case 'high':
+    case 'urgent':
+    case 'critical':
+      return 'high';
+    case 'medium':
+    case 'normal':
+    case 'moderate':
+      return 'medium';
+    case 'low':
+    case 'minor':
+      return 'low';
+    default:
+      return 'medium';
+  }
+};
+
+// Helper function to format timestamp
+const formatTimestamp = (timestamp: string): string => {
+  if (!timestamp) return 'Just now';
+
+  const date = new Date(timestamp);
+  const now = new Date();
+  const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+
+  if (diffInMinutes < 1) return 'Just now';
+  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours}h ago`;
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 7) return `${diffInDays}d ago`;
+
+  return date.toLocaleDateString();
+};
+
+// Helper function to get appropriate icon for activity type
+const getActivityIcon = (type: string) => {
+  switch (type?.toLowerCase()) {
+    case 'production':
+    case 'manufacturing':
+      return <Factory className="h-4 w-4" />;
+    case 'meeting':
+    case 'conference':
+      return <Users className="h-4 w-4" />;
+    case 'task':
+    case 'assignment':
+      return <ClipboardList className="h-4 w-4" />;
+    case 'maintenance':
+    case 'repair':
+      return <Settings className="h-4 w-4" />;
+    case 'quality':
+    case 'inspection':
+      return <BarChart3 className="h-4 w-4" />;
+    default:
+      return <Activity className="h-4 w-4" />;
+  }
 };
 
 /**
