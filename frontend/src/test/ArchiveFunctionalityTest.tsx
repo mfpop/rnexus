@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Button } from '../components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Input } from '../components/ui/input';
-import { Label } from '../components/ui/label';
+import Button from '../components/ui/Button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
+import { Input } from '../components/ui/Input';
+import { Label } from '../components/ui/Label';
 import { Archive, ArchiveRestore, MessageSquare, Users, CheckCircle, XCircle } from 'lucide-react';
 
 interface TestResult {
@@ -18,7 +18,7 @@ const ArchiveFunctionalityTest: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [testUserId, setTestUserId] = useState<string>('1');
 
-  const addTestResult = (test: string, status: 'success' | 'error', message: string) => {
+  const addTestResult = (test: string, status: 'pending' | 'success' | 'error', message: string) => {
     const result: TestResult = {
       id: Date.now().toString(),
       test,
