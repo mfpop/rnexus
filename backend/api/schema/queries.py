@@ -338,4 +338,80 @@ class Query(graphene.ObjectType):
 
         return queryset
 
-    # Add more resolver methods as needed...
+    # Location resolvers
+    def resolve_all_countries(self, info, **kwargs):
+        """Get all active countries"""
+        return Country.objects.filter(is_active=True).order_by("name")
+
+    def resolve_country(self, info, id=None, code=None, **kwargs):
+        """Get country by ID or code"""
+        try:
+            if id:
+                return Country.objects.get(id=id, is_active=True)
+            elif code:
+                return Country.objects.get(code=code.upper(), is_active=True)
+            return None
+        except Country.DoesNotExist:
+            return None
+
+    def resolve_all_states(self, info, country_code=None, **kwargs):
+        """Get all active states, optionally filtered by country"""
+        queryset = State.objects.filter(is_active=True)
+
+        if country_code:
+            queryset = queryset.filter(country__code=country_code.upper())
+
+        return queryset.select_related("country").order_by("name")
+
+    def resolve_state(self, info, id, **kwargs):
+        """Get state by ID"""
+        try:
+            return State.objects.select_related("country").get(id=id, is_active=True)
+        except State.DoesNotExist:
+            return None
+
+    def resolve_all_cities(self, info, state_id=None, country_code=None, **kwargs):
+        """Get all active cities, optionally filtered by state or country"""
+        queryset = City.objects.filter(is_active=True)
+
+        if state_id:
+            queryset = queryset.filter(state_id=state_id)
+        elif country_code:
+            queryset = queryset.filter(country__code=country_code.upper())
+
+        return queryset.select_related("state", "country").order_by("name")
+
+    def resolve_city(self, info, id, **kwargs):
+        """Get city by ID"""
+        try:
+            return City.objects.select_related("state", "country").get(
+                id=id, is_active=True
+            )
+        except City.DoesNotExist:
+            return None
+
+    def resolve_all_zipcodes(self, info, city_id=None, state_id=None, **kwargs):
+        """Get all active ZIP codes, optionally filtered by city or state"""
+        queryset = ZipCode.objects.filter(is_active=True)
+
+        if city_id:
+            queryset = queryset.filter(city_id=city_id)
+        elif state_id:
+            queryset = queryset.filter(state_id=state_id)
+
+        return queryset.select_related("city", "state", "country").order_by("code")
+
+    def resolve_zipcode(self, info, id=None, code=None, **kwargs):
+        """Get ZIP code by ID or code"""
+        try:
+            if id:
+                return ZipCode.objects.select_related("city", "state", "country").get(
+                    id=id, is_active=True
+                )
+            elif code:
+                return ZipCode.objects.select_related("city", "state", "country").get(
+                    code=code, is_active=True
+                )
+            return None
+        except ZipCode.DoesNotExist:
+            return None

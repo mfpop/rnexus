@@ -11,6 +11,8 @@ import {
   Trash2,
   Lock,
   Building,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Button, Input, NotificationToast } from "../ui/bits";
 import AvatarUpload from "../ui/AvatarUpload";
@@ -77,6 +79,7 @@ interface ProfileData {
     field?: string;
     startYear?: string;
     endYear?: string;
+    gpa?: string;
     description?: string;
     visible?: boolean;
   }>;
@@ -88,6 +91,10 @@ interface ProfileData {
     startYear?: string;
     endYear?: string;
     description?: string;
+    employmentType?: string;
+    location?: string;
+    isCurrent?: boolean;
+    achievements?: string;
     visible?: boolean;
   }>;
   profile_visibility?: {
@@ -300,6 +307,74 @@ const ProfileRightCard: React.FC = () => {
     confirm: false,
   });
 
+  // Pagination state for work experience
+  const [workExperiencePage, setWorkExperiencePage] = useState(1);
+  const WORK_ITEMS_PER_PAGE = 1; // Show 1 work experience item per page
+
+  // Pagination state for education
+  const [educationPage, setEducationPage] = useState(1);
+  const EDUCATION_ITEMS_PER_PAGE = 1; // Show 1 education item per page
+
+  // Helper function to get paginated work experience items
+  const getPaginatedWorkExperience = () => {
+    const workHistory = profileData.work_history || [];
+    const startIndex = (workExperiencePage - 1) * WORK_ITEMS_PER_PAGE;
+    const endIndex = startIndex + WORK_ITEMS_PER_PAGE;
+
+    return {
+      items: workHistory.slice(startIndex, endIndex),
+      totalItems: workHistory.length,
+      totalPages: Math.ceil(workHistory.length / WORK_ITEMS_PER_PAGE),
+      hasNextPage: endIndex < workHistory.length,
+      hasPrevPage: workExperiencePage > 1,
+      currentPage: workExperiencePage,
+      startIndex: startIndex,
+    };
+  };
+
+  // Helper function to get paginated education items
+  const getPaginatedEducation = () => {
+    const education = profileData.education || [];
+    const startIndex = (educationPage - 1) * EDUCATION_ITEMS_PER_PAGE;
+    const endIndex = startIndex + EDUCATION_ITEMS_PER_PAGE;
+
+    return {
+      items: education.slice(startIndex, endIndex),
+      totalItems: education.length,
+      totalPages: Math.ceil(education.length / EDUCATION_ITEMS_PER_PAGE),
+      hasNextPage: endIndex < education.length,
+      hasPrevPage: educationPage > 1,
+      currentPage: educationPage,
+      startIndex: startIndex,
+    };
+  };
+
+  // Helper function to update work experience item by global index
+  const updateWorkByIndex = (globalIndex: number, field: keyof NonNullable<ProfileData['work_history']>[number], value: any) => {
+    const newWorkHistory = [...(profileData.work_history || [])];
+    if (newWorkHistory[globalIndex]) {
+      newWorkHistory[globalIndex] = {
+        ...newWorkHistory[globalIndex],
+        [field]: value,
+      };
+      handleProfileChange("work_history", newWorkHistory);
+    }
+  };
+
+  // Helper function to update education item by global index
+  const updateEducationByIndex = (globalIndex: number, field: keyof NonNullable<ProfileData['education']>[number], value: any) => {
+    const newEducation = [...(profileData.education || [])];
+    if (newEducation[globalIndex]) {
+      newEducation[globalIndex] = {
+        ...newEducation[globalIndex],
+        [field]: value,
+      };
+      handleProfileChange("education", newEducation);
+    }
+  };
+
+
+
   // Update profile data when GraphQL query data changes
   useEffect(() => {
     if (profileQueryData?.userProfile) {
@@ -347,6 +422,7 @@ const ProfileRightCard: React.FC = () => {
       setCities([]);
     }
   }, [citiesData]);
+
 
   // Reset dependent fields when country changes
   useEffect(() => {
@@ -788,27 +864,7 @@ const ProfileRightCard: React.FC = () => {
     }
   };
 
-  // Map phone country codes to ISO country codes for GraphQL queries
-  const phoneCodeToISOCode = (phoneCode: string): string => {
-    const mapping: Record<string, string> = {
-      "+1": "US", // United States/Canada
-      "+44": "GB", // United Kingdom
-      "+33": "FR", // France
-      "+49": "DE", // Germany
-      "+39": "IT", // Italy
-      "+34": "ES", // Spain
-      "+81": "JP", // Japan
-      "+86": "CN", // China
-      "+91": "IN", // India
-      "+55": "BR", // Brazil
-      "+52": "MX", // Mexico
-      "+61": "AU", // Australia
-      "+7": "RU", // Russia
-      "+82": "KR", // South Korea
-      // Add more mappings as needed
-    };
-    return mapping[phoneCode] || phoneCode;
-  };
+
 
   // Validate street address
   const validateStreetAddress = (address: string): boolean => {
@@ -1021,6 +1077,7 @@ const ProfileRightCard: React.FC = () => {
           field: "",
           startYear: "",
           endYear: "",
+          gpa: "",
           description: "",
           visible: true,
         },
@@ -1048,6 +1105,10 @@ const ProfileRightCard: React.FC = () => {
           startYear: "",
           endYear: "",
           description: "",
+          employmentType: "",
+          location: "",
+          isCurrent: false,
+          achievements: "",
           visible: true,
         },
       ],
@@ -1060,6 +1121,7 @@ const ProfileRightCard: React.FC = () => {
       work_history: (prev.work_history || []).filter((w) => w.id !== id),
     }));
   };
+
 
   const handleAvatarUpload = async (base64Data: string): Promise<void> => {
     try {
@@ -1385,11 +1447,10 @@ const ProfileRightCard: React.FC = () => {
                             handleAddressChange("country", e.target.value);
                             if (selectedCountry) {
                               console.log("Selected country:", selectedCountry); // Debug
-                              const isoCode = phoneCodeToISOCode(
-                                selectedCountry.code || "",
-                              );
-                              console.log("Mapped ISO code:", isoCode); // Debug
-                              handleProfileChange("country_code", isoCode);
+                              // Use the country code directly from the database (MEX, USA, etc.)
+                              const countryCode = selectedCountry.code;
+                              console.log("Using country code:", countryCode); // Debug
+                              handleProfileChange("country_code", countryCode);
                               // Reset dependent fields when country changes
                               handleProfileChange("state_province", "");
                               handleProfileChange("city", "");
@@ -2030,190 +2091,498 @@ const ProfileRightCard: React.FC = () => {
         );
 
       case "education":
+        const educationPaginationData = getPaginatedEducation();
         return (
           <div className="flex flex-col space-y-6">
             <div className="bg-white rounded-lg border border-gray-200">
-              <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Education
-                </h3>
-                <Button
-                  onClick={addEducation}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2"
-                  disabled={!isEditMode}
-                >
-                  <Plus className="w-4 h-4" />
-                  Add Education
-                </Button>
-              </div>
-              <div className="p-4 space-y-4">
-                {profileData.education?.map((edu, index) => (
-                  <div
-                    key={edu.id}
-                    className="border border-gray-200 rounded-lg p-4"
-                  >
-                    <div className="flex justify-between items-start mb-4">
-                      <h4 className="font-medium text-gray-900">
-                        Education #{index + 1}
-                      </h4>
+              {/* Header with pagination controls */}
+              <div className="p-4 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                      <GraduationCap className="w-5 h-5 mr-2 text-blue-600" />
+                      Education
+                    </h3>
+                  </div>
+
+                  {/* Pagination controls */}
+                  {educationPaginationData.totalPages > 1 && (
+                    <div className="flex items-center gap-1">
                       <Button
-                        onClick={() => removeEducation(edu.id)}
-                        className="text-red-600 hover:text-red-700 p-1"
-                        disabled={!isEditMode}
+                        onClick={() => setEducationPage(prev => prev - 1)}
+                        disabled={!educationPaginationData.hasPrevPage}
+                        className={`h-6 px-2 text-xs flex items-center gap-1 rounded ${
+                          educationPaginationData.hasPrevPage
+                            ? 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-300'
+                            : 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed'
+                        }`}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <ChevronLeft className="w-3 h-3" />
+                        Prev
+                      </Button>
+
+                      <div className="flex items-center gap-0.5">
+                        {Array.from({ length: educationPaginationData.totalPages }, (_, i) => i + 1).map(page => (
+                          <Button
+                            key={page}
+                            onClick={() => setEducationPage(page)}
+                            className={`w-6 h-6 text-xs rounded flex items-center justify-center ${
+                              page === educationPaginationData.currentPage
+                                ? 'bg-blue-600 text-white border border-blue-600'
+                                : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-300'
+                            }`}
+                          >
+                            {page}
+                          </Button>
+                        ))}
+                      </div>
+
+                      <Button
+                        onClick={() => setEducationPage(prev => prev + 1)}
+                        disabled={!educationPaginationData.hasNextPage}
+                        className={`h-6 px-2 text-xs flex items-center gap-1 rounded ${
+                          educationPaginationData.hasNextPage
+                            ? 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-300'
+                            : 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed'
+                        }`}
+                      >
+                        Next
+                        <ChevronRight className="w-3 h-3" />
                       </Button>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          School
-                        </label>
-                        <Input
-                          type="text"
-                          value={edu.school}
-                          onChange={(e) => {
-                            const newEducation = [
-                              ...(profileData.education || []),
-                            ];
-                            newEducation[index] = {
-                              ...edu,
-                              school: e.target.value,
-                            };
-                            handleProfileChange("education", newEducation);
-                          }}
-                          className="w-full"
-                          placeholder="Enter school name"
+                  )}
+                </div>
+              </div>
+
+              {/* Content area */}
+              <div className="p-2 space-y-2 overflow-y-auto">
+                {educationPaginationData.items.map((edu, localIndex) => {
+                  const globalIndex = educationPaginationData.startIndex + localIndex;
+                  return (
+                    <div
+                      key={edu.id}
+                      className="border border-gray-200 rounded-lg p-2 mb-2"
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-medium text-gray-900">
+                          Education #{globalIndex + 1}
+                        </h4>
+                        <Button
+                          onClick={() => removeEducation(edu.id)}
+                          className="text-red-600 hover:text-red-700 p-1"
                           disabled={!isEditMode}
-                        />
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
-                      <div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Institution
+                          </label>
+                          <Input
+                            type="text"
+                            value={edu.school || ""}
+                            onChange={(e) => updateEducationByIndex(globalIndex, "school", e.target.value)}
+                            className="w-full"
+                            placeholder="University or College name"
+                            disabled={!isEditMode}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Degree
+                          </label>
+                          <Input
+                            type="text"
+                            value={edu.degree || ""}
+                            onChange={(e) => updateEducationByIndex(globalIndex, "degree", e.target.value)}
+                            className="w-full"
+                            placeholder="Bachelor's, Master's, etc."
+                            disabled={!isEditMode}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Field of Study
+                          </label>
+                          <Input
+                            type="text"
+                            value={edu.field || ""}
+                            onChange={(e) => updateEducationByIndex(globalIndex, "field", e.target.value)}
+                            className="w-full"
+                            placeholder="Computer Science, etc."
+                            disabled={!isEditMode}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            GPA
+                          </label>
+                          <Input
+                            type="text"
+                            value={edu.gpa || ""}
+                            onChange={(e) => updateEducationByIndex(globalIndex, "gpa", e.target.value)}
+                            className="w-full"
+                            placeholder="3.5"
+                            disabled={!isEditMode}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Start Year
+                          </label>
+                          <Input
+                            type="number"
+                            value={edu.startYear || ""}
+                            onChange={(e) => updateEducationByIndex(globalIndex, "startYear", e.target.value)}
+                            className="w-full"
+                            placeholder="2020"
+                            min="1900"
+                            max={new Date().getFullYear() + 10}
+                            disabled={!isEditMode}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            End Year
+                          </label>
+                          <Input
+                            type="number"
+                            value={edu.endYear || ""}
+                            onChange={(e) => updateEducationByIndex(globalIndex, "endYear", e.target.value)}
+                            className="w-full"
+                            placeholder="2024"
+                            min="1900"
+                            max={new Date().getFullYear() + 10}
+                            disabled={!isEditMode}
+                          />
+                        </div>
+                      </div>
+                      <div className="mt-2">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Degree
+                          Description
                         </label>
-                        <Input
-                          type="text"
-                          value={edu.degree}
-                          onChange={(e) => {
-                            const newEducation = [
-                              ...(profileData.education || []),
-                            ];
-                            newEducation[index] = {
-                              ...edu,
-                              degree: e.target.value,
-                            };
-                            handleProfileChange("education", newEducation);
-                          }}
-                          className="w-full"
-                          placeholder="Enter degree"
+                        <textarea
+                          value={edu.description || ""}
+                          onChange={(e) => updateEducationByIndex(globalIndex, "description", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                          placeholder="Additional details about your education"
+                          rows={2}
                           disabled={!isEditMode}
                         />
                       </div>
                     </div>
+                  );
+                })}
+
+                {/* Empty state */}
+                {(!profileData.education || profileData.education.length === 0) && (
+                  <div className="text-center py-8 text-gray-500">
+                    <GraduationCap className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                    <p>No education added yet</p>
+                    <p className="text-sm mt-1">Use the + button in the right sidebar to add your first education</p>
                   </div>
-                ))}
-                {(!profileData.education ||
-                  profileData.education.length === 0) && (
-                  <p className="text-gray-500 text-center py-8">
-                    No education entries yet. Click "Add Education" to get
-                    started.
-                  </p>
                 )}
+              </div>
+
+              {/* Dynamic status information in footer */}
+              <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
+                <div className="flex items-center justify-center">
+                  <div className="flex items-center space-x-2">
+                    {isEditMode ? (
+                      <>
+                        <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                        <span className="text-sm text-gray-600">
+                          {hasUnsavedChanges
+                            ? "You have unsaved changes. Use Save or Cancel buttons on the right sidebar."
+                            : "Edit mode active. Fields are now editable."}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                        <span className="text-sm text-gray-600">
+                          Read-only mode. Use the right sidebar to make changes.
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         );
 
       case "experience":
+        const paginationData = getPaginatedWorkExperience();
         return (
           <div className="flex flex-col space-y-6">
             <div className="bg-white rounded-lg border border-gray-200">
-              <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Work Experience
-                </h3>
-                <Button
-                  onClick={addWork}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2"
-                  disabled={!isEditMode}
-                >
-                  <Plus className="w-4 h-4" />
-                  Add Experience
-                </Button>
-              </div>
-              <div className="p-4 space-y-4">
-                {profileData.work_history?.map((work, index) => (
-                  <div
-                    key={work.id}
-                    className="border border-gray-200 rounded-lg p-4"
-                  >
-                    <div className="flex justify-between items-start mb-4">
-                      <h4 className="font-medium text-gray-900">
-                        Experience #{index + 1}
-                      </h4>
+              {/* Header with pagination controls */}
+              <div className="p-4 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                      <Building className="w-5 h-5 mr-2 text-blue-600" />
+                      Work Experience
+                    </h3>
+                  </div>
+
+                  {/* Pagination controls */}
+                  {paginationData.totalPages > 1 && (
+                    <div className="flex items-center gap-1">
                       <Button
-                        onClick={() => removeWork(work.id)}
-                        className="text-red-600 hover:text-red-700 p-1"
-                        disabled={!isEditMode}
+                        onClick={() => setWorkExperiencePage(prev => prev - 1)}
+                        disabled={!paginationData.hasPrevPage}
+                        className={`h-6 px-2 text-xs flex items-center gap-1 rounded ${
+                          paginationData.hasPrevPage
+                            ? 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-300'
+                            : 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed'
+                        }`}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <ChevronLeft className="w-3 h-3" />
+                        Prev
+                      </Button>
+
+                      <div className="flex items-center gap-0.5">
+                        {Array.from({ length: paginationData.totalPages }, (_, i) => i + 1).map(page => (
+                          <Button
+                            key={page}
+                            onClick={() => setWorkExperiencePage(page)}
+                            className={`w-6 h-6 text-xs rounded flex items-center justify-center ${
+                              page === paginationData.currentPage
+                                ? 'bg-blue-600 text-white border border-blue-600'
+                                : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-300'
+                            }`}
+                          >
+                            {page}
+                          </Button>
+                        ))}
+                      </div>
+
+                      <Button
+                        onClick={() => setWorkExperiencePage(prev => prev + 1)}
+                        disabled={!paginationData.hasNextPage}
+                        className={`h-6 px-2 text-xs flex items-center gap-1 rounded ${
+                          paginationData.hasNextPage
+                            ? 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-300'
+                            : 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed'
+                        }`}
+                      >
+                        Next
+                        <ChevronRight className="w-3 h-3" />
                       </Button>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
+                  )}
+                </div>
+              </div>
+
+              {/* Content area */}
+              <div className="p-2 space-y-2 overflow-y-auto">
+                {paginationData.items.map((work, localIndex) => {
+                  const globalIndex = paginationData.startIndex + localIndex;
+                  return (
+                    <div
+                      key={work.id}
+                      className="border border-gray-200 rounded-lg p-2 mb-2"
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-medium text-gray-900">
+                          Experience #{globalIndex + 1}
+                        </h4>
+                        <Button
+                          onClick={() => removeWork(work.id)}
+                          className="text-red-600 hover:text-red-700 p-1"
+                          disabled={!isEditMode}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Company
+                          </label>
+                          <Input
+                            type="text"
+                            value={work.company || ""}
+                            onChange={(e) => updateWorkByIndex(globalIndex, "company", e.target.value)}
+                            className="w-full"
+                            placeholder="Enter company name"
+                            disabled={!isEditMode}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Job Title
+                          </label>
+                          <Input
+                            type="text"
+                            value={work.title || ""}
+                            onChange={(e) => updateWorkByIndex(globalIndex, "title", e.target.value)}
+                            className="w-full"
+                            placeholder="Enter job title"
+                            disabled={!isEditMode}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Department
+                          </label>
+                          <Input
+                            type="text"
+                            value={work.department || ""}
+                            onChange={(e) => updateWorkByIndex(globalIndex, "department", e.target.value)}
+                            className="w-full"
+                            placeholder="Enter department"
+                            disabled={!isEditMode}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Employment Type
+                          </label>
+                          <select
+                            value={work.employmentType || ""}
+                            onChange={(e) => updateWorkByIndex(globalIndex, "employmentType", e.target.value)}
+                            className="w-full bg-white border border-gray-300 rounded-md h-[38px] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            disabled={!isEditMode}
+                          >
+                            <option value="">Select type</option>
+                            <option value="full-time">Full-time</option>
+                            <option value="part-time">Part-time</option>
+                            <option value="contract">Contract</option>
+                            <option value="internship">Internship</option>
+                            <option value="freelance">Freelance</option>
+                            <option value="consultant">Consultant</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Start Date
+                          </label>
+                          <Input
+                            type="month"
+                            value={work.startYear || ""}
+                            onChange={(e) => updateWorkByIndex(globalIndex, "startYear", e.target.value)}
+                            className="w-full"
+                            placeholder="YYYY-MM"
+                            disabled={!isEditMode}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            End Date
+                          </label>
+                          <Input
+                            type="month"
+                            value={work.endYear || ""}
+                            onChange={(e) => updateWorkByIndex(globalIndex, "endYear", e.target.value)}
+                            className="w-full"
+                            placeholder="YYYY-MM or leave blank if current"
+                            disabled={!isEditMode}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Location
+                          </label>
+                          <Input
+                            type="text"
+                            value={work.location || ""}
+                            onChange={(e) => updateWorkByIndex(globalIndex, "location", e.target.value)}
+                            className="w-full"
+                            placeholder="City, State/Country"
+                            disabled={!isEditMode}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Current Role
+                          </label>
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={work.isCurrent || false}
+                              onChange={(e) => {
+                                updateWorkByIndex(globalIndex, "isCurrent", e.target.checked);
+                                if (e.target.checked) {
+                                  updateWorkByIndex(globalIndex, "endYear", "");
+                                }
+                              }}
+                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                              disabled={!isEditMode}
+                            />
+                            <label className="ml-2 text-sm text-gray-700">
+                              I currently work here
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="mt-2">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Company
+                          Job Description
                         </label>
-                        <Input
-                          type="text"
-                          value={work.company}
-                          onChange={(e) => {
-                            const newWorkHistory = [
-                              ...(profileData.work_history || []),
-                            ];
-                            newWorkHistory[index] = {
-                              ...work,
-                              company: e.target.value,
-                            };
-                            handleProfileChange("work_history", newWorkHistory);
-                          }}
-                          className="w-full"
-                          placeholder="Enter company name"
+                        <textarea
+                          value={work.description || ""}
+                          onChange={(e) => updateWorkByIndex(globalIndex, "description", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                          placeholder="Describe your role, responsibilities, and achievements"
+                          rows={3}
                           disabled={!isEditMode}
                         />
                       </div>
-                      <div>
+                      <div className="mt-2">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Title
+                          Key Achievements
                         </label>
-                        <Input
-                          type="text"
-                          value={work.title}
-                          onChange={(e) => {
-                            const newWorkHistory = [
-                              ...(profileData.work_history || []),
-                            ];
-                            newWorkHistory[index] = {
-                              ...work,
-                              title: e.target.value,
-                            };
-                            handleProfileChange("work_history", newWorkHistory);
-                          }}
-                          className="w-full"
-                          placeholder="Enter job title"
+                        <textarea
+                          value={work.achievements || ""}
+                          onChange={(e) => updateWorkByIndex(globalIndex, "achievements", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                          placeholder="List key achievements, projects, or accomplishments"
+                          rows={3}
                           disabled={!isEditMode}
                         />
                       </div>
                     </div>
+                  );
+                })}
+
+                {/* Empty state */}
+                {(!profileData.work_history || profileData.work_history.length === 0) && (
+                  <div className="text-center py-8 text-gray-500">
+                    <Building className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                    <p>No work experience added yet</p>
+                    <p className="text-sm mt-1">Use the + button in the right sidebar to add your first work experience</p>
                   </div>
-                ))}
-                {(!profileData.work_history ||
-                  profileData.work_history.length === 0) && (
-                  <p className="text-gray-500 text-center py-8">
-                    No work experience entries yet. Click "Add Experience" to
-                    get started.
-                  </p>
                 )}
+              </div>
+
+              {/* Dynamic status information in footer */}
+              <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
+                <div className="flex items-center justify-center">
+                  <div className="flex items-center space-x-2">
+                    {isEditMode ? (
+                      <>
+                        <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                        <span className="text-sm text-gray-600">
+                          {hasUnsavedChanges
+                            ? "You have unsaved changes. Use Save or Cancel buttons on the right sidebar."
+                            : "Edit mode active. Fields are now editable."}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                        <span className="text-sm text-gray-600">
+                          Read-only mode. Use the right sidebar to make changes.
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>

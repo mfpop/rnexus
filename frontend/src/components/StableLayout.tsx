@@ -592,7 +592,9 @@ export default function StableLayout() {
     console.log(`Profile button ${buttonNumber} clicked, handlers:`, handlers);
 
     switch (buttonNumber) {
-      case 11: // Add Record - Not applicable for profile
+      case 11: // Add Record - Add work experience
+        console.log("Calling handlers.add()");
+        handlers.add();
         break;
       case 12: // Edit Record - Enable edit mode
         console.log("Calling handlers.edit()");
@@ -633,7 +635,7 @@ export default function StableLayout() {
       // First Buttons Section (B11-B15)
       {
         icon: <Plus className="h-6 w-6" />,
-        title: "Add Record",
+        title: isProfilePage ? "Add Record" : "Add Record",
         onClick: () => handleButtonClick(11),
         height: "h-16",
         disabled: false,

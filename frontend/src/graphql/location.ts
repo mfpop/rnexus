@@ -7,6 +7,7 @@ export const GET_ALL_COUNTRIES = gql`
       id
       name
       code
+  phoneCode
       isActive
     }
   }
@@ -130,6 +131,7 @@ export interface Country {
   id: string;
   name: string;
   code: string;
+  phoneCode: string;
   isActive: boolean;
 }
 

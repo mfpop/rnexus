@@ -53,9 +53,9 @@ const RightSidebarTemplate: React.FC<RightSidebarTemplateProps> = ({
     <Card className="flex flex-col h-screen border-l border-gray-200 bg-white/80 backdrop-blur-xl shadow-xl px-0">
       {/* ROW 1: Top Section - User Avatar */}
       <div className="flex items-center justify-center p-2 border-b border-gray-200 bg-white backdrop-blur-sm h-[74px] shadow-sm">
-        <div className="w-full h-full rounded-lg flex items-center justify-center">
+        <div className="w-full h-full rounded-lg flex items-center justify-center px-4">
           {avatar || (
-            <Avatar className="w-10 h-10" title={avatarTitle}>
+            <Avatar className="w-14 h-14" title={avatarTitle}>
               {avatarSrc && <AvatarImage src={avatarSrc} alt={avatarTitle} />}
               <AvatarFallback className="bg-gray-100 text-gray-600">
                 {avatarFallback}

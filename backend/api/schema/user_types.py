@@ -144,6 +144,7 @@ class UserProfileType(DjangoObjectType):
     stateProvince = graphene.String(source="state_province")
     zipCode = graphene.String(source="zip_code")
     countryCode = graphene.String(source="country_code")
+    education = graphene.JSONString(source="education")
     workHistory = graphene.JSONString(source="work_history")
     profileVisibility = graphene.JSONString(source="profile_visibility")
 

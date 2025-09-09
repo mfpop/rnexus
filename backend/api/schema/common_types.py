@@ -58,7 +58,7 @@ class RoleType(DjangoObjectType):
 class CountryType(DjangoObjectType):
     class Meta:
         model = Country
-        fields = ("id", "name", "code", "is_active")
+        fields = ("id", "name", "code", "phone_code", "is_active")
 
     isActive = graphene.Boolean(source="is_active")
 
