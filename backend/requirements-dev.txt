@@ -1,0 +1,25 @@
+# Development and testing dependencies
+-r requirements.txt
+
+# Code formatting and linting
+black==25.1.0
+isort==6.0.1
+mypy==1.17.1
+pyright==1.1.403
+pre-commit==4.3.0
+
+# Development tools
+django-debug-toolbar==6.0.0
+django-extensions==4.1
+python-dotenv==1.1.1
+
+# Testing
+pytest==8.4.1
+pytest-django==4.11.1
+pytest-cov==6.0.0
+factory-boy==3.3.3
+
+
+# Documentation
+sphinx==7.2.6
+sphinx-rtd-theme==2.0.0

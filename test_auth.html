@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RNexus Authentication Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        input {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>RNexus Authentication Test</h1>
+
+    <div class="test-section info">
+        <h3>Step 1: Test Backend Connection</h3>
+        <button onclick="testBackendConnection()">Test Backend Connection</button>
+        <div id="backend-result"></div>
+    </div>
+
+    <div class="test-section info">
+        <h3>Step 2: Login Test</h3>
+        <input type="text" id="username" placeholder="Username" value="admin">
+        <input type="password" id="password" placeholder="Password" value="admin123">
+        <button onclick="testLogin()">Login</button>
+        <div id="login-result"></div>
+    </div>
+
+    <div class="test-section info">
+        <h3>Step 3: Test GraphQL Query (after login)</h3>
+        <button onclick="testGraphQL()">Test GraphQL Query</button>
+        <div id="graphql-result"></div>
+    </div>
+
+    <div class="test-section info">
+        <h3>Step 4: Open Frontend</h3>
+        <button onclick="openFrontend()">Open Frontend (http://localhost:5174)</button>
+        <p>After logging in here, try accessing the frontend to see if the user lists appear.</p>
+    </div>
+
+    <script>
+        let authToken = null;
+
+        async function testBackendConnection() {
+            const resultDiv = document.getElementById('backend-result');
+            try {
+                const response = await fetch('http://localhost:8001/api/health/', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (response.ok) {
+                    resultDiv.innerHTML = '<div class="success">✅ Backend is running and responding</div>';
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ Backend responded with error: ' + response.status + '</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="error">❌ Cannot connect to backend: ' + error.message + '</div>';
+            }
+        }
+
+        async function testLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('login-result');
+
+            try {
+                const response = await fetch('http://localhost:8001/api/login/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    authToken = data.token;
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            ✅ Login successful!<br>
+                            User: ${data.user.username}<br>
+                            Token: ${authToken.substring(0, 50)}...
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ Login failed: ' + data.error + '</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="error">❌ Login error: ' + error.message + '</div>';
+            }
+        }
+
+        async function testGraphQL() {
+            const resultDiv = document.getElementById('graphql-result');
+
+            if (!authToken) {
+                resultDiv.innerHTML = '<div class="error">❌ Please login first</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:8001/graphql/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        query: `{ allUsers { id username email firstName lastName isActive } }`
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.data && data.data.allUsers) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            ✅ GraphQL query successful!<br>
+                            Found ${data.data.allUsers.length} users<br>
+                            <details>
+                                <summary>View user data</summary>
+                                <pre>${JSON.stringify(data.data.allUsers.slice(0, 3), null, 2)}</pre>
+                            </details>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ GraphQL query failed: ' + JSON.stringify(data) + '</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="error">❌ GraphQL error: ' + error.message + '</div>';
+            }
+        }
+
+        function openFrontend() {
+            window.open('http://localhost:5174', '_blank');
+        }
+
+        // Auto-test backend connection on page load
+        window.onload = function() {
+            testBackendConnection();
+        };
+    </script>
+</body>
+</html>

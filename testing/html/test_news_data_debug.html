@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Data Debug Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: #2563eb;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #f9fafb;
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 15px;
+        }
+        .test-description {
+            color: #6b7280;
+            margin-bottom: 15px;
+        }
+        .debug-info {
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+        }
+        .debug-title {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 10px;
+        }
+        .debug-item {
+            margin: 5px 0;
+            padding: 5px;
+            background: white;
+            border-radius: 4px;
+            border-left: 3px solid #3b82f6;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-success { background-color: #10b981; }
+        .status-warning { background-color: #f59e0b; }
+        .status-error { background-color: #ef4444; }
+        .error-box {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #dc2626;
+        }
+        .success-box {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #166534;
+        }
+        .code-block {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>News Data Debug Test</h1>
+            <p>Testing if news data is being loaded and why tabs aren't working</p>
+        </div>
+
+        <div class="content">
+            <!-- Data Loading Test -->
+            <div class="test-section">
+                <div class="test-title">Data Loading Test</div>
+                <div class="test-description">
+                    Check if news data is being loaded from the GraphQL API
+                </div>
+
+                <div class="debug-info">
+                    <div class="debug-title">Console Commands to Run</div>
+                    <div class="debug-item">
+                        <span class="status-indicator status-warning"></span>
+                        <strong>1. Check GraphQL Data:</strong> Look for "Raw allUpdates data:" in console
+                    </div>
+                    <div class="debug-item">
+                        <span class="status-indicator status-warning"></span>
+                        <strong>2. Check Processed Data:</strong> Look for "Total processed updates:" in console
+                    </div>
+                    <div class="debug-item">
+                        <span class="status-indicator status-warning"></span>
+                        <strong>3. Check Update Types:</strong> Look for "Update types:" in console
+                    </div>
+                    <div class="debug-item">
+                        <span class="status-indicator status-warning"></span>
+                        <strong>4. Check Tab Clicks:</strong> Look for "=== TAB CLICKED ===" in console
+                    </div>
+                </div>
+            </div>
+
+            <!-- Expected Data Structure -->
+            <div class="test-section">
+                <div class="test-title">Expected Data Structure</div>
+                <div class="test-description">
+                    The data should look like this:
+                </div>
+
+                <div class="code-block">
+{
+  "allUpdates": [
+    {
+      "id": "1",
+      "type": "news",
+      "title": "Company Update",
+      "summary": "Latest company news",
+      "body": "Full article content...",
+      "status": "active",
+      "author": "John Doe",
+      "timestamp": "2024-01-15T10:00:00Z",
+      "isActive": true
+    },
+    {
+      "id": "2",
+      "type": "communication",
+      "title": "Team Meeting",
+      "summary": "Weekly team meeting",
+      "body": "Meeting details...",
+      "status": "active",
+      "author": "Jane Smith",
+      "timestamp": "2024-01-14T14:00:00Z",
+      "isActive": true
+    }
+  ]
+}
+                </div>
+            </div>
+
+            <!-- Common Issues -->
+            <div class="test-section">
+                <div class="test-title">Common Issues & Solutions</div>
+                <div class="test-description">
+                    Issues that might cause tab filtering problems:
+                </div>
+
+                <div class="debug-info">
+                    <div class="debug-item">
+                        <span class="status-indicator status-error"></span>
+                        <strong>No Data:</strong> If "Raw allUpdates data:" shows null or empty array, there's no data in the database
+                    </div>
+                    <div class="debug-item">
+                        <span class="status-indicator status-error"></span>
+                        <strong>Wrong Types:</strong> If "Update types:" shows unexpected values, the data structure is wrong
+                    </div>
+                    <div class="debug-item">
+                        <span class="status-indicator status-error"></span>
+                        <strong>Filtering Issue:</strong> If "=== TAB CLICKED ===" appears but no filtering happens, there's a logic issue
+                    </div>
+                    <div class="debug-item">
+                        <span class="status-indicator status-error"></span>
+                        <strong>Context Issue:</strong> If no console logs appear at all, the NewsProvider isn't working
+                    </div>
+                </div>
+            </div>
+
+            <!-- Database Check -->
+            <div class="test-section">
+                <div class="test-title">Database Check</div>
+                <div class="test-description">
+                    If no data is found, check the database:
+                </div>
+
+                <div class="code-block">
+# Check if there are any updates in the database
+python manage.py shell
+
+from api.models import Update
+updates = Update.objects.all()
+print(f"Total updates: {updates.count()}")
+for update in updates[:5]:
+    print(f"ID: {update.id}, Type: {update.type}, Title: {update.title}")
+                </div>
+            </div>
+
+            <!-- Quick Fixes -->
+            <div class="test-section">
+                <div class="test-title">Quick Fixes</div>
+                <div class="test-description">
+                    Try these fixes based on what you find:
+                </div>
+
+                <div class="debug-info">
+                    <div class="debug-item">
+                        <span class="status-indicator status-success"></span>
+                        <strong>No Data:</strong> Create some test updates in the database
+                    </div>
+                    <div class="debug-item">
+                        <span class="status-indicator status-success"></span>
+                        <strong>Wrong Types:</strong> Check the Update model and ensure types match
+                    </div>
+                    <div class="debug-item">
+                        <span class="status-indicator status-success"></span>
+                        <strong>Filtering Issue:</strong> Check the filterUpdates function logic
+                    </div>
+                    <div class="debug-item">
+                        <span class="status-indicator status-success"></span>
+                        <strong>Context Issue:</strong> Check NewsProvider is wrapping components correctly
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log('News Data Debug Test loaded');
+        console.log('Open the news page and check the console for debugging information');
+
+        // Instructions for user
+        console.log('=== DEBUGGING INSTRUCTIONS ===');
+        console.log('1. Open the news page');
+        console.log('2. Open browser console (F12)');
+        console.log('3. Look for the following logs:');
+        console.log('   - "NewsProvider GraphQL state:"');
+        console.log('   - "Raw allUpdates data:"');
+        console.log('   - "Total processed updates:"');
+        console.log('   - "Update types:"');
+        console.log('4. Click on different tabs and look for:');
+        console.log('   - "=== TAB CLICKED ==="');
+        console.log('   - "Filtering by type:"');
+        console.log('   - "Filtering updates with filters:"');
+    </script>
+</body>
+</html>

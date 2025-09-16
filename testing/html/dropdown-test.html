@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dropdown Positioning Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .test-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .test-button {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 10px;
+      }
+      .test-button:hover {
+        background: #0056b3;
+      }
+      .position-info {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 4px;
+        margin: 20px 0;
+        font-family: monospace;
+      }
+      .dropdown-content {
+        position: fixed;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        min-width: 200px;
+      }
+      .test-section {
+        margin: 30px 0;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="test-container">
+      <h1>Dropdown Positioning Test</h1>
+      <p>
+        This page tests the dropdown positioning logic to ensure dropdowns
+        appear in the correct location.
+      </p>
+
+      <div class="test-section">
+        <h2>Test 1: Basic Positioning</h2>
+        <button class="test-button" onclick="testBasicPositioning()">
+          Test Basic Dropdown
+        </button>
+        <div id="basic-dropdown" class="dropdown-content" style="display: none">
+          <h3>Basic Dropdown</h3>
+          <p>This dropdown should appear below the button.</p>
+          <button onclick="closeDropdown('basic-dropdown')">Close</button>
+        </div>
+      </div>
+
+      <div class="test-section">
+        <h2>Test 2: Right-Aligned Positioning</h2>
+        <button class="test-button" onclick="testRightAligned()">
+          Test Right-Aligned
+        </button>
+        <div id="right-dropdown" class="dropdown-content" style="display: none">
+          <h3>Right-Aligned Dropdown</h3>
+          <p>This dropdown should be right-aligned with the button.</p>
+          <button onclick="closeDropdown('right-dropdown')">Close</button>
+        </div>
+      </div>
+
+      <div class="test-section">
+        <h2>Test 3: Center-Aligned Positioning</h2>
+        <button class="test-button" onclick="testCenterAligned()">
+          Test Center-Aligned
+        </button>
+        <div
+          id="center-dropdown"
+          class="dropdown-content"
+          style="display: none"
+        >
+          <h3>Center-Aligned Dropdown</h3>
+          <p>This dropdown should be center-aligned with the button.</p>
+          <button onclick="closeDropdown('center-dropdown')">Close</button>
+        </div>
+      </div>
+
+      <div class="position-info" id="position-info">
+        <strong>Position Information:</strong><br />
+        Click a test button to see positioning details.
+      </div>
+
+      <div class="test-section">
+        <h2>Test 4: Scroll Test</h2>
+        <p>
+          Scroll down and test dropdown positioning in different scroll
+          positions.
+        </p>
+        <div
+          style="
+            height: 500px;
+            background: linear-gradient(to bottom, #e9ecef, #dee2e6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          "
+        >
+          <button class="test-button" onclick="testScrollPositioning()">
+            Test Scroll Dropdown
+          </button>
+          <div
+            id="scroll-dropdown"
+            class="dropdown-content"
+            style="display: none"
+          >
+            <h3>Scroll Test Dropdown</h3>
+            <p>This dropdown should position correctly even when scrolled.</p>
+            <button onclick="closeDropdown('scroll-dropdown')">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function calculatePosition(button, dropdown, align = "start") {
+        const buttonRect = button.getBoundingClientRect();
+        const dropdownRect = dropdown.getBoundingClientRect();
+
+        let left = buttonRect.left;
+        let top = buttonRect.bottom + 8; // 8px gap
+
+        // Handle horizontal alignment
+        if (align === "end") {
+          left = buttonRect.right - dropdownRect.width;
+        } else if (align === "center") {
+          left =
+            buttonRect.left + buttonRect.width / 2 - dropdownRect.width / 2;
+        }
+
+        // Ensure dropdown doesn't go off-screen
+        if (left < 8) left = 8;
+        if (left + dropdownRect.width > window.innerWidth - 8) {
+          left = window.innerWidth - dropdownRect.width - 8;
+        }
+
+        // If dropdown would go below viewport, position it above the trigger
+        if (top + dropdownRect.height > window.innerHeight - 8) {
+          top = buttonRect.top - dropdownRect.height - 8;
+        }
+
+        return { top, left };
+      }
+
+      function showDropdown(dropdownId, button, align = "start") {
+        const dropdown = document.getElementById(dropdownId);
+        dropdown.style.display = "block";
+
+        // Calculate position
+        const position = calculatePosition(button, dropdown, align);
+
+        // Apply position
+        dropdown.style.top = position.top + "px";
+        dropdown.style.left = position.left + "px";
+
+        // Update position info
+        updatePositionInfo(button, dropdown, position, align);
+      }
+
+      function closeDropdown(dropdownId) {
+        document.getElementById(dropdownId).style.display = "none";
+      }
+
+      function updatePositionInfo(button, dropdown, position, align) {
+        const buttonRect = button.getBoundingClientRect();
+        const dropdownRect = dropdown.getBoundingClientRect();
+
+        document.getElementById("position-info").innerHTML = `
+                <strong>Position Information:</strong><br>
+                <strong>Button Position:</strong> Left: ${buttonRect.left.toFixed(1)}, Top: ${buttonRect.top.toFixed(1)}, Right: ${buttonRect.right.toFixed(1)}, Bottom: ${buttonRect.bottom.toFixed(1)}<br>
+                <strong>Dropdown Position:</strong> Left: ${position.left.toFixed(1)}, Top: ${position.top.toFixed(1)}<br>
+                <strong>Alignment:</strong> ${align}<br>
+                <strong>Viewport:</strong> Width: ${window.innerWidth}, Height: ${window.innerHeight}<br>
+                <strong>Dropdown Size:</strong> Width: ${dropdownRect.width}, Height: ${dropdownRect.height}
+            `;
+      }
+
+      function testBasicPositioning() {
+        const button = event.target;
+        showDropdown("basic-dropdown", button, "start");
+      }
+
+      function testRightAligned() {
+        const button = event.target;
+        showDropdown("right-dropdown", button, "end");
+      }
+
+      function testCenterAligned() {
+        const button = event.target;
+        showDropdown("center-dropdown", button, "center");
+      }
+
+      function testScrollPositioning() {
+        const button = event.target;
+        showDropdown("scroll-dropdown", button, "start");
+      }
+
+      // Close dropdowns when clicking outside
+      document.addEventListener("click", function (event) {
+        const dropdowns = document.querySelectorAll(".dropdown-content");
+        dropdowns.forEach((dropdown) => {
+          if (
+            !dropdown.contains(event.target) &&
+            !event.target.classList.contains("test-button")
+          ) {
+            dropdown.style.display = "none";
+          }
+        });
+      });
+
+      // Close dropdowns on escape key
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+          const dropdowns = document.querySelectorAll(".dropdown-content");
+          dropdowns.forEach((dropdown) => {
+            dropdown.style.display = "none";
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "name": "rnexus",
+  "private": true,
+  "scripts": {
+    "mcp:start": "node ./tools/mcp-server/server.js"
+  },
+  "dependencies": {
+    "@upstash/context7-mcp": "^1.0.15"
+  }
+}

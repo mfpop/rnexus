@@ -1,0 +1,10 @@
+{
+  "mcp": {
+    "enabledModels": [
+      "gpt-5-mini"
+    ],
+    "clients": "*",
+    "notes": "Local MCP config: list models you want to allow. This file is consumed by your MCP server implementation; it does not change GitHub org settings.",
+    "generatedAt": "2025-08-23T00:00:00Z"
+  }
+}

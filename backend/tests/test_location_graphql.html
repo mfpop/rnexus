@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location GraphQL Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .query-section {
+            margin-bottom: 30px;
+        }
+        .query-input {
+            width: 100%;
+            height: 120px;
+            font-family: monospace;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .execute-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .execute-btn:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #555;
+            margin-bottom: 15px;
+        }
+        .example-queries {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .example-queries h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        .example-queries ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .example-queries li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🌍 Location GraphQL Test</h1>
+
+    <div class="container">
+        <h2>📚 Example Queries</h2>
+        <div class="example-queries">
+            <h3>Available Queries:</h3>
+            <ul>
+                <li><strong>All Countries:</strong> Get all countries with phone codes and flags</li>
+                <li><strong>States by Country:</strong> Get states for a specific country</li>
+                <li><strong>Cities by State:</strong> Get cities for a specific state</li>
+                <li><strong>Zip Codes by City:</strong> Get zip codes for a specific city</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🌎 All Countries</h2>
+        <div class="query-section">
+            <textarea class="query-input" id="countriesQuery">query {
+  allCountries {
+    id
+    name
+    code
+    flagEmoji
+    phoneCode
+    isActive
+  }
+}</textarea>
+            <button class="execute-btn" onclick="executeQuery('countriesQuery', 'countriesResult')">Execute Query</button>
+            <div id="countriesResult" class="result"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🏛️ States by Country</h2>
+        <div class="query-section">
+            <textarea class="query-input" id="statesQuery">query {
+  allStates(countryCode: "USA") {
+    id
+    name
+    code
+    country {
+      name
+      code
+    }
+  }
+}</textarea>
+            <button class="execute-btn" onclick="executeQuery('statesQuery', 'statesResult')">Execute Query</button>
+            <div id="statesResult" class="result"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🏙️ Cities by State</h2>
+        <div class="query-section">
+            <textarea class="query-input" id="citiesQuery">query {
+  allCities(countryCode: "USA") {
+    id
+    name
+    state {
+      name
+      code
+    }
+    country {
+      name
+      code
+    }
+  }
+}</textarea>
+            <button class="execute-btn" onclick="executeQuery('citiesQuery', 'citiesResult')">Execute Query</button>
+            <div id="citiesResult" class="result"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>📮 Zip Codes by City</h2>
+        <div class="query-section">
+            <textarea class="query-input" id="zipcodesQuery">query {
+  allZipcodes(cityId: "1") {
+    id
+    code
+    city {
+      name
+    }
+    state {
+      name
+      code
+    }
+    country {
+      name
+      code
+    }
+  }
+}</textarea>
+            <button class="execute-btn" onclick="executeQuery('zipcodesQuery', 'zipcodesResult')">Execute Query</button>
+            <div id="zipcodesResult" class="result"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🔍 Custom Query</h2>
+        <div class="query-section">
+            <textarea class="query-input" id="customQuery" placeholder="Enter your custom GraphQL query here...">query {
+  country(code: "MEX") {
+    id
+    name
+    code
+    flagEmoji
+    phoneCode
+    states {
+      id
+      name
+      code
+      cities {
+        id
+        name
+        zipCodes {
+          id
+          code
+        }
+      }
+    }
+  }
+}</textarea>
+            <button class="execute-btn" onclick="executeQuery('customQuery', 'customResult')">Execute Query</button>
+            <div id="customResult" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        async function executeQuery(queryId, resultId) {
+            const queryText = document.getElementById(queryId).value;
+            const resultDiv = document.getElementById(resultId);
+
+            resultDiv.textContent = 'Executing query...';
+            resultDiv.className = 'result';
+
+            try {
+                const response = await fetch('/graphql/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: queryText
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.errors) {
+                    resultDiv.textContent = 'GraphQL Errors:\n' + JSON.stringify(data.errors, null, 2);
+                    resultDiv.className = 'result error';
+                } else {
+                    resultDiv.textContent = 'Success!\n\n' + JSON.stringify(data.data, null, 2);
+                    resultDiv.className = 'result success';
+                }
+            } catch (error) {
+                resultDiv.textContent = 'Error: ' + error.message;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        // Auto-execute countries query on page load
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                executeQuery('countriesQuery', 'countriesResult');
+            }, 500);
+        });
+    </script>
+</body>
+</html>

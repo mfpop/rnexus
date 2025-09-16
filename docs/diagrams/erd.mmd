@@ -1,0 +1,15 @@
+erDiagram
+  User ||--|| UserProfile : has
+  ActivityStatus ||--o{ Activity : status_config
+  ActivityPriority ||--o{ Activity : priority_config
+  User ||--o{ Activity : created_by
+  Chat ||--o{ Message : has
+  Update ||--o{ UpdateAttachment : has
+  Update ||--o{ UpdateMedia : has
+  Update ||--o{ UpdateComment : has
+  Update ||--o{ UpdateLike : has
+  Update ||--o{ UpdateRelation : source
+  Update ||--o{ UpdateRelation : target
+  User ||--o{ Update : created_by
+  User ||--o{ UpdateComment : author
+  User ||--o{ UpdateLike : user

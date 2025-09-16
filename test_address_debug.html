@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Address Card Debug Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+        .success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        .warning {
+            border-left-color: #ffc107;
+            background: #fff3cd;
+        }
+        .error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        .step {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Address Card Mexico States Fix - Debug Test</h1>
+
+    <div class="test-section success">
+        <h2>✅ Fix Applied Successfully</h2>
+        <p><strong>Issue:</strong> When selecting Mexico in the address form, states/provinces were not loading.</p>
+        <p><strong>Root Cause:</strong> Country code mapping was incorrect - using phone code to ISO mapping instead of direct country codes.</p>
+        <p><strong>Solution:</strong> Updated ProfileRightCard to use country codes directly from GraphQL data.</p>
+    </div>
+
+    <div class="test-section">
+        <h2>🔧 Changes Made</h2>
+
+        <div class="step">
+            <h3>1. Updated GraphQL Query</h3>
+            <div class="code-block">
+// Added phoneCode field to countries query
+export const GET_ALL_COUNTRIES = gql`
+  query GetAllCountries {
+    allCountries {
+      id
+      name
+      code       // ← This is the key: "MEX", "USA"
+      phoneCode  // ← Added for future use: "+52", "+1"
+      isActive
+    }
+  }
+`;
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>2. Fixed Country Selection Logic</h3>
+            <div class="code-block">
+// Before (Broken)
+const isoCode = phoneCodeToISOCode(selectedCountry.code || "");
+handleProfileChange("country_code", isoCode);
+
+// After (Fixed)
+const countryCode = selectedCountry.code; // Direct use: "MEX" or "USA"
+handleProfileChange("country_code", countryCode);
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>3. Removed Unnecessary Mapping Function</h3>
+            <p>Removed <code>phoneCodeToISOCode()</code> function since we now use country codes directly from the database.</p>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>📝 Testing Instructions</h2>
+
+        <div class="step">
+            <strong>Step 1:</strong> Open the profile page in the main application
+            <button onclick="window.open('http://localhost:5174/profile', '_blank')">
+                🚀 Open Profile Page
+            </button>
+        </div>
+
+        <div class="step">
+            <strong>Step 2:</strong> Navigate to "Personal" tab and find the Address Information section
+        </div>
+
+        <div class="step">
+            <strong>Step 3:</strong> Test Mexico selection:
+            <ul>
+                <li>Select "Mexico" from the Country dropdown</li>
+                <li>Verify that the State/Province dropdown becomes enabled</li>
+                <li>Check if Mexican states appear (e.g., "Baja California", "Mexico City", etc.)</li>
+                <li>Select a state and verify cities load</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <strong>Step 4:</strong> Test USA selection:
+            <ul>
+                <li>Select "United States" from the Country dropdown</li>
+                <li>Verify that US states appear (e.g., "California", "New York", etc.)</li>
+                <li>Select a state and verify cities load</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔍 Debug Information</h2>
+
+        <div class="step">
+            <h3>Expected Data Flow:</h3>
+            <div class="code-block">
+1. User selects "Mexico" from country dropdown
+2. ProfileRightCard finds country object: { id: "2", name: "Mexico", code: "MEX" }
+3. Sets profileData.country = "Mexico" (for display)
+4. Sets profileData.country_code = "MEX" (for GraphQL query)
+5. GraphQL query: GET_STATES_BY_COUNTRY with variables: { countryCode: "MEX" }
+6. Backend returns Mexican states
+7. States populate in dropdown
+8. User can select state (e.g., "Baja California")
+9. Cities query executes and populates city dropdown
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>Key Variables to Check in Browser Console:</h3>
+            <div class="code-block">
+// Check these in the browser console after selecting Mexico:
+1. profileData.country → should be "Mexico"
+2. profileData.country_code → should be "MEX"
+3. statesData?.allStates → should contain Mexican states array
+4. statesLoading → should be false after loading completes
+
+// Open browser dev tools (F12) and look for console logs:
+"Selected country: { id: '2', name: 'Mexico', code: 'MEX' }"
+"Using country code: MEX"
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section success">
+        <h2>🎯 Expected Results</h2>
+
+        <div class="step">
+            ✅ Mexico selection should now load Mexican states<br>
+            ✅ USA selection should load US states<br>
+            ✅ State selection should load cities for the selected state<br>
+            ✅ Console should show correct country codes being used<br>
+            ✅ No JavaScript errors in browser console
+        </div>
+    </div>
+
+    <div class="test-section warning">
+        <h2>⚠️ Troubleshooting</h2>
+
+        <div class="step">
+            <strong>If states still don't load:</strong>
+            <ol>
+                <li>Check browser console for JavaScript errors</li>
+                <li>Verify GraphQL queries are executing (Network tab in dev tools)</li>
+                <li>Ensure backend is running on port 8000</li>
+                <li>Check if authentication is working (logged in user)</li>
+                <li>Refresh the page to clear any cached state</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        console.log('🧪 Address Card Debug Test loaded');
+        console.log('📋 Use this page as a reference while testing the profile page');
+        console.log('🔍 Expected fix: Mexico selection should now load states properly');
+    </script>
+</body>
+</html>
