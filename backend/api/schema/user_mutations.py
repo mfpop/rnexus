@@ -1,6 +1,7 @@
+from django.contrib.auth.models import User
+
 import graphene
 from graphene_django.types import DjangoObjectType
-from django.contrib.auth.models import User
 
 from api.models import UserProfile
 
@@ -47,7 +48,7 @@ class RegisterUser(graphene.Mutation):
                 user=user,
                 defaults={
                     # Add any default profile settings here
-                }
+                },
             )
 
             # Handle avatar upload if provided
@@ -279,8 +280,18 @@ class UpdateUserProfile(graphene.Mutation):
             json_fields = ["education", "work_history", "profile_visibility"]
 
             # Debug: Log address fields specifically
-            address_fields = ["street_address", "apartment_suite", "city", "state_province", "zip_code", "country", "country_code"]
-            address_data = {field: kwargs.get(field) for field in address_fields if field in kwargs}
+            address_fields = [
+                "street_address",
+                "apartment_suite",
+                "city",
+                "state_province",
+                "zip_code",
+                "country",
+                "country_code",
+            ]
+            address_data = {
+                field: kwargs.get(field) for field in address_fields if field in kwargs
+            }
             print(f"DEBUG: Address fields received: {address_data}")
 
             # Update user fields
@@ -316,7 +327,9 @@ class UpdateUserProfile(graphene.Mutation):
             user_profile.save()
 
             # Debug: Log what was saved
-            saved_address_data = {field: getattr(user_profile, field) for field in address_fields}
+            saved_address_data = {
+                field: getattr(user_profile, field) for field in address_fields
+            }
             print(f"DEBUG: Address fields saved to database: {saved_address_data}")
 
             result = cls()

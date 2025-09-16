@@ -1,16 +1,18 @@
 #!/usr/bin/env python
 import os
 import sys
+
 import django
 
 # Add the backend directory to the Python path
-sys.path.append('/Users/mihai/Desktop/rnexus/backend')
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
+sys.path.append("/Users/mihai/Desktop/rnexus/backend")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
 
 # Setup Django
 django.setup()
 
 from api.models import UserProfile
+
 
 def check_address_data():
     profiles = UserProfile.objects.all()
@@ -27,6 +29,7 @@ def check_address_data():
         print(f"  Country: {p.country or 'None'}")
         print(f"  Country Code: {p.country_code or 'None'}")
         print()
+
 
 if __name__ == "__main__":
     check_address_data()

@@ -1,6 +1,6 @@
 from django.contrib import admin
-from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.models import User
 
 from .models import (
     Activity,
@@ -504,9 +504,22 @@ class AreaAdmin(admin.ModelAdmin):
 
 @admin.register(ResourceGroup)
 class ResourceGroupAdmin(admin.ModelAdmin):
-    list_display = ("name", "operation", "department", "area", "resource_count", "created_at")
+    list_display = (
+        "name",
+        "operation",
+        "department",
+        "area",
+        "resource_count",
+        "created_at",
+    )
     list_filter = ("department", "area", "created_at", "updated_at")
-    search_fields = ("name", "operation", "description", "department__name", "area__name")
+    search_fields = (
+        "name",
+        "operation",
+        "description",
+        "department__name",
+        "area__name",
+    )
     ordering = ("department__name", "area__name", "name")
     autocomplete_fields = ["department", "area"]
     readonly_fields = ("created_at", "updated_at")
@@ -541,8 +554,14 @@ class ChatAdmin(admin.ModelAdmin):
     fieldsets = (
         ("Basic Information", {"fields": ("chat_type", "name", "description")}),
         ("Participants", {"fields": ("user1", "user2", "members")}),
-        ("Status", {"fields": ("is_active", "is_archived", "archived_at", "archived_by")}),
-        ("Metadata", {"fields": ("created_by", "created_at", "updated_at", "last_activity")}),
+        (
+            "Status",
+            {"fields": ("is_active", "is_archived", "archived_at", "archived_by")},
+        ),
+        (
+            "Metadata",
+            {"fields": ("created_by", "created_at", "updated_at", "last_activity")},
+        ),
     )
 
 
@@ -596,7 +615,14 @@ class ActivityStatusNewAdmin(admin.ModelAdmin):
 
 @admin.register(ActivityPriorityNew)
 class ActivityPriorityNewAdmin(admin.ModelAdmin):
-    list_display = ("display_name", "name", "level", "color_bg", "color_text", "is_active")
+    list_display = (
+        "display_name",
+        "name",
+        "level",
+        "color_bg",
+        "color_text",
+        "is_active",
+    )
     list_filter = ("is_active",)
     search_fields = ("name", "display_name")
     ordering = ("-level",)
@@ -723,8 +749,8 @@ class UserBlockAdmin(admin.ModelAdmin):
 class UserProfileInline(admin.StackedInline):
     model = UserProfile
     can_delete = False
-    verbose_name_plural = 'Profile'
-    fk_name = 'user'
+    verbose_name_plural = "Profile"
+    fk_name = "user"
 
 
 class UserAdmin(BaseUserAdmin):
