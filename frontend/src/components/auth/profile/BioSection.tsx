@@ -45,8 +45,8 @@ export const BioSection: React.FC<BioSectionProps> = ({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Biography Section - Takes all available vertical space */}
-      <div className="group flex-1 flex flex-col min-h-0">
+      {/* Biography Section - Takes most of the available vertical space */}
+      <div className="group flex-1 flex flex-col min-h-0 mb-6">
         <div className="relative flex-1 min-h-0">
           <textarea
             value={localData.bio || ""}
@@ -63,14 +63,14 @@ export const BioSection: React.FC<BioSectionProps> = ({
         )}
       </div>
 
-      {/* Social Links Section - Fixed height at bottom */}
-      <div className="space-y-4 mt-6">
+      {/* Social Links Section - Compact at bottom */}
+      <div className="space-y-4">
           <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
             <FileText className="w-4 h-4 text-purple-600" />
             Social Links
           </h4>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Website */}
             <div className="group">
               <div className="relative">
