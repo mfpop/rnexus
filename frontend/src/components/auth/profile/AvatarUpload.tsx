@@ -29,36 +29,47 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
   }, [currentAvatar]);
 
   const handleFileSelect = (file: File) => {
+    console.log('handleFileSelect called with file:', file.name, file.type, file.size);
     if (file && file.type.startsWith('image/')) {
       // Check file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
+        console.log('File too large:', file.size);
         alert('File size must be less than 5MB');
         return;
       }
 
+      console.log('File is valid, starting upload process');
       setIsLoading(true);
       const reader = new FileReader();
       reader.onload = (e) => {
         const result = e.target?.result as string;
+        console.log('FileReader loaded, result length:', result.length);
         setPreview(result);
+        console.log('Calling onAvatarChange with file');
         onAvatarChange(file);
         setIsLoading(false);
         setImageError(false);
       };
-      reader.onerror = () => {
+      reader.onerror = (error) => {
+        console.error('FileReader error:', error);
         alert('Error reading file');
         setIsLoading(false);
       };
       reader.readAsDataURL(file);
     } else {
+      console.log('Invalid file type:', file.type);
       alert('Please select a valid image file');
     }
   };
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('File input changed, files:', e.target.files);
     const file = e.target.files?.[0];
     if (file) {
+      console.log('File selected:', file.name, file.type, file.size);
       handleFileSelect(file);
+    } else {
+      console.log('No file selected');
     }
     // Reset the input so the same file can be selected again
     if (e.target) {
@@ -95,7 +106,9 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
     }
   };
 
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (!disabled && fileInputRef.current) {
       fileInputRef.current.click();
     }

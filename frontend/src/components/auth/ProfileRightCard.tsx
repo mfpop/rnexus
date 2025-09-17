@@ -261,16 +261,20 @@ const ProfileRightCard: React.FC = () => {
 
   // Handle avatar changes
   const handleAvatarChange = (file: File | null) => {
+    console.log('ProfileRightCard handleAvatarChange called with file:', file?.name);
     if (file) {
       // Show a preview immediately
       const reader = new FileReader();
       reader.onload = async (e) => {
         const dataUrl = e.target?.result as string;
+        console.log('FileReader loaded, dataUrl length:', dataUrl.length);
         setProfileData((prev) => ({ ...prev, avatar: dataUrl }));
 
         try {
+          console.log('Calling uploadAvatarMutation...');
           // Call GraphQL mutation to upload avatar (expects base64/data URL string)
           const res = await uploadAvatarMutation({ variables: { avatar: dataUrl } });
+          console.log('Upload response:', res);
           const uploaded = res?.data?.uploadAvatar;
           if (uploaded?.ok && uploaded?.userProfile) {
             // Process the returned avatar URL
@@ -297,11 +301,14 @@ const ProfileRightCard: React.FC = () => {
             }));
             // Notify other parts of the app that profile changed
             window.dispatchEvent(new Event("profile-updated"));
+            console.log('Avatar upload successful, profile updated');
           } else {
             console.error("Avatar upload failed:", uploaded?.errors);
+            alert('Avatar upload failed: ' + (uploaded?.errors?.[0] || 'Unknown error'));
           }
         } catch (err) {
           console.error("Avatar upload error:", err);
+          alert('Avatar upload error: ' + (err instanceof Error ? err.message : 'Unknown error'));
         }
       };
       reader.readAsDataURL(file);
