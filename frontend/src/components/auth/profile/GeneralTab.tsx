@@ -16,7 +16,6 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
   handleProfileChange,
   handleAvatarChange,
 }) => {
-  console.log('GeneralTab: render with profileData.avatar =', profileData.avatar);
 
   return (
     <div className="h-full w-full overflow-hidden">
@@ -54,7 +53,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
                       </div>
                       <p className="text-sm text-gray-600 text-center">
                         {isEditMode
-                          ? (profileData.avatar ? "Click to change your photo" : "Click to upload your photo")
+                          ? (profileData.avatar ? "Click to change" : "Click to upload your photo")
                           : "Profile Photo"
                         }
                       </p>
@@ -67,20 +66,21 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
                     <div className="space-y-4">
                       {/* First Row - Names */}
                       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                        <div className="group">
+                                                <div className="group">
                           <label className="block text-sm font-semibold text-gray-800 mb-2 group-focus-within:text-blue-600 transition-colors">
-                            First Name
+                            First Name (Nombres)
                           </label>
                           <div className="relative">
                             <Input
                               type="text"
                               value={profileData.first_name || ""}
                               onChange={(e) => handleProfileChange("first_name", e.target.value)}
-                              className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-blue-500 focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                              className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-transparent focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
                               placeholder="Enter your first name"
                               disabled={!isEditMode}
+                              style={{ outline: 'none !important' }}
                             />
-                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
+                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left duration-200"></div>
                           </div>
                         </div>
 
@@ -93,11 +93,12 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
                               type="text"
                               value={profileData.last_name || ""}
                               onChange={(e) => handleProfileChange("last_name", e.target.value)}
-                              className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-blue-500 focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                              className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-transparent focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
                               placeholder="Enter your last name"
                               disabled={!isEditMode}
+                              style={{ outline: 'none !important' }}
                             />
-                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
+                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left duration-200"></div>
                           </div>
                         </div>
 
@@ -110,11 +111,12 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
                               type="text"
                               value={profileData.maternal_last_name || ""}
                               onChange={(e) => handleProfileChange("maternal_last_name", e.target.value)}
-                              className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-blue-500 focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                              className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-transparent focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
                               placeholder="Enter your maternal last name"
                               disabled={!isEditMode}
+                              style={{ outline: 'none !important' }}
                             />
-                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
+                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left duration-200"></div>
                           </div>
                         </div>
                       </div>
@@ -130,10 +132,11 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
                               type="date"
                               value={profileData.date_of_birth || ""}
                               onChange={(e) => handleProfileChange("date_of_birth", e.target.value)}
-                              className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-blue-500 focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                              className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-transparent focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
                               disabled={!isEditMode}
+                              style={{ outline: 'none !important' }}
                             />
-                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
+                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left duration-200"></div>
                           </div>
                         </div>
 
@@ -145,8 +148,9 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
                             <select
                               value={profileData.gender || ""}
                               onChange={(e) => handleProfileChange("gender", e.target.value)}
-                              className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-blue-500 focus:ring-0 bg-transparent transition-colors hover:border-gray-400 appearance-none"
+                              className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-transparent focus:ring-0 bg-transparent transition-colors hover:border-gray-400 appearance-none"
                               disabled={!isEditMode}
+                              style={{ outline: 'none !important' }}
                             >
                               <option value="">Select Gender</option>
                               <option value="male">Male</option>
@@ -154,7 +158,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
                               <option value="other">Other</option>
                               <option value="prefer_not_to_say">Prefer not to say</option>
                             </select>
-                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
+                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left duration-200"></div>
                           </div>
                         </div>
 
@@ -166,8 +170,9 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
                             <select
                               value={profileData.marital_status || ""}
                               onChange={(e) => handleProfileChange("marital_status", e.target.value)}
-                              className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-blue-500 focus:ring-0 bg-transparent transition-colors hover:border-gray-400 appearance-none"
+                              className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-transparent focus:ring-0 bg-transparent transition-colors hover:border-gray-400 appearance-none"
                               disabled={!isEditMode}
+                              style={{ outline: 'none !important' }}
                             >
                               <option value="">Select Status</option>
                               <option value="single">Single</option>
@@ -176,7 +181,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
                               <option value="widowed">Widowed</option>
                               <option value="separated">Separated</option>
                             </select>
-                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
+                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left duration-200"></div>
                           </div>
                         </div>
                       </div>
@@ -199,9 +204,10 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
                               type="text"
                               value={profileData.street_address || ""}
                               onChange={(e) => handleProfileChange("street_address", e.target.value)}
-                              className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-blue-500 focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                              className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-transparent focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
                               placeholder="Enter your street address"
                               disabled={!isEditMode}
+                              style={{ outline: 'none !important' }}
                             />
                             <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
                           </div>
@@ -216,9 +222,10 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
                               type="text"
                               value={profileData.apartment_suite || ""}
                               onChange={(e) => handleProfileChange("apartment_suite", e.target.value)}
-                              className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-blue-500 focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                              className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-transparent focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
                               placeholder="Apt, Suite, Unit, etc."
                               disabled={!isEditMode}
+                              style={{ outline: 'none !important' }}
                             />
                             <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
                           </div>
@@ -237,9 +244,10 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
                                 type="text"
                                 value={profileData.country || ""}
                                 onChange={(e) => handleProfileChange("country", e.target.value)}
-                                className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-blue-500 focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                                className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-transparent focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
                                 placeholder="Country"
                                 disabled={!isEditMode}
+                              style={{ outline: 'none !important' }}
                               />
                               <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
                             </div>
@@ -254,9 +262,10 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
                                 type="text"
                                 value={profileData.state_province || ""}
                                 onChange={(e) => handleProfileChange("state_province", e.target.value)}
-                                className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-blue-500 focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                                className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-transparent focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
                                 placeholder="State/Province"
                                 disabled={!isEditMode}
+                              style={{ outline: 'none !important' }}
                               />
                               <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
                             </div>
@@ -271,9 +280,10 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
                                 type="text"
                                 value={profileData.city || ""}
                                 onChange={(e) => handleProfileChange("city", e.target.value)}
-                                className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-blue-500 focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                                className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-transparent focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
                                 placeholder="City"
                                 disabled={!isEditMode}
+                              style={{ outline: 'none !important' }}
                               />
                               <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
                             </div>
@@ -288,9 +298,10 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
                                 type="text"
                                 value={profileData.zip_code || ""}
                                 onChange={(e) => handleProfileChange("zip_code", e.target.value)}
-                                className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-blue-500 focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                                className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-transparent focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
                                 placeholder="ZIP Code"
                                 disabled={!isEditMode}
+                              style={{ outline: 'none !important' }}
                               />
                               <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
                             </div>
@@ -313,9 +324,10 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
                               type="tel"
                               value={profileData.phone || ""}
                               onChange={(e) => handleProfileChange("phone", e.target.value)}
-                              className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-blue-500 focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                              className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-transparent focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
                               placeholder="Enter your phone number"
                               disabled={!isEditMode}
+                              style={{ outline: 'none !important' }}
                             />
                             <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
                           </div>
@@ -330,9 +342,10 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
                               type="tel"
                               value={profileData.secondary_phone || ""}
                               onChange={(e) => handleProfileChange("secondary_phone", e.target.value)}
-                              className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-blue-500 focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                              className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-transparent focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
                               placeholder="Enter secondary phone number"
                               disabled={!isEditMode}
+                              style={{ outline: 'none !important' }}
                             />
                             <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
                           </div>
@@ -348,8 +361,9 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
                             <select
                               value={profileData.phone_type || ""}
                               onChange={(e) => handleProfileChange("phone_type", e.target.value)}
-                              className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-blue-500 focus:ring-0 bg-transparent transition-colors hover:border-gray-400 appearance-none"
+                              className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-transparent focus:ring-0 bg-transparent transition-colors hover:border-gray-400 appearance-none"
                               disabled={!isEditMode}
+                              style={{ outline: 'none !important' }}
                             >
                               <option value="">Select Type</option>
                               <option value="mobile">Mobile</option>
@@ -369,8 +383,9 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
                             <select
                               value={profileData.secondary_phone_type || ""}
                               onChange={(e) => handleProfileChange("secondary_phone_type", e.target.value)}
-                              className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-blue-500 focus:ring-0 bg-transparent transition-colors hover:border-gray-400 appearance-none"
+                              className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus:border-transparent focus:ring-0 bg-transparent transition-colors hover:border-gray-400 appearance-none"
                               disabled={!isEditMode}
+                              style={{ outline: 'none !important' }}
                             >
                               <option value="">Select Type</option>
                               <option value="mobile">Mobile</option>
