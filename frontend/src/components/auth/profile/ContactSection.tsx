@@ -70,7 +70,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                   type="tel"
                   value={localData.phone || ""}
                   onChange={(e) => handleFieldChange("phone", e.target.value)}
-                  className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none bg-transparent transition-colors hover:border-gray-400"
+                  className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400"
                   style={{
                     borderBottom: '2px solid #d1d5db'
                   }}
@@ -96,7 +96,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                 <select
                   value={localData.phone_type || "mobile"}
                   onChange={(e) => handleFieldChange("phone_type", e.target.value)}
-                  className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none   bg-transparent appearance-none transition-colors hover:border-gray-400"
+                  className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus-visible:ring-0 bg-transparent appearance-none transition-colors hover:border-gray-400"
                 >
                   <option value="mobile">Mobile</option>
                   <option value="home">Home</option>
@@ -119,7 +119,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                   type="tel"
                   value={localData.secondary_phone || ""}
                   onChange={(e) => handleFieldChange("secondary_phone", e.target.value)}
-                  className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none bg-transparent transition-colors hover:border-gray-400"
+                  className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400"
                   style={{
                     borderBottom: '2px solid #d1d5db'
                   }}
@@ -145,7 +145,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                 <select
                   value={localData.secondary_phone_type || "mobile"}
                   onChange={(e) => handleFieldChange("secondary_phone_type", e.target.value)}
-                  className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none   bg-transparent appearance-none transition-colors hover:border-gray-400"
+                  className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus-visible:ring-0 bg-transparent appearance-none transition-colors hover:border-gray-400"
                 >
                   <option value="mobile">Mobile</option>
                   <option value="home">Home</option>

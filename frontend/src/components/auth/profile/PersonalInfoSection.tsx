@@ -115,7 +115,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
                     type="text"
                     value={localData.first_name}
                     onChange={(e) => handleFieldChange("first_name", e.target.value)}
-                    className="w-full h-8 text-sm border-gray-300 focus:ring-blue-500"
+                    className="w-full h-8 text-sm border-gray-300 focus:ring-blue-500 focus-visible:ring-0"
                     style={{
                       borderBottom: '2px solid #d1d5db'
                     }}
@@ -140,7 +140,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
                     type="text"
                     value={localData.last_name}
                     onChange={(e) => handleFieldChange("last_name", e.target.value)}
-                    className="w-full h-8 text-sm border-gray-300 focus:ring-blue-500"
+                    className="w-full h-8 text-sm border-gray-300 focus:ring-blue-500 focus-visible:ring-0"
                     style={{
                       borderBottom: '2px solid #d1d5db'
                     }}
@@ -165,7 +165,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
                     type="text"
                     value={localData.middle_name || ""}
                     onChange={(e) => handleFieldChange("middle_name", e.target.value)}
-                    className="w-full h-8 text-sm border-gray-300 focus:ring-blue-500"
+                    className="w-full h-8 text-sm border-gray-300 focus:ring-blue-500 focus-visible:ring-0"
                     style={{
                       borderBottom: '2px solid #d1d5db'
                     }}
@@ -187,7 +187,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
                     type="text"
                     value={localData.maternal_last_name || ""}
                     onChange={(e) => handleFieldChange("maternal_last_name", e.target.value)}
-                    className="w-full h-8 text-sm border-gray-300 focus:ring-blue-500"
+                    className="w-full h-8 text-sm border-gray-300 focus:ring-blue-500 focus-visible:ring-0"
                     style={{
                       borderBottom: '2px solid #d1d5db'
                     }}
@@ -218,7 +218,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
                     type="text"
                     value={localData.preferred_name || ""}
                     onChange={(e) => handleFieldChange("preferred_name", e.target.value)}
-                    className="w-full h-8 text-sm border-gray-300 focus:ring-blue-500"
+                    className="w-full h-8 text-sm border-gray-300 focus:ring-blue-500 focus-visible:ring-0"
                     style={{
                       borderBottom: '2px solid #d1d5db'
                     }}
@@ -240,7 +240,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
                     type="email"
                     value={localData.email}
                     onChange={(e) => handleFieldChange("email", e.target.value)}
-                    className="w-full h-8 text-sm border-gray-300 focus:ring-blue-500"
+                    className="w-full h-8 text-sm border-gray-300 focus:ring-blue-500 focus-visible:ring-0"
                     style={{
                       borderBottom: '2px solid #d1d5db'
                     }}

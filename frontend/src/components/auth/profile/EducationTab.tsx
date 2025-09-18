@@ -93,13 +93,13 @@ const EducationTab: React.FC<EducationTabProps> = ({
                           Institution
                         </label>
                         <div className="relative">
-                          <Input
+                            <Input
                             type="text"
                             value={edu.institution || ""}
                             onChange={(e) =>
                               handleUpdateEducation(edu.id, "institution", e.target.value)
                             }
-                            className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none bg-transparent transition-colors hover:border-gray-400"
+                            className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400"
                             style={{
                               borderBottom: '2px solid #d1d5db'
                             }}
@@ -121,13 +121,13 @@ const EducationTab: React.FC<EducationTabProps> = ({
                           Degree
                         </label>
                         <div className="relative">
-                          <Input
+                            <Input
                             type="text"
                             value={edu.degree || ""}
                             onChange={(e) =>
                               handleUpdateEducation(edu.id, "degree", e.target.value)
                             }
-                            className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none bg-transparent transition-colors hover:border-gray-400"
+                            className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400"
                             style={{
                               borderBottom: '2px solid #d1d5db'
                             }}
@@ -149,13 +149,13 @@ const EducationTab: React.FC<EducationTabProps> = ({
                           Field of Study
                         </label>
                         <div className="relative">
-                          <Input
+                            <Input
                             type="text"
                             value={edu.field_of_study || ""}
                             onChange={(e) =>
                               handleUpdateEducation(edu.id, "field_of_study", e.target.value)
                             }
-                            className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none bg-transparent transition-colors hover:border-gray-400"
+                            className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400"
                             style={{
                               borderBottom: '2px solid #d1d5db'
                             }}
@@ -177,13 +177,13 @@ const EducationTab: React.FC<EducationTabProps> = ({
                           GPA
                         </label>
                         <div className="relative">
-                          <Input
+                            <Input
                             type="text"
                             value={edu.gpa || ""}
                             onChange={(e) =>
                               handleUpdateEducation(edu.id, "gpa", e.target.value)
                             }
-                            className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none bg-transparent transition-colors hover:border-gray-400"
+                            className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400"
                             style={{
                               borderBottom: '2px solid #d1d5db'
                             }}
@@ -205,13 +205,13 @@ const EducationTab: React.FC<EducationTabProps> = ({
                           Start Date
                         </label>
                         <div className="relative">
-                          <Input
+                            <Input
                             type="date"
                             value={edu.start_date || ""}
                             onChange={(e) =>
                               handleUpdateEducation(edu.id, "start_date", e.target.value)
                             }
-                            className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none bg-transparent transition-colors hover:border-gray-400"
+                            className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400"
                             style={{
                               borderBottom: '2px solid #d1d5db'
                             }}
@@ -233,13 +233,13 @@ const EducationTab: React.FC<EducationTabProps> = ({
                           End Date
                         </label>
                         <div className="relative">
-                          <Input
+                            <Input
                             type="date"
                             value={edu.end_date || ""}
                             onChange={(e) =>
                               handleUpdateEducation(edu.id, "end_date", e.target.value)
                             }
-                            className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none bg-transparent transition-colors hover:border-gray-400"
+                            className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400"
                             style={{
                               borderBottom: '2px solid #d1d5db'
                             }}
@@ -268,7 +268,7 @@ const EducationTab: React.FC<EducationTabProps> = ({
                           onChange={(e) =>
                             handleUpdateEducation(edu.id, "description", e.target.value)
                           }
-                          className="w-full h-full min-h-[120px] px-0 py-3 text-base border-0 border-b-2 border-gray-300 rounded-none focus:outline-none bg-transparent resize-none transition-colors hover:border-gray-400"
+                          className="w-full h-full min-h-[120px] px-0 py-3 text-base border-0 border-b-2 border-gray-300 rounded-none focus:outline-none focus-visible:ring-0 bg-transparent resize-none transition-colors hover:border-gray-400"
                           style={{
                             borderBottom: '2px solid #d1d5db'
                           }}

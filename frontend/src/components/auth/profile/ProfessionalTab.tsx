@@ -45,11 +45,11 @@ const ProfessionalTab: React.FC<ProfessionalTabProps> = ({
                   Position
                 </label>
                 <div className="relative">
-                  <Input
+                    <Input
                     type="text"
                     value={profileData.position || ""}
                     onChange={(e) => handleProfileChange("position", e.target.value)}
-                    className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none bg-transparent transition-colors hover:border-gray-400"
+                    className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400"
                     style={{
                       borderBottom: '2px solid #d1d5db'
                     }}
@@ -70,11 +70,11 @@ const ProfessionalTab: React.FC<ProfessionalTabProps> = ({
                   Department
                 </label>
                 <div className="relative">
-                  <Input
+                    <Input
                     type="text"
                     value={profileData.department || ""}
                     onChange={(e) => handleProfileChange("department", e.target.value)}
-                    className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none bg-transparent transition-colors hover:border-gray-400"
+                    className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400"
                     style={{
                       borderBottom: '2px solid #d1d5db'
                     }}
@@ -96,11 +96,11 @@ const ProfessionalTab: React.FC<ProfessionalTabProps> = ({
                 Company
               </label>
               <div className="relative">
-                <Input
+                    <Input
                   type="text"
                   value={profileData.company || ""}
                   onChange={(e) => handleProfileChange("company", e.target.value)}
-                  className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none   bg-transparent transition-colors hover:border-gray-400"
+                  className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400"
                   placeholder="Enter your company"
                   disabled={!isEditMode}
                 />
