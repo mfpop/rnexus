@@ -82,7 +82,7 @@ export const BioSection: React.FC<BioSectionProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Website */}
           <div className="group">
-            <div className="relative mt-8">
+            <div className="relative mt-2">
               <Globe className="w-4 h-4 absolute left-0 top-1/2 transform -translate-y-1/2 text-green-600" />
               <input
                 type="url"
@@ -109,7 +109,7 @@ export const BioSection: React.FC<BioSectionProps> = ({
 
           {/* LinkedIn */}
           <div className="group">
-            <div className="relative mt-8">
+            <div className="relative mt-2">
               <Linkedin className="w-4 h-4 absolute left-0 top-1/2 transform -translate-y-1/2 text-blue-600" />
               <input
                 type="url"
@@ -136,7 +136,7 @@ export const BioSection: React.FC<BioSectionProps> = ({
 
           {/* Twitter */}
           <div className="group">
-            <div className="relative mt-8">
+            <div className="relative mt-2">
               <Twitter className="w-4 h-4 absolute left-0 top-1/2 transform -translate-y-1/2 text-blue-400" />
               <input
                 type="url"
@@ -163,7 +163,7 @@ export const BioSection: React.FC<BioSectionProps> = ({
 
           {/* GitHub */}
           <div className="group">
-            <div className="relative mt-8">
+            <div className="relative mt-2">
               <Github className="w-4 h-4 absolute left-0 top-1/2 transform -translate-y-1/2 text-gray-700" />
               <input
                 type="url"
@@ -190,7 +190,7 @@ export const BioSection: React.FC<BioSectionProps> = ({
 
           {/* Facebook */}
           <div className="group">
-            <div className="relative mt-8">
+            <div className="relative mt-2">
               <Facebook className="w-4 h-4 absolute left-0 top-1/2 transform -translate-y-1/2 text-blue-600" />
               <input
                 type="url"
@@ -217,7 +217,7 @@ export const BioSection: React.FC<BioSectionProps> = ({
 
           {/* Instagram */}
           <div className="group">
-            <div className="relative mt-8">
+            <div className="relative mt-2">
               <Instagram className="w-4 h-4 absolute left-0 top-1/2 transform -translate-y-1/2 text-pink-600" />
               <input
                 type="url"
