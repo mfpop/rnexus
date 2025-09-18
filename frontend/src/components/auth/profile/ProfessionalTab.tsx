@@ -49,7 +49,7 @@ const ProfessionalTab: React.FC<ProfessionalTabProps> = ({
                     type="text"
                     value={profileData.position || ""}
                     onChange={(e) => handleProfileChange("position", e.target.value)}
-                    className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus:ring-0 focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                    className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none   bg-transparent transition-colors hover:border-gray-400"
                     placeholder="Enter your position"
                     disabled={!isEditMode}
                   />
@@ -65,7 +65,7 @@ const ProfessionalTab: React.FC<ProfessionalTabProps> = ({
                     type="text"
                     value={profileData.department || ""}
                     onChange={(e) => handleProfileChange("department", e.target.value)}
-                    className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus:ring-0 focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                    className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none   bg-transparent transition-colors hover:border-gray-400"
                     placeholder="Enter your department"
                     disabled={!isEditMode}
                   />
@@ -82,7 +82,7 @@ const ProfessionalTab: React.FC<ProfessionalTabProps> = ({
                   type="text"
                   value={profileData.company || ""}
                   onChange={(e) => handleProfileChange("company", e.target.value)}
-                  className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus:ring-0 focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                  className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none   bg-transparent transition-colors hover:border-gray-400"
                   placeholder="Enter your company"
                   disabled={!isEditMode}
                 />

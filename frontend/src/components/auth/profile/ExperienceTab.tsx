@@ -85,7 +85,7 @@ const ExperienceTab: React.FC<ExperienceTabProps> = ({
                       type="text"
                       value={work.company || ""}
                       onChange={(e) => handleUpdateExperience(work.id, "company", e.target.value)}
-                      className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus:ring-0 focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                      className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none   bg-transparent transition-colors hover:border-gray-400"
                       placeholder="Company name"
                       disabled={!isEditMode}
                     />
@@ -102,7 +102,7 @@ const ExperienceTab: React.FC<ExperienceTabProps> = ({
                       type="text"
                       value={work.position || ""}
                       onChange={(e) => handleUpdateExperience(work.id, "position", e.target.value)}
-                      className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus:ring-0 focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                      className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none   bg-transparent transition-colors hover:border-gray-400"
                       placeholder="Job title"
                       disabled={!isEditMode}
                     />
@@ -119,7 +119,7 @@ const ExperienceTab: React.FC<ExperienceTabProps> = ({
                       type="text"
                       value={work.location || ""}
                       onChange={(e) => handleUpdateExperience(work.id, "location", e.target.value)}
-                      className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus:ring-0 focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                      className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none   bg-transparent transition-colors hover:border-gray-400"
                       placeholder="City, Country"
                       disabled={!isEditMode}
                     />
@@ -136,7 +136,7 @@ const ExperienceTab: React.FC<ExperienceTabProps> = ({
                       type="date"
                       value={work.start_date || ""}
                       onChange={(e) => handleUpdateExperience(work.id, "start_date", e.target.value)}
-                      className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus:ring-0 focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                      className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none   bg-transparent transition-colors hover:border-gray-400"
                       placeholder="mm/dd/yyyy"
                       disabled={!isEditMode}
                     />
@@ -153,7 +153,7 @@ const ExperienceTab: React.FC<ExperienceTabProps> = ({
                       type="date"
                       value={work.end_date || ""}
                       onChange={(e) => handleUpdateExperience(work.id, "end_date", e.target.value)}
-                      className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus:ring-0 focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                      className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none   bg-transparent transition-colors hover:border-gray-400"
                       placeholder="mm/dd/yyyy"
                       disabled={!isEditMode || work.current}
                     />
@@ -183,7 +183,7 @@ const ExperienceTab: React.FC<ExperienceTabProps> = ({
                   <textarea
                     value={work.description || ""}
                     onChange={(e) => handleUpdateExperience(work.id, "description", e.target.value)}
-                    className="w-full h-full min-h-[120px] px-0 py-3 text-base border-0 border-b-2 border-gray-300 rounded-none focus:outline-none focus:ring-0 focus:ring-0 bg-transparent resize-none transition-colors hover:border-gray-400"
+                    className="w-full h-full min-h-[120px] px-0 py-3 text-base border-0 border-b-2 border-gray-300 rounded-none focus:outline-none   bg-transparent resize-none transition-colors hover:border-gray-400"
                     placeholder="Describe your responsibilities and achievements..."
                     disabled={!isEditMode}
                   />

@@ -99,7 +99,7 @@ const EducationTab: React.FC<EducationTabProps> = ({
                             onChange={(e) =>
                               handleUpdateEducation(edu.id, "institution", e.target.value)
                             }
-                            className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus:ring-0 focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                            className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none   bg-transparent transition-colors hover:border-gray-400"
                             placeholder="University/School name"
                             disabled={!isEditMode}
                           />
@@ -118,7 +118,7 @@ const EducationTab: React.FC<EducationTabProps> = ({
                             onChange={(e) =>
                               handleUpdateEducation(edu.id, "degree", e.target.value)
                             }
-                            className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus:ring-0 focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                            className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none   bg-transparent transition-colors hover:border-gray-400"
                             placeholder="Bachelor's, Master's, etc."
                             disabled={!isEditMode}
                           />
@@ -137,7 +137,7 @@ const EducationTab: React.FC<EducationTabProps> = ({
                             onChange={(e) =>
                               handleUpdateEducation(edu.id, "field_of_study", e.target.value)
                             }
-                            className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus:ring-0 focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                            className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none   bg-transparent transition-colors hover:border-gray-400"
                             placeholder="Computer Science, Business, etc."
                             disabled={!isEditMode}
                           />
@@ -156,7 +156,7 @@ const EducationTab: React.FC<EducationTabProps> = ({
                             onChange={(e) =>
                               handleUpdateEducation(edu.id, "gpa", e.target.value)
                             }
-                            className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus:ring-0 focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                            className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none   bg-transparent transition-colors hover:border-gray-400"
                             placeholder="3.5, 4.0, etc."
                             disabled={!isEditMode}
                           />
@@ -175,7 +175,7 @@ const EducationTab: React.FC<EducationTabProps> = ({
                             onChange={(e) =>
                               handleUpdateEducation(edu.id, "start_date", e.target.value)
                             }
-                            className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus:ring-0 focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                            className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none   bg-transparent transition-colors hover:border-gray-400"
                             placeholder="mm/dd/yyyy"
                             disabled={!isEditMode}
                           />
@@ -194,7 +194,7 @@ const EducationTab: React.FC<EducationTabProps> = ({
                             onChange={(e) =>
                               handleUpdateEducation(edu.id, "end_date", e.target.value)
                             }
-                            className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus:ring-0 focus:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                            className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none   bg-transparent transition-colors hover:border-gray-400"
                             placeholder="mm/dd/yyyy"
                             disabled={!isEditMode}
                           />
@@ -214,7 +214,7 @@ const EducationTab: React.FC<EducationTabProps> = ({
                           onChange={(e) =>
                             handleUpdateEducation(edu.id, "description", e.target.value)
                           }
-                          className="w-full h-full min-h-[120px] px-0 py-3 text-base border-0 border-b-2 border-gray-300 rounded-none focus:outline-none focus:ring-0 focus:ring-0 bg-transparent resize-none transition-colors hover:border-gray-400"
+                          className="w-full h-full min-h-[120px] px-0 py-3 text-base border-0 border-b-2 border-gray-300 rounded-none focus:outline-none   bg-transparent resize-none transition-colors hover:border-gray-400"
                           placeholder="Additional details about your education..."
                           disabled={!isEditMode}
                         />
