@@ -17,13 +17,25 @@ interface ExperienceTabProps {
   workExperiences: WorkExperience[];
   isEditMode: boolean;
   handleUpdateExperience: (id: string, field: string, value: any) => void;
+  currentExperiencePage: number;
+  totalExperiencePages: number;
+  handleExperiencePageChange: (page: number) => void;
 }
 
 const ExperienceTab: React.FC<ExperienceTabProps> = ({
   workExperiences,
   isEditMode,
   handleUpdateExperience,
+  currentExperiencePage,
+  totalExperiencePages,
+  handleExperiencePageChange,
 }) => {
+  // Pagination calculation
+  const experiencePerPage = 1;
+  const startIndex = (currentExperiencePage - 1) * experiencePerPage;
+  const endIndex = startIndex + experiencePerPage;
+  const currentExperiences = workExperiences.slice(startIndex, endIndex);
+
   return (
     <div className="h-full flex-1 flex flex-col min-h-0 profile-form">
       <div className="flex-1 flex flex-col min-h-0 bg-white shadow-lg border border-gray-200 relative overflow-hidden">
@@ -54,12 +66,12 @@ const ExperienceTab: React.FC<ExperienceTabProps> = ({
               </div>
             </div>
           ) : (
-            <div className={`flex-1 flex flex-col min-h-0 ${workExperiences.length === 1 ? '' : 'space-y-8'}`}>
-              {workExperiences.map((work) => (
+            <div className={`flex-1 flex flex-col min-h-0 ${currentExperiences.length === 1 ? '' : 'space-y-8'}`}>
+              {currentExperiences.map((work) => (
                 <div
                   key={work.id}
-                  className={`bg-white border border-gray-200 p-6 shadow-sm relative overflow-hidden flex flex-col flex-1 min-h-0 ${workExperiences.length === 1 ? 'h-full' : ''}`}
-                  style={workExperiences.length === 1 ? { minHeight: 0, height: '100%' } : {}}
+                  className={`bg-white border border-gray-200 p-6 shadow-sm relative overflow-hidden flex flex-col flex-1 min-h-0 ${currentExperiences.length === 1 ? 'h-full' : ''}`}
+                  style={currentExperiences.length === 1 ? { minHeight: 0, height: '100%' } : {}}
                 >
                   {/* Subtle paper texture for each experience card */}
                   <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-50/20 to-white opacity-40"></div>

@@ -6,6 +6,8 @@ import {
   GraduationCap,
   Briefcase,
   Lock,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "../ui/bits";
 import { useQuery, useMutation } from "@apollo/client";
@@ -16,6 +18,7 @@ import {
 import {
   UPDATE_USER_PROFILE,
   UPLOAD_AVATAR,
+  CHANGE_PASSWORD,
 } from "../../graphql/userProfile";
 import {
   GeneralTab,
@@ -60,11 +63,35 @@ interface ProfileData {
   company?: string;
   education?: any[];
   work_experience?: any[];
+  profileVisibility?: any;
   is_active?: boolean;
   preferred_name?: string;
   passwordSuccessMessage?: string;
   passwordErrorMessage?: string;
 }
+
+// Helpers to normalize JSON-like fields that may arrive as strings
+const toArray = (val: any) => {
+  if (!val) return [] as any[];
+  if (Array.isArray(val)) return val;
+  try {
+    const parsed = typeof val === "string" ? JSON.parse(val) : val;
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [] as any[];
+  }
+};
+
+const toObject = (val: any) => {
+  if (!val) return {} as Record<string, any>;
+  if (typeof val === "object" && !Array.isArray(val)) return val;
+  try {
+    const parsed = typeof val === "string" ? JSON.parse(val) : val;
+    return typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {} as Record<string, any>;
+  }
+};
 
 const ProfileRightCard: React.FC = () => {
   const { user } = useAuth();
@@ -82,6 +109,7 @@ const ProfileRightCard: React.FC = () => {
   const { data: profileQueryData, loading: profileLoading, error: profileError } = useQuery<GetUserProfileData>(GET_USER_PROFILE);
   const [uploadAvatarMutation] = useMutation(UPLOAD_AVATAR);
   const [updateUserProfileMutation] = useMutation(UPDATE_USER_PROFILE);
+  const [changePasswordMutation] = useMutation(CHANGE_PASSWORD);
 
   // Tab configuration
   const tabs = [
@@ -98,7 +126,7 @@ const ProfileRightCard: React.FC = () => {
   // Initialize profile data
   useEffect(() => {
     if (profileQueryData?.userProfile) {
-      const userProfile = profileQueryData.userProfile as unknown as ProfileData;
+      const userProfile = profileQueryData.userProfile as any;
       // Handle avatar field - use avatarUrl if available, otherwise avatar
       const avatarUrl = userProfile.avatarUrl || userProfile.avatar || (userProfile as any).avatarUrl;
       console.log('Avatar URL from GraphQL:', avatarUrl);
@@ -120,13 +148,18 @@ const ProfileRightCard: React.FC = () => {
       }
       console.log('Full avatar URL passed to AvatarUpload:', fullAvatarUrl);
 
-      setProfileData({
+      setProfileData((prev) => ({
+        ...prev,
+        // copy through primitive/camelCase properties returned by GraphQL
         ...userProfile,
         avatar: fullAvatarUrl,
         avatarUrl: fullAvatarUrl, // Set both fields for consistency
-        education: Array.isArray(userProfile.education) ? userProfile.education : [],
-        work_experience: Array.isArray(userProfile.work_experience) ? userProfile.work_experience : [],
-      });
+        // Normalize arrays and map camelCase workHistory to local work_experience
+        education: toArray(userProfile.education),
+        work_experience: toArray(userProfile.work_experience ?? userProfile.workHistory),
+        // Normalize profile visibility to camelCase key in local state
+        profileVisibility: toObject(userProfile.profileVisibility ?? userProfile.profile_visibility),
+      }));
     }
   }, [profileQueryData]);
 
@@ -148,7 +181,7 @@ const ProfileRightCard: React.FC = () => {
     setIsEditMode(false);
     // Reset profile data to original state
     if (profileQueryData?.userProfile) {
-      const userProfile = profileQueryData.userProfile as unknown as ProfileData;
+      const userProfile = profileQueryData.userProfile as any;
       const avatarUrl = userProfile.avatarUrl || userProfile.avatar || (userProfile as any).avatarUrl;
 
       let fullAvatarUrl = null;
@@ -163,13 +196,15 @@ const ProfileRightCard: React.FC = () => {
         }
       }
 
-      setProfileData({
+      setProfileData((prev) => ({
+        ...prev,
         ...userProfile,
         avatar: fullAvatarUrl,
         avatarUrl: fullAvatarUrl,
-        education: Array.isArray(userProfile.education) ? userProfile.education : [],
-        work_experience: Array.isArray(userProfile.work_experience) ? userProfile.work_experience : [],
-      });
+        education: toArray(userProfile.education),
+        work_experience: toArray(userProfile.work_experience ?? userProfile.workHistory),
+        profileVisibility: toObject(userProfile.profileVisibility ?? userProfile.profile_visibility),
+      }));
     }
   };
 
@@ -203,17 +238,49 @@ const ProfileRightCard: React.FC = () => {
       variables.countryCode = pick("countryCode", "country_code");
       variables.bio = pick("bio", "bio");
 
-      // JSON fields should be stringified when provided
-      if (profileData.education) variables.education = JSON.stringify(profileData.education);
-      if (profileData.work_experience) variables.workHistory = JSON.stringify(profileData.work_experience);
+      // Additional personal information
+      variables.dateOfBirth = pick("date_of_birth", "date_of_birth");
+      variables.gender = pick("gender", "gender");
+      variables.maritalStatus = pick("marital_status", "marital_status");
+
+      // Social media and web presence
+      variables.shortBio = pick("short_bio", "short_bio");
+      variables.website = pick("website", "website");
+      variables.linkedin = pick("linkedin", "linkedin");
+      variables.twitter = pick("twitter", "twitter");
+      variables.github = pick("github", "github");
+      variables.facebook = pick("facebook", "facebook");
+      variables.instagram = pick("instagram", "instagram");
+
+      // JSON fields: send as JSON strings (GraphQL expects String)
+      if (profileData.education) {
+        variables.education = JSON.stringify(profileData.education);
+        console.log("Saving education data (stringified):", variables.education);
+      }
+      if (profileData.work_experience) {
+        variables.workHistory = JSON.stringify(profileData.work_experience);
+        console.log("Saving work experience data (stringified):", variables.workHistory);
+      }
       const visibility = (profileData as any).profileVisibility ?? (profileData as any).profile_visibility;
       if (visibility) variables.profileVisibility = JSON.stringify(visibility);
 
+      console.log("Mutation variables being sent:", variables);
       const res = await updateUserProfileMutation({ variables });
       const result = res?.data?.updateUserProfile;
+      console.log("Mutation result:", result);
       if (result?.ok && result?.userProfile) {
+        // Preserve avatar data when updating profile
+        const currentAvatar = profileData.avatar;
+        const currentAvatarUrl = profileData.avatarUrl;
+
         // Update local state with returned profile (may use camelCase keys)
-        setProfileData((prev) => ({ ...prev, ...result.userProfile }));
+        setProfileData((prev) => ({
+          ...prev,
+          ...result.userProfile,
+          // Preserve avatar fields to prevent them from being overwritten
+          avatar: currentAvatar,
+          avatarUrl: currentAvatarUrl
+        }));
         window.dispatchEvent(new Event("profile-updated"));
         setIsEditMode(false);
       } else {
@@ -248,12 +315,15 @@ const ProfileRightCard: React.FC = () => {
         }
       }
 
+      // Normalize as above
+
       setProfileData({
         ...userProfile,
         avatar: fullAvatarUrl,
         avatarUrl: fullAvatarUrl,
-        education: Array.isArray(userProfile.education) ? userProfile.education : [],
-        work_experience: Array.isArray(userProfile.work_experience) ? userProfile.work_experience : [],
+        education: toArray((userProfile as any).education ?? (userProfile as any).education),
+        work_experience: toArray((userProfile as any).work_experience ?? (userProfile as any).workHistory),
+        profileVisibility: toObject((userProfile as any).profile_visibility ?? (userProfile as any).profileVisibility),
       });
       setIsEditMode(false);
     }
@@ -326,10 +396,15 @@ const ProfileRightCard: React.FC = () => {
       gpa: "",
       description: "",
     };
-    setProfileData(prev => ({
-          ...prev,
-      education: [...(prev.education || []), newEducation]
-    }));
+    console.log("Adding new education:", newEducation);
+    setProfileData(prev => {
+      const updated = {
+        ...prev,
+        education: [...(prev.education || []), newEducation]
+      };
+      console.log("Updated education array:", updated.education);
+      return updated;
+    });
   };
 
   const handleRemoveEducation = (id: string) => {
@@ -340,12 +415,17 @@ const ProfileRightCard: React.FC = () => {
   };
 
   const handleUpdateEducation = (id: string, field: string, value: string) => {
-    setProfileData(prev => ({
-          ...prev,
-      education: prev.education?.map(edu =>
-        edu.id === id ? { ...edu, [field]: value } : edu
-      ) || []
-    }));
+    console.log("Updating education:", { id, field, value });
+    setProfileData(prev => {
+      const updated = {
+        ...prev,
+        education: prev.education?.map(edu =>
+          edu.id === id ? { ...edu, [field]: value } : edu
+        ) || []
+      };
+      console.log("Updated education data:", updated.education);
+      return updated;
+    });
   };
 
   // Handle experience changes
@@ -360,10 +440,15 @@ const ProfileRightCard: React.FC = () => {
       description: "",
       location: "",
     };
-    setProfileData(prev => ({
-      ...prev,
-      work_experience: [...(prev.work_experience || []), newExperience]
-    }));
+    console.log("Adding new experience:", newExperience);
+    setProfileData(prev => {
+      const updated = {
+        ...prev,
+        work_experience: [...(prev.work_experience || []), newExperience]
+      };
+      console.log("Updated experience array:", updated.work_experience);
+      return updated;
+    });
   };
 
   const handleRemoveExperience = (id: string) => {
@@ -374,18 +459,40 @@ const ProfileRightCard: React.FC = () => {
   };
 
   const handleUpdateExperience = (id: string, field: string, value: string | boolean) => {
-    setProfileData(prev => ({
-            ...prev,
-      work_experience: prev.work_experience?.map(exp =>
-        exp.id === id ? { ...exp, [field]: value } : exp
-      ) || []
-    }));
+    console.log("Updating experience:", { id, field, value });
+    setProfileData(prev => {
+      const updated = {
+        ...prev,
+        work_experience: prev.work_experience?.map(exp =>
+          exp.id === id ? { ...exp, [field]: value } : exp
+        ) || []
+      };
+      console.log("Updated experience data:", updated.work_experience);
+      return updated;
+    });
   };
 
   // Handle password change
   const handlePasswordChange = async (oldPassword: string, newPassword: string) => {
-    // This would be implemented with the actual password change mutation
-    console.log("Password change:", { oldPassword, newPassword });
+    try {
+      console.log("Password change requested:", { oldPassword, newPassword });
+      const result = await changePasswordMutation({
+        variables: {
+          currentPassword: oldPassword,
+          newPassword: newPassword,
+        },
+      });
+
+      if (result.data?.changePassword?.ok) {
+        console.log("Password changed successfully");
+        // You can add success notification here
+      } else {
+        console.error("Password change failed:", result.data?.changePassword?.errors);
+        // You can add error notification here
+      }
+    } catch (error) {
+      console.error("Password change error:", error);
+    }
   };
 
   // Pagination handlers
@@ -397,9 +504,46 @@ const ProfileRightCard: React.FC = () => {
     setCurrentExperiencePage(page);
   };
 
+  // Context-aware add handler for right sidebar
+  const handleAdd = () => {
+    switch (activeTab) {
+      case "education":
+        handleAddEducation();
+        break;
+      case "experience":
+        handleAddExperience();
+        break;
+      default:
+        console.log("Add action not available for this tab:", activeTab);
+    }
+  };
+
+  // Context-aware delete handler for right sidebar
+  const handleContextDelete = () => {
+    switch (activeTab) {
+      case "education":
+        // For education, we'd need to know which one to delete
+        // This could be enhanced to delete the last one or show a selection
+        const educationToDelete = educationArray[educationArray.length - 1];
+        if (educationToDelete) {
+          handleRemoveEducation(educationToDelete.id);
+        }
+        break;
+      case "experience":
+        // Similar for experience
+        const experienceToDelete = experienceArray[experienceArray.length - 1];
+        if (experienceToDelete) {
+          handleRemoveExperience(experienceToDelete.id);
+        }
+        break;
+      default:
+        handleDelete();
+    }
+  };
+
   // Calculate pagination
-  const educationPerPage = 3;
-  const experiencePerPage = 3;
+  const educationPerPage = 1;
+  const experiencePerPage = 1;
   const educationArray = Array.isArray(profileData.education) ? profileData.education : [];
   const experienceArray = Array.isArray(profileData.work_experience) ? profileData.work_experience : [];
   const totalEducationPages = Math.ceil(educationArray.length / educationPerPage);
@@ -408,10 +552,11 @@ const ProfileRightCard: React.FC = () => {
   // Expose button handlers to window object for StableLayout
   useEffect(() => {
     const profileButtonHandlers = {
+      add: handleAdd,
       save: handleSave,
       cancel: handleCancel,
       edit: handleEdit,
-      delete: handleDelete,
+      delete: handleContextDelete,
       refresh: handleRefresh,
       isEditMode,
     };
@@ -424,7 +569,7 @@ const ProfileRightCard: React.FC = () => {
     return () => {
       delete (window as any).profileButtonHandlers;
     };
-  }, [handleSave, handleCancel, handleEdit, handleDelete, handleRefresh, isEditMode]);
+  }, [handleAdd, handleSave, handleCancel, handleEdit, handleContextDelete, handleRefresh, isEditMode, activeTab]);
 
   // Render tab content
   const renderTabContent = () => {
@@ -454,8 +599,6 @@ const ProfileRightCard: React.FC = () => {
           <EducationTab
             profileData={profileData}
             isEditMode={isEditMode}
-            handleAddEducation={handleAddEducation}
-            handleRemoveEducation={handleRemoveEducation}
             handleUpdateEducation={handleUpdateEducation}
             currentEducationPage={currentEducationPage}
             totalEducationPages={totalEducationPages}
@@ -466,10 +609,8 @@ const ProfileRightCard: React.FC = () => {
       case "experience":
         return (
           <ExperienceTab
-            profileData={profileData}
+            workExperiences={profileData.work_experience || []}
             isEditMode={isEditMode}
-            handleAddExperience={handleAddExperience}
-            handleRemoveExperience={handleRemoveExperience}
             handleUpdateExperience={handleUpdateExperience}
             currentExperiencePage={currentExperiencePage}
             totalExperiencePages={totalExperiencePages}
@@ -543,37 +684,86 @@ const ProfileRightCard: React.FC = () => {
     <div className="h-full w-full bg-gradient-to-br from-slate-50 to-white flex flex-col overflow-hidden">
       {/* Tab Navigation - Projects Page Style */}
       <div className="border-b border-gray-200">
-        <div className="flex">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                 className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
-                   activeTab === tab.id
-                     ? "text-gray-700 border-gray-700 bg-gray-50"
-                     : "text-gray-600 hover:text-gray-800 border-transparent"
-                 }`}
-              >
-                <Icon className="h-4 w-4" />
-                <span>{tab.label}</span>
-                {tab.adminOnly && (
-                  <Lock className="w-3 h-3 text-amber-500 ml-1" />
-                )}
-              </button>
-            );
-          })}
+        <div className="flex items-center justify-between">
+          {/* Tab buttons */}
+          <div className="flex">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                   className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
+                     activeTab === tab.id
+                       ? "text-gray-700 border-gray-700 bg-gray-50"
+                       : "text-gray-600 hover:text-gray-800 border-transparent"
+                   }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span>{tab.label}</span>
+                  {tab.adminOnly && (
+                    <Lock className="w-3 h-3 text-amber-500 ml-1" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Pagination controls on the right side */}
+          {((activeTab === "education" && educationArray.length > 1) ||
+            (activeTab === "experience" && experienceArray.length > 1)) && (
+            <div className="flex items-center gap-2 px-4 py-2">
+              <span className="text-sm text-gray-600">
+                {activeTab === "education" ? "Education" : "Experience"} Record
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => {
+                    if (activeTab === "education" && currentEducationPage > 1) {
+                      handleEducationPageChange(currentEducationPage - 1);
+                    } else if (activeTab === "experience" && currentExperiencePage > 1) {
+                      handleExperiencePageChange(currentExperiencePage - 1);
+                    }
+                  }}
+                  disabled={
+                    (activeTab === "education" && currentEducationPage === 1) ||
+                    (activeTab === "experience" && currentExperiencePage === 1)
+                  }
+                  className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <span className="text-sm text-gray-700 px-2 min-w-[3rem] text-center">
+                  {activeTab === "education" ? currentEducationPage : currentExperiencePage}/
+                  {activeTab === "education" ? totalEducationPages : totalExperiencePages}
+                </span>
+                <button
+                  onClick={() => {
+                    if (activeTab === "education" && currentEducationPage < totalEducationPages) {
+                      handleEducationPageChange(currentEducationPage + 1);
+                    } else if (activeTab === "experience" && currentExperiencePage < totalExperiencePages) {
+                      handleExperiencePageChange(currentExperiencePage + 1);
+                    }
+                  }}
+                  disabled={
+                    (activeTab === "education" && currentEducationPage === totalEducationPages) ||
+                    (activeTab === "experience" && currentExperiencePage === totalExperiencePages)
+                  }
+                  className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Tab Content - Enhanced with Paper Form Styling */}
-      <div className="flex-1 overflow-hidden bg-gradient-to-br from-slate-50 to-white">
-        <div className="h-full overflow-y-auto">
-          <div className="p-2">
-            <div className="h-full w-full">
-              {renderTabContent()}
-            </div>
+      <div className="flex-1 h-0 min-h-0 flex flex-col overflow-hidden bg-gradient-to-br from-slate-50 to-white">
+        <div className="flex-1 h-0 min-h-0 overflow-y-auto">
+          <div className="flex-1 h-full w-full flex flex-col">
+            {renderTabContent()}
           </div>
         </div>
       </div>

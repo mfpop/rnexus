@@ -1,6 +1,6 @@
 import React from "react";
-import { GraduationCap, ChevronLeft, ChevronRight } from "lucide-react";
-import { Button, Input } from "../../ui/bits";
+import { GraduationCap } from "lucide-react";
+import { Input } from "../../ui/bits";
 
 interface Education {
   id: string;
@@ -280,37 +280,6 @@ const EducationTab: React.FC<EducationTabProps> = ({
                 </div>
               ))}
 
-              {/* Pagination */}
-              {educationArray.length > 1 && (
-                <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-200">
-                  <div className="text-sm text-gray-600">
-                    Record {currentEducationPage} of {totalEducationPages} education records
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <Button
-                      onClick={() => handleEducationPageChange(currentEducationPage - 1)}
-                      disabled={currentEducationPage === 1}
-                      className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200"
-                      variant="ghost"
-                      size="sm"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </Button>
-                    <span className="text-sm font-medium text-gray-700 px-3 py-1 bg-gray-100">
-                      Page {currentEducationPage} of {totalEducationPages}
-                    </span>
-                    <Button
-                      onClick={() => handleEducationPageChange(currentEducationPage + 1)}
-                      disabled={currentEducationPage === totalEducationPages}
-                      className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200"
-                      variant="ghost"
-                      size="sm"
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              )}
             </div>
           )}
         </div>
