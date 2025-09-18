@@ -30,7 +30,7 @@ const EducationTab: React.FC<EducationTabProps> = ({
   totalEducationPages,
   handleEducationPageChange,
 }) => {
-  const educationPerPage = 3;
+  const educationPerPage = 1;
   const startIndex = (currentEducationPage - 1) * educationPerPage;
   const endIndex = startIndex + educationPerPage;
   const educationArray = Array.isArray(profileData.education) ? profileData.education : [];
