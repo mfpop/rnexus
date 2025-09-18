@@ -176,49 +176,10 @@
   body {
     @apply bg-background text-foreground;
   }
-  /* Ensure form elements maintain proper focus styles */
-  input:focus,
-  select:focus,
-  textarea:focus {
-    outline: none !important;
-    border-bottom: transparent !important;
-  }
-
-  /* More specific selectors for profile form inputs */
+  /* Remove input borders when focused */
   .profile-form input:focus,
   .profile-form select:focus,
   .profile-form textarea:focus {
-    outline: none !important;
     border-bottom: transparent !important;
-    border-bottom-color: transparent !important;
-    border-bottom-style: none !important;
-    border-bottom-width: 0 !important;
-    box-shadow: none !important;
-    ring: none !important;
-  }
-
-  /* Target specific border classes */
-  .profile-form input.border-b-2:focus,
-  .profile-form select.border-b-2:focus,
-  .profile-form textarea.border-b-2:focus {
-    border-bottom: none !important;
-    border-bottom-color: transparent !important;
-    border-bottom-style: none !important;
-    border-bottom-width: 0 !important;
-    box-shadow: none !important;
-    ring: none !important;
-  }
-
-  /* Override Input component's default focus styles */
-  .profile-form input[class*="focus-visible:ring"]:focus,
-  .profile-form input[class*="focus-visible:ring"]:focus-visible {
-    outline: none !important;
-    border-bottom: transparent !important;
-    border-bottom-color: transparent !important;
-    border-bottom-style: none !important;
-    border-bottom-width: 0 !important;
-    box-shadow: none !important;
-    ring: none !important;
-    --tw-ring-shadow: none !important;
   }
 }
