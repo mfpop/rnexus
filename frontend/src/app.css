@@ -183,4 +183,25 @@
     outline: none !important;
     border-bottom: transparent !important;
   }
+
+  /* More specific selectors for profile form inputs */
+  .profile-form input:focus,
+  .profile-form select:focus,
+  .profile-form textarea:focus {
+    outline: none !important;
+    border-bottom: transparent !important;
+    border-bottom-color: transparent !important;
+    border-bottom-style: none !important;
+    border-bottom-width: 0 !important;
+  }
+
+  /* Target specific border classes */
+  .profile-form input.border-b-2:focus,
+  .profile-form select.border-b-2:focus,
+  .profile-form textarea.border-b-2:focus {
+    border-bottom: none !important;
+    border-bottom-color: transparent !important;
+    border-bottom-style: none !important;
+    border-bottom-width: 0 !important;
+  }
 }
