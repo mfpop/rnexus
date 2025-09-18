@@ -193,6 +193,8 @@
     border-bottom-color: transparent !important;
     border-bottom-style: none !important;
     border-bottom-width: 0 !important;
+    box-shadow: none !important;
+    ring: none !important;
   }
 
   /* Target specific border classes */
@@ -203,5 +205,20 @@
     border-bottom-color: transparent !important;
     border-bottom-style: none !important;
     border-bottom-width: 0 !important;
+    box-shadow: none !important;
+    ring: none !important;
+  }
+
+  /* Override Input component's default focus styles */
+  .profile-form input[class*="focus-visible:ring"]:focus,
+  .profile-form input[class*="focus-visible:ring"]:focus-visible {
+    outline: none !important;
+    border-bottom: transparent !important;
+    border-bottom-color: transparent !important;
+    border-bottom-style: none !important;
+    border-bottom-width: 0 !important;
+    box-shadow: none !important;
+    ring: none !important;
+    --tw-ring-shadow: none !important;
   }
 }
