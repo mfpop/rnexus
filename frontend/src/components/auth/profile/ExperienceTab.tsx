@@ -26,7 +26,7 @@ const ExperienceTab: React.FC<ExperienceTabProps> = ({
 }) => {
   return (
     <div className="h-full flex-1 flex flex-col min-h-0 profile-form">
-      <div className="flex-1 flex flex-col min-h-0 bg-white rounded-xl shadow-lg border border-gray-200 relative overflow-hidden">
+      <div className="flex-1 flex flex-col min-h-0 bg-white shadow-lg border border-gray-200 relative overflow-hidden">
         {/* Subtle paper texture */}
         <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-50/30 to-white opacity-60"></div>
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
@@ -58,7 +58,7 @@ const ExperienceTab: React.FC<ExperienceTabProps> = ({
               {workExperiences.map((work) => (
                 <div
                   key={work.id}
-                  className={`bg-white border border-gray-200 rounded-xl p-6 shadow-sm relative overflow-hidden flex flex-col flex-1 min-h-0 ${workExperiences.length === 1 ? 'h-full' : ''}`}
+                  className={`bg-white border border-gray-200 p-6 shadow-sm relative overflow-hidden flex flex-col flex-1 min-h-0 ${workExperiences.length === 1 ? 'h-full' : ''}`}
                   style={workExperiences.length === 1 ? { minHeight: 0, height: '100%' } : {}}
                 >
                   {/* Subtle paper texture for each experience card */}

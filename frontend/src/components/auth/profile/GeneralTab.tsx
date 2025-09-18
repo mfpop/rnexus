@@ -23,7 +23,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
         {/* Two Column Layout - Personal Information and Biography Cards */}
         <div className="h-full flex gap-4">
           {/* Left Column - Personal Information Card (65%) */}
-          <div className="h-full w-[65%] bg-white rounded-xl shadow-lg border border-gray-200 p-6 relative overflow-hidden flex flex-col">
+          <div className="h-full w-[65%] bg-white shadow-lg border border-gray-200 p-6 relative overflow-hidden flex flex-col">
             {/* Subtle paper texture */}
             <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-50/30 to-white opacity-60"></div>
             <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
@@ -531,7 +531,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
           </div>
 
           {/* Right Column - Biography Card (35%) */}
-          <div className="h-full w-[35%] bg-white rounded-xl shadow-lg border border-gray-200 p-6 relative overflow-hidden flex flex-col">
+          <div className="h-full w-[35%] bg-white shadow-lg border border-gray-200 p-6 relative overflow-hidden flex flex-col">
             {/* Subtle paper texture */}
             <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-50/30 to-white opacity-60"></div>
             <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>

@@ -39,7 +39,7 @@ const EducationTab: React.FC<EducationTabProps> = ({
 
   return (
   <div className="h-full flex-1 flex flex-col min-h-0 profile-form">
-    <div className="flex-1 flex flex-col min-h-0 bg-white rounded-xl shadow-lg border border-gray-200 relative overflow-hidden">
+      <div className="flex-1 flex flex-col min-h-0 bg-white shadow-lg border border-gray-200 relative overflow-hidden">
         {/* Subtle paper texture */}
         <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-50/30 to-white opacity-60"></div>
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
@@ -71,7 +71,7 @@ const EducationTab: React.FC<EducationTabProps> = ({
               {currentEducation.map((edu: Education) => (
                 <div
                   key={edu.id}
-                  className={`bg-white border border-gray-200 rounded-xl p-6 shadow-sm relative overflow-hidden flex flex-col flex-1 min-h-0 ${currentEducation.length === 1 ? 'h-full' : ''}`}
+                  className={`bg-white border border-gray-200 p-6 shadow-sm relative overflow-hidden flex flex-col flex-1 min-h-0 ${currentEducation.length === 1 ? 'h-full' : ''}`}
                   style={currentEducation.length === 1 ? { minHeight: 0, height: '100%' } : {}}
                 >
                   {/* Subtle paper texture for each education card */}
@@ -299,19 +299,19 @@ const EducationTab: React.FC<EducationTabProps> = ({
                     <Button
                       onClick={() => handleEducationPageChange(currentEducationPage - 1)}
                       disabled={currentEducationPage === 1}
-                      className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-200"
+                      className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200"
                       variant="ghost"
                       size="sm"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </Button>
-                    <span className="text-sm font-medium text-gray-700 px-3 py-1 bg-gray-100 rounded-lg">
+                    <span className="text-sm font-medium text-gray-700 px-3 py-1 bg-gray-100">
                       Page {currentEducationPage} of {totalEducationPages}
                     </span>
                     <Button
                       onClick={() => handleEducationPageChange(currentEducationPage + 1)}
                       disabled={currentEducationPage === totalEducationPages}
-                      className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-200"
+                      className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200"
                       variant="ghost"
                       size="sm"
                     >

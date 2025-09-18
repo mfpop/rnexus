@@ -43,7 +43,7 @@ const SecurityTab: React.FC<SecurityTabProps> = ({
 
   return (
     <div className="h-full flex-1 flex flex-col profile-form">
-      <div className="flex-1 flex flex-col bg-white rounded-xl shadow-lg border border-gray-200 relative overflow-hidden">
+      <div className="flex-1 flex flex-col bg-white shadow-lg border border-gray-200 relative overflow-hidden">
         {/* Subtle paper texture */}
         <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-50/30 to-white opacity-60"></div>
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
@@ -187,7 +187,7 @@ const SecurityTab: React.FC<SecurityTabProps> = ({
                 <div className="flex justify-end pt-4">
                   <Button
                     type="submit"
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 font-medium transition-colors"
                     disabled={isChangingPassword || newPassword !== confirmPassword || !newPassword}
                   >
                     {isChangingPassword ? "Changing..." : "Change Password"}
@@ -200,7 +200,7 @@ const SecurityTab: React.FC<SecurityTabProps> = ({
             <div className="border-t border-gray-200 pt-8">
               <h4 className="text-lg font-semibold text-gray-800 mb-6">Account Security</h4>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center justify-between p-4 bg-gray-50 border border-gray-200">
                   <div>
                     <p className="text-sm font-semibold text-gray-900">Two-Factor Authentication</p>
                     <p className="text-sm text-gray-500">Add an extra layer of security</p>
@@ -208,7 +208,7 @@ const SecurityTab: React.FC<SecurityTabProps> = ({
                   <div className="text-sm text-gray-500 font-medium">Not configured</div>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center justify-between p-4 bg-gray-50 border border-gray-200">
                   <div>
                     <p className="text-sm font-semibold text-gray-900">Login Sessions</p>
                     <p className="text-sm text-gray-500">Manage your active sessions</p>

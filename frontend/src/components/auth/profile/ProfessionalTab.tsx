@@ -17,7 +17,7 @@ const ProfessionalTab: React.FC<ProfessionalTabProps> = ({
 }) => {
   return (
     <div className="h-full flex-1 flex flex-col profile-form">
-      <div className="flex-1 flex flex-col bg-white rounded-xl shadow-lg border border-gray-200 relative overflow-hidden">
+      <div className="flex-1 flex flex-col bg-white shadow-lg border border-gray-200 relative overflow-hidden">
         {/* Subtle paper texture */}
         <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-50/30 to-white opacity-60"></div>
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
@@ -30,7 +30,7 @@ const ProfessionalTab: React.FC<ProfessionalTabProps> = ({
               Professional Information
             </h3>
             {!canEditProfileStatus && (
-              <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 px-4 py-2 rounded-lg border border-amber-200 ml-auto">
+              <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 px-4 py-2 border border-amber-200 ml-auto">
                 <Lock className="w-4 h-4" />
                 <span className="font-medium">Admin Only</span>
               </div>
