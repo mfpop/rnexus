@@ -1,7 +1,7 @@
 // src/components/auth/profile/AvatarUpload.tsx
 
 import React, { useState, useRef, useEffect } from "react";
-import { User, Camera, X } from "lucide-react";
+import { User, X } from "lucide-react";
 
 interface AvatarUploadProps {
   currentAvatar?: string;
@@ -106,18 +106,25 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
   return (
     <div className="flex flex-col items-center">
       <div
-        className={`relative w-32 h-32 mx-2 rounded-xl overflow-hidden bg-white transition-all duration-200 ${
-          disabled ? 'cursor-default' : 'cursor-pointer hover:shadow-lg'
-        } ${isLoading ? 'cursor-wait' : ''} ${isDragOver ? 'scale-105 shadow-lg' : ''}`}
+        className={`relative w-32 h-32 mx-2 rounded-xl overflow-hidden bg-white border-2 transition-all duration-200 ${
+          disabled
+            ? 'cursor-default border-gray-200'
+            : 'cursor-pointer hover:shadow-lg border-gray-300 hover:border-blue-400'
+        } ${isLoading ? 'cursor-wait' : ''} ${isDragOver ? 'scale-105 shadow-lg border-blue-500' : ''}`}
         onDrop={!disabled ? handleDrop : undefined}
         onDragOver={!disabled ? handleDragOver : undefined}
         onDragLeave={!disabled ? handleDragLeave : undefined}
         onClick={!disabled ? handleClick : undefined}
         role={!disabled ? "button" : undefined}
         tabIndex={!disabled ? 0 : undefined}
+        title={!disabled ? "Click to upload or change avatar" : undefined}
         onKeyDown={!disabled ? (e) => {
           if (e.key === 'Enter' || e.key === ' ') {
-            handleClick();
+            e.preventDefault();
+            e.stopPropagation();
+            if (!disabled && fileInputRef.current) {
+              fileInputRef.current.click();
+            }
           }
         } : undefined}
       >
@@ -156,18 +163,6 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-200">
                 <User className="w-16 h-16 text-blue-600" />
-              </div>
-            )}
-
-            {/* Upload overlay - DISABLED because it interferes with image display */}
-            {false && !disabled && (
-              <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-50 transition-all duration-200 flex items-center justify-center z-10">
-                <div className="opacity-0 hover:opacity-100 transition-opacity duration-200 text-center">
-                  <Camera className="w-8 h-8 text-white mx-auto mb-1" />
-                  <span className="text-white text-xs font-medium">
-                    {isDragOver ? 'Drop Here' : 'Change Photo'}
-                  </span>
-                </div>
               </div>
             )}
 

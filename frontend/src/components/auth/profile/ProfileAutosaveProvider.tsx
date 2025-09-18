@@ -46,7 +46,10 @@ export const ProfileAutosaveProvider: React.FC<
           return;
         }
 
-  const result = await updateUserProfile({ variables });
+        // Set the field value in variables
+        variables[field] = value;
+
+        const result = await updateUserProfile({ variables });
 
         if (!result.data?.updateUserProfile.ok) {
           console.error(
