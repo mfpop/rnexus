@@ -82,6 +82,9 @@ export const BioSection: React.FC<BioSectionProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Website */}
           <div className="group">
+            <label className="block text-sm font-semibold text-gray-800 mb-2 group-focus-within:text-blue-600 transition-colors">
+              Website URL
+            </label>
             <div className="relative">
               <Globe className="w-4 h-4 absolute left-0 top-1/2 transform -translate-y-1/2 text-green-600" />
               <input
@@ -109,6 +112,9 @@ export const BioSection: React.FC<BioSectionProps> = ({
 
           {/* LinkedIn */}
           <div className="group">
+            <label className="block text-sm font-semibold text-gray-800 mb-2 group-focus-within:text-blue-600 transition-colors">
+              LinkedIn URL
+            </label>
             <div className="relative">
               <Linkedin className="w-4 h-4 absolute left-0 top-1/2 transform -translate-y-1/2 text-blue-600" />
               <input
@@ -136,6 +142,9 @@ export const BioSection: React.FC<BioSectionProps> = ({
 
           {/* Twitter */}
           <div className="group">
+            <label className="block text-sm font-semibold text-gray-800 mb-2 group-focus-within:text-blue-600 transition-colors">
+              Twitter URL
+            </label>
             <div className="relative">
               <Twitter className="w-4 h-4 absolute left-0 top-1/2 transform -translate-y-1/2 text-blue-400" />
               <input
@@ -163,6 +172,9 @@ export const BioSection: React.FC<BioSectionProps> = ({
 
           {/* GitHub */}
           <div className="group">
+            <label className="block text-sm font-semibold text-gray-800 mb-2 group-focus-within:text-blue-600 transition-colors">
+              GitHub URL
+            </label>
             <div className="relative">
               <Github className="w-4 h-4 absolute left-0 top-1/2 transform -translate-y-1/2 text-gray-700" />
               <input
@@ -190,6 +202,9 @@ export const BioSection: React.FC<BioSectionProps> = ({
 
           {/* Facebook */}
           <div className="group">
+            <label className="block text-sm font-semibold text-gray-800 mb-2 group-focus-within:text-blue-600 transition-colors">
+              Facebook URL
+            </label>
             <div className="relative">
               <Facebook className="w-4 h-4 absolute left-0 top-1/2 transform -translate-y-1/2 text-blue-600" />
               <input
@@ -217,6 +232,9 @@ export const BioSection: React.FC<BioSectionProps> = ({
 
           {/* Instagram */}
           <div className="group">
+            <label className="block text-sm font-semibold text-gray-800 mb-2 group-focus-within:text-blue-600 transition-colors">
+              Instagram URL
+            </label>
             <div className="relative">
               <Instagram className="w-4 h-4 absolute left-0 top-1/2 transform -translate-y-1/2 text-pink-600" />
               <input
