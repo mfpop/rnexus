@@ -42,22 +42,30 @@ const SecurityTab: React.FC<SecurityTabProps> = ({
   };
 
   return (
-    <div className="flex flex-col space-y-6">
-      <div className="bg-white rounded-lg border border-gray-200">
-        <div className="p-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-            <Key className="w-5 h-5 mr-2 text-blue-600" />
-            Security Settings
-          </h3>
+    <div className="h-full flex-1 flex flex-col profile-form">
+      <div className="flex-1 flex flex-col bg-white rounded-xl shadow-lg border border-gray-200 relative overflow-hidden">
+        {/* Subtle paper texture */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-50/30 to-white opacity-60"></div>
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
+
+        {/* Header */}
+        <div className="p-6 border-b border-gray-200 relative z-10">
+          <div className="flex items-center gap-3">
+            <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-blue-600 rounded-full"></div>
+            <h3 className="text-xl font-bold text-gray-900">
+              Security Settings
+            </h3>
+          </div>
         </div>
-        <div className="p-6">
-          <div className="space-y-6">
+
+        <div className="flex-1 flex flex-col p-8 relative z-10">
+          <div className="space-y-8">
             {/* Password Change Section */}
             <div>
-              <h4 className="text-md font-medium text-gray-900 mb-4">Change Password</h4>
-              <form onSubmit={handlePasswordSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+              <h4 className="text-lg font-semibold text-gray-800 mb-6">Change Password</h4>
+              <form onSubmit={handlePasswordSubmit} className="space-y-6">
+                <div className="group">
+                  <label className="block text-sm font-semibold text-gray-800 mb-3 group-focus-within:text-blue-600 transition-colors">
                     Current Password
                   </label>
                   <div className="relative">
@@ -65,7 +73,16 @@ const SecurityTab: React.FC<SecurityTabProps> = ({
                       type={showOldPassword ? "text" : "password"}
                       value={oldPassword}
                       onChange={(e) => setOldPassword(e.target.value)}
-                      className="w-full h-[38px] pr-10"
+                      className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400 pr-10"
+                      style={{
+                        borderBottom: '2px solid #d1d5db'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderBottom = 'none';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderBottom = '2px solid #d1d5db';
+                      }}
                       placeholder="Enter current password"
                       required
                     />
@@ -80,11 +97,12 @@ const SecurityTab: React.FC<SecurityTabProps> = ({
                         <Eye className="w-4 h-4" />
                       )}
                     </button>
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                <div className="group">
+                  <label className="block text-sm font-semibold text-gray-800 mb-3 group-focus-within:text-blue-600 transition-colors">
                     New Password
                   </label>
                   <div className="relative">
@@ -92,7 +110,16 @@ const SecurityTab: React.FC<SecurityTabProps> = ({
                       type={showNewPassword ? "text" : "password"}
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      className="w-full h-[38px] pr-10"
+                      className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400 pr-10"
+                      style={{
+                        borderBottom: '2px solid #d1d5db'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderBottom = 'none';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderBottom = '2px solid #d1d5db';
+                      }}
                       placeholder="Enter new password"
                       required
                       minLength={8}
@@ -108,14 +135,15 @@ const SecurityTab: React.FC<SecurityTabProps> = ({
                         <Eye className="w-4 h-4" />
                       )}
                     </button>
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
                   </div>
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className="mt-2 text-sm text-gray-500">
                     Password must be at least 8 characters long
                   </p>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                <div className="group">
+                  <label className="block text-sm font-semibold text-gray-800 mb-3 group-focus-within:text-blue-600 transition-colors">
                     Confirm New Password
                   </label>
                   <div className="relative">
@@ -123,7 +151,16 @@ const SecurityTab: React.FC<SecurityTabProps> = ({
                       type={showConfirmPassword ? "text" : "password"}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="w-full h-[38px] pr-10"
+                      className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 h-12 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400 pr-10"
+                      style={{
+                        borderBottom: '2px solid #d1d5db'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderBottom = 'none';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderBottom = '2px solid #d1d5db';
+                      }}
                       placeholder="Confirm new password"
                       required
                     />
@@ -138,18 +175,19 @@ const SecurityTab: React.FC<SecurityTabProps> = ({
                         <Eye className="w-4 h-4" />
                       )}
                     </button>
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
                   </div>
                   {newPassword && confirmPassword && newPassword !== confirmPassword && (
-                    <p className="mt-1 text-xs text-red-600">
+                    <p className="mt-2 text-sm text-red-600">
                       Passwords do not match
                     </p>
                   )}
                 </div>
 
-                <div className="flex justify-end">
+                <div className="flex justify-end pt-4">
                   <Button
                     type="submit"
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors"
                     disabled={isChangingPassword || newPassword !== confirmPassword || !newPassword}
                   >
                     {isChangingPassword ? "Changing..." : "Change Password"}
@@ -159,23 +197,23 @@ const SecurityTab: React.FC<SecurityTabProps> = ({
             </div>
 
             {/* Account Security Information */}
-            <div className="border-t pt-6">
-              <h4 className="text-md font-medium text-gray-900 mb-4">Account Security</h4>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div className="border-t border-gray-200 pt-8">
+              <h4 className="text-lg font-semibold text-gray-800 mb-6">Account Security</h4>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Two-Factor Authentication</p>
-                    <p className="text-xs text-gray-500">Add an extra layer of security</p>
+                    <p className="text-sm font-semibold text-gray-900">Two-Factor Authentication</p>
+                    <p className="text-sm text-gray-500">Add an extra layer of security</p>
                   </div>
-                  <div className="text-sm text-gray-500">Not configured</div>
+                  <div className="text-sm text-gray-500 font-medium">Not configured</div>
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Login Sessions</p>
-                    <p className="text-xs text-gray-500">Manage your active sessions</p>
+                    <p className="text-sm font-semibold text-gray-900">Login Sessions</p>
+                    <p className="text-sm text-gray-500">Manage your active sessions</p>
                   </div>
-                  <div className="text-sm text-gray-500">1 active session</div>
+                  <div className="text-sm text-gray-500 font-medium">1 active session</div>
                 </div>
               </div>
             </div>
