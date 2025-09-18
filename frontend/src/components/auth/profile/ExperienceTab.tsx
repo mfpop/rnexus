@@ -77,15 +77,6 @@ const ExperienceTab: React.FC<ExperienceTabProps> = ({
                   <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-50/20 to-white opacity-40"></div>
 
                   <div className="relative z-10 flex flex-col min-h-0 h-full">
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-blue-600 rounded-full"></div>
-                        <h3 className="text-xl font-bold text-gray-900 flex items-center">
-                          <Briefcase className="w-6 h-6 mr-3 text-blue-600" />
-                          {work.position || "New Position"} at {work.company || "Company"}
-                        </h3>
-                      </div>
-                    </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div className="group">
