@@ -116,6 +116,15 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
                     value={localData.first_name}
                     onChange={(e) => handleFieldChange("first_name", e.target.value)}
                     className="w-full h-8 text-sm border-gray-300 focus:ring-blue-500"
+                    style={{
+                      borderBottom: '2px solid #d1d5db'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderBottom = 'none';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderBottom = '2px solid #d1d5db';
+                    }}
                     placeholder="Enter first name"
                   />
                   {errors["first_name"] && (
@@ -132,6 +141,15 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
                     value={localData.last_name}
                     onChange={(e) => handleFieldChange("last_name", e.target.value)}
                     className="w-full h-8 text-sm border-gray-300 focus:ring-blue-500"
+                    style={{
+                      borderBottom: '2px solid #d1d5db'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderBottom = 'none';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderBottom = '2px solid #d1d5db';
+                    }}
                     placeholder="Enter last name"
                   />
                   {errors["last_name"] && (
@@ -148,6 +166,15 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
                     value={localData.middle_name || ""}
                     onChange={(e) => handleFieldChange("middle_name", e.target.value)}
                     className="w-full h-8 text-sm border-gray-300 focus:ring-blue-500"
+                    style={{
+                      borderBottom: '2px solid #d1d5db'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderBottom = 'none';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderBottom = '2px solid #d1d5db';
+                    }}
                     placeholder="Enter middle name"
                   />
                 </div>
@@ -161,6 +188,15 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
                     value={localData.maternal_last_name || ""}
                     onChange={(e) => handleFieldChange("maternal_last_name", e.target.value)}
                     className="w-full h-8 text-sm border-gray-300 focus:ring-blue-500"
+                    style={{
+                      borderBottom: '2px solid #d1d5db'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderBottom = 'none';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderBottom = '2px solid #d1d5db';
+                    }}
                     placeholder="Enter maternal last name"
                   />
                 </div>
@@ -183,6 +219,15 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
                     value={localData.preferred_name || ""}
                     onChange={(e) => handleFieldChange("preferred_name", e.target.value)}
                     className="w-full h-8 text-sm border-gray-300 focus:ring-blue-500"
+                    style={{
+                      borderBottom: '2px solid #d1d5db'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderBottom = 'none';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderBottom = '2px solid #d1d5db';
+                    }}
                     placeholder="How you prefer to be called"
                   />
                 </div>
@@ -196,6 +241,15 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
                     value={localData.email}
                     onChange={(e) => handleFieldChange("email", e.target.value)}
                     className="w-full h-8 text-sm border-gray-300 focus:ring-blue-500"
+                    style={{
+                      borderBottom: '2px solid #d1d5db'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderBottom = 'none';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderBottom = '2px solid #d1d5db';
+                    }}
                     placeholder="Enter email address"
                   />
                   {errors["email"] && (

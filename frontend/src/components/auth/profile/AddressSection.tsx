@@ -72,7 +72,16 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
                   type="text"
                   value={localData.street_address || ""}
                   onChange={(e) => handleFieldChange("street_address", e.target.value)}
-                  className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none  bg-transparent transition-colors hover:border-gray-400"
+                  className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none bg-transparent transition-colors hover:border-gray-400"
+                  style={{
+                    borderBottom: '2px solid #d1d5db'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderBottom = 'none';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderBottom = '2px solid #d1d5db';
+                  }}
                   placeholder="Enter your street address"
                 />
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
@@ -90,7 +99,16 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
                   type="text"
                   value={localData.apartment_suite || ""}
                   onChange={(e) => handleFieldChange("apartment_suite", e.target.value)}
-                  className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none  bg-transparent transition-colors hover:border-gray-400"
+                  className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none bg-transparent transition-colors hover:border-gray-400"
+                  style={{
+                    borderBottom: '2px solid #d1d5db'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderBottom = 'none';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderBottom = '2px solid #d1d5db';
+                  }}
                   placeholder="Apt, Suite, Unit, etc."
                 />
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
@@ -112,7 +130,16 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
                   type="text"
                   value={localData.country || ""}
                   onChange={(e) => handleFieldChange("country", e.target.value)}
-                  className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none  bg-transparent transition-colors hover:border-gray-400"
+                  className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none bg-transparent transition-colors hover:border-gray-400"
+                  style={{
+                    borderBottom: '2px solid #d1d5db'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderBottom = 'none';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderBottom = '2px solid #d1d5db';
+                  }}
                   placeholder="Country"
                 />
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
@@ -130,7 +157,16 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
                   type="text"
                   value={localData.state_province || ""}
                   onChange={(e) => handleFieldChange("state_province", e.target.value)}
-                  className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none  bg-transparent transition-colors hover:border-gray-400"
+                  className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none bg-transparent transition-colors hover:border-gray-400"
+                  style={{
+                    borderBottom: '2px solid #d1d5db'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderBottom = 'none';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderBottom = '2px solid #d1d5db';
+                  }}
                   placeholder="State/Province"
                 />
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
@@ -148,7 +184,16 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
                   type="text"
                   value={localData.city || ""}
                   onChange={(e) => handleFieldChange("city", e.target.value)}
-                  className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none  bg-transparent transition-colors hover:border-gray-400"
+                  className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none bg-transparent transition-colors hover:border-gray-400"
+                  style={{
+                    borderBottom: '2px solid #d1d5db'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderBottom = 'none';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderBottom = '2px solid #d1d5db';
+                  }}
                   placeholder="City"
                 />
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
@@ -166,7 +211,16 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
                   type="text"
                   value={localData.zip_code || ""}
                   onChange={(e) => handleFieldChange("zip_code", e.target.value)}
-                  className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none  bg-transparent transition-colors hover:border-gray-400"
+                  className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none bg-transparent transition-colors hover:border-gray-400"
+                  style={{
+                    borderBottom: '2px solid #d1d5db'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderBottom = 'none';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderBottom = '2px solid #d1d5db';
+                  }}
                   placeholder="ZIP Code"
                 />
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>

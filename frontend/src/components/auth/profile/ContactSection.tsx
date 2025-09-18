@@ -70,7 +70,16 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                   type="tel"
                   value={localData.phone || ""}
                   onChange={(e) => handleFieldChange("phone", e.target.value)}
-                  className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none   bg-transparent transition-colors hover:border-gray-400"
+                  className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none bg-transparent transition-colors hover:border-gray-400"
+                  style={{
+                    borderBottom: '2px solid #d1d5db'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderBottom = 'none';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderBottom = '2px solid #d1d5db';
+                  }}
                   placeholder="Enter your primary phone number"
                 />
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
@@ -110,7 +119,16 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                   type="tel"
                   value={localData.secondary_phone || ""}
                   onChange={(e) => handleFieldChange("secondary_phone", e.target.value)}
-                  className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none   bg-transparent transition-colors hover:border-gray-400"
+                  className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none bg-transparent transition-colors hover:border-gray-400"
+                  style={{
+                    borderBottom: '2px solid #d1d5db'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderBottom = 'none';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderBottom = '2px solid #d1d5db';
+                  }}
                   placeholder="Enter your secondary phone number"
                 />
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
