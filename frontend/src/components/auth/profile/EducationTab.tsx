@@ -78,14 +78,6 @@ const EducationTab: React.FC<EducationTabProps> = ({
                   <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-50/20 to-white opacity-40"></div>
 
                   <div className="relative z-10 flex flex-col min-h-0 h-full">
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-blue-600 rounded-full"></div>
-                        <h4 className="text-lg font-semibold text-gray-900">
-                          {edu.institution || "New Education"}
-                        </h4>
-                      </div>
-                    </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                       <div className="group">
@@ -289,11 +281,10 @@ const EducationTab: React.FC<EducationTabProps> = ({
               ))}
 
               {/* Pagination */}
-              {totalEducationPages > 1 && (
+              {educationArray.length > 1 && (
                 <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-200">
                   <div className="text-sm text-gray-600">
-                    Showing {startIndex + 1} to {Math.min(endIndex, educationArray.length)} of{" "}
-                    {educationArray.length} education records
+                    Record {currentEducationPage} of {totalEducationPages} education records
                   </div>
                   <div className="flex items-center space-x-3">
                     <Button
