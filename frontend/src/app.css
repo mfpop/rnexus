@@ -171,9 +171,16 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
+  }
+  /* Ensure form elements maintain proper focus styles */
+  input:focus,
+  select:focus,
+  textarea:focus {
+    outline: none !important;
+    border-bottom: transparent !important;
   }
 }
