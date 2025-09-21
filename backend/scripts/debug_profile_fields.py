@@ -52,13 +52,9 @@ def debug_profile_fields():
         print(
             f"   apartment_suite: '{profile.apartment_suite}' (type: {type(profile.apartment_suite)})"
         )
-        print(f"   phone: '{profile.phone}' (type: {type(profile.phone)})")
-        print(
-            f"   phone_country_code: '{profile.phone_country_code}' (type: {type(profile.phone_country_code)})"
-        )
-        print(
-            f"   phone_type: '{profile.phone_type}' (type: {type(profile.phone_type)})"
-        )
+        print(f"   phone1: '{profile.phone1}' (type: {type(profile.phone1)})")
+        print(f"   phonecc1: '{profile.phonecc1}' (type: {type(profile.phonecc1)})")
+        print(f"   phonet1: '{profile.phonet1}' (type: {type(profile.phonet1)})")
 
         # Check if fields are None or empty strings
         print(f"\n🔍 Field Status:")

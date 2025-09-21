@@ -44,13 +44,13 @@ def create_user_profile(sender, instance, created, **kwargs):
     if created:
         UserProfile.objects.create(
             user=instance,
-            phone_country_code="+1",
-            phone_type="mobile",
-            secondary_phone_type="mobile",
+            phonecc1="+1",
+            phonet1="mobile",
+            phonet2="mobile",
             profile_visibility={
                 "email": True,
-                "phone": True,
-                "secondary_phone": True,
+                "phone1": True,
+                "phone2": True,
                 "address": True,
                 "education": True,
                 "work_history": True,
@@ -64,11 +64,19 @@ def create_user_profile(sender, instance, created, **kwargs):
         print(f"Created UserProfile for user: {instance.username}")
 
 
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-    """Automatically save the UserProfile when the User is saved"""
-    try:
-        instance.profile.save()
-    except UserProfile.DoesNotExist:
-        # If profile doesn't exist, create it
-        create_user_profile(sender, instance, created=True, **kwargs)
+# This signal was causing issues by trying to access instance.profile
+# which triggers a SELECT * query on UserProfile table with old field names
+# Commenting out for now since the create_user_profile signal above should be sufficient
+# @receiver(post_save, sender=User)
+# def save_user_profile(sender, instance, **kwargs):
+#     """Automatically save the UserProfile when the User is saved"""
+#     try:
+#         # Use get_or_create instead of accessing instance.profile directly
+#         # to avoid triggering a SELECT * query on the UserProfile table
+#         profile, created = UserProfile.objects.get_or_create(user=instance)
+#         if not created:
+#             profile.save()
+#     except Exception as e:
+#         print(f"Error saving user profile for {instance.username}: {e}")
+#         # If profile doesn't exist or there's an error, create it
+#         create_user_profile(sender, instance, created=True, **kwargs)

@@ -23,14 +23,17 @@ const ProfessionalTab: React.FC<ProfessionalTabProps> = ({
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
 
         {/* Header */}
-        <div className="p-6 border-b border-gray-200 relative z-10">
-          <div className="flex items-center gap-3">
+        <div className="p-6 border-b border-gray-200 relative z-10 min-h-[88px] flex items-center">
+          <div className="flex items-center gap-3 w-full">
             <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-blue-600 rounded-full"></div>
-            <h3 className="text-xl font-bold text-gray-900">
-              Professional Information
-            </h3>
+            <div className="flex-1">
+              <h3 className="text-xl font-bold text-gray-900">
+                Professional Information
+              </h3>
+              <p className="text-gray-600 text-sm">Manage your professional details and work information</p>
+            </div>
             {!canEditProfileStatus && (
-              <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 px-4 py-2 border border-amber-200 ml-auto">
+              <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 px-4 py-2 border border-amber-200">
                 <Lock className="w-4 h-4" />
                 <span className="font-medium">Admin Only</span>
               </div>

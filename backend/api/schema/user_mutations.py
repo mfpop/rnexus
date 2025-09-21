@@ -77,8 +77,8 @@ class RegisterUser(graphene.Mutation):
                     )
 
                 except Exception as e:
-                    print(f"Avatar upload failed: {e}")
                     # Don't fail registration if avatar upload fails
+                    pass
 
             result = RegisterUser()
             result.ok = True
@@ -88,7 +88,6 @@ class RegisterUser(graphene.Mutation):
             return result
 
         except Exception as e:
-            print(f"Registration failed: {e}")
             result = RegisterUser()
             result.ok = False
             result.user = None
@@ -179,20 +178,58 @@ class UpdateUserProfile(graphene.Mutation):
 
         # Enhanced name fields
         middle_name = graphene.String()
-        maternal_last_name = graphene.String()
+        lastnamem = graphene.String()  # Maternal last name
         preferred_name = graphene.String()
+        father_name = graphene.String()
+
+        # Personal information
+        birthname = graphene.Date()  # Date of birth
+        gender = graphene.String()
+        marital_status = graphene.String()
+        identity_mark = graphene.String()
+        medical_fitness = graphene.Boolean()
+        character_certificate = graphene.Boolean()
+        height = graphene.Float()
 
         # Professional information
         position = graphene.String()
         department = graphene.String()
+        company = graphene.String()
+        employment_status = graphene.String()
+        employment_type = graphene.String()
+        start_date = graphene.Date()
+        salary = graphene.Float()
+        currency = graphene.String()
+        work_location = graphene.String()
+        manager = graphene.String()
+        employee_id = graphene.String()
+        work_email = graphene.String()
+        work_phone = graphene.String()
+        work_phone_type = graphene.String()
+        work_address = graphene.String()
+        work_city = graphene.String()
+        work_state = graphene.String()
+        work_zip_code = graphene.String()
+        work_country = graphene.String()
+        work_country_code = graphene.String()
+        work_schedule = graphene.String()
+        work_hours = graphene.String()
+        work_days = graphene.String()
+        work_time_zone = graphene.String()
+        work_language = graphene.String()
+        work_language_level = graphene.String()
+        work_skills = graphene.String()
+        work_certifications = graphene.String()
+        work_awards = graphene.String()
+        work_notes = graphene.String()
 
         # Phone information
-        phone = graphene.String()
-        phone_country_code = graphene.String()
-        phone_type = graphene.String()
-        secondary_phone = graphene.String()
-        secondary_phone_country_code = graphene.String()
-        secondary_phone_type = graphene.String()
+        phonecc1 = graphene.String()
+        phone1 = graphene.String()
+        phonet1 = graphene.String()
+        phonecc2 = graphene.String()
+        phone2 = graphene.String()
+        phonet2 = graphene.String()
 
         # Address information
         street_address = graphene.String()
@@ -203,8 +240,17 @@ class UpdateUserProfile(graphene.Mutation):
         country = graphene.String()
         country_code = graphene.String()
 
-        # Extended profile fields
+        # Biography and social media
         bio = graphene.String()
+        short_bio = graphene.String()
+        website = graphene.String()
+        linkedin = graphene.String()
+        twitter = graphene.String()
+        github = graphene.String()
+        facebook = graphene.String()
+        instagram = graphene.String()
+
+        # Extended profile fields
         education = graphene.String()  # JSON string
         work_history = graphene.String()  # JSON string
         profile_visibility = graphene.String()  # JSON string
@@ -215,8 +261,7 @@ class UpdateUserProfile(graphene.Mutation):
         emergency_contact_phone = graphene.String()
         emergency_contact_phone_country_code = graphene.String()
 
-        # Date fields
-        date_of_birth = graphene.Date()
+        # Additional date fields
         hire_date = graphene.Date()
         termination_date = graphene.Date()
 
@@ -242,23 +287,56 @@ class UpdateUserProfile(graphene.Mutation):
             # Get or create user profile
             user_profile, created = UserProfile.objects.get_or_create(user=user)  # type: ignore
 
-            # Debug: Log all received kwargs
-            print(f"DEBUG: UpdateUserProfile received kwargs: {kwargs}")
-
             # Fields that should update the User model
             user_fields = ["email", "first_name", "last_name"]
             profile_fields = [
                 "middle_name",
-                "maternal_last_name",
+                "lastnamem",
                 "preferred_name",
+                "father_name",
+                "birthname",
+                "gender",
+                "marital_status",
+                "identity_mark",
+                "medical_fitness",
+                "character_certificate",
+                "height",
                 "position",
                 "department",
-                "phone",
-                "phone_country_code",
-                "phone_type",
-                "secondary_phone",
-                "secondary_phone_country_code",
-                "secondary_phone_type",
+                "company",
+                "employment_status",
+                "employment_type",
+                "start_date",
+                "salary",
+                "currency",
+                "work_location",
+                "manager",
+                "employee_id",
+                "work_email",
+                "work_phone",
+                "work_phone_type",
+                "work_address",
+                "work_city",
+                "work_state",
+                "work_zip_code",
+                "work_country",
+                "work_country_code",
+                "work_schedule",
+                "work_hours",
+                "work_days",
+                "work_time_zone",
+                "work_language",
+                "work_language_level",
+                "work_skills",
+                "work_certifications",
+                "work_awards",
+                "work_notes",
+                "phonecc1",
+                "phone1",
+                "phonet1",
+                "phonecc2",
+                "phone2",
+                "phonet2",
                 "street_address",
                 "apartment_suite",
                 "city",
@@ -267,12 +345,18 @@ class UpdateUserProfile(graphene.Mutation):
                 "country",
                 "country_code",
                 "bio",
+                "short_bio",
+                "website",
+                "linkedin",
+                "twitter",
+                "github",
+                "facebook",
+                "instagram",
                 "notes",
                 "emergency_contact_name",
                 "emergency_contact_relationship",
                 "emergency_contact_phone",
                 "emergency_contact_phone_country_code",
-                "date_of_birth",
                 "hire_date",
                 "termination_date",
                 "is_active",
@@ -292,7 +376,6 @@ class UpdateUserProfile(graphene.Mutation):
             address_data = {
                 field: kwargs.get(field) for field in address_fields if field in kwargs
             }
-            print(f"DEBUG: Address fields received: {address_data}")
 
             # Update user fields
             for field in user_fields:
@@ -330,7 +413,6 @@ class UpdateUserProfile(graphene.Mutation):
             saved_address_data = {
                 field: getattr(user_profile, field) for field in address_fields
             }
-            print(f"DEBUG: Address fields saved to database: {saved_address_data}")
 
             result = cls()
             result.ok = True
@@ -339,7 +421,6 @@ class UpdateUserProfile(graphene.Mutation):
             return result
 
         except Exception as e:
-            print(f"DEBUG: UpdateUserProfile error: {str(e)}")
             result = cls()
             result.ok = False
             result.userProfile = None

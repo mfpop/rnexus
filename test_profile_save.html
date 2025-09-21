@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Save Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .field {
+            margin: 10px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Profile Save Functionality Test</h1>
+
+    <div class="test-section">
+        <h2>Test Instructions</h2>
+        <ol>
+            <li>Open the main application at <a href="http://localhost:5173" target="_blank">http://localhost:5173</a></li>
+            <li>Navigate to the Profile page</li>
+            <li>Click on the "General" tab</li>
+            <li>Click the "Edit" button (pencil icon) in the right sidebar</li>
+            <li>Make some changes to the form fields (name, address, phone, etc.)</li>
+            <li>Click the "Save" button (disk icon) in the right sidebar</li>
+            <li>Check if the changes are saved and you see a success notification</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>Expected Behavior</h2>
+        <ul>
+            <li>✅ Edit mode should be enabled when clicking Edit button</li>
+            <li>✅ Form fields should become editable</li>
+            <li>✅ Save button should trigger the save functionality</li>
+            <li>✅ Success notification should appear after saving</li>
+            <li>✅ Changes should persist after page refresh</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>Fields to Test</h2>
+        <div class="field">
+            <label>First Name:</label>
+            <input type="text" id="firstName" placeholder="Test first name">
+        </div>
+        <div class="field">
+            <label>Last Name:</label>
+            <input type="text" id="lastName" placeholder="Test last name">
+        </div>
+        <div class="field">
+            <label>Maternal Last Name (Materno):</label>
+            <input type="text" id="maternalLastName" placeholder="Test maternal last name">
+        </div>
+        <div class="field">
+            <label>Phone 1:</label>
+            <input type="text" id="phone1" placeholder="1234567890">
+        </div>
+        <div class="field">
+            <label>Street Address:</label>
+            <input type="text" id="streetAddress" placeholder="123 Main St">
+        </div>
+        <div class="field">
+            <label>City:</label>
+            <input type="text" id="city" placeholder="Test City">
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Debug Information</h2>
+        <p>Open browser developer tools (F12) and check the Console tab for any error messages.</p>
+        <p>Look for messages like:</p>
+        <ul>
+            <li>"Saving data for active tab: general"</li>
+            <li>"Profile button handlers exposed"</li>
+            <li>"Calling handlers.save()"</li>
+            <li>Any GraphQL mutation errors</li>
+        </ul>
+    </div>
+
+    <script>
+        // Simple test to check if the profile handlers are available
+        function checkProfileHandlers() {
+            const handlers = window.profileButtonHandlers;
+            if (handlers) {
+                console.log('✅ Profile handlers found:', handlers);
+                return true;
+            } else {
+                console.log('❌ Profile handlers not found');
+                return false;
+            }
+        }
+
+        // Check every 2 seconds
+        setInterval(checkProfileHandlers, 2000);
+
+        // Initial check
+        checkProfileHandlers();
+    </script>
+</body>
+</html>

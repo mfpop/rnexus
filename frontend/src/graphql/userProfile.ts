@@ -7,6 +7,7 @@ export const GET_USER_PROFILE = gql`
       id
       user {
         id
+        username
         email
         firstName
         lastName
@@ -14,15 +15,62 @@ export const GET_USER_PROFILE = gql`
         dateJoined
         lastLogin
       }
+      # Enhanced name fields
       middleName
-      maternalLastName
+      lastnamem
       preferredName
+      fatherName
+
+      # Personal information
+      birthname
+      gender
+      maritalStatus
+      identityMark
+      medicalFitness
+      characterCertificate
+      height
+
+      # Professional information
       position
       department
-      phone
-      phoneCountryCode
-      phoneType
-      secondaryPhone
+      company
+      employmentStatus
+      employmentType
+      startDate
+      salary
+      currency
+      workLocation
+      manager
+      employeeId
+      workEmail
+      workPhone
+      workPhoneType
+      workAddress
+      workCity
+      workState
+      workZipCode
+      workCountry
+      workCountryCode
+      workSchedule
+      workHours
+      workDays
+      workTimeZone
+      workLanguage
+      workLanguageLevel
+      workSkills
+      workCertifications
+      workAwards
+      workNotes
+
+      # Phone information
+      phonecc1
+      phone1
+      phonet1
+      phonecc2
+      phone2
+      phonet2
+
+      # Address information
       streetAddress
       apartmentSuite
       city
@@ -30,7 +78,18 @@ export const GET_USER_PROFILE = gql`
       zipCode
       country
       countryCode
+
+      # Biography and social media
       bio
+      shortBio
+      website
+      linkedin
+      twitter
+      github
+      facebook
+      instagram
+
+      # Extended data
       education
       workHistory
       profileVisibility
@@ -47,14 +106,16 @@ export const UPDATE_USER_PROFILE = gql`
     $firstName: String
     $lastName: String
     $middleName: String
-    $maternalLastName: String
+    $lastnamem: String
     $preferredName: String
     $position: String
     $department: String
-    $phone: String
-    $phoneCountryCode: String
-    $phoneType: String
-    $secondaryPhone: String
+    $phonecc1: String
+    $phone1: String
+    $phonet1: String
+    $phonecc2: String
+    $phone2: String
+    $phonet2: String
     $streetAddress: String
     $apartmentSuite: String
     $city: String
@@ -63,24 +124,40 @@ export const UPDATE_USER_PROFILE = gql`
     $country: String
     $countryCode: String
     $bio: String
+    $shortBio: String
+    $website: String
+    $linkedin: String
+    $twitter: String
+    $github: String
+    $facebook: String
+    $instagram: String
     $education: String
     $workHistory: String
     $profileVisibility: String
     $isActive: Boolean
+    $birthname: Date
+    $gender: String
+    $maritalStatus: String
+    $identityMark: String
+    $medicalFitness: Boolean
+    $characterCertificate: Boolean
+    $height: Float
   ) {
     updateUserProfile(
       email: $email
       firstName: $firstName
       lastName: $lastName
       middleName: $middleName
-      maternalLastName: $maternalLastName
+      lastnamem: $lastnamem
       preferredName: $preferredName
       position: $position
       department: $department
-      phone: $phone
-      phoneCountryCode: $phoneCountryCode
-      phoneType: $phoneType
-      secondaryPhone: $secondaryPhone
+      phonecc1: $phonecc1
+      phone1: $phone1
+      phonet1: $phonet1
+      phonecc2: $phonecc2
+      phone2: $phone2
+      phonet2: $phonet2
       streetAddress: $streetAddress
       apartmentSuite: $apartmentSuite
       city: $city
@@ -89,10 +166,24 @@ export const UPDATE_USER_PROFILE = gql`
       country: $country
       countryCode: $countryCode
       bio: $bio
+      shortBio: $shortBio
+      website: $website
+      linkedin: $linkedin
+      twitter: $twitter
+      github: $github
+      facebook: $facebook
+      instagram: $instagram
       education: $education
       workHistory: $workHistory
       profileVisibility: $profileVisibility
       isActive: $isActive
+      birthname: $birthname
+      gender: $gender
+      maritalStatus: $maritalStatus
+      identityMark: $identityMark
+      medicalFitness: $medicalFitness
+      characterCertificate: $characterCertificate
+      height: $height
     ) {
       ok
       userProfile {
@@ -105,15 +196,16 @@ export const UPDATE_USER_PROFILE = gql`
           isActive
         }
         middleName
-        maternalLastName
+        lastnamem
         preferredName
         position
         department
-        phone
-        phoneCountryCode
-        phoneType
-        secondaryPhone
-        secondaryPhoneType
+        phonecc1
+        phone1
+        phonet1
+        phonecc2
+        phone2
+        phonet2
         streetAddress
         apartmentSuite
         city
@@ -121,6 +213,13 @@ export const UPDATE_USER_PROFILE = gql`
         zipCode
         country
         bio
+        shortBio
+        website
+        linkedin
+        twitter
+        github
+        facebook
+        instagram
         education
         workHistory
         profileVisibility
@@ -188,6 +287,7 @@ export const GET_ROLES_FOR_PROFILE = gql`
 // Types for TypeScript
 export interface User {
   id: string;
+  username: string;
   email: string;
   firstName: string;
   lastName: string;
@@ -199,15 +299,62 @@ export interface User {
 export interface UserProfile {
   id: string;
   user: User;
+  // Enhanced name fields
   middleName?: string;
-  maternalLastName?: string;
+  lastnamem?: string;
   preferredName?: string;
+  fatherName?: string;
+
+  // Personal information
+  birthname?: string;
+  gender?: string;
+  maritalStatus?: string;
+  identityMark?: string;
+  medicalFitness?: boolean;
+  characterCertificate?: boolean;
+  height?: number;
+
+  // Professional information
   position?: string;
   department?: string;
-  phone?: string;
-  phoneCountryCode?: string;
-  phoneType?: string;
-  secondaryPhone?: string;
+  company?: string;
+  employmentStatus?: string;
+  employmentType?: string;
+  startDate?: string;
+  salary?: number;
+  currency?: string;
+  workLocation?: string;
+  manager?: string;
+  employeeId?: string;
+  workEmail?: string;
+  workPhone?: string;
+  workPhoneType?: string;
+  workAddress?: string;
+  workCity?: string;
+  workState?: string;
+  workZipCode?: string;
+  workCountry?: string;
+  workCountryCode?: string;
+  workSchedule?: string;
+  workHours?: string;
+  workDays?: string;
+  workTimeZone?: string;
+  workLanguage?: string;
+  workLanguageLevel?: string;
+  workSkills?: string;
+  workCertifications?: string;
+  workAwards?: string;
+  workNotes?: string;
+
+  // Phone information
+  phonecc1?: string;
+  phone1?: string;
+  phonet1?: string;
+  phonecc2?: string;
+  phone2?: string;
+  phonet2?: string;
+
+  // Address information
   streetAddress?: string;
   apartmentSuite?: string;
   city?: string;
@@ -215,7 +362,18 @@ export interface UserProfile {
   zipCode?: string;
   country?: string;
   countryCode?: string;
+
+  // Biography and social media
   bio?: string;
+  shortBio?: string;
+  website?: string;
+  linkedin?: string;
+  twitter?: string;
+  github?: string;
+  facebook?: string;
+  instagram?: string;
+
+  // Extended data
   education?: any;
   workHistory?: any;
   profileVisibility?: any;
@@ -240,14 +398,16 @@ export interface UpdateUserProfileVariables {
   firstName?: string;
   lastName?: string;
   middleName?: string;
-  maternalLastName?: string;
+  lastnamem?: string;
   preferredName?: string;
   position?: string;
   department?: string;
-  phone?: string;
-  phoneCountryCode?: string;
-  phoneType?: string;
-  secondaryPhone?: string;
+  phonecc1?: string;
+  phone1?: string;
+  phonet1?: string;
+  phonecc2?: string;
+  phone2?: string;
+  phonet2?: string;
   streetAddress?: string;
   apartmentSuite?: string;
   city?: string;
@@ -256,10 +416,24 @@ export interface UpdateUserProfileVariables {
   country?: string;
   countryCode?: string;
   bio?: string;
+  shortBio?: string;
+  website?: string;
+  linkedin?: string;
+  twitter?: string;
+  github?: string;
+  facebook?: string;
+  instagram?: string;
   education?: string;
   workHistory?: string;
   profileVisibility?: string;
   isActive?: boolean;
+  birthname?: string;
+  gender?: string;
+  maritalStatus?: string;
+  identityMark?: string;
+  medicalFitness?: boolean;
+  characterCertificate?: boolean;
+  height?: number;
 }
 
 // Organizational structure types

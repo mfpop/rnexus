@@ -212,8 +212,12 @@ class Query(graphene.ObjectType):
         user = info.context.user
         if user and not user.is_anonymous:
             try:
-                return user.profile
-            except:
+                from api.models import UserProfile
+
+                return UserProfile.objects.get(user=user)
+            except UserProfile.DoesNotExist:
+                return None
+            except Exception:
                 return None
         return None
 

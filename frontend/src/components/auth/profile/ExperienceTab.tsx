@@ -44,13 +44,13 @@ const ExperienceTab: React.FC<ExperienceTabProps> = ({
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
 
         {/* Header */}
-        <div className="p-6 border-b border-gray-200 relative z-10">
-          <div className="flex items-center gap-3">
+        <div className="p-6 border-b border-gray-200 relative z-10 min-h-[88px] flex items-center">
+          <div className="flex items-center gap-3 w-full">
             <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-blue-600 rounded-full"></div>
-            <h3 className="text-xl font-bold text-gray-900 flex items-center">
-              <Briefcase className="w-6 h-6 mr-3 text-blue-600" />
-              Work Experience
-            </h3>
+            <div>
+              <h3 className="text-xl font-bold text-gray-900">Work Experience</h3>
+              <p className="text-gray-600 text-sm">Document your professional work history and roles</p>
+            </div>
           </div>
         </div>
 

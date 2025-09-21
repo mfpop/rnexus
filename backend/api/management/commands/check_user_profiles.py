@@ -28,7 +28,7 @@ class Command(BaseCommand):
 
         for user in users:
             try:
-                profile = user.profile
+                profile = UserProfile.objects.get(user=user)
                 profile_exists = True
             except UserProfile.DoesNotExist:
                 self.stdout.write(f"❌ {user.username}: No profile found")
@@ -37,7 +37,7 @@ class Command(BaseCommand):
             # Check if profile has meaningful data
             has_data = (
                 profile.position
-                or profile.phone
+                or profile.phone1
                 or profile.bio
                 or profile.street_address
                 or profile.city
@@ -57,7 +57,7 @@ class Command(BaseCommand):
                 self.stdout.write(f"    Name: {user.first_name} {user.last_name}")
                 self.stdout.write(f'    Position: {profile.position or "Not set"}')
                 self.stdout.write(f'    Department: {profile.department or "Not set"}')
-                self.stdout.write(f'    Phone: {profile.phone or "Not set"}')
+                self.stdout.write(f'    Phone: {profile.phone1 or "Not set"}')
                 self.stdout.write(
                     f'    Bio: {profile.bio[:50] + "..." if profile.bio else "Not set"}'
                 )

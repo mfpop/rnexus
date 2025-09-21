@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Field Naming Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border-color: #ffeaa7;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        code {
+            background-color: #f8f9fa;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        .field-mapping {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>New Field Naming Convention Test</h1>
+
+    <div class="test-section info">
+        <h2>🔄 Field Naming Standardization</h2>
+        <p>Updated field names across the entire stack for consistency:</p>
+        <div class="field-mapping">
+            <h3>Field Mapping Changes:</h3>
+            <ul>
+                <li><code>username</code> → <code>username</code> (unchanged)</li>
+                <li><code>first_name</code> → <code>firstname</code></li>
+                <li><code>last_name</code> → <code>lastnamep</code> (paternal last name)</li>
+                <li><code>maternal_last_name</code> → <code>lastnamem</code> (maternal last name)</li>
+                <li><code>date_of_birth</code> → <code>birthname</code></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🧪 Test Instructions</h2>
+        <ol>
+            <li>Open the application at <a href="http://localhost:5174" target="_blank">http://localhost:5174</a></li>
+            <li>Navigate to the Profile page</li>
+            <li>Click on the "General" tab</li>
+            <li>Click the "Edit" button (pencil icon) in the right sidebar</li>
+            <li>Test the following fields:</li>
+            <ul>
+                <li><strong>First Name:</strong> Enter a test value</li>
+                <li><strong>Last Name (Paterno):</strong> Enter a test value</li>
+                <li><strong>Last Name (Materno):</strong> Enter a test value</li>
+                <li><strong>Date of Birth:</strong> Select a date</li>
+            </ul>
+            <li>Click the "Save" button (disk icon) in the right sidebar</li>
+            <li>Check for success notification</li>
+            <li><strong>IMPORTANT:</strong> Refresh the page and verify all values persist</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>✅ Expected Results</h2>
+        <ul>
+            <li>✅ No GraphQL errors in browser console</li>
+            <li>✅ Success notification appears after saving</li>
+            <li>✅ All field values are saved to the database</li>
+            <li>✅ Values persist after page refresh</li>
+            <li>✅ Backend logs show correct field names being processed</li>
+            <li>✅ Database contains data with new field names</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🔍 Debug Information</h2>
+        <p>Open browser developer tools (F12) and check the Console tab. You should see:</p>
+        <ul>
+            <li><strong>Field mapping logs:</strong> "Maternal last name values" showing <code>lastnamem</code></li>
+            <li><strong>GraphQL variables:</strong> Correct field names in mutation calls</li>
+            <li><strong>No errors:</strong> Clean console with successful operations</li>
+        </ul>
+
+        <p><strong>Backend logs should show:</strong></p>
+        <ul>
+            <li><code>DEBUG: UpdateUserProfile received kwargs:</code> with new field names</li>
+            <li>Successful processing of <code>lastnamem</code> and <code>birthname</code> fields</li>
+        </ul>
+
+        <div id="status" class="status" style="display: none;">
+            <strong>Status:</strong> <span id="statusText"></span>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🛠️ Technical Changes Made</h2>
+        <p><strong>Backend Changes:</strong></p>
+        <ul>
+            <li>Updated <code>UserProfile</code> model with new field names</li>
+            <li>Created migration to rename database fields</li>
+            <li>Updated GraphQL schema and mutations</li>
+            <li>Updated field processing in mutation handlers</li>
+        </ul>
+
+        <p><strong>Frontend Changes:</strong></p>
+        <ul>
+            <li>Updated GraphQL queries and mutations</li>
+            <li>Updated TypeScript interfaces</li>
+            <li>Updated component field mappings</li>
+            <li>Updated form field handlers</li>
+        </ul>
+    </div>
+
+    <div class="test-section warning">
+        <h2>⚠️ Important Notes</h2>
+        <ul>
+            <li>Database migration has been applied - old field names no longer exist</li>
+            <li>All field references have been updated throughout the codebase</li>
+            <li>Test thoroughly to ensure no field mapping issues remain</li>
+            <li>Check both frontend and backend logs for any remaining references to old field names</li>
+        </ul>
+    </div>
+
+    <script>
+        // Check if the application is accessible
+        function checkApplicationStatus() {
+            fetch('http://localhost:5174')
+                .then(response => {
+                    if (response.ok) {
+                        document.getElementById('status').style.display = 'block';
+                        document.getElementById('status').className = 'status success';
+                        document.getElementById('statusText').textContent = '✅ Application is running on port 5174';
+                    } else {
+                        throw new Error('Application not accessible');
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('status').style.display = 'block';
+                    document.getElementById('status').className = 'status error';
+                    document.getElementById('statusText').textContent = '❌ Application not accessible. Make sure both frontend and backend servers are running.';
+                });
+        }
+
+        // Check status on page load
+        checkApplicationStatus();
+
+        // Check every 10 seconds
+        setInterval(checkApplicationStatus, 10000);
+    </script>
+</body>
+</html>

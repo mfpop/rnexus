@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maternal Last Name Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Maternal Last Name Fix Test</h1>
+
+    <div class="test-section info">
+        <h2>✅ Fix Applied</h2>
+        <p>The maternal last name field mapping issue has been fixed. The frontend now correctly maps:</p>
+        <ul>
+            <li><strong>Form field:</strong> <code>maternal_last_name</code> (snake_case)</li>
+            <li><strong>GraphQL mutation:</strong> <code>maternalLastName</code> (camelCase)</li>
+            <li><strong>Backend expects:</strong> <code>maternalLastName</code> (camelCase)</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Instructions</h2>
+        <ol>
+            <li>Open the application at <a href="http://localhost:5174" target="_blank">http://localhost:5174</a></li>
+            <li>Navigate to the Profile page</li>
+            <li>Click on the "General" tab</li>
+            <li>Click the "Edit" button (pencil icon) in the right sidebar</li>
+            <li>Find the "Last Name (Materno)" field</li>
+            <li>Enter a test value (e.g., "Garcia")</li>
+            <li>Click the "Save" button (disk icon) in the right sidebar</li>
+            <li>Check if you see a success notification</li>
+            <li>Refresh the page and verify the value persists</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>Expected Results</h2>
+        <ul>
+            <li>✅ No GraphQL errors in the browser console</li>
+            <li>✅ Success notification appears after saving</li>
+            <li>✅ Maternal last name value is saved to the database</li>
+            <li>✅ Value persists after page refresh</li>
+            <li>✅ No "Unknown argument" or "Cannot query field" errors</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>Debug Information</h2>
+        <p>Open browser developer tools (F12) and check the Console tab. You should see:</p>
+        <ul>
+            <li><strong>Before fix:</strong> GraphQL errors about unknown arguments</li>
+            <li><strong>After fix:</strong> Clean console with successful mutation calls</li>
+            <li><strong>Debug logs:</strong> "Maternal last name values" showing the field mapping</li>
+        </ul>
+
+        <div id="status" class="status" style="display: none;">
+            <strong>Status:</strong> <span id="statusText"></span>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Technical Details</h2>
+        <p><strong>Problem:</strong> Field name mismatch between frontend and backend GraphQL schema</p>
+        <p><strong>Solution:</strong> Updated frontend to use correct camelCase field names that match the backend</p>
+        <p><strong>Files Modified:</strong></p>
+        <ul>
+            <li><code>frontend/src/graphql/userProfile.ts</code> - GraphQL mutation and types</li>
+            <li><code>frontend/src/components/auth/ProfileRightCard.tsx</code> - Save function mapping</li>
+        </ul>
+    </div>
+
+    <script>
+        // Check if the application is accessible
+        function checkApplicationStatus() {
+            fetch('http://localhost:5174')
+                .then(response => {
+                    if (response.ok) {
+                        document.getElementById('status').style.display = 'block';
+                        document.getElementById('status').className = 'status success';
+                        document.getElementById('statusText').textContent = '✅ Application is running on port 5174';
+                    } else {
+                        throw new Error('Application not accessible');
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('status').style.display = 'block';
+                    document.getElementById('status').className = 'status error';
+                    document.getElementById('statusText').textContent = '❌ Application not accessible. Make sure both frontend and backend servers are running.';
+                });
+        }
+
+        // Check status on page load
+        checkApplicationStatus();
+
+        // Check every 10 seconds
+        setInterval(checkApplicationStatus, 10000);
+    </script>
+</body>
+</html>

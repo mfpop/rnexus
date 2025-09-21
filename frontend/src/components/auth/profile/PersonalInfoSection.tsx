@@ -12,6 +12,14 @@ interface PersonalInfoData {
   last_name: string;
   maternal_last_name?: string;
   preferred_name?: string;
+  father_name?: string;
+  date_of_birth?: string;
+  gender?: string;
+  marital_status?: string;
+  identity_mark?: string;
+  medical_fitness?: boolean;
+  character_certificate?: boolean;
+  height?: number;
   email: string;
   avatar?: string;
   avatar_url?: string;
@@ -199,6 +207,185 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
                     }}
                     placeholder="Enter maternal last name"
                   />
+                </div>
+              </div>
+            </div>
+
+            {/* Personal Details Section */}
+            <div className="bg-gray-50 rounded-lg p-3">
+              <h4 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2 flex items-center">
+                <User className="w-3 h-3 mr-1" />
+                Personal Details
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Father's Name
+                  </label>
+                  <Input
+                    type="text"
+                    value={localData.father_name || ""}
+                    onChange={(e) => handleFieldChange("father_name", e.target.value)}
+                    className="w-full h-8 text-sm border-gray-300 focus:ring-blue-500 focus-visible:ring-0"
+                    style={{
+                      borderBottom: '2px solid #d1d5db'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderBottom = 'none';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderBottom = '2px solid #d1d5db';
+                    }}
+                    placeholder="Enter father's name"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Date of Birth
+                  </label>
+                  <Input
+                    type="date"
+                    value={localData.date_of_birth || ""}
+                    onChange={(e) => handleFieldChange("date_of_birth", e.target.value)}
+                    className="w-full h-8 text-sm border-gray-300 focus:ring-blue-500 focus-visible:ring-0"
+                    style={{
+                      borderBottom: '2px solid #d1d5db'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderBottom = 'none';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderBottom = '2px solid #d1d5db';
+                    }}
+                    placeholder="mm/dd/yyyy"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Gender
+                  </label>
+                  <select
+                    value={localData.gender || ""}
+                    onChange={(e) => handleFieldChange("gender", e.target.value)}
+                    className="w-full h-8 text-sm border-0 border-b-2 border-gray-300 focus:ring-0 focus:border-blue-500 focus-visible:ring-0 bg-transparent"
+                    style={{
+                      borderBottom: '2px solid #d1d5db'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderBottom = 'none';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderBottom = '2px solid #d1d5db';
+                    }}
+                  >
+                    <option value="">Select Gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                    <option value="prefer_not_to_say">Prefer not to say</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Marital Status
+                  </label>
+                  <select
+                    value={localData.marital_status || ""}
+                    onChange={(e) => handleFieldChange("marital_status", e.target.value)}
+                    className="w-full h-8 text-sm border-0 border-b-2 border-gray-300 focus:ring-0 focus:border-blue-500 focus-visible:ring-0 bg-transparent"
+                    style={{
+                      borderBottom: '2px solid #d1d5db'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderBottom = 'none';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderBottom = '2px solid #d1d5db';
+                    }}
+                  >
+                    <option value="">Select Status</option>
+                    <option value="single">Single</option>
+                    <option value="married">Married</option>
+                    <option value="divorced">Divorced</option>
+                    <option value="widowed">Widowed</option>
+                    <option value="separated">Separated</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Identity Mark
+                  </label>
+                  <Input
+                    type="text"
+                    value={localData.identity_mark || ""}
+                    onChange={(e) => handleFieldChange("identity_mark", e.target.value)}
+                    className="w-full h-8 text-sm border-gray-300 focus:ring-blue-500 focus-visible:ring-0"
+                    style={{
+                      borderBottom: '2px solid #d1d5db'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderBottom = 'none';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderBottom = '2px solid #d1d5db';
+                    }}
+                    placeholder="Enter identity mark"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Height (cm)
+                  </label>
+                  <Input
+                    type="number"
+                    value={localData.height || ""}
+                    onChange={(e) => handleFieldChange("height", e.target.value)}
+                    className="w-full h-8 text-sm border-gray-300 focus:ring-blue-500 focus-visible:ring-0"
+                    style={{
+                      borderBottom: '2px solid #d1d5db'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderBottom = 'none';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderBottom = '2px solid #d1d5db';
+                    }}
+                    placeholder="Enter height in cm"
+                  />
+                </div>
+              </div>
+
+              {/* Checkboxes */}
+              <div className="mt-4 space-y-2">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="medical_fitness"
+                    checked={localData.medical_fitness || false}
+                    onChange={(e) => handleFieldChange("medical_fitness", e.target.checked.toString())}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="medical_fitness" className="ml-2 text-xs font-medium text-gray-700">
+                    Medical Fitness Certificate
+                  </label>
+                </div>
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="character_certificate"
+                    checked={localData.character_certificate || false}
+                    onChange={(e) => handleFieldChange("character_certificate", e.target.checked.toString())}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="character_certificate" className="ml-2 text-xs font-medium text-gray-700">
+                    Character Certificate
+                  </label>
                 </div>
               </div>
             </div>

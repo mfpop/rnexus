@@ -14,16 +14,15 @@ import {
   Heart,
   Bookmark,
 } from "lucide-react";
-import AuthService from "../../lib/authService";
+import { useQuery } from "@apollo/client";
+import { GET_USER_PROFILE } from "../../graphql/userProfile";
 import { computeProfileCompletion } from "../../lib/profileCompletion";
 
-// API configuration
+// API configuration for CV download (still using REST API)
 const API_BASE_URL =
   import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
 const ProfileLeftCard: React.FC = () => {
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
   const [percent, setPercent] = React.useState<number>(0);
   const [details, setDetails] = React.useState({
     basicInfo: false,
@@ -36,6 +35,9 @@ const ProfileLeftCard: React.FC = () => {
   });
   // Removed privacyLevel state, cards are now static
   const [showTips, setShowTips] = React.useState(true);
+
+  // Use GraphQL query instead of REST API
+  const { data: profileQueryData, loading, error: profileError } = useQuery(GET_USER_PROFILE);
 
   const handleDownloadCV = async () => {
     try {
@@ -79,40 +81,83 @@ const ProfileLeftCard: React.FC = () => {
     }
   };
 
-  const loadCompletion = React.useCallback(async () => {
-    if (!AuthService.isAuthenticated()) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(`${API_BASE_URL}/user/profile/`, {
-        headers: AuthService.getAuthHeaders(),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      if (data?.success && data?.profile) {
-        const { percent, details } = computeProfileCompletion(data.profile);
-        setPercent(percent);
-        setDetails(details);
-      }
-    } catch (e: any) {
-      console.error("Profile completion fetch failed:", e);
-      setError("Unable to load profile completion");
-    } finally {
-      setLoading(false);
+  // Process GraphQL data when it's available
+  React.useEffect(() => {
+    if (profileQueryData?.userProfile) {
+      // Transform GraphQL data to match computeProfileCompletion expectations
+      const profile = profileQueryData.userProfile;
+      const flattenedProfile = {
+        // Basic info from nested user object
+        first_name: profile.user?.firstName,
+        last_name: profile.user?.lastName,
+        email: profile.user?.email,
+        // Direct profile fields
+        position: profile.position,
+        department: profile.department,
+        phone: profile.phone,
+        street_address: profile.streetAddress,
+        city: profile.city,
+        state_province: profile.stateProvince,
+        zip_code: profile.zipCode,
+        country: profile.country,
+        bio: profile.bio,
+        education: profile.education,
+        work_history: profile.workHistory,
+      };
+
+      const { percent, details } = computeProfileCompletion(flattenedProfile);
+      console.log('Profile completion calculation:', { flattenedProfile, percent, details });
+      setPercent(percent);
+      setDetails(details);
     }
-  }, []);
+  }, [profileQueryData]);
 
+  // Listen for profile updates to refresh completion data
   React.useEffect(() => {
-    loadCompletion();
-  }, [loadCompletion]);
-
-  React.useEffect(() => {
-    const handler = () => loadCompletion();
+    const handler = () => {
+      // GraphQL will automatically refetch when profile is updated
+      // No need to manually reload
+    };
     (window as any).addEventListener("profile-updated", handler);
     return () => {
       (window as any).removeEventListener("profile-updated", handler);
     };
-  }, [loadCompletion]);
+  }, []);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="h-full w-full bg-gradient-to-br from-slate-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (profileError) {
+    return (
+      <div className="h-full w-full bg-gradient-to-br from-slate-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Profile</h3>
+          <p className="text-red-600 mb-6">{profileError.message}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 hover:shadow-md px-6 py-2.5 rounded-lg transition-all duration-200"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full w-full bg-gradient-to-br from-slate-50 to-white flex flex-col overflow-hidden border-r border-gray-200">
@@ -197,7 +242,7 @@ const ProfileLeftCard: React.FC = () => {
               </span>
             </div>
           </div>
-          {error && (
+          {profileError && (
             <div className="text-red-600 font-medium text-xs bg-red-50 p-1 rounded-md border border-red-200">
               Error loading data
             </div>

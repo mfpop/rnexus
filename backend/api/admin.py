@@ -446,10 +446,12 @@ class UserProfileAdmin(admin.ModelAdmin):
             "Contact Information",
             {
                 "fields": (
-                    "phone",
-                    "phone_country_code",
-                    "phone_type",
-                    "secondary_phone",
+                    "phonecc1",
+                    "phone1",
+                    "phonet1",
+                    "phonecc2",
+                    "phone2",
+                    "phonet2",
                 )
             },
         ),
@@ -473,7 +475,7 @@ class PlantAdmin(admin.ModelAdmin):
     def model_count(self, obj):
         return obj.models.count()
 
-    model_count.short_description = "Production Models"
+    model_count.short_description = "Production Models"  # type: ignore
 
 
 @admin.register(ProductionModel)
@@ -499,7 +501,7 @@ class AreaAdmin(admin.ModelAdmin):
     def resource_group_count(self, obj):
         return obj.resource_groups.count()
 
-    resource_group_count.short_description = "Resource Groups"
+    resource_group_count.short_description = "Resource Groups"  # type: ignore
 
 
 @admin.register(ResourceGroup)
@@ -527,7 +529,7 @@ class ResourceGroupAdmin(admin.ModelAdmin):
     def resource_count(self, obj):
         return obj.resources.count()
 
-    resource_count.short_description = "Resources"
+    resource_count.short_description = "Resources"  # type: ignore
 
 
 @admin.register(Resource)

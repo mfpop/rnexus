@@ -46,14 +46,17 @@ export const BioSection: React.FC<BioSectionProps> = ({
   return (
     <div className="flex flex-col h-full profile-form">
       {/* Biography Section - Takes most of the available vertical space */}
-      <div className="group flex-1 flex flex-col min-h-[400px] mb-6">
+      <div className="group flex-1 flex flex-col min-h-[400px] mb-0">
+        <label className="block text-sm font-semibold text-gray-800 mb-2 group-focus-within:text-blue-600 transition-colors">
+          Biography
+        </label>
         <div className="relative flex-1 min-h-0">
           <textarea
             value={localData.bio || ""}
             onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
               handleFieldChange("bio", e.target.value)
             }
-                className="w-full h-full min-h-[300px] border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400 resize-none"
+                className="w-full h-full min-h-[400px] border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400 resize-none"
                 style={{
                   borderBottom: '2px solid #d1d5db'
                 }}
@@ -73,7 +76,7 @@ export const BioSection: React.FC<BioSectionProps> = ({
       </div>
 
       {/* Social Links Section - Compact at bottom */}
-      <div className="space-y-4">
+      <div className="space-y-2">
         <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
           <FileText className="w-4 h-4 text-purple-600" />
           Social Links

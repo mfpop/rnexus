@@ -65,14 +65,11 @@ class UserType(DjangoObjectType):
                     avatar_url = getattr(avatar, "url", "")
                     url = f"{base_url}{avatar_url}"
                     username = getattr(self, "username", "unknown")
-                    print(f"🔍 Avatar URL for {username}: {url}")
                     return url
             username = getattr(self, "username", "unknown")
-            print(f"🔍 No avatar for {username}")
             return None
         except Exception as e:
             username = getattr(self, "username", "unknown")
-            print(f"🔍 Error getting avatar URL for {username}: {e}")
             return None
 
     def resolve_profile(self, info):
@@ -110,15 +107,52 @@ class UserProfileType(DjangoObjectType):
             "id",
             "user",
             "middle_name",
-            "maternal_last_name",
+            "lastnamem",
             "preferred_name",
+            "father_name",
+            "birthname",
+            "gender",
+            "marital_status",
+            "identity_mark",
+            "medical_fitness",
+            "character_certificate",
+            "height",
             "position",
             "department",
-            "phone",
-            "phone_country_code",
-            "phone_type",
-            "secondary_phone",
-            "secondary_phone_type",
+            "company",
+            "employment_status",
+            "employment_type",
+            "start_date",
+            "salary",
+            "currency",
+            "work_location",
+            "manager",
+            "employee_id",
+            "work_email",
+            "work_phone",
+            "work_phone_type",
+            "work_address",
+            "work_city",
+            "work_state",
+            "work_zip_code",
+            "work_country",
+            "work_country_code",
+            "work_schedule",
+            "work_hours",
+            "work_days",
+            "work_time_zone",
+            "work_language",
+            "work_language_level",
+            "work_skills",
+            "work_certifications",
+            "work_awards",
+            "work_notes",
+            "phonecc1",
+            "phone1",
+            "phonet1",
+            "phonecc2",
+            "phone2",
+            "phonet2",
             "street_address",
             "apartment_suite",
             "city",
@@ -127,6 +161,13 @@ class UserProfileType(DjangoObjectType):
             "country",
             "country_code",
             "bio",
+            "short_bio",
+            "website",
+            "linkedin",
+            "twitter",
+            "github",
+            "facebook",
+            "instagram",
             "education",
             "work_history",
             "profile_visibility",
@@ -137,15 +178,48 @@ class UserProfileType(DjangoObjectType):
     middleName = graphene.String(source="middle_name")
     maternalLastName = graphene.String(source="maternal_last_name")
     preferredName = graphene.String(source="preferred_name")
-    phoneCountryCode = graphene.String(source="phone_country_code")
-    phoneType = graphene.String(source="phone_type")
-    secondaryPhone = graphene.String(source="secondary_phone")
-    secondaryPhoneType = graphene.String(source="secondary_phone_type")
+    fatherName = graphene.String(source="father_name")
+    dateOfBirth = graphene.Date(source="date_of_birth")
+    maritalStatus = graphene.String(source="marital_status")
+    identityMark = graphene.String(source="identity_mark")
+    medicalFitness = graphene.Boolean(source="medical_fitness")
+    characterCertificate = graphene.Boolean(source="character_certificate")
+    employmentStatus = graphene.String(source="employment_status")
+    employmentType = graphene.String(source="employment_type")
+    startDate = graphene.Date(source="start_date")
+    workLocation = graphene.String(source="work_location")
+    employeeId = graphene.String(source="employee_id")
+    workEmail = graphene.String(source="work_email")
+    workPhone = graphene.String(source="work_phone")
+    workPhoneType = graphene.String(source="work_phone_type")
+    workAddress = graphene.String(source="work_address")
+    workCity = graphene.String(source="work_city")
+    workState = graphene.String(source="work_state")
+    workZipCode = graphene.String(source="work_zip_code")
+    workCountry = graphene.String(source="work_country")
+    workCountryCode = graphene.String(source="work_country_code")
+    workSchedule = graphene.String(source="work_schedule")
+    workHours = graphene.String(source="work_hours")
+    workDays = graphene.String(source="work_days")
+    workTimeZone = graphene.String(source="work_time_zone")
+    workLanguage = graphene.String(source="work_language")
+    workLanguageLevel = graphene.String(source="work_language_level")
+    workSkills = graphene.String(source="work_skills")
+    workCertifications = graphene.String(source="work_certifications")
+    workAwards = graphene.String(source="work_awards")
+    workNotes = graphene.String(source="work_notes")
+    phonecc1 = graphene.String(source="phonecc1")
+    phone1 = graphene.String(source="phone1")
+    phonet1 = graphene.String(source="phonet1")
+    phonecc2 = graphene.String(source="phonecc2")
+    phone2 = graphene.String(source="phone2")
+    phonet2 = graphene.String(source="phonet2")
     streetAddress = graphene.String(source="street_address")
     apartmentSuite = graphene.String(source="apartment_suite")
     stateProvince = graphene.String(source="state_province")
     zipCode = graphene.String(source="zip_code")
     countryCode = graphene.String(source="country_code")
+    shortBio = graphene.String(source="short_bio")
     education = graphene.JSONString(source="education")
     workHistory = graphene.JSONString(source="work_history")
     profileVisibility = graphene.JSONString(source="profile_visibility")
@@ -164,6 +238,10 @@ class UserProfileType(DjangoObjectType):
         parts = [part for part in [first, middle, last, maternal] if part]
         return " ".join(parts) if parts else ""
 
+    # Explicit field mappings for new field names
+    lastnamem = graphene.String(source="lastnamem")
+    birthname = graphene.Date(source="birthname")
+
     def resolve_avatarUrl(self, info):
         """Get full avatar URL"""
         if self.avatar:  # type: ignore
@@ -173,11 +251,9 @@ class UserProfileType(DjangoObjectType):
                 avatar_url = getattr(self.avatar, "url", "")  # type: ignore
                 url = f"{base_url}{avatar_url}"
                 username = getattr(self.user, "username", "unknown") if self.user else "unknown"  # type: ignore
-                print(f"🔍 Profile avatar URL for {username}: {url}")
                 return url
             except Exception as e:
                 username = getattr(self.user, "username", "unknown") if self.user else "unknown"  # type: ignore
-                print(f"🔍 Error getting profile avatar URL for {username}: {e}")
                 return None
         return None
 

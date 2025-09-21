@@ -41,19 +41,118 @@ class UserProfile(models.Model):
 
     # Enhanced name fields
     middle_name = models.CharField(max_length=100, blank=True, null=True)
-    maternal_last_name = models.CharField(max_length=100, blank=True, null=True)
+    lastnamem = models.CharField(
+        max_length=100, blank=True, null=True
+    )  # Maternal last name
     preferred_name = models.CharField(max_length=100, blank=True, null=True)
+    father_name = models.CharField(max_length=100, blank=True, null=True)
+
+    # Personal information
+    birthname = models.DateField(blank=True, null=True)  # Date of birth
+    gender = models.CharField(
+        max_length=20,
+        choices=[
+            ("male", "Male"),
+            ("female", "Female"),
+            ("other", "Other"),
+            ("prefer_not_to_say", "Prefer not to say"),
+        ],
+        blank=True,
+        null=True,
+    )
+    marital_status = models.CharField(
+        max_length=20,
+        choices=[
+            ("single", "Single"),
+            ("married", "Married"),
+            ("divorced", "Divorced"),
+            ("widowed", "Widowed"),
+            ("separated", "Separated"),
+        ],
+        blank=True,
+        null=True,
+    )
+    identity_mark = models.CharField(max_length=255, blank=True, null=True)
+    medical_fitness = models.BooleanField(default=False)
+    character_certificate = models.BooleanField(default=False)
+    height = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
 
     # Professional information
     position = models.CharField(max_length=100, blank=True, null=True)
     department = models.CharField(max_length=100, blank=True, null=True)
+    company = models.CharField(max_length=100, blank=True, null=True)
+    employment_status = models.CharField(
+        max_length=20,
+        choices=[
+            ("active", "Active"),
+            ("inactive", "Inactive"),
+            ("on_leave", "On Leave"),
+            ("terminated", "Terminated"),
+        ],
+        blank=True,
+        null=True,
+    )
+    employment_type = models.CharField(
+        max_length=20,
+        choices=[
+            ("full_time", "Full Time"),
+            ("part_time", "Part Time"),
+            ("contract", "Contract"),
+            ("intern", "Intern"),
+            ("freelance", "Freelance"),
+        ],
+        blank=True,
+        null=True,
+    )
+    start_date = models.DateField(blank=True, null=True)
+    salary = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    currency = models.CharField(max_length=3, default="USD", blank=True, null=True)
+    work_location = models.CharField(max_length=255, blank=True, null=True)
+    manager = models.CharField(max_length=100, blank=True, null=True)
+    employee_id = models.CharField(max_length=50, blank=True, null=True)
+    work_email = models.EmailField(blank=True, null=True)
+    work_phone = models.CharField(max_length=20, blank=True, null=True)
+    work_phone_type = models.CharField(
+        max_length=10,
+        choices=[
+            ("mobile", "Mobile"),
+            ("home", "Home"),
+            ("work", "Work"),
+            ("other", "Other"),
+        ],
+        blank=True,
+        null=True,
+    )
+    work_address = models.CharField(max_length=255, blank=True, null=True)
+    work_city = models.CharField(max_length=100, blank=True, null=True)
+    work_state = models.CharField(max_length=100, blank=True, null=True)
+    work_zip_code = models.CharField(max_length=20, blank=True, null=True)
+    work_country = models.CharField(max_length=100, blank=True, null=True)
+    work_country_code = models.CharField(max_length=10, blank=True, null=True)
+    work_schedule = models.CharField(max_length=50, blank=True, null=True)
+    work_hours = models.CharField(max_length=50, blank=True, null=True)
+    work_days = models.CharField(max_length=50, blank=True, null=True)
+    work_time_zone = models.CharField(max_length=50, blank=True, null=True)
+    work_language = models.CharField(max_length=50, blank=True, null=True)
+    work_language_level = models.CharField(max_length=20, blank=True, null=True)
+    work_skills = models.TextField(blank=True, null=True)
+    work_certifications = models.TextField(blank=True, null=True)
+    work_awards = models.TextField(blank=True, null=True)
+    work_notes = models.TextField(blank=True, null=True)
 
-    # Enhanced phone support
-    phone = models.CharField(max_length=20, blank=True, null=True)
-    phone_country_code = models.CharField(
-        max_length=5, default="+1", blank=True, null=True
+    # Enhanced phone support - using new naming convention
+    # Primary phone: phonecc1, phone1, phonet1
+    phonecc1 = models.CharField(
+        max_length=5,
+        default="+1",
+        blank=True,
+        null=True,
+        help_text="Primary phone country code",
     )
-    phone_type = models.CharField(
+    phone1 = models.CharField(
+        max_length=20, blank=True, null=True, help_text="Primary phone number"
+    )
+    phonet1 = models.CharField(
         max_length=10,
         choices=[
             ("mobile", "Mobile"),
@@ -64,9 +163,16 @@ class UserProfile(models.Model):
         default="mobile",
         blank=True,
         null=True,
+        help_text="Primary phone type",
     )
-    secondary_phone = models.CharField(max_length=20, blank=True, null=True)
-    secondary_phone_type = models.CharField(
+    # Secondary phone: phonecc2, phone2, phonet2
+    phonecc2 = models.CharField(
+        max_length=5, blank=True, null=True, help_text="Secondary phone country code"
+    )
+    phone2 = models.CharField(
+        max_length=20, blank=True, null=True, help_text="Secondary phone number"
+    )
+    phonet2 = models.CharField(
         max_length=10,
         choices=[
             ("mobile", "Mobile"),
@@ -74,9 +180,9 @@ class UserProfile(models.Model):
             ("work", "Work"),
             ("other", "Other"),
         ],
-        default="mobile",
         blank=True,
         null=True,
+        help_text="Secondary phone type",
     )
 
     # Address information
@@ -88,7 +194,15 @@ class UserProfile(models.Model):
     country = models.CharField(max_length=100, blank=True, null=True)
     country_code = models.CharField(max_length=10, blank=True, null=True)
 
+    # Biography and social media
     bio = models.TextField(blank=True, null=True)
+    short_bio = models.TextField(blank=True, null=True)
+    website = models.URLField(blank=True, null=True)
+    linkedin = models.URLField(blank=True, null=True)
+    twitter = models.URLField(blank=True, null=True)
+    github = models.URLField(blank=True, null=True)
+    facebook = models.URLField(blank=True, null=True)
+    instagram = models.URLField(blank=True, null=True)
 
     # Extended data stored as JSON
     education = models.JSONField(default=list, blank=True)

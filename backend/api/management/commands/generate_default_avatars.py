@@ -33,7 +33,7 @@ class Command(BaseCommand):
 
         for user in users:
             try:
-                profile = user.profile
+                profile = UserProfile.objects.get(user=user)
             except UserProfile.DoesNotExist:
                 self.stdout.write(f"❌ {user.username}: No profile found, skipping")
                 continue

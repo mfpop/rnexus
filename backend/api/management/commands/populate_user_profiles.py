@@ -27,7 +27,7 @@ class Command(BaseCommand):
 
         for user in users:
             try:
-                profile = user.profile
+                profile = UserProfile.objects.get(user=user)
                 profile_exists = True
             except UserProfile.DoesNotExist:
                 profile = UserProfile.objects.create(user=user)
@@ -41,7 +41,7 @@ class Command(BaseCommand):
                 # Check if profile has meaningful data
                 if (
                     profile.position
-                    or profile.phone
+                    or profile.phone1
                     or profile.bio
                     or profile.street_address
                     or profile.city
@@ -51,19 +51,19 @@ class Command(BaseCommand):
 
             if needs_update:
                 # Set default values for empty fields
-                if not profile.phone_country_code:
-                    profile.phone_country_code = "+1"
-                if not profile.phone_type:
-                    profile.phone_type = "mobile"
-                if not profile.secondary_phone_type:
-                    profile.secondary_phone_type = "mobile"
+                if not profile.phonecc1:
+                    profile.phonecc1 = "+1"
+                if not profile.phonet1:
+                    profile.phonet1 = "mobile"
+                if not profile.phonet2:
+                    profile.phonet2 = "mobile"
 
                 # Set default profile visibility
                 if not profile.profile_visibility:
                     profile.profile_visibility = {
                         "email": True,
-                        "phone": True,
-                        "secondary_phone": True,
+                        "phone1": True,
+                        "phone2": True,
                         "address": True,
                         "education": True,
                         "work_history": True,
@@ -84,8 +84,8 @@ class Command(BaseCommand):
                     profile.preferred_name = "Admin"
                     profile.position = "System Administrator"
                     profile.department = "IT"
-                    profile.phone = "+1-555-0123"
-                    profile.secondary_phone = "+1-555-0456"
+                    profile.phone1 = "+1-555-0123"
+                    profile.phone2 = "+1-555-0456"
                     profile.street_address = "123 Admin Street"
                     profile.apartment_suite = "Suite 100"
                     profile.city = "Admin City"

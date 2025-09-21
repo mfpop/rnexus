@@ -29,7 +29,7 @@ urlpatterns = [
     # GraphQL endpoint
     path(
         "graphql/",
-        csrf_exempt(views.JWTAuthenticatedGraphQLView.as_view(graphiql=True)),
+        csrf_exempt(views.simple_graphql_view),
         name="graphql",
     ),
     # Django default auth endpoints (for redirects)

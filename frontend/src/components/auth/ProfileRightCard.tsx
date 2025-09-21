@@ -34,9 +34,9 @@ interface ProfileData {
   first_name: string;
   middle_name?: string;
   last_name: string;
-  maternal_last_name?: string;
+  lastnamem?: string;
   father_name?: string;
-  date_of_birth?: string;
+  birthname?: string;
   gender?: string;
   marital_status?: string;
   identity_mark?: string;
@@ -44,13 +44,20 @@ interface ProfileData {
   character_certificate?: boolean;
   height?: number;
   bio?: string;
+  short_bio?: string;
+  website?: string;
+  linkedin?: string;
+  twitter?: string;
+  github?: string;
+  facebook?: string;
+  instagram?: string;
   avatar?: string;
   avatarUrl?: string;
   phone?: string;
-  phone_country_code?: string;
+  primary_country_code?: string;
   phone_type?: string;
   secondary_phone?: string;
-  secondary_phone_country_code?: string;
+  secondary_country_code?: string;
   secondary_phone_type?: string;
   country?: string;
   state_province?: string;
@@ -58,9 +65,37 @@ interface ProfileData {
   zip_code?: string;
   street_address?: string;
   apartment_suite?: string;
+  country_code?: string;
   position?: string;
-    department?: string;
+  department?: string;
   company?: string;
+  employment_status?: string;
+  employment_type?: string;
+  start_date?: string;
+  salary?: number;
+  currency?: string;
+  work_location?: string;
+  manager?: string;
+  employee_id?: string;
+  work_email?: string;
+  work_phone?: string;
+  work_phone_type?: string;
+  work_address?: string;
+  work_city?: string;
+  work_state?: string;
+  work_zip_code?: string;
+  work_country?: string;
+  work_country_code?: string;
+  work_schedule?: string;
+  work_hours?: string;
+  work_days?: string;
+  work_time_zone?: string;
+  work_language?: string;
+  work_language_level?: string;
+  work_skills?: string;
+  work_certifications?: string;
+  work_awards?: string;
+  work_notes?: string;
   education?: any[];
   work_experience?: any[];
   profileVisibility?: any;
@@ -97,7 +132,20 @@ const ProfileRightCard: React.FC = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("general");
   const [isEditMode, setIsEditMode] = useState(false);
+  const [notification, setNotification] = useState<{
+    type: 'success' | 'error' | null;
+    message: string;
+  }>({ type: null, message: '' });
   const [profileData, setProfileData] = useState<ProfileData>({} as ProfileData);
+
+  // Show notification function
+  const showNotification = (type: 'success' | 'error', message: string) => {
+    setNotification({ type, message });
+    // Auto-hide notification after 5 seconds
+    setTimeout(() => {
+      setNotification({ type: null, message: '' });
+    }, 5000);
+  };
   const [passwordSuccessMessage] = useState("");
   const [passwordErrorMessage] = useState("");
 
@@ -107,6 +155,8 @@ const ProfileRightCard: React.FC = () => {
 
   // GraphQL queries
   const { data: profileQueryData, loading: profileLoading, error: profileError } = useQuery<GetUserProfileData>(GET_USER_PROFILE);
+
+  // Debug logging
   const [uploadAvatarMutation] = useMutation(UPLOAD_AVATAR);
   const [updateUserProfileMutation] = useMutation(UPDATE_USER_PROFILE);
   const [changePasswordMutation] = useMutation(CHANGE_PASSWORD);
@@ -127,11 +177,9 @@ const ProfileRightCard: React.FC = () => {
   useEffect(() => {
     if (profileQueryData?.userProfile) {
       const userProfile = profileQueryData.userProfile as any;
+
       // Handle avatar field - use avatarUrl if available, otherwise avatar
       const avatarUrl = userProfile.avatarUrl || userProfile.avatar || (userProfile as any).avatarUrl;
-      console.log('Avatar URL from GraphQL:', avatarUrl);
-      console.log('Raw userProfile avatar field:', userProfile.avatar);
-      console.log('Raw userProfile avatarUrl field:', userProfile.avatarUrl);
 
       let fullAvatarUrl = null;
       if (avatarUrl) {
@@ -146,12 +194,38 @@ const ProfileRightCard: React.FC = () => {
           fullAvatarUrl = `http://localhost:8000${path}`;
         }
       }
-      console.log('Full avatar URL passed to AvatarUpload:', fullAvatarUrl);
 
       setProfileData((prev) => ({
         ...prev,
         // copy through primitive/camelCase properties returned by GraphQL
         ...userProfile,
+        // Map user fields from nested user object
+        username: userProfile.user?.username || userProfile.username,
+        first_name: userProfile.user?.firstName || userProfile.firstName,
+        last_name: userProfile.user?.lastName || userProfile.lastName,
+        middle_name: userProfile.middleName,
+        lastnamem: userProfile.lastnamem,
+        email: userProfile.user?.email || userProfile.email,
+        // Map personal information fields
+        birthname: userProfile.birthname,
+        // Map address fields
+        street_address: userProfile.streetAddress,
+        apartment_suite: userProfile.apartmentSuite,
+        city: userProfile.city,
+        zip_code: userProfile.zipCode,
+        country: userProfile.country,
+        country_code: userProfile.countryCode,
+        state_province: userProfile.stateProvince,
+        // Map phone fields
+        phone: userProfile.phone,
+        primary_country_code: userProfile.primaryCountryCode,
+        phone_type: userProfile.phoneType,
+        secondary_phone: userProfile.secondaryPhone,
+        secondary_country_code: userProfile.secondaryCountryCode,
+        secondary_phone_type: userProfile.secondaryPhoneType,
+        // Fix case conversion issues from GraphQL
+        gender: userProfile.gender?.toLowerCase() || userProfile.gender,
+        marital_status: userProfile.maritalStatus?.toLowerCase() || userProfile.marital_status,
         avatar: fullAvatarUrl,
         avatarUrl: fullAvatarUrl, // Set both fields for consistency
         // Normalize arrays and map camelCase workHistory to local work_experience
@@ -171,16 +245,63 @@ const ProfileRightCard: React.FC = () => {
     }));
   };
 
-  // Handle edit mode toggle
+  // Handle edit mode toggle - tab-specific edit functionality
   const handleEdit = () => {
-    setIsEditMode(true);
+    showNotification('success', `Edit mode enabled for ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} tab`);
+
+    // Tab-specific edit mode setup
+    switch (activeTab) {
+      case "general":
+        // General tab - enable edit for both personal info and biography/social linkssetIsEditMode(true);
+        break;
+
+      case "professional":
+        // Professional tab - enable edit for professional informationsetIsEditMode(true);
+        break;
+
+      case "education":
+        // Education tab - enable edit for education datasetIsEditMode(true);
+        break;
+
+      case "experience":
+        // Experience tab - enable edit for work experience datasetIsEditMode(true);
+        break;
+
+      case "security":
+        // Security tab - enable edit for security settings (password change)setIsEditMode(true);
+        break;
+
+      default:setIsEditMode(true);
+        break;
+    }
   };
 
-  // Handle cancel changes
-  const handleCancel = () => {
-    setIsEditMode(false);
-    // Reset profile data to original state
-    if (profileQueryData?.userProfile) {
+  // Handle cancel changes - tab-specific cancel functionality
+  const handleCancel = () => {// Tab-specific cancel logic
+    switch (activeTab) {
+      case "general":
+        // General tab - cancel edits for both personal info and biography/social linksbreak;
+
+      case "professional":
+        // Professional tab - cancel edits for professional informationbreak;
+
+      case "education":
+        // Education tab - cancel edits for education databreak;
+
+      case "experience":
+        // Experience tab - cancel edits for work experience databreak;
+
+      case "security":
+        // Security tab - cancel edits for security settingsbreak;
+
+      default:break;
+    }
+
+        setIsEditMode(false);
+        showNotification('success', 'Changes cancelled successfully');
+
+        // Reset profile data to original state
+        if (profileQueryData?.userProfile) {
       const userProfile = profileQueryData.userProfile as any;
       const avatarUrl = userProfile.avatarUrl || userProfile.avatar || (userProfile as any).avatarUrl;
 
@@ -208,7 +329,7 @@ const ProfileRightCard: React.FC = () => {
     }
   };
 
-  // Handle save changes
+  // Handle save changes - tab-specific save functionality
   const handleSave = async () => {
     try {
       const variables: any = {};
@@ -216,58 +337,106 @@ const ProfileRightCard: React.FC = () => {
       // Helper to pick either camelCase or snake_case values
       const pick = (camel: string, snake: string) => (profileData as any)[camel] ?? (profileData as any)[snake];
 
-      variables.firstName = pick("firstName", "first_name");
-      variables.lastName = pick("lastName", "last_name");
-      variables.email = pick("email", "email");
-      variables.middleName = pick("middleName", "middle_name");
-      variables.maternalLastName = pick("maternalLastName", "maternal_last_name");
-      variables.preferredName = pick("preferredName", "preferred_name");
-      variables.position = pick("position", "position");
-      variables.department = pick("department", "department");
-      variables.phone = pick("phone", "phone");
-      variables.phoneCountryCode = pick("phoneCountryCode", "phone_country_code");
-      variables.phoneType = pick("phoneType", "phone_type");
-      variables.secondaryPhone = pick("secondaryPhone", "secondary_phone");
-      variables.secondaryPhoneType = pick("secondaryPhoneType", "secondary_phone_type");
-      variables.streetAddress = pick("streetAddress", "street_address");
-      variables.apartmentSuite = pick("apartmentSuite", "apartment_suite");
-      variables.city = pick("city", "city");
-      variables.stateProvince = pick("stateProvince", "state_province");
-      variables.zipCode = pick("zipCode", "zip_code");
-      variables.country = pick("country", "country");
-      variables.countryCode = pick("countryCode", "country_code");
-      variables.bio = pick("bio", "bio");
+      switch (activeTab) {
+        case "general":
+          // Save personal information and biography/social links
+          variables.firstName = pick("firstName", "first_name");
+          variables.lastName = pick("lastName", "last_name");
+          variables.email = pick("email", "email");
+          variables.middleName = pick("middleName", "middle_name");
+          variables.lastnamem = pick("lastnamem", "lastnamem");
 
-      // Additional personal information
-      variables.dateOfBirth = pick("date_of_birth", "date_of_birth");
-      variables.gender = pick("gender", "gender");
-      variables.maritalStatus = pick("marital_status", "marital_status");
+          // Phone fields - use the correct field names from GeneralTab
+          variables.phonecc1 = pick("phonecc1", "phonecc1");
+          variables.phone1 = pick("phone1", "phone1");
+          variables.phonet1 = pick("phonet1", "phonet1");
+          variables.phonecc2 = pick("phonecc2", "phonecc2");
+          variables.phone2 = pick("phone2", "phone2");
+          variables.phonet2 = pick("phonet2", "phonet2");
 
-      // Social media and web presence
-      variables.shortBio = pick("short_bio", "short_bio");
-      variables.website = pick("website", "website");
-      variables.linkedin = pick("linkedin", "linkedin");
-      variables.twitter = pick("twitter", "twitter");
-      variables.github = pick("github", "github");
-      variables.facebook = pick("facebook", "facebook");
-      variables.instagram = pick("instagram", "instagram");
+          // Address fields
+          variables.streetAddress = pick("streetAddress", "street_address");
+          variables.apartmentSuite = pick("apartmentSuite", "apartment_suite");
+          variables.city = pick("city", "city");
+          variables.stateProvince = pick("stateProvince", "state_province");
+          variables.zipCode = pick("zipCode", "zip_code");
+          variables.country = pick("country", "country");
+          variables.countryCode = pick("countryCode", "country_code");
+          variables.bio = pick("bio", "bio");
 
-      // JSON fields: send as JSON strings (GraphQL expects String)
-      if (profileData.education) {
-        variables.education = JSON.stringify(profileData.education);
-        console.log("Saving education data (stringified):", variables.education);
+          // Additional personal information
+          variables.birthname = pick("birthname", "birthname");
+          variables.gender = pick("gender", "gender");
+          variables.maritalStatus = pick("marital_status", "marital_status");
+          variables.identityMark = pick("identity_mark", "identity_mark");
+          variables.medicalFitness = pick("medical_fitness", "medical_fitness");
+          variables.characterCertificate = pick("character_certificate", "character_certificate");
+          variables.height = pick("height", "height");
+
+          // Social media and web presence
+          variables.shortBio = pick("short_bio", "short_bio");
+          variables.website = pick("website", "website");
+          variables.linkedin = pick("linkedin", "linkedin");
+          variables.twitter = pick("twitter", "twitter");
+          variables.github = pick("github", "github");
+          variables.facebook = pick("facebook", "facebook");
+          variables.instagram = pick("instagram", "instagram");
+          break;
+
+        case "professional":
+          // Save professional information
+          variables.position = pick("position", "position");
+          variables.department = pick("department", "department");
+          variables.employmentStatus = pick("employment_status", "employment_status");
+          variables.employmentType = pick("employment_type", "employment_type");
+          variables.startDate = pick("start_date", "start_date");
+          variables.salary = pick("salary", "salary");
+          variables.currency = pick("currency", "currency");
+          variables.workLocation = pick("work_location", "work_location");
+          variables.manager = pick("manager", "manager");
+          variables.employeeId = pick("employee_id", "employee_id");
+          variables.workEmail = pick("work_email", "work_email");
+          variables.workPhone = pick("work_phone", "work_phone");
+          variables.workPhoneType = pick("work_phone_type", "work_phone_type");
+          variables.workAddress = pick("work_address", "work_address");
+          variables.workCity = pick("work_city", "work_city");
+          variables.workState = pick("work_state", "work_state");
+          variables.workZipCode = pick("work_zip_code", "work_zip_code");
+          variables.workCountry = pick("work_country", "work_country");
+          variables.workCountryCode = pick("work_country_code", "work_country_code");
+          variables.workSchedule = pick("work_schedule", "work_schedule");
+          variables.workHours = pick("work_hours", "work_hours");
+          variables.workDays = pick("work_days", "work_days");
+          variables.workTimeZone = pick("work_time_zone", "work_time_zone");
+          variables.workLanguage = pick("work_language", "work_language");
+          variables.workLanguageLevel = pick("work_language_level", "work_language_level");
+          variables.workSkills = pick("work_skills", "work_skills");
+          variables.workCertifications = pick("work_certifications", "work_certifications");
+          variables.workAwards = pick("work_awards", "work_awards");
+          variables.workNotes = pick("work_notes", "work_notes");
+          break;
+
+        case "education":
+          // Save education data
+          if (profileData.education) {
+            variables.education = JSON.stringify(profileData.education);}
+          break;
+
+        case "experience":
+          // Save work experience data
+          if (profileData.work_experience) {
+            variables.workHistory = JSON.stringify(profileData.work_experience);}
+          break;
+
+        case "security":
+          // Security tab doesn't save profile data, it handles password changes separatelyreturn;
+
+        default:return;
       }
-      if (profileData.work_experience) {
-        variables.workHistory = JSON.stringify(profileData.work_experience);
-        console.log("Saving work experience data (stringified):", variables.workHistory);
-      }
-      const visibility = (profileData as any).profileVisibility ?? (profileData as any).profile_visibility;
-      if (visibility) variables.profileVisibility = JSON.stringify(visibility);
 
-      console.log("Mutation variables being sent:", variables);
       const res = await updateUserProfileMutation({ variables });
       const result = res?.data?.updateUserProfile;
-      console.log("Mutation result:", result);
+
       if (result?.ok && result?.userProfile) {
         // Preserve avatar data when updating profile
         const currentAvatar = profileData.avatar;
@@ -282,19 +451,15 @@ const ProfileRightCard: React.FC = () => {
           avatarUrl: currentAvatarUrl
         }));
         window.dispatchEvent(new Event("profile-updated"));
-        setIsEditMode(false);
-      } else {
-        console.error("Profile save failed:", result?.errors);
+        setIsEditMode(false);showNotification('success', `${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} data saved successfully!`);
+      } else {showNotification('error', `Failed to save ${activeTab} data. Please try again.`);
       }
-    } catch (err) {
-      console.error("Profile save error:", err);
+    } catch (err) {showNotification('error', `Error saving ${activeTab} data. Please try again.`);
     }
   };
 
   // Handle delete profile (placeholder)
-  const handleDelete = () => {
-    console.log("Profile deletion not implemented yet");
-  };
+  const handleDelete = () => {};
 
   // Handle refresh profile
   const handleRefresh = () => {
@@ -367,13 +532,9 @@ const ProfileRightCard: React.FC = () => {
             }));
             // Notify other parts of the app that profile changed
             window.dispatchEvent(new Event("profile-updated"));
-          } else {
-            console.error("Avatar upload failed:", uploaded?.errors);
-            alert('Avatar upload failed: ' + (uploaded?.errors?.[0] || 'Unknown error'));
+          } else {alert('Avatar upload failed: ' + (uploaded?.errors?.[0] || 'Unknown error'));
           }
-        } catch (err) {
-          console.error("Avatar upload error:", err);
-          alert('Avatar upload error: ' + (err instanceof Error ? err.message : 'Unknown error'));
+        } catch (err) {alert('Avatar upload error: ' + (err instanceof Error ? err.message : 'Unknown error'));
         }
       };
       reader.readAsDataURL(file);
@@ -382,7 +543,6 @@ const ProfileRightCard: React.FC = () => {
       setProfileData((prev) => ({ ...prev, avatar: undefined }));
     }
   };
-
 
   // Handle education changes
   const handleAddEducation = () => {
@@ -395,15 +555,11 @@ const ProfileRightCard: React.FC = () => {
       end_date: "",
       gpa: "",
       description: "",
-    };
-    console.log("Adding new education:", newEducation);
-    setProfileData(prev => {
+    };setProfileData(prev => {
       const updated = {
         ...prev,
         education: [...(prev.education || []), newEducation]
-      };
-      console.log("Updated education array:", updated.education);
-      return updated;
+      };return updated;
     });
   };
 
@@ -414,17 +570,13 @@ const ProfileRightCard: React.FC = () => {
     }));
   };
 
-  const handleUpdateEducation = (id: string, field: string, value: string) => {
-    console.log("Updating education:", { id, field, value });
-    setProfileData(prev => {
+  const handleUpdateEducation = (id: string, field: string, value: string) => {setProfileData(prev => {
       const updated = {
         ...prev,
         education: prev.education?.map(edu =>
           edu.id === id ? { ...edu, [field]: value } : edu
         ) || []
-      };
-      console.log("Updated education data:", updated.education);
-      return updated;
+      };return updated;
     });
   };
 
@@ -439,15 +591,11 @@ const ProfileRightCard: React.FC = () => {
       current: false,
       description: "",
       location: "",
-    };
-    console.log("Adding new experience:", newExperience);
-    setProfileData(prev => {
+    };setProfileData(prev => {
       const updated = {
         ...prev,
         work_experience: [...(prev.work_experience || []), newExperience]
-      };
-      console.log("Updated experience array:", updated.work_experience);
-      return updated;
+      };return updated;
     });
   };
 
@@ -458,41 +606,29 @@ const ProfileRightCard: React.FC = () => {
     }));
   };
 
-  const handleUpdateExperience = (id: string, field: string, value: string | boolean) => {
-    console.log("Updating experience:", { id, field, value });
-    setProfileData(prev => {
+  const handleUpdateExperience = (id: string, field: string, value: string | boolean) => {setProfileData(prev => {
       const updated = {
         ...prev,
         work_experience: prev.work_experience?.map(exp =>
           exp.id === id ? { ...exp, [field]: value } : exp
         ) || []
-      };
-      console.log("Updated experience data:", updated.work_experience);
-      return updated;
+      };return updated;
     });
   };
 
   // Handle password change
   const handlePasswordChange = async (oldPassword: string, newPassword: string) => {
-    try {
-      console.log("Password change requested:", { oldPassword, newPassword });
-      const result = await changePasswordMutation({
+    try {const result = await changePasswordMutation({
         variables: {
           currentPassword: oldPassword,
           newPassword: newPassword,
         },
       });
 
-      if (result.data?.changePassword?.ok) {
-        console.log("Password changed successfully");
-        // You can add success notification here
-      } else {
-        console.error("Password change failed:", result.data?.changePassword?.errors);
-        // You can add error notification here
+      if (result.data?.changePassword?.ok) {// You can add success notification here
+      } else {// You can add error notification here
       }
-    } catch (error) {
-      console.error("Password change error:", error);
-    }
+    } catch (error) {}
   };
 
   // Pagination handlers
@@ -513,9 +649,7 @@ const ProfileRightCard: React.FC = () => {
       case "experience":
         handleAddExperience();
         break;
-      default:
-        console.log("Add action not available for this tab:", activeTab);
-    }
+      default:}
   };
 
   // Context-aware delete handler for right sidebar
@@ -561,12 +695,7 @@ const ProfileRightCard: React.FC = () => {
       isEditMode,
     };
 
-    (window as any).profileButtonHandlers = profileButtonHandlers;
-    console.log("Profile button handlers exposed:", {
-      isEditMode,
-    });
-
-    return () => {
+    (window as any).profileButtonHandlers = profileButtonHandlers;return () => {
       delete (window as any).profileButtonHandlers;
     };
   }, [handleAdd, handleSave, handleCancel, handleEdit, handleContextDelete, handleRefresh, isEditMode, activeTab]);
@@ -682,6 +811,28 @@ const ProfileRightCard: React.FC = () => {
 
   return (
     <div className="h-full w-full bg-gradient-to-br from-slate-50 to-white flex flex-col overflow-hidden">
+      {/* Notification */}
+      {notification.type && (
+        <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 ${
+          notification.type === 'success'
+            ? 'bg-green-500 text-white'
+            : 'bg-red-500 text-white'
+        }`}>
+          <div className="flex items-center gap-2">
+            <span className="font-medium">
+              {notification.type === 'success' ? '✓' : '✗'}
+            </span>
+            <span>{notification.message}</span>
+            <button
+              onClick={() => setNotification({ type: null, message: '' })}
+              className="ml-2 text-white hover:text-gray-200"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Tab Navigation - Projects Page Style */}
       <div className="border-b border-gray-200">
         <div className="flex items-center justify-between">

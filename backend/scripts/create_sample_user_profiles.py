@@ -41,9 +41,9 @@ def create_sample_user_profiles():
                     "position": "Software Developer",
                     "department": "Engineering",
                     "phone": "+1-555-0123",
-                    "phone_country_code": "+1",
-                    "phone_type": "mobile",
-                    "secondary_phone": "+1-555-0456",
+                    "phonecc1": "+1",
+                    "phonet1": "mobile",
+                    "phone2": "+1-555-0456",
                     "street_address": "123 Main Street",
                     "apartment_suite": "Apt 4B",
                     "city": "San Francisco",
@@ -155,10 +155,10 @@ def create_sample_user_profiles():
                 preferred_name=user_data["first_name"],
                 position=user_data["position"],
                 department=user_data["department"],
-                phone=user_data["phone"],
-                phone_country_code="+1",
-                phone_type="mobile",
-                secondary_phone="+1-555-0456",
+                phone1=user_data["phone"],
+                phonecc1="+1",
+                phonet1="mobile",
+                phone2="+1-555-0456",
                 street_address="123 Main Street",
                 apartment_suite="Apt 4B",
                 city=user_data["city"],
@@ -216,7 +216,7 @@ def create_sample_user_profiles():
             print(f"   User: {sample_profile.user.username}")
             print(f"   Position: {sample_profile.position}")
             print(f"   Department: {sample_profile.department}")
-            print(f"   Phone: {sample_profile.phone}")
+            print(f"   Phone: {sample_profile.phone1}")
             print(f"   City: {sample_profile.city}")
             print(f"   ZIP: {sample_profile.zip_code}")
 

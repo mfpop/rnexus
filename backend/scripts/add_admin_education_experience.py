@@ -139,18 +139,18 @@ def add_admin_education_experience():
         profile.zip_code = "94105"
         profile.street_address = "123 Innovation Drive"
         profile.apartment_suite = "Suite 500"
-        profile.phone = "+1-555-0123"
-        profile.phone_country_code = "+1"
-        profile.phone_type = "mobile"
+        profile.phone1 = "+1-555-0123"
+        profile.phonecc1 = "+1"
+        profile.phonet1 = "mobile"
 
         profile.save()
 
         print("✅ Successfully updated admin user profile with:")
         print(f"   📚 Education: {len(education_data)} entries")
         print(f"   💼 Work Experience: {len(work_history_data)} entries")
-        print(f"   📝 Bio: {len(profile.bio)} characters")
+        print(f"   📝 Bio: {len(profile.bio) if profile.bio else 0} characters")
         print(f"   📍 Location: {profile.city}, {profile.state_province}")
-        print(f"   📞 Phone: {profile.phone_country_code} {profile.phone}")
+        print(f"   📞 Phone: {profile.phonecc1} {profile.phone1}")
 
         # Verify the data was saved correctly
         profile.refresh_from_db()

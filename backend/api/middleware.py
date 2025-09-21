@@ -21,33 +21,19 @@ def get_user_jwt(request):
     """
     Get user from JWT token in Authorization header
     """
-    print(f"DEBUG: JWT Middleware - get_user_jwt called for {request.path}")
     user = None
     auth_header = request.META.get("HTTP_AUTHORIZATION", "")
 
-    print(f"DEBUG: JWT Middleware - Auth header: {auth_header}")
-
     if auth_header.startswith("Bearer "):
         token = auth_header.split(" ")[1]
-        print(f"DEBUG: JWT Middleware - Token: {token[:20]}...")
-
         try:
             # For now, we'll use a simple approach - you might want to implement proper JWT validation
             # This is a temporary solution to get the system working
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-            print(f"DEBUG: JWT Middleware - Payload: {payload}")
-            print(f"DEBUG: JWT Middleware - Current time: {timezone.now()}")
-            print(f"DEBUG: JWT Middleware - Token exp: {payload.get('exp')}")
-
             user_id = payload.get("user_id")
             if user_id:
                 user = User.objects.get(id=user_id)
-                print(f"DEBUG: JWT Middleware - User found: {user.username}")
-            else:
-                print(f"DEBUG: JWT Middleware - No user_id in payload")
         except (jwt.InvalidTokenError, User.DoesNotExist) as e:
-            print(f"DEBUG: JWT Middleware - Error: {e}")
-            print(f"DEBUG: JWT Middleware - Error type: {type(e)}")
             pass
 
     fallback_user = AnonymousUser()
@@ -61,7 +47,6 @@ def get_user_jwt(request):
     else:
         username = "None"
 
-    print(f"DEBUG: JWT Middleware - Final user: {username}")
     return result
 
 
@@ -71,17 +56,8 @@ class JWTAuthenticationMiddleware(MiddlewareMixin):
     """
 
     def process_request(self, request):
-        print(f"DEBUG: JWT Middleware - process_request called for {request.path}")
-        print(f"DEBUG: JWT Middleware - request.META keys: {list(request.META.keys())}")
-
         # Skip JWT processing for admin URLs to allow Django session auth
         if request.path.startswith("/admin/") or request.path.startswith("/accounts/"):
-            print(
-                f"DEBUG: JWT Middleware - Skipping JWT for admin/accounts path: {request.path}"
-            )
-            print(
-                f"DEBUG: JWT Middleware - process_request completed for {request.path}"
-            )
             return
 
         # Check if there's a JWT token in the Authorization header
@@ -90,28 +66,16 @@ class JWTAuthenticationMiddleware(MiddlewareMixin):
             # Only process JWT authentication if we have a Bearer token
             user = get_user_jwt(request)
             request.user = user
-            print(
-                f"DEBUG: JWT Middleware - Set request.user to: {user.username if hasattr(user, 'username') else 'Anonymous'}"
-            )
         else:
-            print(f"DEBUG: JWT Middleware - No Bearer token, skipping JWT auth")
-
-        print(f"DEBUG: JWT Middleware - process_request completed for {request.path}")
+            # No Bearer token, skip JWT auth
+            pass
 
     def process_view(self, request, view_func, view_args, view_kwargs):
         """
         Ensure request.user is set correctly before the view is called
         """
-        print(f"DEBUG: JWT Middleware - process_view called for {request.path}")
-        print(f"DEBUG: JWT Middleware - request.user before view: {request.user}")
-        print(f"DEBUG: JWT Middleware - request.user type: {type(request.user)}")
-
         # Skip JWT processing for admin URLs to allow Django session auth
         if request.path.startswith("/admin/") or request.path.startswith("/accounts/"):
-            print(
-                f"DEBUG: JWT Middleware - Skipping JWT view processing for admin/accounts path: {request.path}"
-            )
-            print(f"DEBUG: JWT Middleware - process_view completed for {request.path}")
             return None
 
         # Check if there's a JWT token and ensure the user is set
@@ -121,12 +85,7 @@ class JWTAuthenticationMiddleware(MiddlewareMixin):
             user = get_user_jwt(request)
             if user and not isinstance(user, AnonymousUser):
                 request.user = user
-                print(
-                    f"DEBUG: JWT Middleware - Re-set request.user to: {user.username}"
-                )
 
-        print(f"DEBUG: JWT Middleware - request.user after view setup: {request.user}")
-        print(f"DEBUG: JWT Middleware - process_view completed for {request.path}")
         return None
 
 

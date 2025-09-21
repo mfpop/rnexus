@@ -46,8 +46,8 @@ def verify_admin_data():
         print(f"   State: {profile.state_province}")
         print(f"   Country: {profile.country}")
         print(f"   ZIP Code: {profile.zip_code}")
-        print(f"   Phone: {profile.phone_country_code} {profile.phone}")
-        print(f"   Phone Type: {profile.phone_type}")
+        print(f"   Phone: {profile.phonecc1} {profile.phone1}")
+        print(f"   Phone Type: {profile.phonet1}")
 
         # Display education data
         if profile.education:

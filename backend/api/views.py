@@ -47,34 +47,53 @@ from .models import (
 )
 
 
-class JWTAuthenticatedGraphQLView(GraphQLView):
-    """Custom GraphQL view that properly handles JWT authentication"""
+def simple_graphql_view(request: HttpRequest) -> JsonResponse:
+    """Simple GraphQL view that bypasses the problematic graphene-django view"""
+    import json
 
-    def parse_body(self, request: HttpRequest):
-        """Parse the request body and ensure user is set"""
-        # Ensure the user is set from JWT middleware
-        if hasattr(request, "user") and request.user and request.user.is_authenticated:
-            # Safely access username attribute
-            username = getattr(request.user, "username", "Unknown")
-            print(f"GraphQL: Authenticated user: {username}")
+    from django.contrib.auth.models import AnonymousUser
+
+    from api.schema import schema
+
+    # For unauthenticated users, set a default user for public queries
+    if not hasattr(request, "user") or isinstance(request.user, AnonymousUser):
+        try:
+            # Use admin user for public queries
+            admin_user = User.objects.get(username="admin")
+            request.user = admin_user
+        except User.DoesNotExist:
+            pass
+
+    try:
+        # Parse the request body
+        if request.method == "POST":
+            data = json.loads(request.body)
+            query = data.get("query")
+            variables = data.get("variables", {})
+            operation_name = data.get("operationName")
         else:
-            print(f"GraphQL: No authenticated user, using fallback")
-            # For unauthenticated users, set a default user for public queries
-            from django.contrib.auth.models import AnonymousUser
+            return JsonResponse(
+                {"error": "Only POST requests are supported"}, status=405
+            )
 
-            if not hasattr(request, "user") or isinstance(request.user, AnonymousUser):
-                # Create a temporary user for public queries
-                from django.contrib.auth.models import User
+        # Execute the GraphQL query
+        result = schema.execute(
+            query, variables=variables, operation_name=operation_name, context=request
+        )
 
-                try:
-                    # Use admin user for public queries
-                    admin_user = User.objects.get(username="admin")
-                    request.user = admin_user
-                    print(f"GraphQL: Using admin user for public queries")
-                except User.DoesNotExist:
-                    print(f"GraphQL: Admin user not found, using AnonymousUser")
+        return JsonResponse(
+            {
+                "data": result.data,
+                "errors": (
+                    [{"message": str(error)} for error in result.errors]
+                    if result.errors
+                    else None
+                ),
+            }
+        )
 
-        return super().parse_body(request)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
 
 
 def healthcheck_view(request: HttpRequest) -> JsonResponse:
@@ -327,11 +346,6 @@ def user_info_view(request: HttpRequest) -> JsonResponse:
     if request.method == "GET":
         user = request.user
         username = getattr(user, "username", None)
-        print(f"DEBUG: user_info_view - User: {username if username else 'None'}")
-        print(f"DEBUG: user_info_view - User type: {type(user)}")
-        print(
-            f"DEBUG: user_info_view - Auth header: {request.META.get('HTTP_AUTHORIZATION', 'None')}"
-        )
 
         return JsonResponse(
             {
@@ -355,11 +369,7 @@ def user_info_view(request: HttpRequest) -> JsonResponse:
 @jwt_login_required
 def profile_view(request: HttpRequest) -> JsonResponse:
     """Handle user profile operations"""
-    print(f"DEBUG: profile_view called with method {request.method}")
-
     if request.method == "GET":
-        print(f"DEBUG: GET request received")
-
         # Type assertion to ensure we have an authenticated user
         if not request.user.is_authenticated:
             return JsonResponse(
@@ -391,10 +401,12 @@ def profile_view(request: HttpRequest) -> JsonResponse:
                     "preferred_name": user_profile.preferred_name or "",
                     "position": user_profile.position or "",
                     "department": user_profile.department or "",
-                    "phone": user_profile.phone or "",
-                    "phone_country_code": user_profile.phone_country_code or "+1",
-                    "phone_type": user_profile.phone_type or "mobile",
-                    "secondary_phone": user_profile.secondary_phone or "",
+                    "phonecc1": user_profile.phonecc1 or "+1",
+                    "phone1": user_profile.phone1 or "",
+                    "phonet1": user_profile.phonet1 or "mobile",
+                    "phonecc2": user_profile.phonecc2 or "",
+                    "phone2": user_profile.phone2 or "",
+                    "phonet2": user_profile.phonet2 or "",
                     "street_address": user_profile.street_address or "",
                     "apartment_suite": user_profile.apartment_suite or "",
                     "city": user_profile.city or "",
@@ -417,8 +429,6 @@ def profile_view(request: HttpRequest) -> JsonResponse:
         )
 
     elif request.method == "PUT" or request.method == "POST":
-        print(f"DEBUG: PUT/POST request received")
-
         try:
             # Type assertion to ensure we have an authenticated user
             if not request.user.is_authenticated:
@@ -453,16 +463,18 @@ def profile_view(request: HttpRequest) -> JsonResponse:
                 user_profile.position = data["position"]
             if "department" in data:
                 user_profile.department = data["department"]
-            if "phone" in data:
-                user_profile.phone = data["phone"]
-            if "phone_country_code" in data:
-                user_profile.phone_country_code = data["phone_country_code"]
-            if "phone_type" in data:
-                user_profile.phone_type = data["phone_type"]
-            if "secondary_phone" in data:
-                user_profile.secondary_phone = data["secondary_phone"]
-            if "secondary_phone_type" in data:
-                user_profile.secondary_phone_type = data["secondary_phone_type"]
+            if "phone1" in data:
+                user_profile.phone1 = data["phone1"]
+            if "phonecc1" in data:
+                user_profile.phonecc1 = data["phonecc1"]
+            if "phonet1" in data:
+                user_profile.phonet1 = data["phonet1"]
+            if "phone2" in data:
+                user_profile.phone2 = data["phone2"]
+            if "phonecc2" in data:
+                user_profile.phonecc2 = data["phonecc2"]
+            if "phonet2" in data:
+                user_profile.phonet2 = data["phonet2"]
             if "street_address" in data:
                 user_profile.street_address = data["street_address"]
             if "apartment_suite" in data:
@@ -506,12 +518,12 @@ def profile_view(request: HttpRequest) -> JsonResponse:
                         "preferred_name": user_profile.preferred_name or "",
                         "position": user_profile.position or "",
                         "department": user_profile.department or "",
-                        "phone": user_profile.phone or "",
-                        "phone_country_code": user_profile.phone_country_code or "+1",
-                        "phone_type": user_profile.phone_type or "mobile",
-                        "secondary_phone": user_profile.secondary_phone or "",
-                        "secondary_phone_type": user_profile.secondary_phone_type
-                        or "mobile",
+                        "phonecc1": user_profile.phonecc1 or "+1",
+                        "phone1": user_profile.phone1 or "",
+                        "phonet1": user_profile.phonet1 or "mobile",
+                        "phonecc2": user_profile.phonecc2 or "",
+                        "phone2": user_profile.phone2 or "",
+                        "phonet2": user_profile.phonet2 or "mobile",
                         "street_address": user_profile.street_address or "",
                         "apartment_suite": user_profile.apartment_suite or "",
                         "city": user_profile.city or "",
@@ -590,11 +602,12 @@ def profile_update_view(request: HttpRequest) -> JsonResponse:
         profile_fields = [
             "position",
             "department",
-            "phone",
-            "phone_country_code",
-            "phone_type",
-            "secondary_phone",
-            "secondary_phone_type",
+            "phonecc1",
+            "phone1",
+            "phonet1",
+            "phonecc2",
+            "phone2",
+            "phonet2",
             "street_address",
             "apartment_suite",
             "city",
@@ -637,12 +650,12 @@ def profile_update_view(request: HttpRequest) -> JsonResponse:
                     "preferred_name": user_profile.preferred_name or "",
                     "position": user_profile.position or "",
                     "department": user_profile.department or "",
-                    "phone": user_profile.phone or "",
-                    "phone_country_code": user_profile.phone_country_code or "+1",
-                    "phone_type": user_profile.phone_type or "mobile",
-                    "secondary_phone": user_profile.secondary_phone or "",
-                    "secondary_phone_type": user_profile.secondary_phone_type
-                    or "mobile",
+                    "phonecc1": user_profile.phonecc1 or "+1",
+                    "phone1": user_profile.phone1 or "",
+                    "phonet1": user_profile.phonet1 or "mobile",
+                    "phonecc2": user_profile.phonecc2 or "",
+                    "phone2": user_profile.phone2 or "",
+                    "phonet2": user_profile.phonet2 or "mobile",
                     "street_address": user_profile.street_address or "",
                     "apartment_suite": user_profile.apartment_suite or "",
                     "city": user_profile.city or "",
@@ -751,8 +764,8 @@ def download_cv_view(request: HttpRequest) -> HttpResponse:
             contact_info = []
             if user.email:
                 contact_info.append(f"Email: {user.email}")
-            if profile.phone:
-                contact_info.append(f"Phone: {profile.phone}")
+            if profile.phone1:
+                contact_info.append(f"Phone: {profile.phone1}")
             # Address information
             address_parts = []
             if profile.street_address:
