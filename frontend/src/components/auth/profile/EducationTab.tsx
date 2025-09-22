@@ -2,10 +2,26 @@ import React from "react";
 import { GraduationCap } from "lucide-react";
 import { Input } from "../../ui/bits";
 
+// Education level options
+const EDUCATION_LEVELS = [
+  { value: "", label: "Select Level of Study" },
+  { value: "Primary Education", label: "Primary Education" },
+  { value: "Secondary Education", label: "Secondary Education" },
+  { value: "High School", label: "High School / Preparatoria" },
+  { value: "Vocational", label: "Vocational / Technical Training" },
+  { value: "Associate", label: "Associate Degree" },
+  { value: "Bachelor", label: "Bachelor's Degree" },
+  { value: "Master", label: "Master's Degree" },
+  { value: "Doctorate", label: "Doctorate / PhD" },
+  { value: "Postdoctoral", label: "Postdoctoral" },
+  { value: "Other", label: "Other" },
+];
+
 interface Education {
   id: string;
   institution: string;
   degree: string;
+  level: string;
   field_of_study: string;
   start_date: string;
   end_date: string;
@@ -27,8 +43,8 @@ const EducationTab: React.FC<EducationTabProps> = ({
   isEditMode,
   handleUpdateEducation,
   currentEducationPage,
-  totalEducationPages,
-  handleEducationPageChange,
+  totalEducationPages: _totalEducationPages,
+  handleEducationPageChange: _handleEducationPageChange,
 }) => {
   const educationPerPage = 1;
   const startIndex = (currentEducationPage - 1) * educationPerPage;
@@ -131,6 +147,44 @@ const EducationTab: React.FC<EducationTabProps> = ({
                             placeholder="Bachelor's, Master's, etc."
                             disabled={!isEditMode}
                           />
+                          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
+                        </div>
+                      </div>
+
+                      <div className="group">
+                        <label className="block text-sm font-semibold text-gray-800 mb-3 group-focus-within:text-blue-600 transition-colors">
+                          Level of Study
+                        </label>
+                        <div className="relative">
+                          <select
+                            value={edu.level || ""}
+                            onChange={(e) =>
+                              handleUpdateEducation(edu.id, "level", e.target.value)
+                            }
+                            className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus:border-blue-500 bg-transparent transition-colors hover:border-gray-400 appearance-none cursor-pointer"
+                            style={{
+                              borderBottom: '2px solid #d1d5db'
+                            }}
+                            onFocus={(e) => {
+                              e.target.style.borderBottom = '2px solid #3b82f6';
+                            }}
+                            onBlur={(e) => {
+                              e.target.style.borderBottom = '2px solid #d1d5db';
+                            }}
+                            disabled={!isEditMode}
+                          >
+                            {EDUCATION_LEVELS.map((level) => (
+                              <option key={level.value} value={level.value}>
+                                {level.label}
+                              </option>
+                            ))}
+                          </select>
+                          {/* Custom arrow icon for select */}
+                          <div className="absolute right-0 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </div>
                           <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
                         </div>
                       </div>

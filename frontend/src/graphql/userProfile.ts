@@ -71,13 +71,13 @@ export const GET_USER_PROFILE = gql`
       phonet2
 
       # Address information
-      streetAddress
-      apartmentSuite
-      city
-      stateProvince
-      zipCode
-      country
-      countryCode
+        streetAddress
+        apartmentSuite
+        city
+        stateProvince
+        zipCode
+    country
+    countryCode
 
       # Biography and social media
       bio
@@ -110,6 +110,7 @@ export const UPDATE_USER_PROFILE = gql`
     $preferredName: String
     $position: String
     $department: String
+    $company: String
     $phonecc1: String
     $phone1: String
     $phonet1: String
@@ -152,17 +153,18 @@ export const UPDATE_USER_PROFILE = gql`
       preferredName: $preferredName
       position: $position
       department: $department
+      company: $company
       phonecc1: $phonecc1
       phone1: $phone1
       phonet1: $phonet1
       phonecc2: $phonecc2
       phone2: $phone2
       phonet2: $phonet2
-      streetAddress: $streetAddress
-      apartmentSuite: $apartmentSuite
-      city: $city
-      stateProvince: $stateProvince
-      zipCode: $zipCode
+        streetAddress: $streetAddress
+        apartmentSuite: $apartmentSuite
+        city: $city
+        stateProvince: $stateProvince
+        zipCode: $zipCode
       country: $country
       countryCode: $countryCode
       bio: $bio
@@ -402,6 +404,7 @@ export interface UpdateUserProfileVariables {
   preferredName?: string;
   position?: string;
   department?: string;
+  company?: string;
   phonecc1?: string;
   phone1?: string;
   phonet1?: string;

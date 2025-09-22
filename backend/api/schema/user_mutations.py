@@ -209,7 +209,7 @@ class UpdateUserProfile(graphene.Mutation):
         work_address = graphene.String()
         work_city = graphene.String()
         work_state = graphene.String()
-        work_zip_code = graphene.String()
+        work_zipcode = graphene.String()
         work_country = graphene.String()
         work_country_code = graphene.String()
         work_schedule = graphene.String()
@@ -232,13 +232,13 @@ class UpdateUserProfile(graphene.Mutation):
         phonet2 = graphene.String()
 
         # Address information
-        street_address = graphene.String()
-        apartment_suite = graphene.String()
+        streetAddress = graphene.String()
+        apartmentSuite = graphene.String()
         city = graphene.String()
-        state_province = graphene.String()
-        zip_code = graphene.String()
+        stateProvince = graphene.String()
+        zipCode = graphene.String()
         country = graphene.String()
-        country_code = graphene.String()
+        countryCode = graphene.String()
 
         # Biography and social media
         bio = graphene.String()
@@ -318,7 +318,7 @@ class UpdateUserProfile(graphene.Mutation):
                 "work_address",
                 "work_city",
                 "work_state",
-                "work_zip_code",
+                "work_zipcode",
                 "work_country",
                 "work_country_code",
                 "work_schedule",
@@ -337,11 +337,11 @@ class UpdateUserProfile(graphene.Mutation):
                 "phonecc2",
                 "phone2",
                 "phonet2",
-                "street_address",
-                "apartment_suite",
+                "street",
+                "apartment",
                 "city",
-                "state_province",
-                "zip_code",
+                "state",
+                "zipcode",
                 "country",
                 "country_code",
                 "bio",
@@ -363,20 +363,6 @@ class UpdateUserProfile(graphene.Mutation):
             ]
             json_fields = ["education", "work_history", "profile_visibility"]
 
-            # Debug: Log address fields specifically
-            address_fields = [
-                "street_address",
-                "apartment_suite",
-                "city",
-                "state_province",
-                "zip_code",
-                "country",
-                "country_code",
-            ]
-            address_data = {
-                field: kwargs.get(field) for field in address_fields if field in kwargs
-            }
-
             # Update user fields
             for field in user_fields:
                 if field in kwargs and kwargs[field] is not None:
@@ -386,6 +372,20 @@ class UpdateUserProfile(graphene.Mutation):
                 field in kwargs and kwargs[field] is not None for field in user_fields
             ):
                 user.save()
+
+            # Map GraphQL arguments to database fields
+            field_mapping = {
+                "streetAddress": "street",
+                "apartmentSuite": "apartment",
+                "stateProvince": "state",
+                "zipCode": "zipcode",
+                "countryCode": "country_code",
+            }
+
+            # Apply field mapping
+            for graphql_field, db_field in field_mapping.items():
+                if graphql_field in kwargs and kwargs[graphql_field] is not None:
+                    kwargs[db_field] = kwargs[graphql_field]
 
             # Update profile fields
             for field in profile_fields:
@@ -408,11 +408,6 @@ class UpdateUserProfile(graphene.Mutation):
                         return result
 
             user_profile.save()
-
-            # Debug: Log what was saved
-            saved_address_data = {
-                field: getattr(user_profile, field) for field in address_fields
-            }
 
             result = cls()
             result.ok = True

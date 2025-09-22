@@ -30,12 +30,12 @@ interface CityTown {
 }
 
 interface AddressFormData {
-  street_address: string;
-  apartment_suite: string;
+  street: string;
+  apartment: string;
   country: string;
-  state_province: string;
+  state: string;
   city: string;
-  zip_code: string;
+  zipcode: string;
 }
 
 interface AddressFormProps {
@@ -71,25 +71,25 @@ const AddressForm: React.FC<AddressFormProps> = ({
       // Reset dependent fields
       onChange({
         ...value,
-        state_province: "",
+        state: "",
         city: "",
-        zip_code: "",
+        zipcode: "",
       });
     }
   }, [value.country]);
 
   // Load cities when state changes
   useEffect(() => {
-    if (value.state_province) {
-      loadCities(value.state_province);
+    if (value.state) {
+      loadCities(value.state);
       // Reset dependent fields
       onChange({
         ...value,
         city: "",
-        zip_code: "",
+        zipcode: "",
       });
     }
-  }, [value.state_province]);
+  }, [value.state]);
 
   const loadCountries = async () => {
     setLoading((prev) => ({ ...prev, countries: true }));
@@ -889,8 +889,8 @@ const AddressForm: React.FC<AddressFormProps> = ({
 
   const handleZipCodeChange = (zipCode: string) => {
     const error = validateZipCode(zipCode, value.country);
-    setErrors((prev) => ({ ...prev, zip_code: error }));
-    handleFieldChange("zip_code", zipCode);
+    setErrors((prev) => ({ ...prev, zipcode: error }));
+    handleFieldChange("zipcode", zipCode);
   };
 
   const getZipCodePlaceholder = (country: string) => {
@@ -918,8 +918,8 @@ const AddressForm: React.FC<AddressFormProps> = ({
         </label>
         <Input
           type="text"
-          value={value.street_address}
-          onChange={(e) => handleFieldChange("street_address", e.target.value)}
+          value={value.street}
+          onChange={(e) => handleFieldChange("street", e.target.value)}
           className="w-full"
           placeholder="123 Main Street"
         />
@@ -933,8 +933,8 @@ const AddressForm: React.FC<AddressFormProps> = ({
         </label>
         <Input
           type="text"
-          value={value.apartment_suite}
-          onChange={(e) => handleFieldChange("apartment_suite", e.target.value)}
+          value={value.apartment}
+          onChange={(e) => handleFieldChange("apartment", e.target.value)}
           className="w-full"
           placeholder="Apt 4B"
         />
@@ -980,9 +980,9 @@ const AddressForm: React.FC<AddressFormProps> = ({
         </label>
         <div className="relative">
           <select
-            value={value.state_province}
+            value={value.state}
             onChange={(e) =>
-              handleFieldChange("state_province", e.target.value)
+              handleFieldChange("state", e.target.value)
             }
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
             disabled={!value.country || loading.states}
@@ -1022,7 +1022,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
             value={value.city}
             onChange={(e) => handleFieldChange("city", e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
-            disabled={!value.state_province || loading.cities}
+            disabled={!value.state || loading.cities}
           >
             <option value="">Select a city/town</option>
             {cities.map((city) => (
@@ -1042,7 +1042,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
             {errors["cities"]}
           </p>
         )}
-        {!value.state_province && (
+        {!value.state && (
           <p className="text-sm text-gray-400 mt-1">
             Please select a state/province first
           </p>
@@ -1057,15 +1057,15 @@ const AddressForm: React.FC<AddressFormProps> = ({
         </label>
         <Input
           type="text"
-          value={value.zip_code}
+          value={value.zipcode}
           onChange={(e) => handleZipCodeChange(e.target.value)}
-          className={`w-full ${errors["zip_code"] ? "border-red-500" : ""}`}
+          className={`w-full ${errors["zipcode"] ? "border-red-500" : ""}`}
           placeholder={getZipCodePlaceholder(value.country)}
         />
-        {errors["zip_code"] && (
+        {errors["zipcode"] && (
           <p className="text-sm text-red-500 mt-1 flex items-center">
             <AlertCircle className="w-4 h-4 mr-1" />
-            {errors["zip_code"]}
+            {errors["zipcode"]}
           </p>
         )}
         {!value.city && (
@@ -1076,16 +1076,16 @@ const AddressForm: React.FC<AddressFormProps> = ({
       </div>
 
       {/* Address Preview */}
-      {value.street_address && value.city && value.country && (
+      {value.street && value.city && value.country && (
         <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
           <h4 className="text-sm font-medium text-gray-700 mb-2">
             Address Preview:
           </h4>
           <p className="text-sm text-gray-600">
-            {value.street_address}
-            {value.apartment_suite && `, ${value.apartment_suite}`}
+            {value.street}
+            {value.apartment && `, ${value.apartment}`}
             <br />
-            {value.city}, {value.state_province} {value.zip_code}
+            {value.city}, {value.state} {value.zipcode}
             <br />
             {value.country}
           </p>

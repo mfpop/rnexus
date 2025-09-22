@@ -6,7 +6,7 @@ const app = express()
 const PORT = process.env.MCP_PORT || 4001
 
 function readConfig() {
-  const configPath = path.resolve(__dirname, '../../mcp-config.json')
+  const configPath = path.resolve(__dirname, '../../config/mcp-config.json')
   try {
     const raw = fs.readFileSync(configPath, 'utf8')
     return JSON.parse(raw)

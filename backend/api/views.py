@@ -55,7 +55,19 @@ def simple_graphql_view(request: HttpRequest) -> JsonResponse:
 
     from api.schema import schema
 
-    # For unauthenticated users, set a default user for public queries
+    # Handle JWT authentication directly in GraphQL view
+    auth_header = request.META.get("HTTP_AUTHORIZATION", "")
+    if auth_header.startswith("Bearer "):
+        try:
+            from api.middleware import get_user_jwt
+
+            user = get_user_jwt(request)
+            if user and not isinstance(user, AnonymousUser):
+                request.user = user
+        except Exception:
+            pass
+
+    # Only set default user if no user is authenticated
     if not hasattr(request, "user") or isinstance(request.user, AnonymousUser):
         try:
             # Use admin user for public queries

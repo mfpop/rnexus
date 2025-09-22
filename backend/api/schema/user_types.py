@@ -153,11 +153,11 @@ class UserProfileType(DjangoObjectType):
             "phonecc2",
             "phone2",
             "phonet2",
-            "street_address",
-            "apartment_suite",
+            "street",
+            "apartment",
             "city",
-            "state_province",
-            "zip_code",
+            "state",
+            "zipcode",
             "country",
             "country_code",
             "bio",
@@ -214,11 +214,12 @@ class UserProfileType(DjangoObjectType):
     phonecc2 = graphene.String(source="phonecc2")
     phone2 = graphene.String(source="phone2")
     phonet2 = graphene.String(source="phonet2")
-    streetAddress = graphene.String(source="street_address")
-    apartmentSuite = graphene.String(source="apartment_suite")
-    stateProvince = graphene.String(source="state_province")
-    zipCode = graphene.String(source="zip_code")
+    streetAddress = graphene.String(source="street")
+    apartmentSuite = graphene.String(source="apartment")
+    stateProvince = graphene.String(source="state")
+    zipCode = graphene.String(source="zipcode")
     countryCode = graphene.String(source="country_code")
+
     shortBio = graphene.String(source="short_bio")
     education = graphene.JSONString(source="education")
     workHistory = graphene.JSONString(source="work_history")

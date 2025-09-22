@@ -21,11 +21,11 @@ import {
 
 interface AddressData {
   country: string;
-  state_province: string;
+  state: string;
   city: string;
-  zip_code: string;
-  street_address: string;
-  apartment_suite: string;
+  zipcode: string;
+  street: string;
+  apartment: string;
 }
 
 interface AddressCardProps {
@@ -53,8 +53,8 @@ const AddressCard: React.FC<AddressCardProps> = ({
     GetCitiesByStateData,
     GetCitiesByStateVariables
   >(GET_CITIES_BY_STATE, {
-    variables: { stateId: addressData.state_province },
-    skip: !addressData.state_province,
+    variables: { stateId: addressData.state },
+    skip: !addressData.state,
   });
   const { data: zipcodesData, loading: zipcodesLoading } = useQuery<
     GetZipcodesByCityData,
@@ -75,29 +75,29 @@ const AddressCard: React.FC<AddressCardProps> = ({
     const selectedCountry = countries.find((c: Country) => c.id === countryId);
     onAddressChange("country", selectedCountry?.code || "");
     // Reset dependent fields
-    onAddressChange("state_province", "");
+    onAddressChange("state", "");
     onAddressChange("city", "");
-    onAddressChange("zip_code", "");
+    onAddressChange("zipcode", "");
   };
 
   // Handle state change
   const handleStateChange = (stateId: string) => {
-    onAddressChange("state_province", stateId);
+    onAddressChange("state", stateId);
     // Reset dependent fields
     onAddressChange("city", "");
-    onAddressChange("zip_code", "");
+    onAddressChange("zipcode", "");
   };
 
   // Handle city change
   const handleCityChange = (cityId: string) => {
     onAddressChange("city", cityId);
     // Reset dependent field
-    onAddressChange("zip_code", "");
+    onAddressChange("zipcode", "");
   };
 
   // Handle zip code change
   const handleZipCodeChange = (zipcodeId: string) => {
-    onAddressChange("zip_code", zipcodeId);
+    onAddressChange("zipcode", zipcodeId);
   };
 
   // Handle text input changes
@@ -150,7 +150,7 @@ const AddressCard: React.FC<AddressCardProps> = ({
             State/Province <span className="text-red-500">*</span>
           </label>
           <select
-            value={addressData.state_province}
+            value={addressData.state}
             onChange={(e) => handleStateChange(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
             disabled={!addressData.country || statesLoading}
@@ -170,9 +170,9 @@ const AddressCard: React.FC<AddressCardProps> = ({
               Please select a country first
             </p>
           )}
-          {errors["state_province"] && (
+          {errors["state"] && (
             <p className="text-red-500 text-xs mt-1">
-              {errors["state_province"]}
+              {errors["state"]}
             </p>
           )}
         </div>
@@ -186,7 +186,7 @@ const AddressCard: React.FC<AddressCardProps> = ({
             value={addressData.city}
             onChange={(e) => handleCityChange(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-            disabled={!addressData.state_province || citiesLoading}
+            disabled={!addressData.state || citiesLoading}
           >
             <option value="">Select city</option>
             {cities.map((city: City) => (
@@ -198,7 +198,7 @@ const AddressCard: React.FC<AddressCardProps> = ({
           {citiesLoading && (
             <p className="text-xs text-gray-500 mt-1">Loading cities...</p>
           )}
-          {!addressData.state_province && (
+          {!addressData.state && (
             <p className="text-xs text-gray-500 mt-1">
               Please select a state/province first
             </p>
@@ -214,7 +214,7 @@ const AddressCard: React.FC<AddressCardProps> = ({
             ZIP Code <span className="text-red-500">*</span>
           </label>
           <select
-            value={addressData.zip_code}
+            value={addressData.zipcode}
             onChange={(e) => handleZipCodeChange(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
             disabled={!addressData.city || zipcodesLoading}
@@ -234,8 +234,8 @@ const AddressCard: React.FC<AddressCardProps> = ({
               Please select a city first
             </p>
           )}
-          {errors["zip_code"] && (
-            <p className="text-red-500 text-xs mt-1">{errors["zip_code"]}</p>
+          {errors["zipcode"] && (
+            <p className="text-red-500 text-xs mt-1">{errors["zipcode"]}</p>
           )}
         </div>
 
@@ -246,14 +246,14 @@ const AddressCard: React.FC<AddressCardProps> = ({
           </label>
           <Input
             type="text"
-            value={addressData.street_address}
-            onChange={handleTextChange("street_address")}
+            value={addressData.street}
+            onChange={handleTextChange("street")}
             className="w-full"
             placeholder="Enter street address"
           />
-          {errors["street_address"] && (
+          {errors["street"] && (
             <p className="text-red-500 text-xs mt-1">
-              {errors["street_address"]}
+              {errors["street"]}
             </p>
           )}
         </div>
@@ -265,45 +265,45 @@ const AddressCard: React.FC<AddressCardProps> = ({
           </label>
           <Input
             type="text"
-            value={addressData.apartment_suite}
-            onChange={handleTextChange("apartment_suite")}
+            value={addressData.apartment}
+            onChange={handleTextChange("apartment")}
             className="w-full"
             placeholder="Enter apartment/suite (optional)"
           />
-          {errors["apartment_suite"] && (
+          {errors["apartment"] && (
             <p className="text-red-500 text-xs mt-1">
-              {errors["apartment_suite"]}
+              {errors["apartment"]}
             </p>
           )}
         </div>
 
         {/* Address Summary */}
-        {(addressData.street_address || addressData.apartment_suite) && (
+        {(addressData.street || addressData.apartment) && (
           <div className="mt-4 p-3 bg-gray-50 rounded-md">
             <h4 className="text-sm font-medium text-gray-700 mb-2">
               Address Summary:
             </h4>
             <div className="text-sm text-gray-600">
-              {addressData.street_address && (
-                <div>{addressData.street_address}</div>
+              {addressData.street && (
+                <div>{addressData.street}</div>
               )}
-              {addressData.apartment_suite && (
-                <div>{addressData.apartment_suite}</div>
+              {addressData.apartment && (
+                <div>{addressData.apartment}</div>
               )}
               {cities.find((c: City) => c.id === addressData.city)?.name && (
                 <div>
                   {cities.find((c: City) => c.id === addressData.city)?.name}
                   {states.find(
-                    (s: State) => s.id === addressData.state_province,
+                    (s: State) => s.id === addressData.state,
                   )?.name &&
-                    `, ${states.find((s: State) => s.id === addressData.state_province)?.name}`}
+                    `, ${states.find((s: State) => s.id === addressData.state)?.name}`}
                   {countries.find(
                     (c: Country) => c.code === addressData.country,
                   )?.name &&
                     `, ${countries.find((c: Country) => c.code === addressData.country)?.name}`}
-                  {zipcodes.find((z: ZipCode) => z.id === addressData.zip_code)
+                  {zipcodes.find((z: ZipCode) => z.id === addressData.zipcode)
                     ?.code &&
-                    ` ${zipcodes.find((z: ZipCode) => z.id === addressData.zip_code)?.code}`}
+                    ` ${zipcodes.find((z: ZipCode) => z.id === addressData.zipcode)?.code}`}
                 </div>
               )}
             </div>

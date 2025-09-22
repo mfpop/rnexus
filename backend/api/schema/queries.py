@@ -1,9 +1,11 @@
+# type: ignore
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import Q
 
 import graphene
 
-from api.models import (
+from api.models import (  # type: ignore
     Activity,
     Chat,
     City,
@@ -73,11 +75,18 @@ class Query(graphene.ObjectType):
     all_states = graphene.List(StateType, country_code=graphene.String())
     state = graphene.Field(StateType, id=graphene.ID())
     all_cities = graphene.List(
-        CityType, state_id=graphene.ID(), country_code=graphene.String()
+        CityType,
+        state_id=graphene.ID(),
+        state_name=graphene.String(),
+        country_code=graphene.String(),
     )
     city = graphene.Field(CityType, id=graphene.ID())
     all_zipcodes = graphene.List(
-        ZipCodeType, city_id=graphene.ID(), state_id=graphene.ID()
+        ZipCodeType,
+        city_id=graphene.ID(),
+        city_name=graphene.String(),
+        state_id=graphene.ID(),
+        state_name=graphene.String(),
     )
     zipcode = graphene.Field(ZipCodeType, id=graphene.ID(), code=graphene.String())
 
@@ -155,12 +164,10 @@ class Query(graphene.ObjectType):
 
     def resolve_user_chats(self, info, user_id=None, **kwargs):
         if user_id:
-            return Chat.objects.filter(
-                models.Q(user1_id=user_id)
-                | models.Q(user2_id=user_id)
-                | models.Q(members__contains=user_id),
-                is_active=True,
-            ).order_by("-last_activity")
+            query = (
+                Q(user1_id=user_id) | Q(user2_id=user_id) | Q(members__contains=user_id)
+            )
+            return Chat.objects.filter(query, is_active=True).order_by("-last_activity")
         return Chat.objects.none()
 
     def resolve_archived_chats(self, info, **kwargs):
@@ -170,12 +177,9 @@ class Query(graphene.ObjectType):
             return []
 
         try:
+            query = Q(user1=user) | Q(user2=user) | Q(members__contains=str(user.id))
             return Chat.objects.filter(
-                models.Q(user1=user)
-                | models.Q(user2=user)
-                | models.Q(members__contains=str(user.id)),
-                is_archived=True,
-                is_active=True,
+                query, is_archived=True, is_active=True
             ).order_by("-archived_at")
         except Exception as e:
             print(f"Error loading archived chats: {e}")
@@ -374,12 +378,16 @@ class Query(graphene.ObjectType):
         except State.DoesNotExist:
             return None
 
-    def resolve_all_cities(self, info, state_id=None, country_code=None, **kwargs):
+    def resolve_all_cities(
+        self, info, state_id=None, state_name=None, country_code=None, **kwargs
+    ):
         """Get all active cities, optionally filtered by state or country"""
         queryset = City.objects.filter(is_active=True)
 
         if state_id:
             queryset = queryset.filter(state_id=state_id)
+        elif state_name:
+            queryset = queryset.filter(state__name=state_name)
         elif country_code:
             queryset = queryset.filter(country__code=country_code.upper())
 
@@ -394,14 +402,26 @@ class Query(graphene.ObjectType):
         except City.DoesNotExist:
             return None
 
-    def resolve_all_zipcodes(self, info, city_id=None, state_id=None, **kwargs):
+    def resolve_all_zipcodes(
+        self,
+        info,
+        city_id=None,
+        city_name=None,
+        state_id=None,
+        state_name=None,
+        **kwargs,
+    ):
         """Get all active ZIP codes, optionally filtered by city or state"""
         queryset = ZipCode.objects.filter(is_active=True)
 
         if city_id:
             queryset = queryset.filter(city_id=city_id)
+        elif city_name:
+            queryset = queryset.filter(city__name=city_name)
         elif state_id:
             queryset = queryset.filter(state_id=state_id)
+        elif state_name:
+            queryset = queryset.filter(state__name=state_name)
 
         return queryset.select_related("city", "state", "country").order_by("code")
 
@@ -419,3 +439,57 @@ class Query(graphene.ObjectType):
             return None
         except ZipCode.DoesNotExist:
             return None
+
+    # Department resolvers
+    def resolve_all_departments(self, info, **kwargs):
+        """Get all departments"""
+        return Department.objects.all().order_by("name")
+
+    def resolve_department(self, info, id, **kwargs):
+        """Get department by ID"""
+        try:
+            return Department.objects.get(id=id)
+        except Department.DoesNotExist:
+            return None
+
+    # Role resolvers
+    def resolve_all_roles(self, info, **kwargs):
+        """Get all roles"""
+        return Role.objects.all().order_by("title")
+
+    def resolve_role(self, info, id, **kwargs):
+        """Get role by ID"""
+        try:
+            return Role.objects.get(id=id)
+        except Role.DoesNotExist:
+            return None
+
+    def resolve_roles_by_department(self, info, department_id, **kwargs):
+        """Get roles by department ID"""
+        return Role.objects.filter(department_id=department_id).order_by("title")
+
+    # Employee resolvers
+    def resolve_all_employees(self, info, **kwargs):
+        """Get all employees"""
+        return Employee.objects.all().order_by("user__last_name", "user__first_name")
+
+    def resolve_employee(self, info, id, **kwargs):
+        """Get employee by ID"""
+        try:
+            return Employee.objects.get(id=id)
+        except Employee.DoesNotExist:
+            return None
+
+    def resolve_employees_by_role(self, info, role_id, **kwargs):
+        """Get employees by role ID"""
+        return Employee.objects.filter(role_id=role_id).order_by(
+            "user__last_name", "user__first_name"
+        )
+
+    def resolve_organizational_hierarchy(self, info, **kwargs):
+        """Get organizational hierarchy (all roles with their departments)"""
+        return (
+            Role.objects.select_related("department")
+            .all()
+            .order_by("department__name", "title")
+        )

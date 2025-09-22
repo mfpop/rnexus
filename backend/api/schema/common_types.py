@@ -42,7 +42,7 @@ class ItemType(DjangoObjectType):
 class DepartmentType(DjangoObjectType):
     class Meta:
         model = Department
-        fields = ("name", "description")
+        fields = ("id", "name", "description")
 
     isActive = graphene.Boolean(source="is_active")
 
@@ -50,7 +50,7 @@ class DepartmentType(DjangoObjectType):
 class RoleType(DjangoObjectType):
     class Meta:
         model = Role
-        fields = ("title", "description", "department", "reports_to")
+        fields = ("id", "title", "description", "department", "reports_to")
 
     isActive = graphene.Boolean(source="is_active")
 

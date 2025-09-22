@@ -1,0 +1,374 @@
+import Reac  // Helper function to calculate work experience
+  const calculateWorkExperience = (workHistory: any) => {
+    console.log('Work History Data:', workHistory);
+
+    if (!workHistory) return { totalMonths: 0, companies: 0 };
+
+  let parsedWorkHistory = [];
+
+  if (Array.isArray(workHistory)) {
+    parsedWorkHistory = workHistory;
+  } else if (typeof workHistory === 'string' && workHistory.trim()) {
+    try {
+      parsedWorkHistory = JSON.parse(workHistory);
+      if (!Array.isArray(parsedWorkHistory)) return { totalMonths: 0, companies: 0 };
+    } catch {
+      return { totalMonths: 0, companies: 0 };
+    }
+  }
+
+  console.log('Parsed Work History:', parsedWorkHistory);
+
+  const companies = parsedWorkHistory.length;
+  let totalMonths = 0;ort {
+  Lightbulb,
+  EyeOff,
+  Settings,
+  Share2,
+} from "lucide-react";
+import { useQuery } from "@apollo/client";
+import { GET_USER_PROFILE } from "../../graphql/userProfile";
+import { computeProfileCompletion } from "../../lib/profileCompletion";
+
+// Helper function to calculate total work experience
+const calculateWorkExperience = (workHistory: any) => {
+  if (!workHistory) return { totalMonths: 0, companies: 0 };
+
+  let parsedWorkHistory = [];
+
+  if (Array.isArray(workHistory)) {
+    parsedWorkHistory = workHistory;
+  } else if (typeof workHistory === 'string' && workHistory.trim()) {
+    try {
+      parsedWorkHistory = JSON.parse(workHistory);
+      if (!Array.isArray(parsedWorkHistory)) return { totalMonths: 0, companies: 0 };
+    } catch {
+      return { totalMonths: 0, companies: 0 };
+    }
+  }
+
+  const companies = parsedWorkHistory.length;
+  let totalMonths = 0;
+
+  parsedWorkHistory.forEach((job: any) => {
+    if (job.startDate) {
+      // Handle different date formats
+      let startDate, endDate;
+
+      // Try to parse start date
+      if (typeof job.startDate === 'string') {
+        // Handle MM/DD/YYYY format
+        if (job.startDate.includes('/')) {
+          const [month, day, year] = job.startDate.split('/');
+          startDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        } else {
+          startDate = new Date(job.startDate);
+        }
+      } else {
+        startDate = new Date(job.startDate);
+      }
+
+      // Try to parse end date
+      if (job.endDate) {
+        if (typeof job.endDate === 'string') {
+          // Handle MM/DD/YYYY format
+          if (job.endDate.includes('/')) {
+            const [month, day, year] = job.endDate.split('/');
+            endDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+          } else {
+            endDate = new Date(job.endDate);
+          }
+        } else {
+          endDate = new Date(job.endDate);
+        }
+      } else {
+        endDate = new Date(); // Current date if no end date
+      }
+
+      // Calculate months if both dates are valid
+      if (startDate && !isNaN(startDate.getTime()) && endDate && !isNaN(endDate.getTime())) {
+        const monthsDiff = (endDate.getFullYear() - startDate.getFullYear()) * 12 +
+                          (endDate.getMonth() - startDate.getMonth());
+        totalMonths += Math.max(0, monthsDiff);
+      }
+    }
+  });
+
+  return { totalMonths, companies };
+};
+
+const ProfileLeftCard: React.FC = () => {
+  const [percent, setPercent] = React.useState<number>(0);
+  const [details, setDetails] = React.useState({
+    basicInfo: false,
+    contact: false,
+    address: false,
+    professional: false,
+    education: false,
+    work: false,
+    bio: false,
+  });
+  // Removed privacyLevel state, cards are now static
+  const [showTips, setShowTips] = React.useState(true);
+
+  // Use GraphQL query instead of REST API
+  const { data: profileQueryData, loading, error: profileError } = useQuery(GET_USER_PROFILE);
+
+  // Process GraphQL data when it's available
+  React.useEffect(() => {
+    if (profileQueryData?.userProfile) {
+      // Transform GraphQL data to match computeProfileCompletion expectations
+      const profile = profileQueryData.userProfile;
+      const flattenedProfile = {
+        // Basic info from nested user object
+        first_name: profile.user?.firstName,
+        last_name: profile.user?.lastName,
+        email: profile.user?.email,
+        // Direct profile fields
+        position: profile.position,
+        department: profile.department,
+        phone1: profile.phone1, // Updated to use new phone field
+        phonecc1: profile.phonecc1, // Added country code
+        street: profile.streetAddress,
+        city: profile.city,
+        state: profile.stateProvince,
+        zipcode: profile.zipCode,
+        country: profile.country,
+        bio: profile.bio,
+        education: profile.education,
+        work_history: profile.workHistory,
+      };
+
+      const { percent, details } = computeProfileCompletion(flattenedProfile);
+      console.log('Profile completion calculation:', { flattenedProfile, percent, details });
+      setPercent(percent);
+      setDetails(details);
+    }
+  }, [profileQueryData]);
+
+  // Listen for profile updates to refresh completion data
+  React.useEffect(() => {
+    const handler = () => {
+      // GraphQL will automatically refetch when profile is updated
+      // No need to manually reload
+    };
+    (window as any).addEventListener("profile-updated", handler);
+    return () => {
+      (window as any).removeEventListener("profile-updated", handler);
+    };
+  }, []);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="h-full w-full bg-gradient-to-br from-slate-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (profileError) {
+    return (
+      <div className="h-full w-full bg-gradient-to-br from-slate-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">Error Loading Profile</h3>
+          <p className="text-red-600 mb-6">{profileError.message}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 hover:shadow-md px-6 py-2.5 rounded-lg transition-all duration-200"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full w-full bg-slate-50 flex flex-col overflow-hidden border-r border-gray-200">
+      {/* Clean Header with Profile Completion */}
+      <div className="p-6 bg-white border-b border-gray-200 flex-shrink-0">
+        <div className="space-y-4">
+          {/* Profile Completion Status */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-gray-900">Profile Completion</h3>
+              <span className="text-lg font-bold text-gray-900">{loading ? "..." : `${percent}%`}</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
+              <div
+                className={`h-2 rounded-full transition-all duration-500 ${
+                  percent >= 80 ? 'bg-green-500' : percent >= 50 ? 'bg-blue-500' : 'bg-amber-500'
+                }`}
+                style={{ width: `${percent}%` }}
+              ></div>
+            </div>
+
+            {/* Completion Details - Simple Grid */}
+            <div className="grid grid-cols-4 gap-2">
+              <div className="text-center">
+                <div className={`w-2 h-2 rounded-full mx-auto mb-1 ${details.basicInfo ? "bg-green-500" : "bg-gray-300"}`}></div>
+                <span className="text-xs text-gray-600">Basic</span>
+              </div>
+              <div className="text-center">
+                <div className={`w-2 h-2 rounded-full mx-auto mb-1 ${details.contact ? "bg-green-500" : "bg-gray-300"}`}></div>
+                <span className="text-xs text-gray-600">Contact</span>
+              </div>
+              <div className="text-center">
+                <div className={`w-2 h-2 rounded-full mx-auto mb-1 ${details.address ? "bg-green-500" : "bg-gray-300"}`}></div>
+                <span className="text-xs text-gray-600">Address</span>
+              </div>
+              <div className="text-center">
+                <div className={`w-2 h-2 rounded-full mx-auto mb-1 ${details.professional ? "bg-green-500" : "bg-gray-300"}`}></div>
+                <span className="text-xs text-gray-600">Work</span>
+              </div>
+            </div>
+          </div>
+
+          {profileError && (
+            <div className="text-red-600 text-sm bg-red-50 p-3 rounded-lg border border-red-200">
+              Error loading profile data
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Content Area - Section-based design like Profile Completion */}
+      <div className="flex-1 flex flex-col overflow-hidden min-h-0 p-6 space-y-6">
+
+        {/* Profile Summary Section */}
+        <div className="space-y-3">
+          <h4 className="text-sm font-semibold text-gray-900">Profile Summary</h4>
+
+          {/* Education */}
+          <div className="space-y-1">
+            <div className="text-sm font-medium text-gray-700">Education:</div>
+            <div className="text-sm text-gray-600 ml-2">
+              {(() => {
+                const education = profileQueryData?.userProfile?.education;
+                let educationData = [];
+
+                if (Array.isArray(education)) {
+                  educationData = education;
+                } else if (typeof education === 'string' && education.trim()) {
+                  try {
+                    const parsed = JSON.parse(education);
+                    educationData = Array.isArray(parsed) ? parsed : [];
+                  } catch {
+                    educationData = [];
+                  }
+                }
+
+                if (educationData.length === 0) return "Not specified";
+
+                // Find highest level of education
+                const levels = educationData.map(edu => edu.degree || edu.level || "").filter(Boolean);
+                if (levels.length === 0) return "Not specified";
+
+                // Education hierarchy (highest to lowest)
+                const hierarchy = ["PhD", "Doctorate", "Master", "Bachelor", "Associate", "Diploma", "Certificate"];
+
+                for (const level of hierarchy) {
+                  if (levels.some(l => l.toLowerCase().includes(level.toLowerCase()))) {
+                    return level;
+                  }
+                }
+
+                return levels[0]; // Return first if no standard level found
+              })()}
+            </div>
+          </div>
+
+          {/* Work Experience */}
+          <div className="space-y-1">
+            <div className="text-sm font-medium text-gray-700">Work Experience:</div>
+            <div className="ml-2 space-y-1">
+              <div className="text-sm text-gray-600">
+                - Worked time: {(() => {
+                  const workHistory = profileQueryData?.userProfile?.workHistory;
+                  const { totalMonths } = calculateWorkExperience(workHistory);
+
+                  if (totalMonths === 0) return "No experience";
+
+                  const years = Math.floor(totalMonths / 12);
+                  const months = totalMonths % 12;
+
+                  if (years === 0) {
+                    return `${months} month${months !== 1 ? 's' : ''}`;
+                  } else if (months === 0) {
+                    return `${years} year${years !== 1 ? 's' : ''}`;
+                  } else {
+                    return `${years} year${years !== 1 ? 's' : ''} and ${months} month${months !== 1 ? 's' : ''}`;
+                  }
+                })()}
+              </div>
+              <div className="text-sm text-gray-600">
+                - Companies: {(() => {
+                  const workHistory = profileQueryData?.userProfile?.workHistory;
+                  const { companies } = calculateWorkExperience(workHistory);
+                  return companies;
+                })()}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Actions Section */}
+        <div className="space-y-3">
+          <h4 className="text-sm font-semibold text-gray-900">Quick Actions</h4>
+          <div className="space-y-2">
+            <button className="w-full flex items-center gap-3 p-3 text-left hover:bg-gray-50 rounded-lg transition-colors">
+              <Share2 className="w-4 h-4 text-gray-500" />
+              <span className="text-sm text-gray-700">Share Profile</span>
+            </button>
+            <button className="w-full flex items-center gap-3 p-3 text-left hover:bg-gray-50 rounded-lg transition-colors">
+              <Settings className="w-4 h-4 text-gray-500" />
+              <span className="text-sm text-gray-700">Privacy Settings</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Profile Tips Section */}
+        {showTips && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Lightbulb className="w-4 h-4 text-blue-600" />
+                <h4 className="text-sm font-semibold text-gray-900">Profile Tips</h4>
+              </div>
+              <button
+                onClick={() => setShowTips(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+                aria-label="Hide tips"
+              >
+                <EyeOff className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="space-y-2">
+              {!details.education && (
+                <p className="text-sm text-gray-600">Add your education to increase profile completion</p>
+              )}
+              {!details.bio && (
+                <p className="text-sm text-gray-600">Write a professional bio to showcase your expertise</p>
+              )}
+              {!details.work && (
+                <p className="text-sm text-gray-600">Document your work experience for better visibility</p>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ProfileLeftCard;

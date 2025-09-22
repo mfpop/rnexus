@@ -186,11 +186,11 @@ class UserProfile(models.Model):
     )
 
     # Address information
-    street_address = models.CharField(max_length=255, blank=True, null=True)
-    apartment_suite = models.CharField(max_length=100, blank=True, null=True)
+    street = models.CharField(max_length=255, blank=True, null=True)
+    apartment = models.CharField(max_length=100, blank=True, null=True)
     city = models.CharField(max_length=100, blank=True, null=True)
-    state_province = models.CharField(max_length=100, blank=True, null=True)
-    zip_code = models.CharField(max_length=20, blank=True, null=True)
+    state = models.CharField(max_length=100, blank=True, null=True)
+    zipcode = models.CharField(max_length=20, blank=True, null=True)
     country = models.CharField(max_length=100, blank=True, null=True)
     country_code = models.CharField(max_length=10, blank=True, null=True)
 

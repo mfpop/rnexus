@@ -4,11 +4,12 @@ export interface ProfileLike {
   last_name?: string;
   position?: string;
   department?: string;
-  phone?: string;
-  street_address?: string;
+  phone1?: string; // Updated to use new phone field
+  phonecc1?: string; // Added country code field
+  street?: string;
   city?: string;
-  state_province?: string;
-  zip_code?: string;
+  state?: string;
+  zipcode?: string;
   country?: string;
   bio?: string;
   education?: Array<Record<string, any>>;
@@ -64,22 +65,22 @@ export function computeProfileCompletion(
   const basicScore = (basicCount / 3) * W_BASIC;
   const basicInfo = basicCount === 3;
 
-  // Contact: phone
-  const contact = val(p.phone);
+  // Contact: phone1 (primary phone number)
+  const contact = val(p.phone1);
   const contactScore = contact ? W_CONTACT : 0;
 
   // Address: street, city, state, zip, country — partial credit
   const addrFields = [
-    p.street_address,
+    p.street,
     p.city,
-    p.state_province,
-    p.zip_code,
+    p.state,
+    p.zipcode,
     p.country,
   ];
   const addrCount = addrFields.map(val).filter(Boolean).length;
   const addressScore = (addrCount / 5) * W_ADDRESS;
 
-  // Professional: position, department — partial
+  // Professional: position OR department (more lenient)
   const proCount = [val(p.position), val(p.department)].filter(Boolean).length;
   const professionalScore = (proCount / 2) * W_PRO;
 
@@ -116,7 +117,7 @@ export function computeProfileCompletion(
       basicInfo,
       contact,
       address: addrCount >= 3,
-      professional: proCount === 2,
+      professional: proCount >= 1, // At least one professional field (more lenient)
       education,
       work,
       bio,

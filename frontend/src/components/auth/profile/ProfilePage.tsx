@@ -42,11 +42,11 @@ interface ProfileData {
 
     // Address
   country?: string;
-  state_province?: string;
+  state?: string;
   city?: string;
-  zip_code?: string;
-  street_address?: string;
-  apartment_suite?: string;
+  zipcode?: string;
+  street?: string;
+  apartment?: string;
   country_code?: string;
 
   // Contact
@@ -124,11 +124,11 @@ export const ProfilePage: React.FC = () => {
         avatar_url: data.userProfile.avatarUrl || "",
 
         // Address
-        street_address: data.userProfile.streetAddress || "",
-        apartment_suite: data.userProfile.apartmentSuite || "",
+        street: data.userProfile.streetAddress || "",
+        apartment: data.userProfile.apartmentSuite || "",
         city: data.userProfile.city || "",
-        state_province: data.userProfile.stateProvince || "",
-        zip_code: data.userProfile.zipCode || "",
+        state: data.userProfile.stateProvince || "",
+        zipcode: data.userProfile.zipCode || "",
         country: data.userProfile.country || "",
         country_code: data.userProfile.countryCode || "",
 
@@ -227,11 +227,11 @@ export const ProfilePage: React.FC = () => {
             data={{
               country: profileData.country,
               country_code: profileData.country_code,
-              state_province: profileData.state_province,
+              state: profileData.state,
               city: profileData.city,
-              zip_code: profileData.zip_code,
-              street_address: profileData.street_address,
-              apartment_suite: profileData.apartment_suite,
+              zipcode: profileData.zipcode,
+              street: profileData.street,
+              apartment: profileData.apartment,
             }}
             onChange={handleAddressChange}
           />

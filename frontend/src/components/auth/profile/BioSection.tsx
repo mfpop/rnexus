@@ -1,7 +1,7 @@
 // src/components/auth/profile/BioSection.tsx
 
 import React, { useState, useEffect } from "react";
-import { FileText, Globe, Linkedin, Twitter, Github, Facebook, Instagram } from "lucide-react";
+import { Globe, Linkedin, Twitter, Github, Facebook, Instagram } from "lucide-react";
 import { useAutosave } from "./ProfileAutosaveProvider";
 
 interface BioData {
@@ -19,14 +19,16 @@ interface BioSectionProps {
   data: BioData;
   onChange: (field: keyof BioData, value: string) => void;
   errors?: Record<string, string>;
+  isEditMode?: boolean;
 }
 
 export const BioSection: React.FC<BioSectionProps> = ({
   data,
   onChange,
   errors = {},
+  isEditMode = false,
 }) => {
-  const { autosaveField, isAutosaving } = useAutosave();
+  const { autosaveField } = useAutosave();
   const [localData, setLocalData] = useState<BioData>(data);
 
   // Update local state when props change
@@ -47,28 +49,26 @@ export const BioSection: React.FC<BioSectionProps> = ({
     <div className="flex flex-col h-full profile-form">
       {/* Biography Section - Takes most of the available vertical space */}
       <div className="group flex-1 flex flex-col min-h-[400px] mb-0">
-        <label className="block text-sm font-semibold text-gray-800 mb-2 group-focus-within:text-blue-600 transition-colors">
-          Biography
-        </label>
+        <h3 className="text-lg font-bold text-gray-900 font-sans mb-2">Biography</h3>
         <div className="relative flex-1 min-h-0">
           <textarea
             value={localData.bio || ""}
             onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
               handleFieldChange("bio", e.target.value)
             }
-                className="w-full h-full min-h-[400px] border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400 resize-none"
-                style={{
-                  borderBottom: '2px solid #d1d5db'
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderBottom = 'none';
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderBottom = '2px solid #d1d5db';
-                }}
+            className="w-full h-full min-h-[400px] border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400 resize-none disabled:text-gray-400 disabled:placeholder-gray-400"
+            style={{
+              borderBottom: '2px solid #d1d5db'
+            }}
+            onFocus={(e) => {
+              e.target.style.borderBottom = 'none';
+            }}
+            onBlur={(e) => {
+              e.target.style.borderBottom = '2px solid #d1d5db';
+            }}
             placeholder="Tell us your story, experiences, and what makes you unique..."
+            disabled={!isEditMode}
           />
-          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500 to-purple-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
         </div>
         {errors["bio"] && (
           <p className="text-red-500 text-sm mt-1">{errors["bio"]}</p>
@@ -76,11 +76,11 @@ export const BioSection: React.FC<BioSectionProps> = ({
       </div>
 
       {/* Social Links Section - Compact at bottom */}
-      <div className="space-y-2">
-        <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-          <FileText className="w-4 h-4 text-purple-600" />
-          Social Links
-        </h4>
+      <div className="space-y-4">
+        {/* Social Links Title */}
+        <div className="mt-6">
+          <h3 className="text-lg font-bold text-gray-900 font-sans">Social Links</h3>
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Website */}
@@ -91,7 +91,8 @@ export const BioSection: React.FC<BioSectionProps> = ({
                 type="url"
                 value={localData.website || ""}
                 onChange={(e) => handleFieldChange("website", e.target.value)}
-                className="w-full border-0 border-b-2 border-gray-300 rounded-none pl-6 pr-0 py-3 h-12 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                className="w-full border-0 border-b-2 border-gray-300 rounded-none pl-6 pr-0 py-3 h-12 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400 disabled:text-gray-400 disabled:placeholder-gray-400"
+                disabled={!isEditMode}
                 style={{
                   borderBottom: '2px solid #d1d5db'
                 }}
@@ -103,7 +104,7 @@ export const BioSection: React.FC<BioSectionProps> = ({
                 }}
                 placeholder="Website URL"
               />
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500 to-purple-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
             </div>
             {errors["website"] && (
               <p className="text-red-500 text-sm mt-1">{errors["website"]}</p>
@@ -118,7 +119,8 @@ export const BioSection: React.FC<BioSectionProps> = ({
                 type="url"
                 value={localData.linkedin || ""}
                 onChange={(e) => handleFieldChange("linkedin", e.target.value)}
-                className="w-full border-0 border-b-2 border-gray-300 rounded-none pl-6 pr-0 py-3 h-12 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                className="w-full border-0 border-b-2 border-gray-300 rounded-none pl-6 pr-0 py-3 h-12 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400 disabled:text-gray-400 disabled:placeholder-gray-400"
+                disabled={!isEditMode}
                 style={{
                   borderBottom: '2px solid #d1d5db'
                 }}
@@ -130,7 +132,7 @@ export const BioSection: React.FC<BioSectionProps> = ({
                 }}
                 placeholder="LinkedIn URL"
               />
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500 to-purple-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
             </div>
             {errors["linkedin"] && (
               <p className="text-red-500 text-sm mt-1">{errors["linkedin"]}</p>
@@ -145,7 +147,8 @@ export const BioSection: React.FC<BioSectionProps> = ({
                 type="url"
                 value={localData.twitter || ""}
                 onChange={(e) => handleFieldChange("twitter", e.target.value)}
-                className="w-full border-0 border-b-2 border-gray-300 rounded-none pl-6 pr-0 py-3 h-12 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                className="w-full border-0 border-b-2 border-gray-300 rounded-none pl-6 pr-0 py-3 h-12 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400 disabled:text-gray-400 disabled:placeholder-gray-400"
+                disabled={!isEditMode}
                 style={{
                   borderBottom: '2px solid #d1d5db'
                 }}
@@ -157,7 +160,7 @@ export const BioSection: React.FC<BioSectionProps> = ({
                 }}
                 placeholder="Twitter URL"
               />
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500 to-purple-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
             </div>
             {errors["twitter"] && (
               <p className="text-red-500 text-sm mt-1">{errors["twitter"]}</p>
@@ -172,7 +175,8 @@ export const BioSection: React.FC<BioSectionProps> = ({
                 type="url"
                 value={localData.github || ""}
                 onChange={(e) => handleFieldChange("github", e.target.value)}
-                className="w-full border-0 border-b-2 border-gray-300 rounded-none pl-6 pr-0 py-3 h-12 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                className="w-full border-0 border-b-2 border-gray-300 rounded-none pl-6 pr-0 py-3 h-12 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400 disabled:text-gray-400 disabled:placeholder-gray-400"
+                disabled={!isEditMode}
                 style={{
                   borderBottom: '2px solid #d1d5db'
                 }}
@@ -184,7 +188,7 @@ export const BioSection: React.FC<BioSectionProps> = ({
                 }}
                 placeholder="GitHub URL"
               />
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500 to-purple-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
             </div>
             {errors["github"] && (
               <p className="text-red-500 text-sm mt-1">{errors["github"]}</p>
@@ -199,7 +203,8 @@ export const BioSection: React.FC<BioSectionProps> = ({
                 type="url"
                 value={localData.facebook || ""}
                 onChange={(e) => handleFieldChange("facebook", e.target.value)}
-                className="w-full border-0 border-b-2 border-gray-300 rounded-none pl-6 pr-0 py-3 h-12 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                className="w-full border-0 border-b-2 border-gray-300 rounded-none pl-6 pr-0 py-3 h-12 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400 disabled:text-gray-400 disabled:placeholder-gray-400"
+                disabled={!isEditMode}
                 style={{
                   borderBottom: '2px solid #d1d5db'
                 }}
@@ -211,7 +216,7 @@ export const BioSection: React.FC<BioSectionProps> = ({
                 }}
                 placeholder="Facebook URL"
               />
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500 to-purple-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
             </div>
             {errors["facebook"] && (
               <p className="text-red-500 text-sm mt-1">{errors["facebook"]}</p>
@@ -226,7 +231,8 @@ export const BioSection: React.FC<BioSectionProps> = ({
                 type="url"
                 value={localData.instagram || ""}
                 onChange={(e) => handleFieldChange("instagram", e.target.value)}
-                className="w-full border-0 border-b-2 border-gray-300 rounded-none pl-6 pr-0 py-3 h-12 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400"
+                className="w-full border-0 border-b-2 border-gray-300 rounded-none pl-6 pr-0 py-3 h-12 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400 disabled:text-gray-400 disabled:placeholder-gray-400"
+                disabled={!isEditMode}
                 style={{
                   borderBottom: '2px solid #d1d5db'
                 }}
@@ -238,7 +244,7 @@ export const BioSection: React.FC<BioSectionProps> = ({
                 }}
                 placeholder="Instagram URL"
               />
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500 to-purple-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
             </div>
             {errors["instagram"] && (
               <p className="text-red-500 text-sm mt-1">{errors["instagram"]}</p>
@@ -246,13 +252,6 @@ export const BioSection: React.FC<BioSectionProps> = ({
           </div>
         </div>
 
-        {/* Autosave Status */}
-        {isAutosaving && (
-          <div className="mt-4 flex items-center gap-2 text-sm text-purple-600">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600"></div>
-            Saving...
-          </div>
-        )}
       </div>
     </div>
   );

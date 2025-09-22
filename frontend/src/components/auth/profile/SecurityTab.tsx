@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Key, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { Button, Input, NotificationToast } from "../../ui/bits";
 
 interface SecurityTabProps {

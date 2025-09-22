@@ -60,11 +60,11 @@ interface ProfileData {
   secondary_country_code?: string;
   secondary_phone_type?: string;
   country?: string;
-  state_province?: string;
+  state?: string;
   city?: string;
-  zip_code?: string;
-  street_address?: string;
-  apartment_suite?: string;
+  zipcode?: string;
+  street?: string;
+  apartment?: string;
   country_code?: string;
   position?: string;
   department?: string;
@@ -132,6 +132,11 @@ const ProfileRightCard: React.FC = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("general");
   const [isEditMode, setIsEditMode] = useState(false);
+
+  // Debug logging for isEditMode changes
+  useEffect(() => {
+    console.log("ProfileRightCard: isEditMode changed to:", isEditMode);
+  }, [isEditMode]);
   const [notification, setNotification] = useState<{
     type: 'success' | 'error' | null;
     message: string;
@@ -158,7 +163,9 @@ const ProfileRightCard: React.FC = () => {
 
   // Debug logging
   const [uploadAvatarMutation] = useMutation(UPLOAD_AVATAR);
-  const [updateUserProfileMutation] = useMutation(UPDATE_USER_PROFILE);
+  const [updateUserProfileMutation] = useMutation(UPDATE_USER_PROFILE, {
+    refetchQueries: [{ query: GET_USER_PROFILE }],
+  });
   const [changePasswordMutation] = useMutation(CHANGE_PASSWORD);
 
   // Tab configuration
@@ -209,13 +216,13 @@ const ProfileRightCard: React.FC = () => {
         // Map personal information fields
         birthname: userProfile.birthname,
         // Map address fields
-        street_address: userProfile.streetAddress,
-        apartment_suite: userProfile.apartmentSuite,
+        street: userProfile.streetAddress,
+        apartment: userProfile.apartmentSuite,
         city: userProfile.city,
-        zip_code: userProfile.zipCode,
+        zipcode: userProfile.zipCode,
         country: userProfile.country,
         country_code: userProfile.countryCode,
-        state_province: userProfile.stateProvince,
+        state: userProfile.stateProvince,
         // Map phone fields
         phone: userProfile.phone,
         primary_country_code: userProfile.primaryCountryCode,
@@ -234,6 +241,7 @@ const ProfileRightCard: React.FC = () => {
         // Normalize profile visibility to camelCase key in local state
         profileVisibility: toObject(userProfile.profileVisibility ?? userProfile.profile_visibility),
       }));
+
     }
   }, [profileQueryData]);
 
@@ -247,61 +255,51 @@ const ProfileRightCard: React.FC = () => {
 
   // Handle edit mode toggle - tab-specific edit functionality
   const handleEdit = () => {
-    showNotification('success', `Edit mode enabled for ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} tab`);
-
-    // Tab-specific edit mode setup
-    switch (activeTab) {
-      case "general":
-        // General tab - enable edit for both personal info and biography/social linkssetIsEditMode(true);
-        break;
-
-      case "professional":
-        // Professional tab - enable edit for professional informationsetIsEditMode(true);
-        break;
-
-      case "education":
-        // Education tab - enable edit for education datasetIsEditMode(true);
-        break;
-
-      case "experience":
-        // Experience tab - enable edit for work experience datasetIsEditMode(true);
-        break;
-
-      case "security":
-        // Security tab - enable edit for security settings (password change)setIsEditMode(true);
-        break;
-
-      default:setIsEditMode(true);
-        break;
+    console.log("ProfileRightCard: handleEdit called, current isEditMode:", isEditMode, "activeTab:", activeTab);
+    // Only enable edit mode if it's currently false
+    if (!isEditMode) {
+      console.log("ProfileRightCard: Setting isEditMode to true");
+      setIsEditMode(true);
+      showNotification('success', `Edit mode enabled for ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} tab`);
+    } else {
+      console.log("ProfileRightCard: Edit mode already enabled");
+      showNotification('success', `Edit mode is already enabled for ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} tab`);
     }
   };
 
   // Handle cancel changes - tab-specific cancel functionality
-  const handleCancel = () => {// Tab-specific cancel logic
+  const handleCancel = () => {
+    // Tab-specific cancel logic
     switch (activeTab) {
       case "general":
-        // General tab - cancel edits for both personal info and biography/social linksbreak;
+        // General tab - cancel edits for both personal info and biography/social links
+        break;
 
       case "professional":
-        // Professional tab - cancel edits for professional informationbreak;
+        // Professional tab - cancel edits for professional information
+        break;
 
       case "education":
-        // Education tab - cancel edits for education databreak;
+        // Education tab - cancel edits for education data
+        break;
 
       case "experience":
-        // Experience tab - cancel edits for work experience databreak;
+        // Experience tab - cancel edits for work experience data
+        break;
 
       case "security":
-        // Security tab - cancel edits for security settingsbreak;
+        // Security tab - cancel edits for security settings
+        break;
 
-      default:break;
+      default:
+        break;
     }
 
-        setIsEditMode(false);
-        showNotification('success', 'Changes cancelled successfully');
+    setIsEditMode(false);
+    showNotification('success', 'Changes cancelled successfully');
 
-        // Reset profile data to original state
-        if (profileQueryData?.userProfile) {
+    // Reset profile data to original state
+    if (profileQueryData?.userProfile) {
       const userProfile = profileQueryData.userProfile as any;
       const avatarUrl = userProfile.avatarUrl || userProfile.avatar || (userProfile as any).avatarUrl;
 
@@ -346,22 +344,23 @@ const ProfileRightCard: React.FC = () => {
           variables.middleName = pick("middleName", "middle_name");
           variables.lastnamem = pick("lastnamem", "lastnamem");
 
-          // Phone fields - use the correct field names from GeneralTab
-          variables.phonecc1 = pick("phonecc1", "phonecc1");
-          variables.phone1 = pick("phone1", "phone1");
-          variables.phonet1 = pick("phonet1", "phonet1");
-          variables.phonecc2 = pick("phonecc2", "phonecc2");
-          variables.phone2 = pick("phone2", "phone2");
-          variables.phonet2 = pick("phonet2", "phonet2");
+          // Phone fields - use the correct field names from ProfileData interface
+          variables.phonecc1 = profileData.primary_country_code;
+          variables.phone1 = profileData.phone;
+          variables.phonet1 = profileData.phone_type;
+          variables.phonecc2 = profileData.secondary_country_code;
+          variables.phone2 = profileData.secondary_phone;
+          variables.phonet2 = profileData.secondary_phone_type;
 
-          // Address fields
-          variables.streetAddress = pick("streetAddress", "street_address");
-          variables.apartmentSuite = pick("apartmentSuite", "apartment_suite");
-          variables.city = pick("city", "city");
-          variables.stateProvince = pick("stateProvince", "state_province");
-          variables.zipCode = pick("zipCode", "zip_code");
-          variables.country = pick("country", "country");
-          variables.countryCode = pick("countryCode", "country_code");
+          // Address fields - use snake_case values from local state
+          variables.streetAddress = profileData.street;
+          variables.apartmentSuite = profileData.apartment;
+          variables.city = profileData.city;
+          variables.stateProvince = profileData.state;
+          variables.zipCode = profileData.zipcode;
+        variables.country = profileData.country;
+        variables.countryCode = profileData.country_code;
+
           variables.bio = pick("bio", "bio");
 
           // Additional personal information
@@ -437,22 +436,12 @@ const ProfileRightCard: React.FC = () => {
       const res = await updateUserProfileMutation({ variables });
       const result = res?.data?.updateUserProfile;
 
-      if (result?.ok && result?.userProfile) {
-        // Preserve avatar data when updating profile
-        const currentAvatar = profileData.avatar;
-        const currentAvatarUrl = profileData.avatarUrl;
-
-        // Update local state with returned profile (may use camelCase keys)
-        setProfileData((prev) => ({
-          ...prev,
-          ...result.userProfile,
-          // Preserve avatar fields to prevent them from being overwritten
-          avatar: currentAvatar,
-          avatarUrl: currentAvatarUrl
-        }));
+      if (result?.ok) {
+        setIsEditMode(false);
+        showNotification('success', `${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} data saved successfully!`);
         window.dispatchEvent(new Event("profile-updated"));
-        setIsEditMode(false);showNotification('success', `${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} data saved successfully!`);
-      } else {showNotification('error', `Failed to save ${activeTab} data. Please try again.`);
+      } else {
+        showNotification('error', `Failed to save ${activeTab} data. Please try again.`);
       }
     } catch (err) {showNotification('error', `Error saving ${activeTab} data. Please try again.`);
     }
@@ -550,33 +539,39 @@ const ProfileRightCard: React.FC = () => {
       id: Date.now().toString(),
       institution: "",
       degree: "",
+      level: "",
       field_of_study: "",
       start_date: "",
       end_date: "",
       gpa: "",
       description: "",
-    };setProfileData(prev => {
+    };
+
+    setProfileData(prev => {
       const updated = {
         ...prev,
         education: [...(prev.education || []), newEducation]
-      };return updated;
+      };
+      return updated;
     });
   };
 
   const handleRemoveEducation = (id: string) => {
     setProfileData(prev => ({
-          ...prev,
+      ...prev,
       education: prev.education?.filter(edu => edu.id !== id) || []
     }));
   };
 
-  const handleUpdateEducation = (id: string, field: string, value: string) => {setProfileData(prev => {
+  const handleUpdateEducation = (id: string, field: string, value: string) => {
+    setProfileData(prev => {
       const updated = {
         ...prev,
         education: prev.education?.map(edu =>
           edu.id === id ? { ...edu, [field]: value } : edu
         ) || []
-      };return updated;
+      };
+      return updated;
     });
   };
 
@@ -591,11 +586,14 @@ const ProfileRightCard: React.FC = () => {
       current: false,
       description: "",
       location: "",
-    };setProfileData(prev => {
+    };
+
+    setProfileData(prev => {
       const updated = {
         ...prev,
         work_experience: [...(prev.work_experience || []), newExperience]
-      };return updated;
+      };
+      return updated;
     });
   };
 
@@ -606,29 +604,36 @@ const ProfileRightCard: React.FC = () => {
     }));
   };
 
-  const handleUpdateExperience = (id: string, field: string, value: string | boolean) => {setProfileData(prev => {
+  const handleUpdateExperience = (id: string, field: string, value: string | boolean) => {
+    setProfileData(prev => {
       const updated = {
         ...prev,
         work_experience: prev.work_experience?.map(exp =>
           exp.id === id ? { ...exp, [field]: value } : exp
         ) || []
-      };return updated;
+      };
+      return updated;
     });
   };
 
   // Handle password change
   const handlePasswordChange = async (oldPassword: string, newPassword: string) => {
-    try {const result = await changePasswordMutation({
+    try {
+      const result = await changePasswordMutation({
         variables: {
           currentPassword: oldPassword,
           newPassword: newPassword,
         },
       });
 
-      if (result.data?.changePassword?.ok) {// You can add success notification here
-      } else {// You can add error notification here
+      if (result.data?.changePassword?.ok) {
+        // You can add success notification here
+      } else {
+        // You can add error notification here
       }
-    } catch (error) {}
+    } catch (error) {
+      // Handle error
+    }
   };
 
   // Pagination handlers
@@ -763,7 +768,7 @@ const ProfileRightCard: React.FC = () => {
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <User className="w-8 h-8 text-gray-400" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Select a Tab</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Select a Tab</h3>
               <p className="text-gray-600">Choose a section above to view and edit your profile information</p>
             </div>
           </div>
@@ -777,7 +782,7 @@ const ProfileRightCard: React.FC = () => {
       <div className="h-full w-full bg-gradient-to-br from-slate-50 to-white flex items-center justify-center">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center max-w-sm mx-auto">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Loading Profile</h3>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">Loading Profile</h3>
           <p className="text-gray-600">Please wait while we fetch your information...</p>
         </div>
       </div>
@@ -794,7 +799,7 @@ const ProfileRightCard: React.FC = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Profile</h3>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">Error Loading Profile</h3>
           <p className="text-red-600 mb-6">
             {profileError.message}
           </p>

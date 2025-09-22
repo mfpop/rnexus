@@ -7,11 +7,11 @@ import { useAutosave } from "./ProfileAutosaveProvider";
 
 interface AddressData {
   country?: string;
-  state_province?: string;
+  state?: string;
   city?: string;
-  zip_code?: string;
-  street_address?: string;
-  apartment_suite?: string;
+  zipcode?: string;
+  street?: string;
+  apartment?: string;
   country_code?: string;
 }
 
@@ -61,8 +61,8 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
           </label>
           <Input
             type="text"
-            value={localData.street_address || ""}
-            onChange={(e) => handleFieldChange("street_address", e.target.value)}
+            value={localData.street || ""}
+            onChange={(e) => handleFieldChange("street", e.target.value)}
             placeholder="Enter your street address"
             className="w-full"
           />
@@ -75,8 +75,8 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
           </label>
           <Input
             type="text"
-            value={localData.apartment_suite || ""}
-            onChange={(e) => handleFieldChange("apartment_suite", e.target.value)}
+            value={localData.apartment || ""}
+            onChange={(e) => handleFieldChange("apartment", e.target.value)}
             placeholder="Apt, Suite, Unit, etc."
             className="w-full"
           />
@@ -103,8 +103,8 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
           </label>
           <Input
             type="text"
-            value={localData.state_province || ""}
-            onChange={(e) => handleFieldChange("state_province", e.target.value)}
+            value={localData.state || ""}
+            onChange={(e) => handleFieldChange("state", e.target.value)}
             placeholder="Enter your state or province"
             className="w-full"
           />
@@ -117,8 +117,8 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
           </label>
           <Input
             type="text"
-            value={localData.zip_code || ""}
-            onChange={(e) => handleFieldChange("zip_code", e.target.value)}
+            value={localData.zipcode || ""}
+            onChange={(e) => handleFieldChange("zipcode", e.target.value)}
             placeholder="Enter your ZIP code"
             className="w-full"
           />
@@ -156,12 +156,12 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
         <div className="mt-6 p-4 bg-gray-50 rounded-lg">
           <h4 className="text-sm font-medium text-gray-900 mb-2">Address Summary</h4>
           <div className="text-sm text-gray-600 space-y-1">
-            <p>{localData.street_address || "No street address"}</p>
+            <p>{localData.street || "No street address"}</p>
             <p>
-              {localData.apartment_suite && `${localData.apartment_suite}, `}
+              {localData.apartment && `${localData.apartment}, `}
               {localData.city || "No city"}
-              {localData.state_province && `, ${localData.state_province}`}
-              {localData.zip_code && ` ${localData.zip_code}`}
+              {localData.state && `, ${localData.state}`}
+              {localData.zipcode && ` ${localData.zipcode}`}
             </p>
             <p>
               {localData.country || "No country"}

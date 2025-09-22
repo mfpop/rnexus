@@ -27,8 +27,8 @@ const ExperienceTab: React.FC<ExperienceTabProps> = ({
   isEditMode,
   handleUpdateExperience,
   currentExperiencePage,
-  totalExperiencePages,
-  handleExperiencePageChange,
+  totalExperiencePages: _totalExperiencePages,
+  handleExperiencePageChange: _handleExperiencePageChange,
 }) => {
   // Pagination calculation
   const experiencePerPage = 1;

@@ -68,3 +68,26 @@ coverage/
 # Temporary files
 *.tmp
 *.temp
+
+# Test files (keep organized in testing/ directory)
+test_*.html
+test_*.py
+debug_*.py
+check_*.py
+
+# Documentation duplicates (keep in docs/ only)
+*_RESOLVED.md
+*_COMPLETE.md
+*_FIX.md
+*_SUMMARY.md
+
+# Log files (keep in logs/ directory)
+*.log
+daphne.log
+django.log
+server.log
+
+# Package files (frontend only)
+package.json
+package-lock.json
+node_modules/

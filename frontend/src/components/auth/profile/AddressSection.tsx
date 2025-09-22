@@ -5,11 +5,11 @@ import { MapPin } from "lucide-react";
 import { Input } from "../../ui/bits";
 
 interface AddressData {
-  street_address?: string;
-  apartment_suite?: string;
+  street?: string;
+  apartment?: string;
   city?: string;
-  state_province?: string;
-  zip_code?: string;
+  state?: string;
+  zipcode?: string;
   country?: string;
   country_code?: string;
 }
@@ -70,8 +70,8 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
               <div className="relative">
                 <Input
                   type="text"
-                  value={localData.street_address || ""}
-                  onChange={(e) => handleFieldChange("street_address", e.target.value)}
+                  value={localData.street || ""}
+                  onChange={(e) => handleFieldChange("street", e.target.value)}
                   className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400"
                   style={{
                     borderBottom: '2px solid #d1d5db'
@@ -86,8 +86,8 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
                 />
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
               </div>
-              {errors["street_address"] && (
-                <p className="text-red-500 text-sm mt-2">{errors["street_address"]}</p>
+              {errors["street"] && (
+                <p className="text-red-500 text-sm mt-2">{errors["street"]}</p>
               )}
             </div>
             <div className="group">
@@ -97,8 +97,8 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
               <div className="relative">
                 <Input
                   type="text"
-                  value={localData.apartment_suite || ""}
-                  onChange={(e) => handleFieldChange("apartment_suite", e.target.value)}
+                  value={localData.apartment || ""}
+                  onChange={(e) => handleFieldChange("apartment", e.target.value)}
                   className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400"
                   style={{
                     borderBottom: '2px solid #d1d5db'
@@ -113,8 +113,8 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
                 />
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
               </div>
-              {errors["apartment_suite"] && (
-                <p className="text-red-500 text-sm mt-2">{errors["apartment_suite"]}</p>
+              {errors["apartment"] && (
+                <p className="text-red-500 text-sm mt-2">{errors["apartment"]}</p>
               )}
             </div>
           </div>
@@ -155,8 +155,8 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
               <div className="relative">
                 <Input
                   type="text"
-                  value={localData.state_province || ""}
-                  onChange={(e) => handleFieldChange("state_province", e.target.value)}
+                  value={localData.state || ""}
+                  onChange={(e) => handleFieldChange("state", e.target.value)}
                   className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400"
                   style={{
                     borderBottom: '2px solid #d1d5db'
@@ -171,8 +171,8 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
                 />
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
               </div>
-              {errors["state_province"] && (
-                <p className="text-red-500 text-sm mt-2">{errors["state_province"]}</p>
+              {errors["state"] && (
+                <p className="text-red-500 text-sm mt-2">{errors["state"]}</p>
               )}
             </div>
             <div className="group">
@@ -209,8 +209,8 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
               <div className="relative">
                 <Input
                   type="text"
-                  value={localData.zip_code || ""}
-                  onChange={(e) => handleFieldChange("zip_code", e.target.value)}
+                  value={localData.zipcode || ""}
+                  onChange={(e) => handleFieldChange("zipcode", e.target.value)}
                   className="w-full border-0 border-b-2 border-gray-300 rounded-none px-0 py-3 text-base focus:outline-none focus-visible:ring-0 bg-transparent transition-colors hover:border-gray-400"
                   style={{
                     borderBottom: '2px solid #d1d5db'
@@ -225,8 +225,8 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
                 />
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-focus-within:scale-x-100 transition-transform origin-left"></div>
               </div>
-              {errors["zip_code"] && (
-                <p className="text-red-500 text-sm mt-2">{errors["zip_code"]}</p>
+              {errors["zipcode"] && (
+                <p className="text-red-500 text-sm mt-2">{errors["zipcode"]}</p>
               )}
             </div>
           </div>
